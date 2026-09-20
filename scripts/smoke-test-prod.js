@@ -237,7 +237,7 @@ async function main() {
         await new Promise(r => setTimeout(r, 200));
 
         // Set background to starry garden
-        await App.setBackground('./backgrounds/bg-starry-garden.jpg');
+        await App.setBackground('./backgrounds/bg-starry-garden.webp');
         await new Promise(r => setTimeout(r, 300));
 
         const bgLayerBefore = document.getElementById('bg-layer');
@@ -248,7 +248,7 @@ async function main() {
       awaitPromise: true
     });
 
-    check('Background sets successfully in session', wpResult.result.value.styleBefore.includes('bg-starry-garden.jpg'));
+    check('Background sets successfully in session', wpResult.result.value.styleBefore.includes('bg-starry-garden.webp'));
 
     // Reload page to verify IndexedDB persistence
     await send('Page.reload');
@@ -264,7 +264,7 @@ async function main() {
       awaitPromise: true
     });
 
-    check('Background persists after page reload from IndexedDB', (reloadResult.result.value || '').includes('bg-starry-garden.jpg'));
+    check('Background persists after page reload from IndexedDB', (reloadResult.result.value || '').includes('bg-starry-garden.webp'));
 
     console.log('\n--- Test 6: Responsive Breakpoints (Desktop & Mobile) ---');
     // Desktop check

@@ -536,8 +536,8 @@ console.log('\n=== TEST SUITE 8: Pixel Garden, Pixel Battery & Modular Architect
   assert(appJsContent.includes('dashboard-battery-container'), 'app.js updates battery container');
 
   // 7. Nature Wallpapers exist
-  assert(fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-pixel-meadow.jpg')), 'Nature wallpaper bg-pixel-meadow.jpg exists');
-  assert(fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-starry-garden.jpg')), 'Nature wallpaper bg-starry-garden.jpg exists');
+  assert(fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-pixel-meadow.webp')) || fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-pixel-meadow.jpg')), 'Nature wallpaper bg-pixel-meadow.webp exists');
+  assert(fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-starry-garden.webp')) || fs.existsSync(path.join(__dirname, '..', 'backgrounds', 'bg-starry-garden.jpg')), 'Nature wallpaper bg-starry-garden.webp exists');
 
   // 8. Dreamy duotone overlay in style.css
   assert(cssContent.includes('mix-blend-mode: multiply'), 'style.css applies dreamy duotone overlay on background layer');

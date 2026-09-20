@@ -21,7 +21,10 @@ const App = {
     // 2. Load User Preferences (Single Dark Purple Theme is directly active on :root)
     // Load saved background with robust error handling
     try {
-      const savedBg = await db.getMeta('backgroundSrc', 'none');
+      let savedBg = await db.getMeta('backgroundSrc', 'none');
+      if (typeof savedBg === 'string' && savedBg.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(savedBg)) {
+        savedBg = savedBg.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+      }
       if (savedBg && savedBg !== 'none') {
         await this.setBackground(savedBg, true);
       }
@@ -231,6 +234,9 @@ const App = {
   // --- BACKGROUND MANAGER ---
   async setBackground(src, skipSave) {
     try {
+      if (typeof src === 'string' && src.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(src)) {
+        src = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+      }
       const layer = document.getElementById('bg-layer');
 
       if (!src || src === 'none') {
