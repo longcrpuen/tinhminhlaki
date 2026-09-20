@@ -71,6 +71,7 @@ const assetsToCopy = [
   { src: 'manifest.json', dest: 'manifest.json' },
   { src: 'sw.js', dest: 'sw.js' },
   { src: 'quotes.js', dest: 'quotes.js' },
+  { src: 'meo.png', dest: 'meo.png' },
   { src: 'css', dest: 'css' },
   { src: 'js', dest: 'js' },
   { src: 'lib', dest: 'lib' },
@@ -123,7 +124,8 @@ const criticalChecks = [
   'js/db.js',
   'js/parser.js',
   'lib/katex/katex.min.js',
-  'icons/icon-192.png'
+  'icons/icon-192.png',
+  'meo.png'
 ];
 
 for (const chk of criticalChecks) {

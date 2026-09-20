@@ -529,6 +529,21 @@ const App = {
       this.renderSettingsView();
     }
 
+    // Update topbar title for active view
+    const viewTitles = {
+      dashboard: 'Ôn Tập Cá Nhân',
+      decks: 'Thư viện thẻ',
+      bank: 'Ngân hàng câu hỏi',
+      import: 'Dán câu hỏi AI',
+      'import-lms': 'Nhập từ LMS',
+      stats: 'Thống kê',
+      settings: 'Cài đặt & Sao lưu'
+    };
+    const titleEl = document.querySelector('.topbar-title');
+    if (titleEl && viewTitles[viewName]) {
+      titleEl.textContent = viewTitles[viewName];
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const mainEl = document.querySelector('.app-main');
     if (mainEl) mainEl.scrollTop = 0;
@@ -591,7 +606,7 @@ const App = {
     window.addEventListener('appinstalled', () => {
       this.deferredInstallPrompt = null;
       if (installBtn) installBtn.style.display = 'none';
-      this.showToast('MindSparks đã được cài đặt thành công!', 'success');
+      this.showToast('TinhMinhLaKey đã được cài đặt thành công!', 'success');
     });
 
     // Online / Offline notifications
