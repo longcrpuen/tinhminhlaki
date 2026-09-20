@@ -1,0 +1,39 @@
+{
+  "name": "MindSparks - Ôn Tập & Quiz Cá Nhân",
+  "short_name": "MindSparks",
+  "description": "App Quiz & Ôn tập Spaced Repetition cá nhân, 100% Offline-First PWA",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#15121f",
+  "theme_color": "#a78bfa",
+  "icons": [
+    {
+      "src": "icons/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ]
+}

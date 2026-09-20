@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="50%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Background squircle -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle inner card surface -->
+  <rect x="56" y="56" width="400" height="400" rx="90" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.15" stroke-width="3"/>
+  
+  <!-- Brain / Spark symbol -->
+  <g transform="translate(256, 256)" filter="url(#glow)">
+    <!-- Book / Card base -->
+    <path d="M-120,40 C-60,20 -10,35 0,55 C10,35 60,20 120,40 C120,90 90,140 0,165 C-90,140 -120,90 -120,40 Z" fill="#ffffff" fill-opacity="0.2" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    
+    <!-- Central Lightning Spark of Wisdom -->
+    <polygon points="15,-155 -75,-15 5,-15 -25,95 85,-45 5,-45 55,-155" fill="url(#sparkGrad)" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- Orbiting Dots / Spaced Repetition nodes -->
+    <circle cx="-110" cy="-70" r="16" fill="#67E8F9"/>
+    <circle cx="115" cy="-60" r="14" fill="#A78BFA"/>
+    <circle cx="-95" cy="50" r="10" fill="#FDE047"/>
+    <circle cx="105" cy="65" r="12" fill="#34D399"/>
+  </g>
+</svg>

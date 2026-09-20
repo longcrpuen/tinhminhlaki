@@ -1,0 +1,75 @@
+/* ==========================================================================
+   MINDSARKS - CẤU HÌNH PHÔNG CHỮ (FONTS CONFIG)
+   
+   HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
+   - File này quản lý tất cả các kiểu chữ được sử dụng trong toàn bộ ứng dụng.
+   - Bạn có thể đổi tên font hoặc thêm font yêu thích bằng cách sửa các biến bên dưới.
+   ========================================================================== */
+
+/* 1. KHAI BÁO FONT CỤC BỘ (100% Offline, không cần kết nối mạng) */
+
+/* Font pixel chính: Pixelify Sans Bold — nét dày, đậm, dễ đọc, đẹp */
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../lib/fonts/pixelify-sans-bold.ttf') format('truetype');
+}
+
+/* Font pixel fallback: VT323 */
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../lib/fonts/vt323.ttf') format('truetype');
+}
+
+/* Font viết tay thanh lịch: Caveat */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../lib/fonts/caveat.ttf') format('truetype');
+}
+
+/* 2. CÁC BIẾN FONT DÙNG TRONG TOÀN APP */
+:root {
+  /* ========================================================================
+     A. FONT TIÊU ĐỀ & ĐIỂM NHẤN CHUẨN TECH (--font-pixel)
+     - Thay thế 100% font pixel cũ bằng Plus Jakarta Sans / Inter hiện đại, sắc nét
+     - Giữ nguyên tên biến --font-pixel để tương thích toàn bộ hệ thống & test suite
+     ======================================================================== */
+  --font-pixel: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ========================================================================
+     B. FONT MÔ TẢ & GỢI Ý (--font-script)
+     ======================================================================== */
+  --font-script: var(--font-body);
+
+  /* ========================================================================
+     C. FONT ĐỌC THÔNG THƯỜNG DỄ CHỊU CHO MẮT (--font-body)
+     - Plus Jakarta Sans kết hợp Inter, letter-spacing: -0.025em
+     ======================================================================== */
+  --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* ========================================================================
+     D. FONT KỸ THUẬT / MONOSPACE (--font-mono)
+     ======================================================================== */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* ========================================================================
+     E. FONT EDITORIAL SERIF / NGHỆ THUẬT (--font-editorial)
+     - Dùng cho chữ điểm nhấn nghiêng trong Hero Heading siêu to
+     ======================================================================== */
+  --font-editorial: 'Montserrat', 'Be Vietnam Pro', 'Anton', 'Playfair Display', Georgia, serif;
+
+  /* ========================================================================
+     F. FONT POSTER HEAVY DISPLAY (--font-poster)
+     - Dành riêng cho Headline tiêu đề chính cực đại phong cách Poster
+     - Montserrat 900 Black + Be Vietnam Pro 900 Black (100% chuẩn dấu tiếng Việt)
+     ======================================================================== */
+  --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Anton', 'Plus Jakarta Sans', system-ui, sans-serif;
+}

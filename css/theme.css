@@ -1,0 +1,98 @@
+/* ==========================================================================
+   MINDSARKS - BẢNG MÀU & GIAO DIỆN CHỦ ĐẠO (THEME CONFIG)
+   
+   HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
+   - Bạn có thể trực tiếp đổi các mã màu bên dưới (dạng #HEX hoặc rgba).
+   - Muốn đổi màu Tím chủ đạo sang màu khác (VD: Xanh ngọc, Hồng, Vàng cam),
+     chỉ cần sửa mã màu tại mục 1 (MÀU ĐIỂM NHẤN CHÍNH --accent).
+   ========================================================================== */
+
+:root {
+  /* ==========================================
+     1. MÀU ĐIỂM NHẤN CHÍNH (ACCENT COLORS)
+     Dùng cho nút bấm nổi bật, viền phát sáng, icon hoạt động
+     ========================================== */
+  --accent: #a78bfa;               /* Tím nhạt rực rỡ (Màu chủ đạo chính) */
+  --accent-secondary: #c084fc;     /* Tím phong lan (Màu nhấn phụ) */
+  --accent-glow: rgba(167, 139, 250, 0.25); /* Vầng sáng hào quang tím */
+  --accent-subtle-bg: rgba(167, 139, 250, 0.12); /* Nền mờ tím siêu nhẹ */
+  --accent-border: rgba(167, 139, 250, 0.28);    /* Viền ánh tím nhẹ */
+  
+  /* Gradient thương hiệu (Dải màu tím chuyển tiếp) */
+  --brand-gradient: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f472b6 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(192,132,252,0.06) 100%);
+  --glow-color: rgba(167, 139, 250, 0.16);
+
+  /* ==========================================
+     2. MÀU NỀN & KHỐI KÍNH TĨNH (SURFACES & ALPHA CHANNEL)
+     Dùng màu tĩnh có sẵn alpha channel để triệt tiêu hiện tượng sụt khung hình khi cuộn
+     ========================================== */
+  --bg-base: #090A0F;              /* Nền đen sâu chuẩn Tech */
+  --bg-surface: rgba(18, 19, 26, 0.85); /* Nền panel tĩnh có alpha */
+  --bg-surface-elevated: rgba(28, 29, 38, 0.92); /* Nền panel nổi cao hơn */
+  --bg-card: rgba(18, 19, 26, 0.85);     /* Nền card câu hỏi & thẻ học */
+  --bg-card-hover: rgba(28, 29, 40, 0.90); /* Nền card khi rê chuột qua */
+  
+  --glass-tint: rgba(18, 19, 26, 0.85);    /* Lớp nền thẻ học và panel */
+  --glass-border: rgba(167, 139, 250, 0.20); /* Viền sáng kính */
+  --glass-highlight: rgba(255, 255, 255, 0.10); /* Điểm sáng phản chiếu */
+  
+  --border-color: rgba(167, 139, 250, 0.15); /* Đường kẻ viền mờ */
+  --border-focus: rgba(167, 139, 250, 0.65); /* Viền sáng khi đang chọn/nhập */
+
+  /* ==========================================
+     3. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS)
+     ========================================== */
+  --text-primary: #f8f6fd;          /* Chữ chính: Trắng tím sáng, tương phản cao */
+  --text-secondary: #c4bcdc;        /* Chữ phụ: Tím xám dịu mắt */
+  --text-muted: #887d9f;            /* Chữ mờ: Dành cho ghi chú nhỏ, ngày tháng */
+
+  /* ==========================================
+     4. MÀU PHẢN HỒI KẾT QUẢ (FEEDBACK & STATUS)
+     ========================================== */
+  --success: #6fcf97;               /* Xanh ngọc: Trả lời đúng, hoàn thành */
+  --success-bg: rgba(111, 207, 151, 0.12);
+  --success-border: rgba(111, 207, 151, 0.30);
+  
+  --danger: #e27d8b;                /* Hồng san hô: Trả lời sai, cảnh báo */
+  --danger-bg: rgba(226, 125, 139, 0.12);
+  --danger-border: rgba(226, 125, 139, 0.30);
+  
+  --warning: #e0b45c;               /* Vàng ấm: Chú ý, câu hỏi chưa thuộc */
+  --warning-bg: rgba(224, 180, 92, 0.12);
+  
+  --info: #7bb8e0;                  /* Xanh lơ: Thông tin hướng dẫn */
+  --streak-color: #f59e0b;          /* Vàng cam: Biểu tượng ngọn lửa chuỗi học */
+
+  /* ==========================================
+     5. HIỆU ỨNG ĐỔ BÓNG & GLOW NEON (SHADOWS & GLOWS)
+     ========================================== */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.40);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --neon-glow-primary: 0 0 16px rgba(167, 139, 250, 0.35);
+  --neon-glow-hover: 0 4px 22px rgba(167, 139, 250, 0.50), 0 0 12px rgba(192, 132, 252, 0.35);
+  --card-hover-glow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 0 12px rgba(167, 139, 250, 0.18);
+  --border-focus-glow: 0 0 0 3px rgba(167, 139, 250, 0.22), 0 0 16px rgba(167, 139, 250, 0.25);
+
+  /* ==========================================
+     6. BO GÓC & BỐ CỤC (SHAPES & SIZES)
+     ========================================== */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-card: 24px;
+  --radius-card-sm: 18px;
+  --radius-card-lg: 28px;
+  --radius-full: 9999px;
+  --sidebar-width: 264px;
+
+  /* ==========================================
+     7. TỐC ĐỘ CHUYỂN ĐỘNG (ANIMATION EASING)
+     ========================================== */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 200ms;
+  --dur-norm: 300ms;
+  --dur-slow: 400ms;
+}

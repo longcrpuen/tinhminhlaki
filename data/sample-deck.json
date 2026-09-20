@@ -1,0 +1,103 @@
+{
+  "quiz_title": "Toán Học & Khoa Học Tự Nhiên",
+  "questions": [
+    {
+      "id": "q1",
+      "topic": "Đạo hàm",
+      "difficulty": "medium",
+      "question": "Đạo hàm của hàm số $f(x) = x^2$ là gì?",
+      "options": [
+        { "id": "a", "text": "$2x$" },
+        { "id": "b", "text": "$x^2$" },
+        { "id": "c", "text": "$2$" },
+        { "id": "d", "text": "$x$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Áp dụng quy tắc đạo hàm lũy thừa: $\\frac{d}{dx}x^n = nx^{n-1}$ với $n = 2$ suy ra $f'(x) = 2x^{2-1} = 2x$."
+    },
+    {
+      "id": "q2",
+      "topic": "Tích phân",
+      "difficulty": "medium",
+      "question": "Giá trị của tích phân xác định $\\int_{0}^{1} 2x \\, dx$ bằng bao nhiêu?",
+      "options": [
+        { "id": "a", "text": "$0$" },
+        { "id": "b", "text": "$1$" },
+        { "id": "c", "text": "$2$" },
+        { "id": "d", "text": "$\\frac{1}{2}$" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Nguyên hàm của $2x$ là $x^2$. Áp dụng định lý Newton-Leibniz: $[x^2]_{0}^{1} = 1^2 - 0^2 = 1$."
+    },
+    {
+      "id": "q3",
+      "topic": "Vật lý hiện đại",
+      "difficulty": "easy",
+      "question": "Hệ thức tương đương khối lượng - năng lượng nổi tiếng của Albert Einstein là gì?",
+      "options": [
+        { "id": "a", "text": "$E = mc^2$" },
+        { "id": "b", "text": "$E = \\frac{1}{2}mv^2$" },
+        { "id": "c", "text": "$F = ma$" },
+        { "id": "d", "text": "$P = UI$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Phương trình $E = mc^2$ khẳng định rằng khối lượng ($m$) và năng lượng ($E$) là tương đương nhau thông qua bình phương tốc độ ánh sáng ($c^2$)."
+    },
+    {
+      "id": "q4",
+      "topic": "Đại số tuyến tính",
+      "difficulty": "hard",
+      "question": "Định thức của ma trận vuông cấp 2 $A = \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}$ được tính theo công thức nào?",
+      "options": [
+        { "id": "a", "text": "$\\det(A) = ad + bc$" },
+        { "id": "b", "text": "$\\det(A) = ad - bc$" },
+        { "id": "c", "text": "$\\det(A) = ac - bd$" },
+        { "id": "d", "text": "$\\det(A) = ab - cd$" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Định thức của ma trận cấp hai $2 \\times 2$ được tính bằng tích đường chéo chính trừ tích đường chéo phụ: $ad - bc$."
+    },
+    {
+      "id": "q5",
+      "topic": "Xác suất thống kê",
+      "difficulty": "medium",
+      "question": "Kỳ vọng toán học $E[X]$ của biến ngẫu nhiên rời rạc $X$ có bảng phân phối xác suất $(x_i, p_i)$ được định nghĩa là:",
+      "options": [
+        { "id": "a", "text": "$E[X] = \\sum_{i} x_i p_i$" },
+        { "id": "b", "text": "$E[X] = \\prod_{i} x_i p_i$" },
+        { "id": "c", "text": "$E[X] = \\sum_{i} p_i$" },
+        { "id": "d", "text": "$E[X] = \\frac{\\sum x_i}{n}$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Kỳ vọng (trung bình có trọng số) của biến ngẫu nhiên rời rạc $X$ là tổng các tích giữa giá trị nhận được và xác suất tương ứng: $\\sum x_i p_i$."
+    },
+    {
+      "id": "q6",
+      "topic": "Đạo hàm",
+      "difficulty": "easy",
+      "question": "Đạo hàm của hàm lượng giác cơ bản $f(x) = \\sin(x)$ là:",
+      "options": [
+        { "id": "a", "text": "$\\cos(x)$" },
+        { "id": "b", "text": "$-\\cos(x)$" },
+        { "id": "c", "text": "$\\sin(x)$" },
+        { "id": "d", "text": "$-\\sin(x)$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Theo bảng đạo hàm các hàm lượng giác cơ bản, $(\\sin x)' = \\cos x$ và $(\\cos x)' = -\\sin x$."
+    },
+    {
+      "id": "q7",
+      "topic": "Thuật toán",
+      "difficulty": "medium",
+      "question": "Độ phức tạp thời gian trung bình của thuật toán tìm kiếm nhị phân (Binary Search) trên mảng đã sắp xếp độ dài $n$ là:",
+      "options": [
+        { "id": "a", "text": "$O(1)$" },
+        { "id": "b", "text": "$O(\\log_2 n)$" },
+        { "id": "c", "text": "$O(n)$" },
+        { "id": "d", "text": "$O(n^2)$" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Mỗi bước so sánh, tìm kiếm nhị phân chia đôi không gian tìm kiếm, dẫn tới số phép so sánh tối đa là $\\log_2 n$."
+    }
+  ]
+}

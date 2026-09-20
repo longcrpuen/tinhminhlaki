@@ -1,0 +1,15 @@
+{
+  "name": "mindsparks",
+  "version": "1.0.0",
+  "description": "MindSparks - App Quizz Học Tập Cá Nhân (100% Offline-First PWA)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node scripts/build.js",
+    "preview": "node server.js dist",
+    "test": "node tests/test-runner.js"
+  },
+  "dependencies": {
+    "katex": "^0.18.7"
+  }
+}
