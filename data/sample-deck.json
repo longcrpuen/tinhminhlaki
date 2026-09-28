@@ -98,6 +98,48 @@
       ],
       "correct_option_id": "b",
       "explanation": "Mỗi bước so sánh, tìm kiếm nhị phân chia đôi không gian tìm kiếm, dẫn tới số phép so sánh tối đa là $\\log_2 n$."
+    },
+    {
+      "id": "q8",
+      "topic": "Khái niệm ràng buộc tích cực",
+      "difficulty": "medium",
+      "question": "Trong bài toán tối ưu hóa có điều kiện $\\min f(x)$ với các ràng buộc bất đẳng thức $g_i(x) \\le 0$ ($i = 1, \\dots, m$), một ràng buộc $g_i(x) \\le 0$ được gọi là **ràng buộc tích cực (active constraint)** tại điểm khả thi $x^*$ khi nào?",
+      "options": [
+        { "id": "a", "text": "$g_i(x^*) = 0$" },
+        { "id": "b", "text": "$g_i(x^*) < 0$" },
+        { "id": "c", "text": "$g_i(x^*) > 0$" },
+        { "id": "d", "text": "$\\nabla g_i(x^*) = 0$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Theo định nghĩa trong lý thuyết tối ưu hóa toán học, ràng buộc bất đẳng thức $g_i(x) \\le 0$ được coi là tích cực (active constraint / binding) tại $x^*$ nếu dấu đẳng thức xảy ra, tức là $g_i(x^*) = 0$."
+    },
+    {
+      "id": "q9",
+      "topic": "Điều kiện KKT",
+      "difficulty": "hard",
+      "question": "Trong hệ điều kiện tối ưu Karush-Kuhn-Tucker (KKT), điều kiện bù trượt (Complementary Slackness) đối với các ràng buộc bất đẳng thức $g_i(x) \\le 0$ có dạng hệ thức nào?",
+      "options": [
+        { "id": "a", "text": "$\\lambda_i g_i(x^*) = 0, \\quad \\forall i \\in \\{1, 2, \\dots, m\\}$" },
+        { "id": "b", "text": "$\\lambda_i + g_i(x^*) = 0, \\quad \\forall i \\in \\{1, 2, \\dots, m\\}$" },
+        { "id": "c", "text": "$\\lambda_i \\nabla g_i(x^*) = 0, \\quad \\forall i \\in \\{1, 2, \\dots, m\\}$" },
+        { "id": "d", "text": "$\\sum_{i=1}^m \\lambda_i g_i(x^*) > 0, \\quad \\lambda_i \\ge 0$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Điều kiện bù trượt KKT yêu cầu $\\lambda_i g_i(x^*) = 0$ với $\\lambda_i \\ge 0$, nghĩa là nếu ràng buộc không tích cực ($g_i(x^*) < 0$) thì nhân tử $\\lambda_i = 0$."
+    },
+    {
+      "id": "q10",
+      "topic": "Hồi quy Ridge",
+      "difficulty": "hard",
+      "question": "Trong bài toán hồi quy Ridge (L2 regularization) với ma trận đặc trưng $X \\in \\mathbb{R}^{n \\times d}$ và vector nhãn $y$, nghiệm giải tích (closed-form solution) $w^*$ tìm được bằng cách giải phương trình đạo hàm bằng 0 có dạng nào sau đây?",
+      "options": [
+        { "id": "a", "text": "$w^* = (X^T X + \\lambda I)^{-1} X^T y$" },
+        { "id": "b", "text": "$w^* = (X^T X - \\lambda I)^{-1} X^T y$" },
+        { "id": "c", "text": "$w^* = (X^T X)^{-1} X^T y$" },
+        { "id": "d", "text": "$w^* = (X X^T + \\lambda I)^{-1} X y$" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Hàm mất mát hồi quy Ridge là $L(w) = \\|Xw - y\\|_2^2 + \\lambda \\|w\\|_2^2$. Đạo hàm theo $w$ cho $2X^T(Xw - y) + 2\\lambda w = 0 \\iff (X^T X + \\lambda I)w = X^T y \\iff w^* = (X^T X + \\lambda I)^{-1} X^T y$."
     }
   ]
 }

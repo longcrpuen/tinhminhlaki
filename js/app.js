@@ -777,6 +777,18 @@ const App = {
         else topbar.classList.remove('scrolled');
       }
     }, { passive: true });
+
+    // Adaptive options layout on resize
+    window.addEventListener('resize', () => {
+      const studyOptions = document.getElementById('quiz-options-container');
+      if (studyOptions && this.currentView === 'study') {
+        this.adaptOptionsLayout(studyOptions);
+      }
+      const examOptions = document.getElementById('exam-options-container');
+      if (examOptions && this.currentView === 'exam') {
+        this.adaptOptionsLayout(examOptions);
+      }
+    });
   },
 
   // --- GLOBAL STATS & STREAK ---
@@ -1490,12 +1502,103 @@ const App = {
     this.renderMath(quizArea);
   },
 
+  // --- UNIFIED OPTION CLEANING & ADAPTIVE 2x2 LAYOUT ---
+  cleanOptionText(rawOpt, index = 0) {
+    const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    let letter = defaultLetters[index] || String.fromCharCode(65 + index);
+    let cleanText = typeof rawOpt === 'string' ? rawOpt.trim() : (rawOpt?.text?.trim() || '');
+    while (true) {
+      const m = cleanText.match(/^([A-Za-z])[\s.):\-]+(.*)$/s);
+      if (!m) break;
+      letter = m[1].toUpperCase();
+      cleanText = m[2].trim();
+    }
+    return { letter, cleanText };
+  },
+
+  adaptOptionsLayout(container) {
+    if (!container) return;
+
+    // Reset single-column class and scaled classes
+    container.classList.remove('layout-single-column');
+    container.querySelectorAll('.katex-scaled-down, .katex-scaled-down-1, .katex-scaled-down-2').forEach(el => {
+      el.classList.remove('katex-scaled-down', 'katex-scaled-down-1', 'katex-scaled-down-2');
+      el.style.removeProperty('font-size');
+    });
+
+    if (window.innerWidth < 640) return;
+
+    const measureAndAdapt = () => {
+      const items = container.querySelectorAll('.quiz-option-btn, .bank-card-options-grid > div');
+      if (!items.length) return;
+
+      let forceSingleColumn = false;
+
+      for (const item of items) {
+        const contentEl = item.querySelector('.quiz-option-content') || item;
+        const katexElements = item.querySelectorAll('.katex-inline-wrap, .katex');
+
+        // Check if item, content or formula overflows available column width
+        let isOverflow = (item && item.scrollWidth > item.clientWidth + 1) ||
+                         (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1);
+        for (const k of katexElements) {
+          if (k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1)) {
+            isOverflow = true;
+            break;
+          }
+        }
+
+        if (isOverflow) {
+          // Priority 1: Scale down font size of formula slightly (level 1: 0.88em)
+          for (const k of katexElements) {
+            k.classList.add('katex-scaled-down');
+            k.style.setProperty('font-size', '0.88em', 'important');
+          }
+
+          // Check if still overflows after first scale level
+          let stillOverflows = (item && item.scrollWidth > item.clientWidth + 1) ||
+            (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1) ||
+            Array.from(katexElements).some(k => k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1));
+
+          if (stillOverflows) {
+            // Level 1b: Scale slightly more down to reasonable minimum (0.82em)
+            for (const k of katexElements) {
+              k.style.setProperty('font-size', '0.82em', 'important');
+            }
+
+            stillOverflows = (item && item.scrollWidth > item.clientWidth + 1) ||
+              (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1) ||
+              Array.from(katexElements).some(k => k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1));
+
+            if (stillOverflows) {
+              // Priority 2: Fall back to 1-column layout (4 rows, each taking full card width)
+              forceSingleColumn = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (forceSingleColumn) {
+        container.classList.add('layout-single-column');
+        container.querySelectorAll('.katex-scaled-down, .katex-scaled-down-1, .katex-scaled-down-2').forEach(el => {
+          el.classList.remove('katex-scaled-down', 'katex-scaled-down-1', 'katex-scaled-down-2');
+          el.style.removeProperty('font-size');
+        });
+      }
+    };
+
+    measureAndAdapt();
+    requestAnimationFrame(measureAndAdapt);
+  },
+
   _renderOptionsBlock(card, answeredState) {
     const optionsContainer = document.getElementById('quiz-options-container');
     if (!optionsContainer) return;
     optionsContainer.innerHTML = '';
-    optionsContainer.style.setProperty('display', 'flex', 'important');
+    optionsContainer.style.removeProperty('display');
     optionsContainer.classList.remove('hidden-mode');
+    optionsContainer.classList.remove('layout-single-column');
 
     const session = this.activeSession;
     if (session) {
@@ -1540,21 +1643,16 @@ const App = {
 
     shuffledList.forEach((optObj, displayIdx) => {
       const btn = document.createElement('button');
-      btn.className = 'quiz-option-btn shrink-0 w-full min-h-[52px] h-auto p-4 text-left break-words whitespace-normal rounded-xl bg-white/[0.03] border border-white/10 hover:border-violet-500/40 transition-all flex items-start gap-3';
+      btn.type = 'button';
+      btn.className = 'quiz-option-btn';
       btn.dataset.index = displayIdx;
 
-      const displayLetter = defaultLetters[displayIdx] || `${displayIdx + 1}`;
-      let cleanText = typeof optObj.text === 'string' ? optObj.text.trim() : String(optObj.text || '');
-
-      while (true) {
-        const m = cleanText.match(/^([A-Za-z])[\s.):\-]+(.*)$/s);
-        if (!m) break;
-        cleanText = m[2].trim();
-      }
+      const { letter, cleanText } = this.cleanOptionText(optObj.text, displayIdx);
+      const displayLetter = defaultLetters[displayIdx] || letter;
 
       btn.innerHTML = `
-        <span class="quiz-option-letter font-bold text-violet-400 text-base flex-shrink-0 select-none mt-0.5">${displayLetter}.</span>
-        <div class="quiz-option-content flex-1 text-zinc-200 text-sm md:text-base leading-relaxed text-left break-words whitespace-normal">${this.renderLatexText(cleanText)}</div>
+        <span class="quiz-option-letter select-none">${displayLetter}.</span>
+        <div class="quiz-option-content">${this.renderLatexText(cleanText)}</div>
       `;
 
       if (isAnswered) {
@@ -1572,6 +1670,7 @@ const App = {
 
     const quizArea = document.getElementById('study-quiz-area');
     this.renderMath(quizArea);
+    this.adaptOptionsLayout(optionsContainer);
   },
 
   revealBlindOptions() {
@@ -1761,6 +1860,11 @@ const App = {
       nextBtn.style.pointerEvents = 'auto';
       nextBtn.style.display = 'inline-flex';
       nextBtn.focus({ preventScroll: true });
+      setTimeout(() => {
+        if (typeof nextBtn.scrollIntoView === 'function') {
+          nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
     }
 
     // Update SRS & Card Stats in DB
@@ -1881,6 +1985,11 @@ const App = {
       nextBtn.style.pointerEvents = 'auto';
       nextBtn.style.display = 'inline-flex';
       nextBtn.focus({ preventScroll: true });
+      setTimeout(() => {
+        if (typeof nextBtn.scrollIntoView === 'function') {
+          nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
     }
 
     // Update SRS & Card Stats in DB
@@ -2574,7 +2683,8 @@ const App = {
     } else {
       if (numericContainer) numericContainer.style.display = 'none';
       if (optContainer) {
-        optContainer.style.display = 'flex';
+        optContainer.style.removeProperty('display');
+        optContainer.classList.remove('layout-single-column');
         optContainer.innerHTML = '';
       }
 
@@ -2605,20 +2715,16 @@ const App = {
 
       shuffledList.forEach((optObj, idx) => {
         const btn = document.createElement('button');
-        btn.className = `quiz-option-btn w-full min-h-[52px] h-auto p-3.5 md:p-4 rounded-xl text-left bg-white/[0.03] border border-white/10 hover:border-violet-500/40 transition-all flex items-start gap-3 ${chosen === idx ? 'correct' : ''}`;
-        
-        const defaultLetter = defaultLetters[idx] || `${idx + 1}`;
-        let cleanText = typeof optObj.text === 'string' ? optObj.text.trim() : String(optObj.text || '');
+        btn.type = 'button';
+        btn.className = `quiz-option-btn ${chosen === idx ? 'correct' : ''}`;
+        btn.dataset.index = idx;
 
-        while (true) {
-          const m = cleanText.match(/^([A-Za-z])[\s.):\-]+(.*)$/s);
-          if (!m) break;
-          cleanText = m[2].trim();
-        }
+        const { letter, cleanText } = this.cleanOptionText(optObj.text, idx);
+        const defaultLetter = defaultLetters[idx] || letter;
 
         btn.innerHTML = `
-          <span class="quiz-option-letter font-bold text-violet-400 text-base flex-shrink-0 select-none mt-0.5">${defaultLetter}.</span>
-          <div class="quiz-option-content flex-1 text-zinc-200 text-sm md:text-base leading-relaxed text-left break-words">${this.renderLatexText(cleanText)}</div>
+          <span class="quiz-option-letter select-none">${defaultLetter}.</span>
+          <div class="quiz-option-content">${this.renderLatexText(cleanText)}</div>
         `;
         btn.onclick = () => {
           session.userAnswers[session.currentIndex] = idx;
@@ -2629,6 +2735,7 @@ const App = {
     }
 
     this.renderMath(document.getElementById('view-exam'));
+    if (optContainer) this.adaptOptionsLayout(optContainer);
 
     // Prev / Next button state
     document.getElementById('btn-exam-prev').disabled = session.currentIndex === 0;
@@ -4549,18 +4656,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           ` : `
             <div class="bank-card-options-grid">
               ${(card.options || []).map((opt, i) => {
-                const defaultLetter = String.fromCharCode(65 + i);
-                let cleanOptText = typeof opt === 'string' ? opt.trim() : (opt?.text?.trim() || '');
-                let letter = defaultLetter;
-                while (true) {
-                  const m = cleanOptText.match(/^([A-Za-z])[\s.):\-]+(.*)$/s);
-                  if (!m) break;
-                  letter = m[1].toUpperCase();
-                  cleanOptText = m[2].trim();
-                }
+                const { letter, cleanText } = this.cleanOptionText(opt, i);
                 return `
-                <div style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'};">
-                  <b>${letter}.</b> ${this.renderLatexText(cleanOptText)} ${i === ansIdx ? '✓' : ''}
+                <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+                  <b>${letter}.</b> ${this.renderLatexText(cleanText)} ${i === ansIdx ? '✓' : ''}
                 </div>
               `;
               }).join('')}
@@ -4578,6 +4677,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     listContainer.innerHTML = html;
     this.renderMath(listContainer);
+    listContainer.querySelectorAll('.bank-card-options-grid').forEach(grid => {
+      this.adaptOptionsLayout(grid);
+    });
   },
 
   toggleBankTopicDropdown(e) {

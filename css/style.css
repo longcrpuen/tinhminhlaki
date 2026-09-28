@@ -1917,31 +1917,38 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
 }
 
 /* Options — 2x2 grid on desktop, 1 column on mobile */
-.quiz-options-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
+.quiz-options-list,
+.bank-card-options-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 16px !important;
+  margin-bottom: 24px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
 }
 
 .quiz-option-btn {
   display: flex !important;
   align-items: flex-start !important;
   gap: 12px;
-  width: 100%;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   min-height: 52px !important;
   height: auto !important;
-  padding: 14px 18px;
-  border-radius: var(--radius-full);
+  padding: 13px 18px;
+  border-radius: var(--radius-md, 14px) !important;
   border: 1.5px solid var(--border-color);
   background: var(--bg-surface);
   color: var(--text-primary);
   font-size: 1rem; font-weight: 500;
   text-align: left; cursor: pointer;
   transition: all var(--dur-fast) var(--ease-spring);
-  line-height: 1.6;
+  line-height: 1.5;
   will-change: transform;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .quiz-option-letter {
@@ -1955,13 +1962,16 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
 }
 
 .quiz-option-content {
-  flex: 1;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   color: #e4e4e7;
-  line-height: 1.625;
+  line-height: 1.5;
   font-size: 0.95rem;
   text-align: left;
   overflow-wrap: break-word;
   word-break: normal;
+  white-space: normal !important;
 }
 
 .katex-inline-wrap {
@@ -1969,13 +1979,28 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   vertical-align: middle;
   margin: 0 4px;
   max-width: 100%;
-  white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  scrollbar-width: none !important;
 }
-.katex-inline-wrap::-webkit-scrollbar {
-  display: none;
+.katex-inline-wrap.katex-scaled-down,
+.katex-scaled-down .katex,
+.katex-inline-wrap.katex-scaled-down-1,
+.katex-scaled-down-1 .katex {
+  font-size: 0.88em !important;
+}
+.katex-inline-wrap.katex-scaled-down-2,
+.katex-scaled-down-2 .katex {
+  font-size: 0.82em !important;
+}
+.katex-inline-wrap::-webkit-scrollbar,
+.quiz-option-btn .katex-inline-wrap::-webkit-scrollbar,
+.quiz-option-content .katex-inline-wrap::-webkit-scrollbar,
+.quiz-options-list .katex-inline-wrap::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .katex-display-wrap {
@@ -2341,14 +2366,23 @@ body.quiz-blind-active #study-quiz-area {
 #view-exam .quiz-options-list {
   flex: 1 1 auto !important;
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   align-content: start !important;
   gap: 12px 16px !important;
   margin-bottom: 12px !important;
-  width: 100%;
-  box-sizing: border-box;
-  overflow: hidden !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
   min-height: 0 !important;
+}
+
+/* Adaptive 1-column layout when LaTeX formulas or options are extra long */
+#view-study .quiz-options-list.layout-single-column,
+#view-exam .quiz-options-list.layout-single-column,
+.quiz-options-list.layout-single-column,
+.bank-card-options-grid.layout-single-column {
+  grid-template-columns: 1fr !important;
+  gap: 10px 12px !important;
 }
 
 /* KaTeX formula & long-text overflow protection */
@@ -2373,9 +2407,18 @@ body.quiz-blind-active #study-quiz-area {
 /* Question Bank 2x2 Grid */
 .bank-card-options-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 8px 12px !important;
   margin-bottom: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+.bank-card-options-grid > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 @media (max-width: 640px) {
@@ -2886,6 +2929,47 @@ body.quiz-blind-active #study-quiz-area {
   }
   body.flashcard-active .srs-btn .srs-interval {
     font-size: 0.68rem !important;
+  }
+
+  /* 2. Desktop Quiz view: Natural scrolling & sticky Next button when content exceeds viewport */
+  body.quiz-active {
+    overflow-y: auto !important;
+  }
+  body.quiz-active .app-main {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: visible !important;
+    padding-bottom: 40px !important;
+  }
+  body.quiz-active #view-study.active {
+    height: auto !important;
+    min-height: calc(100vh - 76px) !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+  }
+  body.quiz-active #view-study .quiz-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  body.quiz-active #view-study .quiz-card {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  body.quiz-active .quiz-footer-actions.show {
+    position: sticky !important;
+    bottom: 16px !important;
+    background: rgba(22, 21, 34, 0.96) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 10px 18px !important;
+    border-radius: var(--radius-md, 14px) !important;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    margin-top: 16px !important;
+    z-index: 40 !important;
   }
 }
 
@@ -5423,12 +5507,17 @@ select optgroup {
   #view-study .quiz-options-list,
   #quiz-options-container {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important; /* gap-2.5 */
     overflow: visible !important;
     max-height: none !important;
     height: auto !important;
     flex-shrink: 0 !important;
+  }
+  body.quiz-active .quiz-options-list.layout-single-column,
+  #view-study .quiz-options-list.layout-single-column,
+  #quiz-options-container.layout-single-column {
+    grid-template-columns: 1fr !important;
   }
   body.quiz-active .quiz-option-btn,
   #view-study .quiz-option-btn {

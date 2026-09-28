@@ -836,6 +836,70 @@ class QuizDatabase {
         console.error('[DB] Lỗi khi tự phục hồi dữ liệu rỗng:', err);
       }
     }
+
+    // 3. Ensure sample question "Khái niệm ràng buộc tích cực" is available in the primary deck
+    const hasActiveConstraintCard = allCards.some(c => 
+      (c.topic && c.topic.includes('ràng buộc tích cực')) || 
+      (c.question && c.question.includes('ràng buộc tích cực'))
+    );
+    if (!hasActiveConstraintCard && decks.length > 0) {
+      const targetDeck = decks[0];
+      const newCard = {
+        id: 'card_active_constraint_' + Date.now(),
+        deckId: targetDeck.id,
+        topic: 'Khái niệm ràng buộc tích cực',
+        difficulty: 'medium',
+        question: 'Trong bài toán tối ưu hóa có điều kiện $\\min f(x)$ với các ràng buộc bất đẳng thức $g_i(x) \\le 0$ ($i = 1, \\dots, m$), một ràng buộc $g_i(x) \\le 0$ được gọi là **ràng buộc tích cực (active constraint)** tại điểm khả thi $x^*$ khi nào?',
+        options: [
+          { id: 'a', text: '$g_i(x^*) = 0$' },
+          { id: 'b', text: '$g_i(x^*) < 0$' },
+          { id: 'c', text: '$g_i(x^*) > 0$' },
+          { id: 'd', text: '$\\nabla g_i(x^*) = 0$' }
+        ],
+        correct_option_id: 'a',
+        answerIndex: 0,
+        explanation: 'Theo định nghĩa trong lý thuyết tối ưu hóa toán học, ràng buộc bất đẳng thức $g_i(x) \\le 0$ được coi là tích cực (active constraint / binding) tại $x^*$ nếu dấu đẳng thức xảy ra, tức là $g_i(x^*) = 0$.',
+        type: 'multiple_choice',
+        source: 'manual',
+        srs: { repetition: 0, interval: 0, easeFactor: 2.5, dueDate: Date.now(), state: 'new' },
+        stats: { reviewsCount: 0, correctCount: 0, incorrectCount: 0, lastReviewed: null },
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      await this.saveCard(newCard);
+    }
+
+    // 4. Ensure sample question "Hồi quy Ridge" is available in the primary deck
+    const hasRidgeCard = allCards.some(c => 
+      (c.topic && c.topic.includes('Hồi quy Ridge')) || 
+      (c.question && c.question.includes('hồi quy Ridge'))
+    );
+    if (!hasRidgeCard && decks.length > 0) {
+      const targetDeck = decks[0];
+      const ridgeCard = {
+        id: 'card_ridge_regression_' + Date.now(),
+        deckId: targetDeck.id,
+        topic: 'Hồi quy Ridge',
+        difficulty: 'hard',
+        question: 'Trong bài toán hồi quy Ridge (L2 regularization) với ma trận đặc trưng $X \\in \\mathbb{R}^{n \\times d}$ và vector nhãn $y$, nghiệm giải tích (closed-form solution) $w^*$ tìm được bằng cách giải phương trình đạo hàm bằng 0 có dạng nào sau đây?',
+        options: [
+          { id: 'a', text: '$w^* = (X^T X + \\lambda I)^{-1} X^T y$' },
+          { id: 'b', text: '$w^* = (X^T X - \\lambda I)^{-1} X^T y$' },
+          { id: 'c', text: '$w^* = (X^T X)^{-1} X^T y$' },
+          { id: 'd', text: '$w^* = (X X^T + \\lambda I)^{-1} X y$' }
+        ],
+        correct_option_id: 'a',
+        answerIndex: 0,
+        explanation: 'Hàm mất mát hồi quy Ridge là $L(w) = \\|Xw - y\\|_2^2 + \\lambda \\|w\\|_2^2$. Đạo hàm theo $w$ cho $2X^T(Xw - y) + 2\\lambda w = 0 \\iff (X^T X + \\lambda I)w = X^T y \\iff w^* = (X^T X + \\lambda I)^{-1} X^T y$.',
+        type: 'multiple_choice',
+        source: 'manual',
+        srs: { repetition: 0, interval: 0, easeFactor: 2.5, dueDate: Date.now(), state: 'new' },
+        stats: { reviewsCount: 0, correctCount: 0, incorrectCount: 0, lastReviewed: null },
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      await this.saveCard(ridgeCard);
+    }
   }
 
   async exportAll() {
