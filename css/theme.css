@@ -9,6 +9,15 @@
 
 :root {
   /* ==========================================
+     0. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
+     - ENABLE_GLASS_BLUR: 0 = Tắt hoàn toàn blur, chuyển sang nền đặc bán trong suốt (đạt 90-120+ FPS)
+     - ENABLE_GLASS_BLUR: 1 = Bật blur nhẹ (giới hạn an toàn <= 8px trên tối đa 1-2 khung)
+     ========================================== */
+  --ENABLE_GLASS_BLUR: 0;
+  --glass-blur-radius: 8px;
+  --glass-backdrop-filter: none;
+
+  /* ==========================================
      1. MÀU ĐIỂM NHẤN CHÍNH (ACCENT COLORS)
      Dùng cho nút bấm nổi bật, viền phát sáng, icon hoạt động
      ========================================== */
