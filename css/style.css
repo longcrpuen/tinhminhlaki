@@ -180,6 +180,13 @@ body::after {
   }
 }
 
+/* Pause all animations when browser tab is inactive / hidden */
+body.tab-hidden *,
+body.tab-hidden *::before,
+body.tab-hidden *::after {
+  animation-play-state: paused !important;
+}
+
 /* ========== GLASS CARD MIXIN (no backdrop-filter!) ========== */
 .glass-card {
   background: var(--glass-tint);
@@ -528,12 +535,12 @@ body::after {
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out-soft);
   text-align: left;
-  will-change: transform;
 }
 .nav-item button:hover {
   background-color: var(--bg-surface-elevated);
   color: var(--text-primary);
   transform: translateX(3px);
+  will-change: transform;
 }
 .nav-item button:active {
   transform: translateX(3px) scale(0.97);
@@ -652,13 +659,13 @@ body::after {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-spring);
-  will-change: transform;
 }
 .icon-btn:hover {
   background: var(--bg-surface-elevated);
   color: var(--text-primary);
   border-color: var(--border-focus);
   transform: scale(1.06);
+  will-change: transform;
 }
 .icon-btn:active { transform: scale(0.92); }
 
@@ -729,23 +736,20 @@ body::after {
     rgba(192, 132, 252, 0.32) 50%, 
     rgba(167, 139, 250, 0.12) 75%, 
     transparent 100%);
-  transform: translateX(-100%);
-  will-change: transform;
+  transform: translate3d(-100%, 0, 0);
 }
 
 .tab-wave-curtain.animating .wave-sweep-layer {
+  will-change: transform;
   animation: waveSweepAcross 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes waveSweepAcross {
   0% {
-    transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(0%);
+    transform: translate3d(-100%, 0, 0);
   }
   100% {
-    transform: translateX(100%);
+    transform: translate3d(100%, 0, 0);
   }
 }
 
@@ -1162,11 +1166,10 @@ body::after {
   transition: all var(--dur-fast) var(--ease-spring);
   text-decoration: none;
   position: relative;
-  will-change: transform;
   white-space: nowrap;
 }
 .btn:active { transform: scale(0.95, 1.02); transition-duration: 80ms; }
-.btn:hover { transform: translateY(-1px) scale(1.015); }
+.btn:hover { transform: translateY(-1px) scale(1.015); will-change: transform; }
 
 .btn-primary {
   background: var(--brand-gradient);
@@ -1569,12 +1572,12 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   display: flex; align-items: center; gap: 16px;
   box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-sm);
   transition: transform var(--dur-norm) var(--ease-spring), box-shadow var(--dur-norm) var(--ease-out-soft), border-color var(--dur-norm) ease;
-  will-change: transform;
 }
 .stat-card:hover {
   transform: translateY(-4px) scale(1.01);
   border-color: var(--accent);
   box-shadow: inset 0 1px 0 var(--glass-highlight), var(--card-hover-glow);
+  will-change: transform;
 }
 
 .stat-card.col-span-2 {
@@ -1792,19 +1795,18 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   content-visibility: auto;
   contain-intrinsic-size: 0 160px;
   transform: translateZ(0);
-  will-change: transform;
 }
 .deck-card:hover {
   transform: translateY(-4px) scale(1.01);
   border-color: var(--accent);
   box-shadow: inset 0 1px 0 var(--glass-highlight), var(--card-hover-glow);
+  will-change: transform;
 }
 .deck-card::after {
   content: '';
   position: absolute;
   top: 0; left: 0; width: 60%; height: 100%;
   background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.02) 45%, rgba(255,255,255,0.04) 50%, transparent 55%);
-  animation: glassRefract 1.5s var(--ease-out-soft) forwards;
   pointer-events: none;
 }
 
@@ -1947,7 +1949,6 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   text-align: left; cursor: pointer;
   transition: all var(--dur-fast) var(--ease-spring);
   line-height: 1.5;
-  will-change: transform;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -2017,6 +2018,7 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   border-color: var(--accent);
   box-shadow: 0 0 16px var(--accent-glow);
   transform: translateX(4px) scale(1.01);
+  will-change: transform;
 }
 .quiz-option-btn:active:not([disabled]) {
   transform: translateX(4px) scale(0.98, 1.02);
@@ -4443,7 +4445,6 @@ body.disable-backdrop-blur .app-topbar {
   content: '';
   position: absolute; top: 0; left: 0; width: 60%; height: 100%;
   background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.02) 45%, rgba(255,255,255,0.04) 50%, transparent 55%);
-  animation: glassRefract 1.5s var(--ease-out-soft) forwards;
   pointer-events: none;
 }
 .study-mode-card:hover {
@@ -5159,7 +5160,7 @@ select optgroup {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   padding: 22px; margin-bottom: 16px;
-  transition: all var(--dur-fast) var(--ease-spring);
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) ease;
   content-visibility: auto;
   contain-intrinsic-block-size: auto 100px;
 }
@@ -5167,6 +5168,7 @@ select optgroup {
   border-color: var(--accent);
   box-shadow: var(--card-hover-glow);
   transform: translateY(-2px);
+  will-change: transform;
 }
 .bank-card-header {
   display: flex; justify-content: space-between;

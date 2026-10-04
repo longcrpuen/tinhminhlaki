@@ -468,13 +468,23 @@ const App = {
 
     // Trigger tab wave curtain transition & whoosh sound (< 450ms)
     if (!isSameView) {
-      sounds.playTabWhoosh();
-      const curtain = document.getElementById('tab-wave-curtain');
-      if (curtain) {
-        curtain.classList.remove('animating');
-        void curtain.offsetWidth; // Force reflow
-        curtain.classList.add('animating');
-        setTimeout(() => curtain.classList.remove('animating'), 400);
+      if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        sounds.playTabWhoosh();
+        const curtain = document.getElementById('tab-wave-curtain');
+        if (curtain) {
+          if (this._curtainTimer) {
+            clearTimeout(this._curtainTimer);
+            this._curtainTimer = null;
+          }
+          curtain.classList.remove('animating');
+          requestAnimationFrame(() => {
+            curtain.classList.add('animating');
+            this._curtainTimer = setTimeout(() => {
+              curtain.classList.remove('animating');
+              this._curtainTimer = null;
+            }, 380);
+          });
+        }
       }
     }
 
@@ -4967,3 +4977,13 @@ window.App = App;
 
 // Start application when DOM is ready
 window.addEventListener('DOMContentLoaded', () => App.init());
+
+// Pause all animations when tab is hidden to save battery & CPU/GPU cycles
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    document.body.classList.add('tab-hidden');
+  } else {
+    document.body.classList.remove('tab-hidden');
+  }
+});
+
