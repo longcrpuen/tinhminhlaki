@@ -448,9 +448,10 @@ async function main() {
     mobile4x
   };
 
-  const outPath = path.join(__dirname, 'baseline-report.json');
+  const isOptimized = process.argv.includes('--optimized');
+  const outPath = path.join(__dirname, isOptimized ? 'optimized-report.json' : 'baseline-report.json');
   fs.writeFileSync(outPath, JSON.stringify(finalReport, null, 2));
-  console.log(`\n✅ Baseline report written to: ${outPath}`);
+  console.log(`\n✅ Benchmark report written to: ${outPath}`);
 }
 
 main().catch(err => {

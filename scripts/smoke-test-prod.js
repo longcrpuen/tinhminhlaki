@@ -48,6 +48,9 @@ async function main() {
     `http://localhost:${PROD_PORT}/`
   ]);
 
+  if (chromeProcess.stderr) chromeProcess.stderr.on('data', () => {});
+  if (chromeProcess.stdout) chromeProcess.stdout.on('data', () => {});
+
   await new Promise(r => setTimeout(r, 2000));
 
   try {
