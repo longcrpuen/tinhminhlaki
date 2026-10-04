@@ -153,11 +153,33 @@ const App = {
           return `<span class="katex-inline-wrap inline-block align-middle mx-1 font-mono">${escapeHtml(code)}</span>`;
         }
         try {
-          // Inline Math uses displayMode: false; Block Math uses displayMode: true
-          const rendered = katexEngine.renderToString(code, {
-            displayMode: isBlock,
-            throwOnError: false
-          });
+          // KaTeX LRU Map cache to eliminate redundant renderToString overhead
+          const cacheKey = (isBlock ? 'B:' : 'I:') + code;
+          let rendered = null;
+          let cache = null;
+          try {
+            if (typeof globalThis !== 'undefined') {
+              if (!globalThis._msKatexCache) globalThis._msKatexCache = new Map();
+              cache = globalThis._msKatexCache;
+            }
+          } catch (_) {}
+
+          if (cache && cache.has(cacheKey)) {
+            rendered = cache.get(cacheKey);
+          } else {
+            // Inline Math uses displayMode: false; Block Math uses displayMode: true
+            rendered = katexEngine.renderToString(code, {
+              displayMode: isBlock,
+              throwOnError: false
+            });
+            if (cache) {
+              if (cache.size >= 2000) {
+                const firstKey = cache.keys().next().value;
+                cache.delete(firstKey);
+              }
+              cache.set(cacheKey, rendered);
+            }
+          }
           if (isBlock) {
             return `<div class="katex-display-wrap overflow-x-auto my-2">${rendered}</div>`;
           } else {
@@ -1533,6 +1555,13 @@ const App = {
 
   adaptOptionsLayout(container) {
     if (!container) return;
+    if (window.innerWidth < 640) return;
+
+    // Fast path: if no math elements and not currently forced, skip measurement
+    const hasMath = container.querySelector('.katex-inline-wrap, .katex');
+    if (!hasMath && !container.classList.contains('layout-single-column')) {
+      return;
+    }
 
     // Reset single-column class and scaled classes
     container.classList.remove('layout-single-column');
@@ -1541,7 +1570,7 @@ const App = {
       el.style.removeProperty('font-size');
     });
 
-    if (window.innerWidth < 640) return;
+    if (!hasMath) return;
 
     const measureAndAdapt = () => {
       const items = container.querySelectorAll('.quiz-option-btn, .bank-card-options-grid > div');
@@ -4691,9 +4720,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     });
 
     listContainer.innerHTML = html;
-    this.renderMath(listContainer);
     listContainer.querySelectorAll('.bank-card-options-grid').forEach(grid => {
-      this.adaptOptionsLayout(grid);
+      if (grid.querySelector('.katex-inline-wrap, .katex')) {
+        this.adaptOptionsLayout(grid);
+      }
     });
   },
 
@@ -4764,18 +4794,32 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.renderQuestionBank();
   },
 
-  onBankFilterChange() {
-    const searchInput = document.getElementById('bank-search-input');
-    const topicSelect = document.getElementById('bank-topic-filter');
-    const diffSelect = document.getElementById('bank-difficulty-filter');
-    const sourceSelect = document.getElementById('bank-source-filter');
+  _bankFilterDebounceTimer: null,
+  onBankFilterChange(immediate = false) {
+    if (this._bankFilterDebounceTimer) {
+      clearTimeout(this._bankFilterDebounceTimer);
+      this._bankFilterDebounceTimer = null;
+    }
 
-    this.bankFilters.search = searchInput?.value || '';
-    this.bankFilters.topic = topicSelect?.value || '';
-    this.bankFilters.difficulty = diffSelect?.value || '';
-    this.bankFilters.source = sourceSelect?.value || '';
+    const applyFilter = () => {
+      const searchInput = document.getElementById('bank-search-input');
+      const topicSelect = document.getElementById('bank-topic-filter');
+      const diffSelect = document.getElementById('bank-difficulty-filter');
+      const sourceSelect = document.getElementById('bank-source-filter');
 
-    this.renderQuestionBank();
+      this.bankFilters.search = searchInput?.value || '';
+      this.bankFilters.topic = topicSelect?.value || '';
+      this.bankFilters.difficulty = diffSelect?.value || '';
+      this.bankFilters.source = sourceSelect?.value || '';
+
+      this.renderQuestionBank();
+    };
+
+    if (immediate) {
+      applyFilter();
+    } else {
+      this._bankFilterDebounceTimer = setTimeout(applyFilter, 200);
+    }
   },
 
   toggleBankFilter(type) {

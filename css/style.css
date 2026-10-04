@@ -5162,7 +5162,8 @@ select optgroup {
   padding: 22px; margin-bottom: 16px;
   transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) ease;
   content-visibility: auto;
-  contain-intrinsic-block-size: auto 100px;
+  contain-intrinsic-size: 0 120px;
+  contain-intrinsic-block-size: auto 120px;
 }
 .bank-card-item:hover {
   border-color: var(--accent);
