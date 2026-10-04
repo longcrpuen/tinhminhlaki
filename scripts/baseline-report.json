@@ -1,0 +1,495 @@
+{
+  "timestamp": "2026-10-04T14:17:12.297Z",
+  "desktopNormal": [
+    {
+      "screen": "1. Tổng quan (Dashboard)",
+      "frames": 900,
+      "durationMs": 1201,
+      "fps": 749.4,
+      "frameTimeMs": 1.33,
+      "minFps": 125,
+      "p99FrameTimeMs": 4.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "2. Thư viện thẻ (Decks)",
+      "frames": 1395,
+      "durationMs": 1200,
+      "fps": 1162.2,
+      "frameTimeMs": 0.86,
+      "minFps": 163.9,
+      "p99FrameTimeMs": 4.2,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "3. Ngân hàng câu hỏi (Bank - cuộn dài)",
+      "frames": 987,
+      "durationMs": 1201,
+      "fps": 822,
+      "frameTimeMs": 1.22,
+      "minFps": 24,
+      "p99FrameTimeMs": 3.6,
+      "longTasks": 1,
+      "longTaskDurationMs": 403
+    },
+    {
+      "screen": "4. Màn làm bài quizz (Study)",
+      "frames": 1292,
+      "durationMs": 1200,
+      "fps": 1076.3,
+      "frameTimeMs": 0.93,
+      "minFps": 322.6,
+      "p99FrameTimeMs": 2.3,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "5. Lật thẻ (Flashcard 3D flip)",
+      "frames": 994,
+      "durationMs": 1201,
+      "fps": 827.4,
+      "frameTimeMs": 1.21,
+      "minFps": 114.9,
+      "p99FrameTimeMs": 3.5,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "6. Nhập từ LMS (Import LMS preview)",
+      "frames": 953,
+      "durationMs": 1201,
+      "fps": 793.6,
+      "frameTimeMs": 1.26,
+      "minFps": 117.6,
+      "p99FrameTimeMs": 3.1,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "7. Dán câu hỏi AI (Import text)",
+      "frames": 1161,
+      "durationMs": 1201,
+      "fps": 967,
+      "frameTimeMs": 1.03,
+      "minFps": 169.5,
+      "p99FrameTimeMs": 2.5,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "8. Thống kê (Stats - heatmap)",
+      "frames": 1204,
+      "durationMs": 1201,
+      "fps": 1002.9,
+      "frameTimeMs": 1,
+      "minFps": 238.1,
+      "p99FrameTimeMs": 2,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "9. Cài đặt (Settings)",
+      "frames": 1527,
+      "durationMs": 1216,
+      "fps": 1255.6,
+      "frameTimeMs": 0.8,
+      "minFps": 178.6,
+      "p99FrameTimeMs": 2.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "10. Chuyển tab (Hiệu ứng sóng curtain)",
+      "frames": 526,
+      "durationMs": 1263,
+      "fps": 416.4,
+      "frameTimeMs": 2.4,
+      "minFps": 5.5,
+      "p99FrameTimeMs": 11.3,
+      "longTasks": 2,
+      "longTaskDurationMs": 329
+    },
+    {
+      "screen": "11. Màn kết quả (Pin pixel charging)",
+      "frames": 1604,
+      "durationMs": 1200,
+      "fps": 1336.3,
+      "frameTimeMs": 0.75,
+      "minFps": 33,
+      "p99FrameTimeMs": 3.9,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    }
+  ],
+  "mobileNormal": [
+    {
+      "screen": "1. Tổng quan (Dashboard)",
+      "frames": 1223,
+      "durationMs": 1201,
+      "fps": 1018.1,
+      "frameTimeMs": 0.98,
+      "minFps": 43.7,
+      "p99FrameTimeMs": 2.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "2. Thư viện thẻ (Decks)",
+      "frames": 1091,
+      "durationMs": 1201,
+      "fps": 908.3,
+      "frameTimeMs": 1.1,
+      "minFps": 238.1,
+      "p99FrameTimeMs": 2.2,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "3. Ngân hàng câu hỏi (Bank - cuộn dài)",
+      "frames": 1650,
+      "durationMs": 1201,
+      "fps": 1373.7,
+      "frameTimeMs": 0.73,
+      "minFps": 45.9,
+      "p99FrameTimeMs": 2.1,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "4. Màn làm bài quizz (Study)",
+      "frames": 1171,
+      "durationMs": 1201,
+      "fps": 975.4,
+      "frameTimeMs": 1.03,
+      "minFps": 322.6,
+      "p99FrameTimeMs": 2.3,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "5. Lật thẻ (Flashcard 3D flip)",
+      "frames": 1069,
+      "durationMs": 1200,
+      "fps": 890.6,
+      "frameTimeMs": 1.12,
+      "minFps": 82,
+      "p99FrameTimeMs": 3.1,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "6. Nhập từ LMS (Import LMS preview)",
+      "frames": 1128,
+      "durationMs": 1201,
+      "fps": 939.2,
+      "frameTimeMs": 1.06,
+      "minFps": 49.3,
+      "p99FrameTimeMs": 3.3,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "7. Dán câu hỏi AI (Import text)",
+      "frames": 1112,
+      "durationMs": 1202,
+      "fps": 925.3,
+      "frameTimeMs": 1.08,
+      "minFps": 188.7,
+      "p99FrameTimeMs": 2.5,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "8. Thống kê (Stats - heatmap)",
+      "frames": 1146,
+      "durationMs": 1200,
+      "fps": 954.7,
+      "frameTimeMs": 1.05,
+      "minFps": 166.7,
+      "p99FrameTimeMs": 2.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "9. Cài đặt (Settings)",
+      "frames": 1053,
+      "durationMs": 1200,
+      "fps": 877.2,
+      "frameTimeMs": 1.14,
+      "minFps": 161.3,
+      "p99FrameTimeMs": 2.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "10. Chuyển tab (Hiệu ứng sóng curtain)",
+      "frames": 527,
+      "durationMs": 1203,
+      "fps": 438.2,
+      "frameTimeMs": 2.28,
+      "minFps": 6.6,
+      "p99FrameTimeMs": 20,
+      "longTasks": 3,
+      "longTaskDurationMs": 286
+    },
+    {
+      "screen": "11. Màn kết quả (Pin pixel charging)",
+      "frames": 1143,
+      "durationMs": 1200,
+      "fps": 952.2,
+      "frameTimeMs": 1.05,
+      "minFps": 46.1,
+      "p99FrameTimeMs": 8.3,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    }
+  ],
+  "desktop4x": [
+    {
+      "screen": "1. Tổng quan (Dashboard)",
+      "frames": 194,
+      "durationMs": 1210,
+      "fps": 160.4,
+      "frameTimeMs": 6.24,
+      "minFps": 44.8,
+      "p99FrameTimeMs": 20.7,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "2. Thư viện thẻ (Decks)",
+      "frames": 259,
+      "durationMs": 1203,
+      "fps": 215.3,
+      "frameTimeMs": 4.64,
+      "minFps": 73.5,
+      "p99FrameTimeMs": 10.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "3. Ngân hàng câu hỏi (Bank - cuộn dài)",
+      "frames": 154,
+      "durationMs": 1211,
+      "fps": 127.2,
+      "frameTimeMs": 7.86,
+      "minFps": 4,
+      "p99FrameTimeMs": 32.4,
+      "longTasks": 3,
+      "longTaskDurationMs": 2535
+    },
+    {
+      "screen": "4. Màn làm bài quizz (Study)",
+      "frames": 202,
+      "durationMs": 1206,
+      "fps": 167.6,
+      "frameTimeMs": 5.97,
+      "minFps": 63.3,
+      "p99FrameTimeMs": 14.1,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "5. Lật thẻ (Flashcard 3D flip)",
+      "frames": 306,
+      "durationMs": 1211,
+      "fps": 252.6,
+      "frameTimeMs": 3.96,
+      "minFps": 38.3,
+      "p99FrameTimeMs": 16.1,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "6. Nhập từ LMS (Import LMS preview)",
+      "frames": 297,
+      "durationMs": 1202,
+      "fps": 247.1,
+      "frameTimeMs": 4.05,
+      "minFps": 21.6,
+      "p99FrameTimeMs": 33.7,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "7. Dán câu hỏi AI (Import text)",
+      "frames": 233,
+      "durationMs": 1205,
+      "fps": 193.3,
+      "frameTimeMs": 5.17,
+      "minFps": 84.7,
+      "p99FrameTimeMs": 10.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "8. Thống kê (Stats - heatmap)",
+      "frames": 204,
+      "durationMs": 1206,
+      "fps": 169.1,
+      "frameTimeMs": 5.91,
+      "minFps": 78.1,
+      "p99FrameTimeMs": 12.3,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "9. Cài đặt (Settings)",
+      "frames": 174,
+      "durationMs": 1206,
+      "fps": 144.2,
+      "frameTimeMs": 6.93,
+      "minFps": 3.1,
+      "p99FrameTimeMs": 165.8,
+      "longTasks": 2,
+      "longTaskDurationMs": 483
+    },
+    {
+      "screen": "10. Chuyển tab (Hiệu ứng sóng curtain)",
+      "frames": 108,
+      "durationMs": 1751,
+      "fps": 61.7,
+      "frameTimeMs": 16.22,
+      "minFps": 1.1,
+      "p99FrameTimeMs": 78.1,
+      "longTasks": 4,
+      "longTaskDurationMs": 1025
+    },
+    {
+      "screen": "11. Màn kết quả (Pin pixel charging)",
+      "frames": 390,
+      "durationMs": 1202,
+      "fps": 324.4,
+      "frameTimeMs": 3.08,
+      "minFps": 49.3,
+      "p99FrameTimeMs": 16.5,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    }
+  ],
+  "mobile4x": [
+    {
+      "screen": "1. Tổng quan (Dashboard)",
+      "frames": 353,
+      "durationMs": 1207,
+      "fps": 292.6,
+      "frameTimeMs": 3.42,
+      "minFps": 85.5,
+      "p99FrameTimeMs": 9,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "2. Thư viện thẻ (Decks)",
+      "frames": 672,
+      "durationMs": 1230,
+      "fps": 546.5,
+      "frameTimeMs": 1.83,
+      "minFps": 29.4,
+      "p99FrameTimeMs": 10.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "3. Ngân hàng câu hỏi (Bank - cuộn dài)",
+      "frames": 381,
+      "durationMs": 1205,
+      "fps": 316.3,
+      "frameTimeMs": 3.16,
+      "minFps": 12.9,
+      "p99FrameTimeMs": 14.7,
+      "longTasks": 2,
+      "longTaskDurationMs": 138
+    },
+    {
+      "screen": "4. Màn làm bài quizz (Study)",
+      "frames": 406,
+      "durationMs": 1202,
+      "fps": 337.9,
+      "frameTimeMs": 2.96,
+      "minFps": 32.7,
+      "p99FrameTimeMs": 13.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "5. Lật thẻ (Flashcard 3D flip)",
+      "frames": 389,
+      "durationMs": 1205,
+      "fps": 322.8,
+      "frameTimeMs": 3.1,
+      "minFps": 47.6,
+      "p99FrameTimeMs": 18.2,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "6. Nhập từ LMS (Import LMS preview)",
+      "frames": 356,
+      "durationMs": 1205,
+      "fps": 295.5,
+      "frameTimeMs": 3.38,
+      "minFps": 97.1,
+      "p99FrameTimeMs": 8.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "7. Dán câu hỏi AI (Import text)",
+      "frames": 615,
+      "durationMs": 1201,
+      "fps": 511.9,
+      "frameTimeMs": 1.95,
+      "minFps": 85.5,
+      "p99FrameTimeMs": 7.4,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "8. Thống kê (Stats - heatmap)",
+      "frames": 677,
+      "durationMs": 1201,
+      "fps": 563.7,
+      "frameTimeMs": 1.77,
+      "minFps": 70.9,
+      "p99FrameTimeMs": 5.8,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "9. Cài đặt (Settings)",
+      "frames": 665,
+      "durationMs": 1201,
+      "fps": 553.6,
+      "frameTimeMs": 1.81,
+      "minFps": 128.2,
+      "p99FrameTimeMs": 4.6,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    },
+    {
+      "screen": "10. Chuyển tab (Hiệu ứng sóng curtain)",
+      "frames": 239,
+      "durationMs": 1630,
+      "fps": 146.6,
+      "frameTimeMs": 6.82,
+      "minFps": 2.7,
+      "p99FrameTimeMs": 82.2,
+      "longTasks": 5,
+      "longTaskDurationMs": 786
+    },
+    {
+      "screen": "11. Màn kết quả (Pin pixel charging)",
+      "frames": 583,
+      "durationMs": 1203,
+      "fps": 484.7,
+      "frameTimeMs": 2.06,
+      "minFps": 111.1,
+      "p99FrameTimeMs": 7.7,
+      "longTasks": 0,
+      "longTaskDurationMs": 0
+    }
+  ]
+}

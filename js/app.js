@@ -4958,5 +4958,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   }
 };
 
+window.App = App;
+
 // Start application when DOM is ready
 window.addEventListener('DOMContentLoaded', () => App.init());

@@ -966,3 +966,4 @@ class QuizDatabase {
 
 // Global Singleton
 const db = new QuizDatabase();
+window.db = db;
