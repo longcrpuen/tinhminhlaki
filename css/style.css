@@ -814,15 +814,15 @@ body::after {
   font-size: clamp(3.8rem, 8.5vw, 6.5rem);
   background: linear-gradient(135deg, #a78bfa 0%, #e879f9 50%, #f43f5e 100%);
   transform: scale(1.1) translateZ(0);
-  filter: drop-shadow(0 0 25px rgba(244, 63, 94, 0.6));
-  text-shadow: 0 0 35px rgba(232, 121, 249, 0.8), 0 0 12px rgba(244, 63, 94, 0.9);
+  filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.45));
+  text-shadow: 0 0 14px rgba(232, 121, 249, 0.6), 0 0 8px rgba(244, 63, 94, 0.7);
 }
 .hero-title-accent::after {
   content: '';
   position: absolute;
   inset: -8px -18px;
   background: radial-gradient(ellipse at center, rgba(232, 121, 249, 0.8) 0%, rgba(244, 63, 94, 0.6) 50%, transparent 75%);
-  filter: blur(16px);
+  filter: blur(10px);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
@@ -1427,8 +1427,8 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   transform: scaleY(1.18) !important;
   filter: brightness(1.75) !important;
   background: linear-gradient(135deg, #ffffff 0%, #00f5a0 100%) !important;
-  box-shadow: 0 0 20px #ffffff, 0 0 35px #00f5a0 !important;
-  transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease !important;
+  box-shadow: 0 0 12px #00f5a0 !important;
+  transition: transform 0.08s ease !important;
   z-index: 6;
 }
 
