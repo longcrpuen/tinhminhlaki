@@ -246,6 +246,17 @@ const App = {
         }
         document.body.style.backgroundImage = '';
       } else {
+        // Pre-decode image before applying to prevent UI jank
+        try {
+          const preloader = new Image();
+          preloader.src = src;
+          if (preloader.decode) {
+            await preloader.decode();
+          }
+        } catch (decodeErr) {
+          // Continue if decode API unsupported or non-blocking error
+        }
+
         // Enclose src in quotes for safe CSS url() parsing
         const safeSrc = src.replace(/"/g, '\\"');
         const urlVal = `url("${safeSrc}")`;
@@ -253,12 +264,6 @@ const App = {
           layer.style.backgroundImage = urlVal;
           layer.classList.add('active');
         }
-        // Direct body background guarantee for complete wallpaper visibility
-        document.body.style.backgroundImage = urlVal;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
-        document.body.style.backgroundRepeat = 'no-repeat';
       }
 
       if (!skipSave) {
