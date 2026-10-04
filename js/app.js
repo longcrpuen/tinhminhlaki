@@ -3659,7 +3659,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     await this.renderContributionHeatmap();
-    await this.renderTopicPerformanceTable();
+    await this.renderTopicPerformanceTable(allCards);
   },
 
   // --- SECTION 5: CARD ACTIONS & FOCUS MODE ---
@@ -4123,26 +4123,44 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   // --- SESSION AUTO-SAVE & RESTORE ---
-  saveActiveSessionState() {
+  _saveSessionTimer: null,
+  saveActiveSessionState(immediate = false) {
     if (!this.activeSession) return;
-    const s = this.activeSession;
-    const state = {
-      mode: s.mode,
-      deckId: s.deckId,
-      title: s.title,
-      cardIds: s.cards.map(c => c.id),
-      currentIndex: s.currentIndex,
-      score: s.score || 0,
-      correctCount: s.correctCount || 0,
-      incorrectCount: s.incorrectCount || 0,
-      blindMode: s.blindMode,
-      userAnswers: s.userAnswers || {},
-      savedAt: Date.now()
+    if (this._saveSessionTimer) {
+      clearTimeout(this._saveSessionTimer);
+      this._saveSessionTimer = null;
+    }
+    const doSave = () => {
+      if (!this.activeSession) return;
+      const s = this.activeSession;
+      const state = {
+        mode: s.mode,
+        deckId: s.deckId,
+        title: s.title,
+        cardIds: s.cards.map(c => c.id),
+        currentIndex: s.currentIndex,
+        score: s.score || 0,
+        correctCount: s.correctCount || 0,
+        incorrectCount: s.incorrectCount || 0,
+        blindMode: s.blindMode,
+        userAnswers: s.userAnswers || {},
+        savedAt: Date.now()
+      };
+      db.setMeta('activeSessionBackup', state);
     };
-    db.setMeta('activeSessionBackup', state);
+
+    if (immediate) {
+      doSave();
+    } else {
+      this._saveSessionTimer = setTimeout(doSave, 150);
+    }
   },
 
   clearActiveSessionState() {
+    if (this._saveSessionTimer) {
+      clearTimeout(this._saveSessionTimer);
+      this._saveSessionTimer = null;
+    }
     db.setMeta('activeSessionBackup', null);
     const banner = document.getElementById('session-restore-banner');
     if (banner) banner.style.display = 'none';
@@ -4252,11 +4270,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       });
       grid.appendChild(fragment);
 
-      // Auto-scroll to today (rightmost edge) across paint & tab transition phases
-      this.scrollHeatmapToToday(false);
+      // Auto-scroll to today (rightmost edge) once DOM is ready
       requestAnimationFrame(() => this.scrollHeatmapToToday(false));
-      setTimeout(() => this.scrollHeatmapToToday(false), 80);
-      setTimeout(() => this.scrollHeatmapToToday(false), 360);
     } catch (err) {
       console.error('[Heatmap] Lỗi khi render contribution heatmap:', err);
     }
@@ -4276,11 +4291,11 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
   },
 
-  async renderTopicPerformanceTable() {
+  async renderTopicPerformanceTable(cachedCards = null) {
     const tbody = document.getElementById('stats-topic-tbody');
     if (!tbody) return;
 
-    const allCards = await db.getAllCards();
+    const allCards = cachedCards || await db.getAllCards();
     const topicsMap = {};
 
     allCards.forEach(c => {
