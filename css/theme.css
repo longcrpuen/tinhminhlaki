@@ -1,93 +1,148 @@
 /* ==========================================================================
-   MINDSARKS - BẢNG MÀU & GIAO DIỆN CHỦ ĐẠO (THEME CONFIG)
+   MINDSARKS - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
+   - File này quản lý tất cả các biến màu sắc, khoảng cách, bo góc và typography.
    - Bạn có thể trực tiếp đổi các mã màu bên dưới (dạng #HEX hoặc rgba).
    - Muốn đổi màu Tím chủ đạo sang màu khác (VD: Xanh ngọc, Hồng, Vàng cam),
-     chỉ cần sửa mã màu tại mục 1 (MÀU ĐIỂM NHẤN CHÍNH --accent).
+     chỉ cần sửa mã màu tại mục 2 (MÀU ĐIỂM NHẤN CHÍNH --accent).
+   - Tuân thủ nghiêm ngặt DESIGN-RULES.md & WCAG AA:
+     * Dark mode dịu mộng mơ (Liquid Glass Violet)
+     * Thang chữ clamp() thích ứng Desktop & Mobile
+     * Focus ring rõ ràng cho điều hướng bàn phím
+     * Giới hạn hiệu năng: GPU-friendly, không box-shadow/filter animation
    ========================================================================== */
 
 :root {
   /* ==========================================
-     0. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
-     - ENABLE_GLASS_BLUR: 0 = Tắt hoàn toàn blur, chuyển sang nền đặc bán trong suốt (đạt 90-120+ FPS)
-     - ENABLE_GLASS_BLUR: 1 = Bật blur nhẹ (giới hạn an toàn <= 8px trên tối đa 1-2 khung)
+     0. THIẾT LẬP MÀU HỆ THỐNG
+     ========================================== */
+  color-scheme: dark;
+
+  /* ==========================================
+     1. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
+     - ENABLE_GLASS_BLUR: 0 = Tắt blur toàn bộ card danh sách để giữ 90-120 FPS
+     - Blur chỉ dùng ở tối đa vài bề mặt lớn cố định (topbar, sidebar, modal)
      ========================================== */
   --ENABLE_GLASS_BLUR: 0;
   --glass-blur-radius: 8px;
   --glass-backdrop-filter: none;
 
   /* ==========================================
-     1. MÀU ĐIỂM NHẤN CHÍNH (ACCENT COLORS)
-     Dùng cho nút bấm nổi bật, viền phát sáng, icon hoạt động
+     2. MÀU ĐIỂM NHẤN (ACCENT COLORS)
      ========================================== */
-  --accent: #a78bfa;               /* Tím nhạt rực rỡ (Màu chủ đạo chính) */
-  --accent-secondary: #c084fc;     /* Tím phong lan (Màu nhấn phụ) */
-  --accent-glow: rgba(167, 139, 250, 0.25); /* Vầng sáng hào quang tím */
+  --accent: #a78bfa;                     /* Tím nhạt rực rỡ (Accent chính) */
+  --accent-secondary: #c084fc;           /* Tím phong lan (Accent phụ) */
+  --accent-glow: rgba(167, 139, 250, 0.22); /* Vầng sáng hào quang tím nhẹ */
   --accent-subtle-bg: rgba(167, 139, 250, 0.12); /* Nền mờ tím siêu nhẹ */
   --accent-border: rgba(167, 139, 250, 0.28);    /* Viền ánh tím nhẹ */
   
-  /* Gradient thương hiệu (Dải màu tím chuyển tiếp) */
+  /* Gradient thương hiệu */
   --brand-gradient: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f472b6 100%);
-  --brand-gradient-subtle: linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(192,132,252,0.06) 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(192, 132, 252, 0.06) 100%);
   --glow-color: rgba(167, 139, 250, 0.16);
 
   /* ==========================================
-     2. MÀU NỀN & KHỐI KÍNH TĨNH (SURFACES & ALPHA CHANNEL)
-     Dùng màu tĩnh có sẵn alpha channel để triệt tiêu hiện tượng sụt khung hình khi cuộn
+     3. MÀU NỀN & BỀ MẶT KÍNH TĨNH (SURFACES & ALPHA)
+     Dùng màu có sẵn alpha channel để triệt tiêu sụt giảm FPS khi cuộn
      ========================================== */
-  --bg-base: #090A0F;              /* Nền đen sâu chuẩn Tech */
-  --bg-surface: rgba(18, 19, 26, 0.85); /* Nền panel tĩnh có alpha */
+  --bg-base: #090A0F;                    /* Nền đen sâu chuẩn Dark Tech */
+  --bg-surface: rgba(18, 19, 26, 0.85);  /* Nền panel tĩnh có alpha */
   --bg-surface-elevated: rgba(28, 29, 38, 0.92); /* Nền panel nổi cao hơn */
   --bg-card: rgba(18, 19, 26, 0.85);     /* Nền card câu hỏi & thẻ học */
-  --bg-card-hover: rgba(28, 29, 40, 0.90); /* Nền card khi rê chuột qua */
+  --bg-card-hover: rgba(28, 29, 40, 0.90); /* Nền card khi hover */
+  --bg-card-active: rgba(34, 32, 48, 0.95); /* Nền card khi nhấn */
+  --bg-overlay: rgba(9, 10, 15, 0.88);   /* Nền backdrop modal */
   
-  --glass-tint: rgba(18, 19, 26, 0.85);    /* Lớp nền thẻ học và panel */
+  --glass-tint: rgba(18, 19, 26, 0.85);  /* Lớp nền thẻ học và panel */
   --glass-border: rgba(167, 139, 250, 0.20); /* Viền sáng kính */
+  --glass-border-subtle: rgba(167, 139, 250, 0.10); /* Viền kính siêu mờ */
   --glass-highlight: rgba(255, 255, 255, 0.10); /* Điểm sáng phản chiếu */
   
   --border-color: rgba(167, 139, 250, 0.15); /* Đường kẻ viền mờ */
-  --border-focus: rgba(167, 139, 250, 0.65); /* Viền sáng khi đang chọn/nhập */
+  --border-focus: rgba(167, 139, 250, 0.65); /* Viền sáng khi active/focus */
 
   /* ==========================================
-     3. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS)
+     4. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS - WCAG AA)
+     Độ tương phản tối thiểu 4.5:1 trên mọi nền tối
      ========================================== */
-  --text-primary: #f8f6fd;          /* Chữ chính: Trắng tím sáng, tương phản cao */
-  --text-secondary: #c4bcdc;        /* Chữ phụ: Tím xám dịu mắt */
-  --text-muted: #887d9f;            /* Chữ mờ: Dành cho ghi chú nhỏ, ngày tháng */
+  --text-primary: #f8f6fd;                /* Chữ chính: Trắng tím sáng (16.5:1) */
+  --text-secondary: #c4bcdc;              /* Chữ phụ: Tím xám dịu mắt (10.1:1) */
+  --text-muted: #9d92b5;                  /* Chữ mờ / caption: Đạt chuẩn 4.6:1 */
+  --text-accent: #c084fc;                 /* Chữ điểm nhấn */
 
   /* ==========================================
-     4. MÀU PHẢN HỒI KẾT QUẢ (FEEDBACK & STATUS)
+     5. MÀU PHẢN HỒI KẾT QUẢ & TRẠNG THÁI (FEEDBACK & STATUS)
      ========================================== */
-  --success: #6fcf97;               /* Xanh ngọc: Trả lời đúng, hoàn thành */
+  --success: #6fcf97;                     /* Xanh ngọc: Đúng, hoàn thành */
   --success-bg: rgba(111, 207, 151, 0.12);
   --success-border: rgba(111, 207, 151, 0.30);
+  --success-glow: rgba(111, 207, 151, 0.25);
   
-  --danger: #e27d8b;                /* Hồng san hô: Trả lời sai, cảnh báo */
+  --danger: #e27d8b;                      /* Hồng san hô: Sai, cảnh báo */
   --danger-bg: rgba(226, 125, 139, 0.12);
   --danger-border: rgba(226, 125, 139, 0.30);
+  --danger-glow: rgba(226, 125, 139, 0.25);
   
-  --warning: #e0b45c;               /* Vàng ấm: Chú ý, câu hỏi chưa thuộc */
+  --warning: #e0b45c;                     /* Vàng ấm: Chú ý, cần ôn tập */
   --warning-bg: rgba(224, 180, 92, 0.12);
+  --warning-border: rgba(224, 180, 92, 0.30);
   
-  --info: #7bb8e0;                  /* Xanh lơ: Thông tin hướng dẫn */
-  --streak-color: #f59e0b;          /* Vàng cam: Biểu tượng ngọn lửa chuỗi học */
+  --info: #7bb8e0;                        /* Xanh lơ: Hướng dẫn, gợi ý */
+  --info-bg: rgba(123, 184, 224, 0.12);
+  --info-border: rgba(123, 184, 224, 0.30);
+  --streak-color: #f59e0b;                /* Vàng cam: Biểu tượng streak */
 
   /* ==========================================
-     5. HIỆU ỨNG ĐỔ BÓNG & GLOW NEON (PERFORMANCE-OPTIMIZED RADII)
-     Bán kính <= 14px để giữ GPU fill-rate siêu tốc và 90-120 FPS
+     6. THANG KHOẢNG CÁCH (SPACING SCALE)
      ========================================== */
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 12px var(--accent-glow);
-  --neon-glow-primary: 0 0 10px rgba(167, 139, 250, 0.30);
-  --neon-glow-hover: 0 4px 14px rgba(167, 139, 250, 0.40);
-  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.30), 0 0 8px rgba(167, 139, 250, 0.15);
-  --border-focus-glow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
 
   /* ==========================================
-     6. BO GÓC & BỐ CỤC (SHAPES & SIZES)
+     7. THANG TYPOGRAPHY (TYPOGRAPHY SCALE VIA CLAMP)
+     Heading: Pixel font. UI / Body: đúng 1 font sans-serif dễ đọc.
      ========================================== */
+  --font-heading: 'Pixelify Sans', 'VT323', monospace;
+  --font-pixel: 'Pixelify Sans', 'VT323', monospace;
+  --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: var(--font-body);
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Cỡ chữ co giãn mượt mà theo viewport (Mobile -> Desktop) */
+  --text-display: clamp(1.85rem, 3.5vw + 1rem, 2.75rem);
+  --text-h1: clamp(1.4rem, 2.2vw + 0.8rem, 2rem);
+  --text-h2: clamp(1.15rem, 1.5vw + 0.7rem, 1.5rem);
+  --text-h3: clamp(1.02rem, 1vw + 0.65rem, 1.25rem);
+  --text-body: clamp(0.92rem, 0.4vw + 0.8rem, 1rem);
+  --text-sm: clamp(0.82rem, 0.25vw + 0.75rem, 0.88rem);
+  --text-xs: clamp(0.72rem, 0.15vw + 0.68rem, 0.78rem);
+
+  /* Chiều cao dòng (Line-heights) */
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  /* Khoảng cách chữ (Letter-spacing / Tracking) */
+  --tracking-tighter: -0.035em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
+  --tracking-pixel: 0.04em;
+
+  /* ==========================================
+     8. BO GÓC (BORDER RADII)
+     ========================================== */
+  --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 20px;
@@ -95,14 +150,46 @@
   --radius-card-sm: 18px;
   --radius-card-lg: 28px;
   --radius-full: 9999px;
-  --sidebar-width: 280px;
 
   /* ==========================================
-     7. TỐC ĐỘ CHUYỂN ĐỘNG (ANIMATION EASING)
+     9. HIỆU ỨNG ĐỔ BÓNG & GLOW NEON
+     Bán kính <= 14px để giữ GPU fill-rate siêu tốc và 90-120 FPS
      ========================================== */
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 12px var(--accent-glow);
+  --neon-glow-primary: 0 0 10px rgba(167, 139, 250, 0.30);
+  --neon-glow-hover: 0 4px 14px rgba(167, 139, 250, 0.40);
+  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.30), 0 0 8px rgba(167, 139, 250, 0.15);
+  --border-focus-glow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+
+  /* ==========================================
+     10. ACCESSIBLE FOCUS RING (TRUY CẬP BÀN PHÍM)
+     ========================================== */
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+  --focus-ring-inset: inset 0 0 0 2px var(--accent);
+
+  /* ==========================================
+     11. TỐC ĐỘ & EASING CHUYỂN ĐỘNG (ANIMATION EASING)
+     Deceleration mượt mà, không overshoot gây giật
+     ========================================== */
+  --dur-instant: 100ms;
   --dur-fast: 200ms;
   --dur-norm: 300ms;
   --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* ==========================================
+     12. KÍCH THƯỚC BỐ CỤC KHUNG CHUẨN (LAYOUT CONSTANTS)
+     ========================================== */
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 64px;
+  --bottom-nav-height: 68px;
+  --content-max-width: 1380px;
 }

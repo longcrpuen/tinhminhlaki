@@ -38,11 +38,11 @@
 /* 2. CÁC BIẾN FONT DÙNG TRONG TOÀN APP */
 :root {
   /* ========================================================================
-     A. FONT TIÊU ĐỀ & ĐIỂM NHẤN CHUẨN TECH (--font-pixel)
-     - Thay thế 100% font pixel cũ bằng Plus Jakarta Sans / Inter hiện đại, sắc nét
-     - Giữ nguyên tên biến --font-pixel để tương thích toàn bộ hệ thống & test suite
+     A. FONT TIÊU ĐỀ & ĐIỂM NHẤN PIXEL (--font-pixel)
+     - Tuân thủ DESIGN-RULES.md: Heading dùng font pixel (Pixelify Sans / VT323)
+     - Mọi thứ còn lại dùng 1 font thường dễ đọc (--font-body)
      ======================================================================== */
-  --font-pixel: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-pixel: 'Pixelify Sans', 'VT323', monospace;
 
   /* ========================================================================
      B. FONT MÔ TẢ & GỢI Ý (--font-script)
