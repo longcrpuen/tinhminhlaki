@@ -1869,10 +1869,20 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <!-- Advanced Actions: Merge & Delete -->
         <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-primary);">Tác vụ nâng cao</h4>
         <div style="background: rgba(139, 92, 246, 0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px;">
-          <label class="form-label" style="font-size: 0.85rem;">Gộp môn này vào môn khác:</label>
-          <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <select id="manage-subject-merge-target" class="form-control" style="flex: 1;"></select>
-            <button class="btn btn-secondary" onclick="App.mergeCurrentSubject()" style="white-space: nowrap;">🔀 Gộp Môn</button>
+          <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px;">Gộp môn này vào môn khác:</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center;">
+            <div class="cyber-dropdown" id="manage-subject-merge-dropdown-wrap" style="flex: 1; min-width: 0;">
+              <button type="button" class="cyber-dropdown-trigger" id="manage-subject-merge-dropdown-trigger" onclick="App.toggleManageSubjectMergeDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-merge-dropdown-menu">
+                <span class="cyber-dropdown-icon" id="manage-subject-merge-dropdown-icon">📚</span>
+                <span class="cyber-dropdown-label" id="manage-subject-merge-dropdown-label">Chọn môn cần gộp vào...</span>
+                <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              <div class="cyber-dropdown-menu" id="manage-subject-merge-dropdown-menu" role="listbox" style="width: 100%; min-width: 100%; box-sizing: border-box;"></div>
+            </div>
+            <select id="manage-subject-merge-target" class="form-control" style="display: none;"></select>
+            <button class="btn btn-secondary" onclick="App.mergeCurrentSubject()" style="white-space: nowrap; height: 42px;">🔀 Gộp Môn</button>
           </div>
           <small style="color: var(--text-secondary); display: block; margin-top: 4px;">Toàn bộ bộ thẻ của môn này sẽ được chuyển sang môn đích, môn hiện tại sẽ được xóa.</small>
         </div>
@@ -1883,8 +1893,18 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             Nếu môn này còn bộ thẻ, hệ thống yêu cầu chọn môn chuyển sang để bảo đảm không mất dữ liệu.
           </p>
           <div id="manage-subject-delete-reassign-wrap" style="display: none; margin-bottom: 8px;">
-            <label class="form-label" style="font-size: 0.8rem;">Chuyển các bộ thẻ sang:</label>
-            <select id="manage-subject-delete-target" class="form-control"></select>
+            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 6px;">Chuyển các bộ thẻ sang:</label>
+            <div class="cyber-dropdown" id="manage-subject-delete-dropdown-wrap" style="width: 100%;">
+              <button type="button" class="cyber-dropdown-trigger" id="manage-subject-delete-dropdown-trigger" onclick="App.toggleManageSubjectDeleteDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-delete-dropdown-menu">
+                <span class="cyber-dropdown-icon" id="manage-subject-delete-dropdown-icon">📚</span>
+                <span class="cyber-dropdown-label" id="manage-subject-delete-dropdown-label">Chọn môn chuyển sang...</span>
+                <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              <div class="cyber-dropdown-menu" id="manage-subject-delete-dropdown-menu" role="listbox" style="width: 100%; min-width: 100%; box-sizing: border-box;"></div>
+            </div>
+            <select id="manage-subject-delete-target" class="form-control" style="display: none;"></select>
           </div>
           <button class="btn btn-danger" style="width: 100%;" onclick="App.confirmDeleteCurrentSubject()">🗑️ Xóa Môn Học Này</button>
         </div>
@@ -1900,24 +1920,39 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
         <h3 class="modal-title">🔀 Gán Lại Môn Học Hàng Loạt</h3>
-        <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
+        <button class="icon-btn modal-close" style="width: 32px; height: 32px;" aria-label="Đóng">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">1. Chọn Môn Học Đích:</label>
-          <select id="bulk-reassign-target-subject" class="form-control"></select>
-        </div>
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label class="form-label" style="margin-bottom: 0;">2. Chọn Các Bộ Thẻ Cần Chuyển:</label>
-            <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" onclick="App.toggleSelectAllBulkDecks()">Chọn tất cả</button>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 8px;">1. Chọn Môn Học Đích:</label>
+          <div class="cyber-dropdown" id="bulk-reassign-subject-dropdown-wrap" style="width: 100%;">
+            <button type="button" class="cyber-dropdown-trigger" id="bulk-reassign-subject-dropdown-trigger" onclick="App.toggleBulkReassignSubjectDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="bulk-reassign-subject-dropdown-menu">
+              <span class="cyber-dropdown-icon" id="bulk-reassign-subject-dropdown-icon">📚</span>
+              <span class="cyber-dropdown-label" id="bulk-reassign-subject-dropdown-label">Chọn môn học đích...</span>
+              <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div class="cyber-dropdown-menu" id="bulk-reassign-subject-dropdown-menu" role="listbox" style="width: 100%; min-width: 100%; box-sizing: border-box;">
+              <!-- Dynamically populated -->
+            </div>
           </div>
-          <div id="bulk-reassign-deck-list" style="max-height: 240px; overflow-y: auto; background: var(--bg-surface); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px; padding: 10px;">
+          <select id="bulk-reassign-target-subject" class="form-control" style="display: none;"></select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <label class="form-label" style="margin-bottom: 0; font-weight: 600;">2. Chọn Các Bộ Thẻ Cần Chuyển:</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span id="bulk-reassign-count" style="font-size: 0.8rem; color: #a78bfa; font-weight: 500;">Đã chọn 0/0 bộ thẻ</span>
+              <button type="button" id="bulk-reassign-select-all-btn" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" onclick="App.toggleSelectAllBulkDecks()">Chọn tất cả</button>
+            </div>
+          </div>
+          <div id="bulk-reassign-deck-list" class="bulk-deck-list" style="max-height: 250px; overflow-y: auto; background: rgba(19, 17, 34, 0.75); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 8px; scrollbar-width: thin;">
             <!-- Checkboxes of decks -->
           </div>
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
         <button class="btn btn-secondary modal-close">Hủy</button>
         <button class="btn btn-primary" onclick="App.applyBulkReassignDecks()">Áp Dụng Chuyển Môn</button>
       </div>

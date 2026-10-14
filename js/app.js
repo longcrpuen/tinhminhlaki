@@ -921,9 +921,55 @@ const App = {
     document.addEventListener('click', (e) => {
       document.querySelectorAll('.cyber-dropdown.open').forEach(wrap => {
         if (!wrap.contains(e.target)) {
-          wrap.classList.remove('open');
+          wrap.classList.remove('open', 'dropup');
+          const trigger = wrap.querySelector('.cyber-dropdown-trigger');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
         }
       });
+    });
+
+    // Universal keyboard navigation for Cyber Violet dropdowns
+    document.addEventListener('keydown', (e) => {
+      const openWrap = document.querySelector('.cyber-dropdown.open');
+      if (!openWrap) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        App.closeAllCyberDropdowns();
+        const trigger = openWrap.querySelector('.cyber-dropdown-trigger');
+        if (trigger) trigger.focus();
+        return;
+      }
+
+      const items = Array.from(openWrap.querySelectorAll('.cyber-dropdown-item:not([disabled])'));
+      if (items.length === 0) return;
+
+      const activeElement = document.activeElement;
+      let currentIndex = items.indexOf(activeElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+        items[nextIndex].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+        items[prevIndex].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        items[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        items[items.length - 1].focus();
+      } else if (e.key === 'Enter') {
+        if (currentIndex >= 0 && items[currentIndex]) {
+          e.preventDefault();
+          items[currentIndex].click();
+          const trigger = openWrap.querySelector('.cyber-dropdown-trigger');
+          if (trigger) trigger.focus();
+        }
+      }
     });
 
     // Card flip click & keyboard spacebar
@@ -5425,7 +5471,27 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   closeAllCyberDropdowns() {
-    document.querySelectorAll('.cyber-dropdown.open').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.cyber-dropdown.open').forEach(el => {
+      el.classList.remove('open', 'dropup');
+      const trigger = el.querySelector('.cyber-dropdown-trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    });
+  },
+
+  _openCyberDropdown(wrap) {
+    if (!wrap) return;
+    this.closeAllCyberDropdowns();
+    const trigger = wrap.querySelector('.cyber-dropdown-trigger');
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+      const rect = trigger.getBoundingClientRect();
+      if (window.innerHeight - rect.bottom < 240 && rect.top > 240) {
+        wrap.classList.add('dropup');
+      } else {
+        wrap.classList.remove('dropup');
+      }
+    }
+    wrap.classList.add('open');
   },
 
   toggleBankSourceDropdown(e) {
@@ -5872,20 +5938,82 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const subjects = await db.getAllSubjects();
     const otherSubjects = subjects.filter(s => s.id !== subject.id);
 
-    // Populate merge target select
+    // Populate merge target select & Cyber Violet dropdown
     const mergeSelect = document.getElementById('manage-subject-merge-target');
-    if (mergeSelect) {
-      mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+    const mergeMenu = document.getElementById('manage-subject-merge-dropdown-menu');
+    const mergeLabel = document.getElementById('manage-subject-merge-dropdown-label');
+    const mergeIcon = document.getElementById('manage-subject-merge-dropdown-icon');
+
+    if (otherSubjects.length > 0) {
+      const firstTarget = otherSubjects[0];
+      if (mergeSelect) {
+        mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+        mergeSelect.value = firstTarget.id;
+      }
+      if (mergeMenu) {
+        mergeMenu.innerHTML = otherSubjects.map(s => {
+          const isActive = s.id === firstTarget.id;
+          return `
+            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectMergeTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+              <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            </button>
+          `;
+        }).join('');
+      }
+      if (mergeLabel) mergeLabel.textContent = firstTarget.name;
+      if (mergeIcon) mergeIcon.textContent = firstTarget.icon || '📚';
+    } else {
+      if (mergeSelect) {
+        mergeSelect.innerHTML = '<option value="">(Không có môn khác để gộp)</option>';
+        mergeSelect.value = '';
+      }
+      if (mergeMenu) {
+        mergeMenu.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Không có môn khác để gộp</div>';
+      }
+      if (mergeLabel) mergeLabel.textContent = 'Không có môn khác để gộp';
+      if (mergeIcon) mergeIcon.textContent = 'ℹ️';
     }
 
     // Check if subject has decks for deletion
     const decks = await db.getDecksBySubject(subject.id);
     const deleteReassignWrap = document.getElementById('manage-subject-delete-reassign-wrap');
     const deleteSelect = document.getElementById('manage-subject-delete-target');
-    if (deleteReassignWrap && deleteSelect) {
+    const deleteMenu = document.getElementById('manage-subject-delete-dropdown-menu');
+    const deleteLabel = document.getElementById('manage-subject-delete-dropdown-label');
+    const deleteIcon = document.getElementById('manage-subject-delete-dropdown-icon');
+
+    if (deleteReassignWrap) {
       if (decks.length > 0) {
         deleteReassignWrap.style.display = 'block';
-        deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+        if (otherSubjects.length > 0) {
+          const firstTarget = otherSubjects[0];
+          if (deleteSelect) {
+            deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+            deleteSelect.value = firstTarget.id;
+          }
+          if (deleteMenu) {
+            deleteMenu.innerHTML = otherSubjects.map(s => {
+              const isActive = s.id === firstTarget.id;
+              return `
+                <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectDeleteTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+                  <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+                </button>
+              `;
+            }).join('');
+          }
+          if (deleteLabel) deleteLabel.textContent = firstTarget.name;
+          if (deleteIcon) deleteIcon.textContent = firstTarget.icon || '📚';
+        } else {
+          if (deleteSelect) {
+            deleteSelect.innerHTML = '<option value="">(Không có môn khác)</option>';
+            deleteSelect.value = '';
+          }
+          if (deleteMenu) {
+            deleteMenu.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Không có môn khác</div>';
+          }
+          if (deleteLabel) deleteLabel.textContent = 'Không có môn khác';
+          if (deleteIcon) deleteIcon.textContent = 'ℹ️';
+        }
       } else {
         deleteReassignWrap.style.display = 'none';
       }
@@ -5893,6 +6021,60 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const modal = document.getElementById('modal-manage-subject');
     if (modal) modal.classList.add('show');
+  },
+
+  toggleManageSubjectMergeDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('manage-subject-merge-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+  },
+
+  selectManageSubjectMergeTarget(subjectId, labelText, iconText) {
+    const select = document.getElementById('manage-subject-merge-target');
+    if (select) select.value = subjectId;
+    const label = document.getElementById('manage-subject-merge-dropdown-label');
+    if (label) label.textContent = labelText;
+    const icon = document.getElementById('manage-subject-merge-dropdown-icon');
+    if (icon) icon.textContent = iconText || '📚';
+    const menu = document.getElementById('manage-subject-merge-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        const isActive = onclickAttr.includes(`'${subjectId}'`);
+        item.classList.toggle('active', isActive);
+        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+    this.closeAllCyberDropdowns();
+  },
+
+  toggleManageSubjectDeleteDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('manage-subject-delete-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+  },
+
+  selectManageSubjectDeleteTarget(subjectId, labelText, iconText) {
+    const select = document.getElementById('manage-subject-delete-target');
+    if (select) select.value = subjectId;
+    const label = document.getElementById('manage-subject-delete-dropdown-label');
+    if (label) label.textContent = labelText;
+    const icon = document.getElementById('manage-subject-delete-dropdown-icon');
+    if (icon) icon.textContent = iconText || '📚';
+    const menu = document.getElementById('manage-subject-delete-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        const isActive = onclickAttr.includes(`'${subjectId}'`);
+        item.classList.toggle('active', isActive);
+        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+    this.closeAllCyberDropdowns();
   },
 
   async saveManageSubject() {
@@ -6001,9 +6183,31 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.closeAllCyberDropdowns();
     const subjects = await db.getAllSubjects();
     const targetSelect = document.getElementById('bulk-reassign-target-subject');
+    const menu = document.getElementById('bulk-reassign-subject-dropdown-menu');
+    const label = document.getElementById('bulk-reassign-subject-dropdown-label');
+    const icon = document.getElementById('bulk-reassign-subject-dropdown-icon');
+
+    const lastUsedSubjectId = this.getLastUsedSubjectId();
+    const defaultSubject = subjects.find(s => s.id === lastUsedSubjectId) || subjects[0] || { id: 'subj_unassigned', name: 'Chưa phân loại', icon: '📁' };
+
     if (targetSelect) {
       targetSelect.innerHTML = subjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      targetSelect.value = defaultSubject.id;
     }
+
+    if (menu) {
+      menu.innerHTML = subjects.map(s => {
+        const isActive = s.id === defaultSubject.id;
+        return `
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectBulkReassignSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    if (label) label.textContent = defaultSubject.name;
+    if (icon) icon.textContent = defaultSubject.icon || '📚';
 
     const decks = await db.getAllDecks();
     const subjectsMap = {};
@@ -6012,16 +6216,16 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const listEl = document.getElementById('bulk-reassign-deck-list');
     if (listEl) {
       if (decks.length === 0) {
-        listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Chưa có bộ thẻ nào.</p>';
+        listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 16px 0;">Chưa có bộ thẻ nào.</p>';
       } else {
         let html = '';
         decks.forEach(d => {
-          const s = subjectsMap[d.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📁' };
+          const s = subjectsMap[d.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📁', color: '#8b5cf6' };
           html += `
-            <label style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;">
-              <input type="checkbox" class="bulk-deck-checkbox" value="${d.id}" style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
-              <span style="font-weight: 500;">${this._escapeHtml(d.name)}</span>
-              <span style="font-size: 0.78rem; color: var(--text-secondary); margin-left: auto;">${s.icon || '📁'} ${this._escapeHtml(s.name)}</span>
+            <label class="bulk-deck-row" data-deck-id="${d.id}">
+              <input type="checkbox" class="bulk-deck-checkbox cyber-checkbox" value="${d.id}" onchange="App.onBulkDeckCheckboxChange(this)" aria-label="${this._escapeHtml(d.name)}">
+              <span class="bulk-deck-title">${this._escapeHtml(d.name)}</span>
+              <span class="subject-badge" style="background: ${s.color || '#8b5cf6'}22; color: ${s.color || '#a78bfa'}; border: 1px solid ${s.color || '#8b5cf6'}44; margin-left: auto; flex-shrink: 0;">${s.icon || '📁'} ${this._escapeHtml(s.name)}</span>
             </label>
           `;
         });
@@ -6029,15 +6233,72 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       }
     }
 
+    this.updateBulkReassignCount();
+
     const modal = document.getElementById('modal-bulk-reassign-decks');
     if (modal) modal.classList.add('show');
+  },
+
+  toggleBulkReassignSubjectDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('bulk-reassign-subject-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+  },
+
+  selectBulkReassignSubject(subjectId, labelText, iconText) {
+    const select = document.getElementById('bulk-reassign-target-subject');
+    if (select) select.value = subjectId;
+    const label = document.getElementById('bulk-reassign-subject-dropdown-label');
+    if (label) label.textContent = labelText;
+    const icon = document.getElementById('bulk-reassign-subject-dropdown-icon');
+    if (icon) icon.textContent = iconText || '📚';
+    const menu = document.getElementById('bulk-reassign-subject-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        const isActive = onclickAttr.includes(`'${subjectId}'`);
+        item.classList.toggle('active', isActive);
+        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+    this.closeAllCyberDropdowns();
+  },
+
+  onBulkDeckCheckboxChange(inputEl) {
+    if (!inputEl) return;
+    const row = inputEl.closest('.bulk-deck-row');
+    if (row) {
+      row.classList.toggle('selected', !!inputEl.checked);
+    }
+    this.updateBulkReassignCount();
+  },
+
+  updateBulkReassignCount() {
+    const checkboxes = document.querySelectorAll('.bulk-deck-checkbox');
+    const checked = document.querySelectorAll('.bulk-deck-checkbox:checked');
+    const countEl = document.getElementById('bulk-reassign-count');
+    if (countEl) {
+      countEl.textContent = `Đã chọn ${checked.length}/${checkboxes.length} bộ thẻ`;
+    }
+    const btn = document.getElementById('bulk-reassign-select-all-btn');
+    if (btn) {
+      btn.textContent = (checkboxes.length > 0 && checked.length === checkboxes.length) ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
+    }
   },
 
   toggleSelectAllBulkDecks() {
     const checkboxes = document.querySelectorAll('.bulk-deck-checkbox');
     if (checkboxes.length === 0) return;
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => { cb.checked = !allChecked; });
+    const newStatus = !allChecked;
+    checkboxes.forEach(cb => {
+      cb.checked = newStatus;
+      const row = cb.closest('.bulk-deck-row');
+      if (row) row.classList.toggle('selected', newStatus);
+    });
+    this.updateBulkReassignCount();
   },
 
   async applyBulkReassignDecks() {
