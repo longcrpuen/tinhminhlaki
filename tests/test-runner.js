@@ -1052,6 +1052,85 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   assert(cardsMulti.length === 1 && cardsMulti[0].needs_review === true, 'Select one or more triggers needs_review: true');
 }
 
+console.log('\n=== TEST SUITE 15: Subject Classification & Migration v2 (Section A) ===');
+{
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // 1. AIParser subject support
+  const jsonWithSubject = JSON.stringify({
+    subject: "Giải Tích 1",
+    quiz_title: "Tích phân Riemann",
+    questions: [
+      {
+        id: "q1",
+        question: "Tích phân cơ bản",
+        options: [{ id: "a", text: "A" }, { id: "b", text: "B" }],
+        correct_option_id: "a"
+      }
+    ]
+  });
+  const parsedSubj = AIParser.parse(jsonWithSubject);
+  assert(parsedSubj.subject === "Giải Tích 1", 'AIParser extracts top-level subject field');
+
+  const jsonWithoutSubject = JSON.stringify({
+    quiz_title: "Chủ đề tự do",
+    questions: [
+      {
+        id: "q1",
+        question: "Câu 1",
+        options: [{ id: "a", text: "A" }, { id: "b", text: "B" }],
+        correct_option_id: "a"
+      }
+    ]
+  });
+  const parsedNoSubj = AIParser.parse(jsonWithoutSubject);
+  assert(!parsedNoSubj.subject, 'AIParser returns falsy subject when not present');
+
+  // 2. DB Schema v2 & Methods
+  assert(dbJs.includes('const DB_VERSION = 2;'), 'DB_VERSION upgraded to 2 in db.js');
+  assert(dbJs.includes("db.createObjectStore('subjects'"), 'db.js defines subjects object store');
+  assert(dbJs.includes("cardStore.createIndex('subjectId'"), 'db.js defines subjectId index on cards store');
+  assert(dbJs.includes("deckStore.createIndex('subjectId'"), 'db.js defines subjectId index on decks store');
+  assert(dbJs.includes('createPreMigrationBackup()'), 'db.js implements createPreMigrationBackup()');
+  assert(dbJs.includes('ensureDefaultSubject()'), 'db.js implements ensureDefaultSubject()');
+  assert(dbJs.includes('getSubjectSummaries()'), 'db.js implements getSubjectSummaries() with precomputed caching');
+  assert(dbJs.includes('getCardsBySubject('), 'db.js implements indexed getCardsBySubject()');
+  assert(dbJs.includes('reassignDecksSubject('), 'db.js implements bulk deck reassignment');
+  assert(dbJs.includes('mergeSubjects('), 'db.js implements mergeSubjects()');
+
+  // 3. UI Dropdowns across all 4 entry points
+  assert(indexHtml.includes('id="bank-subject-dropdown-wrap"'), 'Question Bank includes Cyber Violet Subject dropdown');
+  assert(indexHtml.includes('id="import-subject-dropdown-wrap"'), 'AI Import includes Cyber Violet Subject dropdown');
+  assert(indexHtml.includes('id="lms-subject-dropdown-wrap"'), 'LMS Import includes Cyber Violet Subject dropdown');
+  assert(indexHtml.includes('id="edit-card-subject-dropdown-wrap"'), 'Edit Card Modal includes Cyber Violet Subject dropdown');
+
+  // 4. Subject Management Modals
+  assert(indexHtml.includes('id="modal-create-subject"'), 'index.html contains modal-create-subject');
+  assert(indexHtml.includes('id="modal-manage-subject"'), 'index.html contains modal-manage-subject');
+  assert(indexHtml.includes('id="modal-bulk-reassign-decks"'), 'index.html contains modal-bulk-reassign-decks');
+  assert(indexHtml.includes('id="stats-subject-tbody"'), 'Stats view contains stats-subject-tbody');
+
+  // 5. App Methods
+  assert(appJs.includes('startSubjectSession('), 'app.js defines startSubjectSession()');
+  assert(appJs.includes('selectBankSubject('), 'app.js defines selectBankSubject()');
+  assert(appJs.includes('selectImportSubject('), 'app.js defines selectImportSubject()');
+  assert(appJs.includes('selectLmsSubject('), 'app.js defines selectLmsSubject()');
+  assert(appJs.includes('selectEditCardSubject('), 'app.js defines selectEditCardSubject()');
+  assert(appJs.includes('saveCreateSubject()'), 'app.js defines saveCreateSubject()');
+  assert(appJs.includes('saveManageSubject()'), 'app.js defines saveManageSubject()');
+  assert(appJs.includes('mergeCurrentSubject()'), 'app.js defines mergeCurrentSubject()');
+  assert(appJs.includes('confirmDeleteCurrentSubject()'), 'app.js defines confirmDeleteCurrentSubject()');
+  assert(appJs.includes('applyBulkReassignDecks()'), 'app.js defines applyBulkReassignDecks()');
+
+  // 6. CSS Styling
+  assert(styleCss.includes('.subject-group'), 'style.css defines .subject-group');
+  assert(styleCss.includes('.subject-group-header'), 'style.css defines .subject-group-header');
+  assert(styleCss.includes('.subject-badge'), 'style.css defines .subject-badge');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

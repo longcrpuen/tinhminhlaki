@@ -3,12 +3,13 @@
  * Uses IndexedDB for offline-first, virtually unlimited storage.
  */
 const DB_NAME = 'MindSparksQuizDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 class QuizDatabase {
   constructor() {
     this.db = null;
     this.initPromise = null;
+    this._subjectCache = null;
   }
 
   async init() {
@@ -20,20 +21,42 @@ class QuizDatabase {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
+        const txn = event.target.transaction;
+
+        // Subjects store (v2)
+        if (!db.objectStoreNames.contains('subjects')) {
+          const subjectStore = db.createObjectStore('subjects', { keyPath: 'id' });
+          subjectStore.createIndex('name', 'name', { unique: false });
+          subjectStore.createIndex('order', 'order', { unique: false });
+        }
 
         // Decks store
+        let deckStore;
         if (!db.objectStoreNames.contains('decks')) {
-          const deckStore = db.createObjectStore('decks', { keyPath: 'id' });
+          deckStore = db.createObjectStore('decks', { keyPath: 'id' });
           deckStore.createIndex('name', 'name', { unique: false });
           deckStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+          deckStore.createIndex('subjectId', 'subjectId', { unique: false });
+        } else if (txn) {
+          deckStore = txn.objectStore('decks');
+          if (!deckStore.indexNames.contains('subjectId')) {
+            deckStore.createIndex('subjectId', 'subjectId', { unique: false });
+          }
         }
 
         // Cards store
+        let cardStore;
         if (!db.objectStoreNames.contains('cards')) {
-          const cardStore = db.createObjectStore('cards', { keyPath: 'id' });
+          cardStore = db.createObjectStore('cards', { keyPath: 'id' });
           cardStore.createIndex('deckId', 'deckId', { unique: false });
+          cardStore.createIndex('subjectId', 'subjectId', { unique: false });
           cardStore.createIndex('dueDate', 'srs.dueDate', { unique: false });
           cardStore.createIndex('state', 'srs.state', { unique: false });
+        } else if (txn) {
+          cardStore = txn.objectStore('cards');
+          if (!cardStore.indexNames.contains('subjectId')) {
+            cardStore.createIndex('subjectId', 'subjectId', { unique: false });
+          }
         }
 
         // Study Logs store
@@ -51,6 +74,7 @@ class QuizDatabase {
 
       request.onsuccess = async (event) => {
         this.db = event.target.result;
+        await this._migrateIfNeeded();
         await this._checkAndSeedDefaultData();
         resolve(this.db);
       };
@@ -147,6 +171,298 @@ class QuizDatabase {
     });
   }
 
+  // --- MIGRATION & BACKUP (SECTION A) ---
+  async createPreMigrationBackup() {
+    try {
+      const decks = await this.getAllDecks();
+      const cards = await this.getAllCards();
+      const streak = await this.getMeta('streak', null);
+      const settings = {
+        theme: await this.getMeta('theme', 'dark'),
+        soundEnabled: await this.getMeta('soundEnabled', true),
+        dailyGoal: await this.getMeta('dailyGoal', 20)
+      };
+
+      const backupData = {
+        version: '1.0',
+        schemaVersion: 1,
+        exportedAt: new Date().toISOString(),
+        backupType: 'pre_migration_v2',
+        decksCount: decks.length,
+        cardsCount: cards.length,
+        decks,
+        cards,
+        streak,
+        settings
+      };
+
+      await this.setMeta('pre_migration_backup_v2', backupData);
+      await this.createSnapshot('Tự động sao lưu trước khi nâng cấp cấu trúc môn học (v2)');
+
+      await this.setMeta('migration_notice', {
+        shown: false,
+        message: `Đã tự động sao lưu dữ liệu an toàn (${cards.length} câu, ${decks.length} bộ thẻ) và nâng cấp cấu trúc Môn học.`,
+        timestamp: Date.now()
+      });
+
+      return backupData;
+    } catch (e) {
+      console.error('[DB] Không thể tạo bản sao lưu trước migration:', e);
+      return null;
+    }
+  }
+
+  async _migrateIfNeeded() {
+    try {
+      const schemaVer = await this.getMeta('schemaVersion', 1);
+      if (schemaVer < 2) {
+        console.log('[MIGRATION] Bắt đầu migration schema lên v2 (Môn học)...');
+        await this.createPreMigrationBackup();
+
+        const defaultSubject = await this.ensureDefaultSubject();
+        const decks = await this.getAllDecks();
+        const deckSubjectMap = new Map();
+        let decksUpdated = 0;
+
+        for (const deck of decks) {
+          if (!deck.subjectId) {
+            deck.subjectId = defaultSubject.id;
+            await this.saveDeck(deck, { skipCardSync: true });
+            decksUpdated++;
+          }
+          deckSubjectMap.set(deck.id, deck.subjectId);
+        }
+
+        const allCards = await this.getAllCards();
+        let cardsUpdated = 0;
+        const cardsToUpdate = [];
+        for (const card of allCards) {
+          const targetSubj = deckSubjectMap.get(card.deckId) || defaultSubject.id;
+          if (card.subjectId !== targetSubj) {
+            card.subjectId = targetSubj;
+            cardsToUpdate.push(card);
+            cardsUpdated++;
+          }
+        }
+        if (cardsToUpdate.length > 0) {
+          await this.saveCardsBatch(cardsToUpdate, { forceNew: false });
+        }
+
+        await this.setMeta('schemaVersion', 2);
+        await this.setMeta('last_migration', {
+          fromVersion: schemaVer,
+          toVersion: 2,
+          timestamp: Date.now(),
+          decksUpdated,
+          cardsUpdated
+        });
+        console.log(`[MIGRATION] Hoàn thành migration v2: ${decksUpdated} bộ thẻ, ${cardsUpdated} thẻ.`);
+      }
+    } catch (err) {
+      console.error('[MIGRATION] Lỗi khi thực hiện migration v2:', err);
+    }
+  }
+
+  // --- SUBJECTS (V2) ---
+  async ensureDefaultSubject() {
+    const defaultId = 'subj_unassigned';
+    let subject = await this.getSubject(defaultId);
+    if (!subject) {
+      subject = {
+        id: defaultId,
+        name: 'Chưa phân loại',
+        color: '#8b5cf6',
+        icon: '📁',
+        order: 9999,
+        createdAt: Date.now()
+      };
+      const tx = this._tx('subjects', 'readwrite');
+      const store = tx.objectStore('subjects');
+      await this._promisify(store.put(subject));
+    }
+    return subject;
+  }
+
+  async getAllSubjects() {
+    await this.init();
+    const tx = this._tx('subjects', 'readonly');
+    const store = tx.objectStore('subjects');
+    let subjects = await this._promisify(store.getAll());
+    if (!Array.isArray(subjects) || subjects.length === 0) {
+      const def = await this.ensureDefaultSubject();
+      subjects = [def];
+    }
+    subjects.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || (a.createdAt || 0) - (b.createdAt || 0));
+    return subjects;
+  }
+
+  async getSubject(id) {
+    if (!id) return null;
+    await this.init();
+    const tx = this._tx('subjects', 'readonly');
+    const store = tx.objectStore('subjects');
+    return this._promisify(store.get(id));
+  }
+
+  async findSubjectByName(name) {
+    if (!name || typeof name !== 'string') return null;
+    const clean = name.trim().toLowerCase();
+    const subjects = await this.getAllSubjects();
+    return subjects.find(s => s.name && s.name.trim().toLowerCase() === clean) || null;
+  }
+
+  async saveSubject(subject) {
+    await this.init();
+    if (!subject.id) {
+      subject.id = 'subj_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
+    if (!subject.createdAt) subject.createdAt = Date.now();
+    if (subject.order === undefined) subject.order = 100;
+    if (!subject.color) subject.color = '#8b5cf6';
+    if (!subject.icon) subject.icon = '📚';
+    subject.updatedAt = Date.now();
+
+    const tx = this._tx('subjects', 'readwrite');
+    const store = tx.objectStore('subjects');
+    await this._promisify(store.put(subject));
+    this.invalidateSubjectCache();
+    return subject;
+  }
+
+  async deleteSubject(id, targetSubjectId = null) {
+    await this.init();
+    if (id === 'subj_unassigned' && !targetSubjectId) {
+      throw new Error('Không thể xóa môn mặc định "Chưa phân loại".');
+    }
+
+    const decks = await this.getDecksBySubject(id);
+    if (decks.length > 0) {
+      if (!targetSubjectId || targetSubjectId === id) {
+        throw new Error('Môn học này vẫn còn bộ thẻ. Vui lòng chọn một môn học khác để chuyển bộ thẻ sang trước khi xóa.');
+      }
+      await this.reassignDecksSubject(decks.map(d => d.id), targetSubjectId);
+    }
+
+    const tx = this._tx('subjects', 'readwrite');
+    const store = tx.objectStore('subjects');
+    await this._promisify(store.delete(id));
+    this.invalidateSubjectCache();
+    return true;
+  }
+
+  async mergeSubjects(sourceSubjectId, targetSubjectId) {
+    await this.init();
+    if (!sourceSubjectId || !targetSubjectId || sourceSubjectId === targetSubjectId) {
+      throw new Error('Môn nguồn và môn đích phải khác nhau.');
+    }
+    const sourceDecks = await this.getDecksBySubject(sourceSubjectId);
+    if (sourceDecks.length > 0) {
+      await this.reassignDecksSubject(sourceDecks.map(d => d.id), targetSubjectId);
+    }
+    const tx = this._tx('subjects', 'readwrite');
+    const store = tx.objectStore('subjects');
+    await this._promisify(store.delete(sourceSubjectId));
+    this.invalidateSubjectCache();
+    return true;
+  }
+
+  async reassignDecksSubject(deckIds, targetSubjectId) {
+    await this.init();
+    if (!Array.isArray(deckIds) || deckIds.length === 0 || !targetSubjectId) return 0;
+    const targetSubject = await this.getSubject(targetSubjectId);
+    if (!targetSubject) throw new Error('Không tìm thấy môn học đích.');
+
+    for (const deckId of deckIds) {
+      const deck = await this.getDeck(deckId);
+      if (deck) {
+        deck.subjectId = targetSubjectId;
+        await this.saveDeck(deck, { skipCardSync: true });
+      }
+      const cards = await this.getCardsByDeck(deckId);
+      for (const card of cards) {
+        card.subjectId = targetSubjectId;
+      }
+      if (cards.length > 0) {
+        await this.saveCardsBatch(cards, { forceNew: false });
+      }
+    }
+    this.invalidateSubjectCache();
+    return deckIds.length;
+  }
+
+  async getDecksBySubject(subjectId) {
+    await this.init();
+    const tx = this._tx('decks', 'readonly');
+    const store = tx.objectStore('decks');
+    if (store.indexNames.contains('subjectId')) {
+      const index = store.index('subjectId');
+      return this._promisify(index.getAll(subjectId));
+    }
+    const all = await this.getAllDecks();
+    return all.filter(d => (d.subjectId || 'subj_unassigned') === subjectId);
+  }
+
+  async getCardsBySubject(subjectId) {
+    await this.init();
+    const tx = this._tx('cards', 'readonly');
+    const store = tx.objectStore('cards');
+    if (store.indexNames.contains('subjectId')) {
+      const index = store.index('subjectId');
+      return this._promisify(index.getAll(subjectId));
+    }
+    const all = await this.getAllCards();
+    return all.filter(c => (c.subjectId || 'subj_unassigned') === subjectId);
+  }
+
+  invalidateSubjectCache() {
+    this._subjectCache = null;
+  }
+
+  async getSubjectSummaries() {
+    await this.init();
+    if (this._subjectCache && (Date.now() - this._subjectCache.timestamp < 10000)) {
+      return this._subjectCache.data;
+    }
+
+    const subjects = await this.getAllSubjects();
+    const now = Date.now();
+    const summaries = [];
+
+    for (const s of subjects) {
+      const decks = await this.getDecksBySubject(s.id);
+      const cards = await this.getCardsBySubject(s.id);
+      let dueCards = 0;
+      const deckMap = new Map();
+      decks.forEach(d => deckMap.set(d.id, { deck: d, count: 0, due: 0 }));
+      for (const c of cards) {
+        const isDue = !c.srs?.dueDate || c.srs.dueDate <= now;
+        if (isDue) dueCards++;
+        const dStat = deckMap.get(c.deckId);
+        if (dStat) {
+          dStat.count++;
+          if (isDue) dStat.due++;
+        }
+      }
+      summaries.push({
+        id: s.id,
+        name: s.name,
+        icon: s.icon || '📚',
+        color: s.color || '#8b5cf6',
+        order: s.order ?? 9999,
+        decksCount: decks.length,
+        totalCards: cards.length,
+        dueCards: dueCards,
+        decks: Array.from(deckMap.values())
+      });
+    }
+
+    this._subjectCache = {
+      timestamp: Date.now(),
+      data: summaries
+    };
+    return summaries;
+  }
+
   // --- DECKS ---
   async getAllDecks() {
     await this.init();
@@ -162,10 +478,13 @@ class QuizDatabase {
     return this._promisify(store.get(id));
   }
 
-  async saveDeck(deck) {
+  async saveDeck(deck, options = {}) {
     await this.init();
     if (!deck.id) {
       deck.id = 'deck_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
+    if (!deck.subjectId) {
+      deck.subjectId = 'subj_unassigned';
     }
     deck.updatedAt = Date.now();
     if (!deck.createdAt) deck.createdAt = Date.now();
@@ -173,6 +492,23 @@ class QuizDatabase {
     const tx = this._tx('decks', 'readwrite');
     const store = tx.objectStore('decks');
     await this._promisify(store.put(deck));
+
+    // Keep cards in sync unless told to skip
+    if (!options.skipCardSync) {
+      const cards = await this.getCardsByDeck(deck.id);
+      let changed = false;
+      for (const c of cards) {
+        if (c.subjectId !== deck.subjectId) {
+          c.subjectId = deck.subjectId;
+          changed = true;
+        }
+      }
+      if (changed) {
+        await this.saveCardsBatch(cards, { forceNew: false });
+      }
+    }
+
+    this.invalidateSubjectCache();
     return deck;
   }
 
@@ -192,6 +528,7 @@ class QuizDatabase {
       cardStore.delete(card.id);
     }
 
+    this.invalidateSubjectCache();
     return new Promise((resolve) => {
       tx.oncomplete = () => resolve(true);
     });
@@ -255,6 +592,12 @@ class QuizDatabase {
       }
     }
 
+    // Ensure subjectId is attached for fast index query
+    if (!card.subjectId && card.deckId) {
+      const d = await this.getDeck(card.deckId);
+      card.subjectId = d?.subjectId || 'subj_unassigned';
+    }
+
     if (!card.createdAt) card.createdAt = Date.now();
     card.updatedAt = Date.now();
 
@@ -282,6 +625,7 @@ class QuizDatabase {
     const tx = this._tx('cards', 'readwrite');
     const store = tx.objectStore('cards');
     await this._promisify(store.put(card));
+    this.invalidateSubjectCache();
     return card;
   }
 
@@ -294,6 +638,11 @@ class QuizDatabase {
     const existingMap = new Map();
     existingCards.forEach(c => existingMap.set(c.id, c.deckId));
 
+    // Pre-fetch decks for fast subjectId lookup
+    const allDecks = await this.getAllDecks();
+    const deckSubjMap = new Map();
+    allDecks.forEach(d => deckSubjMap.set(d.id, d.subjectId || 'subj_unassigned'));
+
     const usedBatchIds = new Set();
 
     for (const card of cards) {
@@ -305,6 +654,11 @@ class QuizDatabase {
         card.id = this.generateUniqueCardId();
       }
       usedBatchIds.add(card.id);
+
+      // Attach subjectId if missing
+      if (!card.subjectId && card.deckId) {
+        card.subjectId = deckSubjMap.get(card.deckId) || 'subj_unassigned';
+      }
 
       if (!card.createdAt) card.createdAt = Date.now();
       card.updatedAt = Date.now();
@@ -333,6 +687,7 @@ class QuizDatabase {
     for (const card of cards) {
       store.put(card);
     }
+    this.invalidateSubjectCache();
     return new Promise((resolve, reject) => {
       tx.oncomplete = () => resolve(cards);
       tx.onerror = () => reject(tx.error);
@@ -343,12 +698,21 @@ class QuizDatabase {
     await this.init();
     const tx = this._tx('cards', 'readwrite');
     const store = tx.objectStore('cards');
-    return this._promisify(store.delete(id));
+    const res = await this._promisify(store.delete(id));
+    this.invalidateSubjectCache();
+    return res;
   }
 
   // --- DUE & WEAK QUERIES (7 STUDY MODES) ---
-  async getDueCards(deckId = null) {
-    const all = deckId ? await this.getCardsByDeck(deckId) : await this.getAllCards();
+  async getDueCards(deckId = null, subjectId = null) {
+    let all;
+    if (deckId) {
+      all = await this.getCardsByDeck(deckId);
+    } else if (subjectId) {
+      all = await this.getCardsBySubject(subjectId);
+    } else {
+      all = await this.getAllCards();
+    }
     const now = Date.now();
     return all.filter(c => !c.srs?.dueDate || c.srs.dueDate <= now);
   }
@@ -356,8 +720,15 @@ class QuizDatabase {
   /**
    * Mode 2: Lấy các câu hay sai, ưu tiên sai gần nhất hoặc sai nhiều lần nhất
    */
-  async getMistakeCards(deckId = null, limit = 50) {
-    const all = deckId ? await this.getCardsByDeck(deckId) : await this.getAllCards();
+  async getMistakeCards(deckId = null, limit = 50, subjectId = null) {
+    let all;
+    if (deckId) {
+      all = await this.getCardsByDeck(deckId);
+    } else if (subjectId) {
+      all = await this.getCardsBySubject(subjectId);
+    } else {
+      all = await this.getAllCards();
+    }
     
     // Filter cards that have been answered incorrectly at least once
     const mistakes = all.filter(c => c.stats && c.stats.incorrectCount > 0);
@@ -376,8 +747,15 @@ class QuizDatabase {
   /**
    * Mode 5: Lấy danh sách tất cả các topics/tags kèm số lượng câu & tỉ lệ đúng
    */
-  async getAllTopics(deckId = null) {
-    const all = deckId ? await this.getCardsByDeck(deckId) : await this.getAllCards();
+  async getAllTopics(deckId = null, subjectId = null) {
+    let all;
+    if (deckId) {
+      all = await this.getCardsByDeck(deckId);
+    } else if (subjectId) {
+      all = await this.getCardsBySubject(subjectId);
+    } else {
+      all = await this.getAllCards();
+    }
     const topicMap = {};
 
     all.forEach(c => {
@@ -423,11 +801,18 @@ class QuizDatabase {
   /**
    * Mode 7: Ôn nước rút - Tự động gom N câu từ các chủ đề yếu nhất
    */
-  async getSprintCards(count = 15, deckId = null) {
-    const all = deckId ? await this.getCardsByDeck(deckId) : await this.getAllCards();
+  async getSprintCards(count = 15, deckId = null, subjectId = null) {
+    let all;
+    if (deckId) {
+      all = await this.getCardsByDeck(deckId);
+    } else if (subjectId) {
+      all = await this.getCardsBySubject(subjectId);
+    } else {
+      all = await this.getAllCards();
+    }
     if (all.length <= count) return all;
 
-    const topics = await this.getAllTopics(deckId);
+    const topics = await this.getAllTopics(deckId, subjectId);
 
     // Sort topics by weakness:
     // 1. Topics with lowest accuracy (e.g. 20% < 50%)
@@ -719,15 +1104,37 @@ class QuizDatabase {
       parsed = AIParser._normalizeJsonData(data);
     }
 
+    // Determine subject
+    let subjectId = data.subjectId || null;
+    if (!subjectId && parsed.subject) {
+      const existing = await this.findSubjectByName(parsed.subject);
+      if (existing) {
+        subjectId = existing.id;
+      } else {
+        const newSubj = await this.saveSubject({
+          name: parsed.subject.trim(),
+          icon: '📚',
+          color: '#8b5cf6'
+        });
+        subjectId = newSubj.id;
+      }
+    }
+    if (!subjectId) {
+      const def = await this.ensureDefaultSubject();
+      subjectId = def.id;
+    }
+
     const deck = await this.saveDeck({
       name: parsed.deckName,
-      description: parsed.description
+      description: parsed.description,
+      subjectId: subjectId
     });
 
     const cards = parsed.cards.map(c => ({
       ...c,
       id: this.generateUniqueCardId(),
       deckId: deck.id,
+      subjectId: subjectId,
       srs: {
         repetition: 0,
         interval: 0,
@@ -744,7 +1151,8 @@ class QuizDatabase {
     }));
 
     await this.saveCardsBatch(cards, { forceNew: true });
-    return { deck, cardsCount: cards.length, errors: parsed.errors };
+    this.invalidateSubjectCache();
+    return { deck, subjectId, cardsCount: cards.length, errors: parsed.errors };
   }
 
   // --- SNAPSHOTS & SELF-HEALING FALLBACK ---
@@ -809,11 +1217,33 @@ class QuizDatabase {
 
   async ensureDataIntegrity() {
     await this.init();
+    const defaultSubject = await this.ensureDefaultSubject();
     const decks = await this.getAllDecks();
-    const allCards = await this.getAllCards();
+    const deckSubjMap = new Map();
+
+    for (const d of decks) {
+      if (!d.subjectId) {
+        d.subjectId = defaultSubject.id;
+        await this.saveDeck(d, { skipCardSync: true });
+      }
+      deckSubjMap.set(d.id, d.subjectId);
+    }
 
     // 1. Recover orphaned cards if any
     await this.recoverOrphanedCards();
+
+    const allCards = await this.getAllCards();
+    const cardsToFix = [];
+    for (const c of allCards) {
+      const expectedSubj = deckSubjMap.get(c.deckId) || defaultSubject.id;
+      if (c.subjectId !== expectedSubj) {
+        c.subjectId = expectedSubj;
+        cardsToFix.push(c);
+      }
+    }
+    if (cardsToFix.length > 0) {
+      await this.saveCardsBatch(cardsToFix, { forceNew: false });
+    }
 
     // 2. If decks exist but total cards is 0 (or default deck is empty), auto heal
     if (decks.length > 0 && allCards.length === 0) {
@@ -827,6 +1257,7 @@ class QuizDatabase {
             ...c,
             id: this.generateUniqueCardId(),
             deckId: defaultDeck.id,
+            subjectId: defaultDeck.subjectId || defaultSubject.id,
             srs: { repetition: 0, interval: 0, easeFactor: 2.5, dueDate: Date.now(), state: 'new' },
             stats: { reviewsCount: 0, correctCount: 0, incorrectCount: 0, lastReviewed: null }
           }));
@@ -847,6 +1278,7 @@ class QuizDatabase {
       const newCard = {
         id: 'card_active_constraint_' + Date.now(),
         deckId: targetDeck.id,
+        subjectId: targetDeck.subjectId || defaultSubject.id,
         topic: 'Khái niệm ràng buộc tích cực',
         difficulty: 'medium',
         question: 'Trong bài toán tối ưu hóa có điều kiện $\\min f(x)$ với các ràng buộc bất đẳng thức $g_i(x) \\le 0$ ($i = 1, \\dots, m$), một ràng buộc $g_i(x) \\le 0$ được gọi là **ràng buộc tích cực (active constraint)** tại điểm khả thi $x^*$ khi nào?',
@@ -879,6 +1311,7 @@ class QuizDatabase {
       const ridgeCard = {
         id: 'card_ridge_regression_' + Date.now(),
         deckId: targetDeck.id,
+        subjectId: targetDeck.subjectId || defaultSubject.id,
         topic: 'Hồi quy Ridge',
         difficulty: 'hard',
         question: 'Trong bài toán hồi quy Ridge (L2 regularization) với ma trận đặc trưng $X \\in \\mathbb{R}^{n \\times d}$ và vector nhãn $y$, nghiệm giải tích (closed-form solution) $w^*$ tìm được bằng cách giải phương trình đạo hàm bằng 0 có dạng nào sau đây?',
@@ -903,6 +1336,7 @@ class QuizDatabase {
   }
 
   async exportAll() {
+    const subjects = await this.getAllSubjects();
     const decks = await this.getAllDecks();
     const cards = await this.getAllCards();
     const streak = await this.getMeta('streak', { count: 0, lastDate: null, history: [] });
@@ -913,9 +1347,11 @@ class QuizDatabase {
     };
 
     return {
-      version: '1.0',
+      version: '2.0',
+      schemaVersion: 2,
       exportedAt: new Date().toISOString(),
       appName: 'MindSparks',
+      subjects,
       decks,
       cards,
       streak,
@@ -930,19 +1366,34 @@ class QuizDatabase {
 
     if (mode === 'replace') {
       // Clear current data
-      const tx = this._tx(['decks', 'cards', 'logs'], 'readwrite');
+      const stores = ['decks', 'cards', 'logs'];
+      if (this.db.objectStoreNames.contains('subjects')) stores.push('subjects');
+      const tx = this._tx(stores, 'readwrite');
       tx.objectStore('decks').clear();
       tx.objectStore('cards').clear();
       tx.objectStore('logs').clear();
+      if (tx.objectStoreNames.contains('subjects')) {
+        tx.objectStore('subjects').clear();
+      }
       await new Promise((res, rej) => {
         tx.oncomplete = () => res();
         tx.onerror = () => rej(tx.error);
       });
     }
 
+    // Save subjects
+    if (Array.isArray(data.subjects) && data.subjects.length > 0) {
+      for (const s of data.subjects) {
+        await this.saveSubject(s);
+      }
+    } else {
+      await this.ensureDefaultSubject();
+    }
+
     // Save decks
     for (const deck of data.decks) {
-      await this.saveDeck(deck);
+      if (!deck.subjectId) deck.subjectId = 'subj_unassigned';
+      await this.saveDeck(deck, { skipCardSync: true });
     }
 
     // Save cards
@@ -957,7 +1408,11 @@ class QuizDatabase {
       if (data.settings.dailyGoal) await this.setMeta('dailyGoal', data.settings.dailyGoal);
     }
 
+    await this.ensureDataIntegrity();
+    this.invalidateSubjectCache();
+
     return {
+      subjectsCount: (data.subjects || []).length,
       decksCount: data.decks.length,
       cardsCount: data.cards.length
     };

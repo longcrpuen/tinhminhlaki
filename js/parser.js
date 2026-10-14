@@ -63,6 +63,7 @@ const AIParser = {
   _normalizeJsonData(data) {
     let deckName = 'Bộ thẻ mới';
     let description = '';
+    let subject = '';
     let rawQuestions = [];
 
     if (Array.isArray(data)) {
@@ -70,6 +71,7 @@ const AIParser = {
     } else if (typeof data === 'object' && data !== null) {
       deckName = data.quiz_title || data.deckName || data.name || data.title || 'Bộ thẻ mới';
       description = data.description || '';
+      subject = (typeof data.subject === 'string' ? data.subject : (typeof data.subjectName === 'string' ? data.subjectName : (typeof data.subject_name === 'string' ? data.subject_name : ''))).trim();
       rawQuestions = data.questions || data.cards || [];
     }
 
@@ -214,6 +216,7 @@ const AIParser = {
     return {
       deckName,
       description,
+      subject,
       cards: validCards,
       errors: errors,
       rawCardsCount: rawQuestions.length

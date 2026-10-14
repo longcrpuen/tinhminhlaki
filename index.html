@@ -426,9 +426,15 @@
           <div class="section-title-wrap">
             <div>
               <h2 class="section-title">Thư viện Bộ Câu Hỏi</h2>
-              <p style="color: var(--text-secondary); font-size: 0.9rem;">Quản lý các chủ đề và luyện tập theo từng bộ.</p>
+              <p style="color: var(--text-secondary); font-size: 0.9rem;">Phân loại theo từng Môn học, quản lý các bộ thẻ và tiến trình ôn tập.</p>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()" style="font-size: 0.85rem;" title="Tạo môn học mới">
+                ➕ Môn học mới
+              </button>
+              <button class="btn btn-secondary" onclick="App.openBulkReassignModal()" style="font-size: 0.85rem;" title="Gán lại môn học hàng loạt cho nhiều bộ thẻ">
+                🔀 Gán lại môn
+              </button>
               <button class="btn btn-secondary" onclick="App.navigateTo('import-lms')" style="font-size: 0.85rem;">
                 📥 Nhập từ LMS
               </button>
@@ -451,7 +457,7 @@
                   <span class="tech-tag">LIBRARY // ALL</span>
                 </div>
                 <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
-                  Gộp tất cả câu hỏi từ các bộ thẻ, lọc nhanh theo chủ đề, độ khó, hoặc lọc riêng câu Bookmark ⭐ và câu Diễn đạt chưa rõ 🚩.
+                  Duyệt nhanh theo Môn học, lọc theo chủ đề/độ khó hoặc lọc riêng câu Bookmark ⭐ và câu Diễn đạt chưa rõ 🚩.
                 </p>
               </div>
               <div class="bank-actions-row">
@@ -467,10 +473,25 @@
               </div>
             </div>
 
-            <!-- Filter Bar with Cyber Violet Dropdowns -->
+            <!-- Filter Bar with Cyber Violet Dropdowns (Subject FIRST) -->
             <div class="bank-filter-bar">
               <input type="text" id="bank-search-input" class="bank-search-input" placeholder="🔍 Tìm kiếm câu hỏi, đáp án, giải thích..." oninput="App.onBankFilterChange()">
               
+              <!-- Custom Cyber Violet Dropdown: Chọn Môn Học (FIRST) -->
+              <div class="cyber-dropdown" id="bank-subject-dropdown-wrap">
+                <button type="button" class="cyber-dropdown-trigger" id="bank-subject-dropdown-trigger" onclick="App.toggleBankSubjectDropdown(event)">
+                  <span class="cyber-dropdown-icon" id="bank-subject-dropdown-icon">📚</span>
+                  <span class="cyber-dropdown-label" id="bank-subject-dropdown-label">Chọn Môn Học</span>
+                  <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div class="cyber-dropdown-menu" id="bank-subject-dropdown-menu">
+                  <!-- Dynamically populated by App.renderQuestionBank() -->
+                </div>
+              </div>
+              <select id="bank-subject-filter" style="display: none;" onchange="App.onBankSubjectChange()"></select>
+
               <!-- Custom Cyber Violet Dropdown: Chọn chủ đề/chương -->
               <div class="cyber-dropdown" id="bank-topic-dropdown-wrap">
                 <button type="button" class="cyber-dropdown-trigger" id="bank-topic-dropdown-trigger" onclick="App.toggleBankTopicDropdown(event)">
@@ -834,9 +855,27 @@
             </div>
 
             <div class="quiz-card">
+              <!-- Subject Selector with Cyber Violet Dropdown -->
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" id="import-subject-label">1. Chọn Môn Học (Bắt buộc):</label>
+                <div class="cyber-dropdown" id="import-subject-dropdown-wrap" style="width: 100%;">
+                  <button type="button" class="cyber-dropdown-trigger" id="import-subject-dropdown-trigger" onclick="App.toggleImportSubjectDropdown(event)">
+                    <span class="cyber-dropdown-icon" id="import-subject-dropdown-icon">📚</span>
+                    <span class="cyber-dropdown-label" id="import-subject-dropdown-label">Chọn Môn Học...</span>
+                    <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <div class="cyber-dropdown-menu" id="import-subject-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
+                    <!-- Dynamically populated + option to create new subject -->
+                  </div>
+                </div>
+                <select id="import-subject-select" style="display: none;" onchange="App.onImportSubjectChange()"></select>
+              </div>
+
               <!-- Target Deck Selector with Cyber Violet Dropdown -->
               <div class="form-group">
-                <label class="form-label" id="import-deck-label">Chọn bộ câu hỏi đích:</label>
+                <label class="form-label" id="import-deck-label">2. Chọn Bộ Câu Hỏi Đích:</label>
                 <div class="cyber-dropdown" id="import-deck-dropdown-wrap" style="width: 100%;">
                   <button type="button" class="cyber-dropdown-trigger" id="import-deck-dropdown-trigger" onclick="App.toggleImportDeckDropdown(event)">
                     <span class="cyber-dropdown-icon">🎴</span>
@@ -924,9 +963,25 @@
 
             <!-- Target Deck & Batch Topic Config -->
             <div class="quiz-card lms-config-card" style="margin-bottom: 20px;">
-              <div class="lms-config-grid">
+              <div class="lms-config-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
                 <div class="form-group">
-                  <label class="form-label" id="lms-deck-label">Chọn bộ câu hỏi đích:</label>
+                  <label class="form-label" id="lms-subject-label">1. Chọn Môn Học (Bắt buộc):</label>
+                  <div class="cyber-dropdown" id="lms-subject-dropdown-wrap" style="width: 100%;">
+                    <button type="button" class="cyber-dropdown-trigger" id="lms-subject-dropdown-trigger" onclick="App.toggleLmsSubjectDropdown(event)">
+                      <span class="cyber-dropdown-icon" id="lms-subject-dropdown-icon">📚</span>
+                      <span class="cyber-dropdown-label" id="lms-subject-dropdown-label">Chọn Môn Học...</span>
+                      <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <div class="cyber-dropdown-menu" id="lms-subject-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
+                      <!-- Dynamically populated -->
+                    </div>
+                  </div>
+                  <select id="lms-subject-select" style="display: none;" onchange="App.onLmsSubjectChange()"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" id="lms-deck-label">2. Chọn Bộ Câu Hỏi Đích:</label>
                   <div class="cyber-dropdown" id="lms-deck-dropdown-wrap" style="width: 100%;">
                     <button type="button" class="cyber-dropdown-trigger" id="lms-deck-dropdown-trigger" onclick="App.toggleLmsDeckDropdown(event)">
                       <span class="cyber-dropdown-icon">🎴</span>
@@ -942,7 +997,7 @@
                   <select id="lms-deck-select" class="form-control" style="display: none;" onchange="App.toggleLmsNewDeckFields()"></select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="lms-batch-topic">Chủ đề chung cho đợt nhập (Tùy chọn):</label>
+                  <label class="form-label" for="lms-batch-topic">3. Chủ đề / Tag chung (Tùy chọn):</label>
                   <input type="text" id="lms-batch-topic" class="form-control" placeholder="Ví dụ: Chương 1: Giới thiệu hệ thống">
                 </div>
               </div>
@@ -1155,6 +1210,28 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                 <div class="heatmap-cell level-3"></div>
                 <div class="heatmap-cell level-4"></div>
                 <span>Nhiều hơn</span>
+              </div>
+            </div>
+
+            <!-- Subject Performance Breakdown Table -->
+            <div class="quiz-card" style="margin-bottom: 28px;">
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 14px;">Hiệu Suất Theo Môn Học</h3>
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 0.8rem;">
+                      <th style="padding: 10px 12px;">Môn học</th>
+                      <th style="padding: 10px 12px; text-align: center;">Số bộ thẻ</th>
+                      <th style="padding: 10px 12px; text-align: center;">Tổng câu</th>
+                      <th style="padding: 10px 12px; text-align: center;">Cần ôn</th>
+                      <th style="padding: 10px 12px; text-align: center;">Tỉ lệ đúng</th>
+                      <th style="padding: 10px 12px; text-align: center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stats-subject-tbody">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Đang tính toán dữ liệu môn học...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -1574,6 +1651,23 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       <div class="modal-body">
         <input type="hidden" id="edit-card-id">
 
+        <div id="edit-card-subject-group" class="form-group" style="display: none; margin-bottom: 14px;">
+          <label class="form-label" id="edit-card-subject-label">Chọn Môn Học (Bắt buộc):</label>
+          <div class="cyber-dropdown" id="edit-card-subject-dropdown-wrap" style="width: 100%;">
+            <button type="button" class="cyber-dropdown-trigger" id="edit-card-subject-dropdown-trigger" onclick="App.toggleEditCardSubjectDropdown(event)">
+              <span class="cyber-dropdown-icon" id="edit-card-subject-dropdown-icon">📚</span>
+              <span class="cyber-dropdown-label" id="edit-card-subject-dropdown-label">Chọn Môn Học...</span>
+              <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div class="cyber-dropdown-menu" id="edit-card-subject-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          <select id="edit-card-subject-select" class="form-control" style="display: none;" onchange="App.onEditCardSubjectChange()"></select>
+        </div>
+
         <div id="edit-card-deck-group" class="form-group" style="display: none; margin-bottom: 14px;">
           <label class="form-label" id="edit-card-deck-label">Chọn bộ thẻ (Deck):</label>
           <div class="cyber-dropdown" id="edit-card-deck-dropdown-wrap" style="width: 100%;">
@@ -1708,6 +1802,124 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       <div class="modal-footer">
         <button class="btn btn-secondary modal-close">Hủy</button>
         <button class="btn btn-primary" onclick="App.saveCardEdit()">💾 Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Create New Subject -->
+  <div id="modal-create-subject" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Tạo Môn Học Mới</h3>
+        <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="create-subject-name">Tên môn học (bắt buộc):</label>
+          <input type="text" id="create-subject-name" class="form-control" placeholder="Ví dụ: Toán Học, Triết Học, Lập Trình...">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" for="create-subject-icon">Biểu tượng (Emoji):</label>
+            <input type="text" id="create-subject-icon" class="form-control" placeholder="📚, 📐, 💻, 🔬..." value="📚" style="text-align: center; font-size: 1.2rem;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-subject-color">Màu nhận diện:</label>
+            <input type="color" id="create-subject-color" class="form-control" value="#8b5cf6" style="height: 44px; padding: 4px; cursor: pointer;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">Hủy</button>
+        <button class="btn btn-primary" onclick="App.saveCreateSubject()">Tạo Môn Học</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Manage Subject (Edit, Merge, Delete) -->
+  <div id="modal-manage-subject" class="modal-overlay">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="manage-subject-modal-title">⚙️ Quản Lý Môn Học</h3>
+        <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="manage-subject-id">
+        <div class="form-group">
+          <label class="form-label" for="manage-subject-name">Tên môn học:</label>
+          <input type="text" id="manage-subject-name" class="form-control">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="manage-subject-icon">Biểu tượng (Emoji):</label>
+            <input type="text" id="manage-subject-icon" class="form-control" style="text-align: center; font-size: 1.2rem;">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="manage-subject-color">Màu nhận diện:</label>
+            <input type="color" id="manage-subject-color" class="form-control" style="height: 44px; padding: 4px; cursor: pointer;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <button class="btn btn-primary" style="flex: 1;" onclick="App.saveManageSubject()">💾 Lưu Thay Đổi</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 16px 0;">
+
+        <!-- Advanced Actions: Merge & Delete -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-primary);">Tác vụ nâng cao</h4>
+        <div style="background: rgba(139, 92, 246, 0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 0.85rem;">Gộp môn này vào môn khác:</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <select id="manage-subject-merge-target" class="form-control" style="flex: 1;"></select>
+            <button class="btn btn-secondary" onclick="App.mergeCurrentSubject()" style="white-space: nowrap;">🔀 Gộp Môn</button>
+          </div>
+          <small style="color: var(--text-secondary); display: block; margin-top: 4px;">Toàn bộ bộ thẻ của môn này sẽ được chuyển sang môn đích, môn hiện tại sẽ được xóa.</small>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); padding: 12px; border-radius: 8px;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: #ef4444; margin-bottom: 6px;">Xóa môn học</div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+            Nếu môn này còn bộ thẻ, hệ thống yêu cầu chọn môn chuyển sang để bảo đảm không mất dữ liệu.
+          </p>
+          <div id="manage-subject-delete-reassign-wrap" style="display: none; margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 0.8rem;">Chuyển các bộ thẻ sang:</label>
+            <select id="manage-subject-delete-target" class="form-control"></select>
+          </div>
+          <button class="btn btn-danger" style="width: 100%;" onclick="App.confirmDeleteCurrentSubject()">🗑️ Xóa Môn Học Này</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Bulk Reassign Decks to Subject -->
+  <div id="modal-bulk-reassign-decks" class="modal-overlay">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🔀 Gán Lại Môn Học Hàng Loạt</h3>
+        <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">1. Chọn Môn Học Đích:</label>
+          <select id="bulk-reassign-target-subject" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin-bottom: 0;">2. Chọn Các Bộ Thẻ Cần Chuyển:</label>
+            <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;" onclick="App.toggleSelectAllBulkDecks()">Chọn tất cả</button>
+          </div>
+          <div id="bulk-reassign-deck-list" style="max-height: 240px; overflow-y: auto; background: var(--bg-surface); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px; padding: 10px;">
+            <!-- Checkboxes of decks -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close">Hủy</button>
+        <button class="btn btn-primary" onclick="App.applyBulkReassignDecks()">Áp Dụng Chuyển Môn</button>
       </div>
     </div>
   </div>

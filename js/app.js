@@ -12,11 +12,37 @@ const App = {
   _sidebarLabelsDetached: false,
   _detachedSidebarNodes: [],
   _sidebarTransitionTimer: null,
+  currentBankSubjectId: '',
+  lastUsedSubjectId: null,
+  collapsedSubjectIds: new Set(),
+
+  setLastUsedSubject(subjectId) {
+    if (!subjectId) return;
+    this.lastUsedSubjectId = subjectId;
+    try {
+      localStorage.setItem('last_used_subject_id', subjectId);
+    } catch (_) {}
+  },
 
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
     await db.init();
+
+    // Check migration notice (Section A)
+    try {
+      const notice = await db.getMeta('migration_notice', null);
+      if (notice && !notice.shown) {
+        this.showToast(notice.message, 'success');
+        notice.shown = true;
+        await db.setMeta('migration_notice', notice);
+      }
+    } catch (e) {}
+
+    // Load last used subject
+    try {
+      this.lastUsedSubjectId = localStorage.getItem('last_used_subject_id') || null;
+    } catch (e) {}
 
     // 2. Load User Preferences (Single Dark Purple Theme is directly active on :root)
     // Load saved background with robust error handling
@@ -1108,57 +1134,167 @@ const App = {
     `;
   },
 
-  // --- DECKS VIEW ---
+  // --- DECKS VIEW (GROUPED BY SUBJECT) ---
   async renderDecks() {
-    const decks = await db.getAllDecks();
-    const allCards = await db.getAllCards();
+    const summaries = await db.getSubjectSummaries();
     const container = document.getElementById('decks-list-container');
     if (!container) return;
 
-    if (decks.length === 0) {
+    const totalDecksCount = summaries.reduce((acc, s) => acc + (s.decks?.length || 0), 0);
+
+    if (totalDecksCount === 0 && summaries.length <= 1) {
       container.innerHTML = `
-        <div style="text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg);">
+        <div style="text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">🎴</div>
           <h3>Chưa có bộ thẻ nào</h3>
-          <p style="color: var(--text-secondary); margin: 12px 0 20px;">Dán câu hỏi do AI tạo để bắt đầu học ngay.</p>
-          <button class="btn btn-primary" onclick="App.navigateTo('import')">+ Tạo hoặc Dán Thẻ Mới</button>
+          <p style="color: var(--text-secondary); margin: 12px 0 20px;">Dán câu hỏi do AI tạo hoặc nhập từ LMS để bắt đầu học ngay.</p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="App.navigateTo('import')">+ Tạo hoặc Dán Thẻ Mới</button>
+            <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()">➕ Môn học mới</button>
+          </div>
         </div>
       `;
       return;
     }
 
-    let html = '<div class="decks-grid">';
-    for (const deck of decks) {
-      const cards = allCards.filter(c => c.deckId === deck.id);
-      const due = cards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= Date.now());
+    let html = '';
+    for (const s of summaries) {
+      // Don't render empty default unassigned group if user has no unassigned decks and other subjects exist
+      if (s.id === 'subj_unassigned' && s.decks.length === 0 && summaries.length > 1) {
+        continue;
+      }
+
+      const isCollapsed = this.collapsedSubjectIds.has(s.id);
+
       html += `
-        <div class="deck-card">
-          <div>
-            <div class="deck-header">
-              <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
-              <button class="icon-btn" style="width: 30px; height: 30px; color: var(--danger);" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')">
-                🗑️
+        <div class="subject-group" data-subject-id="${s.id}">
+          <div class="subject-group-header" onclick="App.toggleSubjectCollapse('${s.id}')">
+            <div class="subject-group-title">
+              <span class="subject-icon">${s.icon || '📚'}</span>
+              <span class="subject-name" style="color: ${s.color || 'var(--text-primary)'};">${this._escapeHtml(s.name)}</span>
+              <span class="subject-badge">${s.decksCount} bộ thẻ</span>
+              <span class="subject-badge">📚 ${s.totalCards} câu</span>
+              <span class="subject-badge" style="color: var(--accent-primary); border-color: rgba(167, 139, 250, 0.4);">⏰ ${s.dueCards} cần ôn</span>
+            </div>
+            <div class="subject-group-actions" onclick="event.stopPropagation()">
+              ${s.totalCards > 0 ? `
+                <button class="btn btn-sm btn-primary" onclick="App.startSubjectSession('${s.id}', 'srs')" title="Ôn tập toàn bộ môn này">
+                  🎯 Ôn cả môn
+                </button>
+              ` : ''}
+              <button class="btn btn-sm btn-secondary" onclick="App.openManageSubjectModal('${s.id}')" title="Chỉnh sửa hoặc xóa môn">
+                ⚙️ Quản lý
+              </button>
+              <button class="icon-btn subject-collapse-btn" onclick="App.toggleSubjectCollapse('${s.id}')" title="Thu gọn / Mở rộng" style="width: 28px; height: 28px;">
+                ${isCollapsed ? '▶' : '▼'}
               </button>
             </div>
-            <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
           </div>
-          <div>
-            <div class="deck-meta">
-              <span>📚 ${cards.length} câu</span>
-              <span>⏰ ${due.length} cần ôn</span>
+          <div class="subject-group-body ${isCollapsed ? 'collapsed' : ''}" id="subject-body-${s.id}" style="${isCollapsed ? 'display: none;' : ''}">
+      `;
+
+      if (s.decks.length === 0) {
+        html += `
+          <div style="text-align: center; padding: 24px; color: var(--text-secondary); font-size: 0.9rem;">
+            Chưa có bộ thẻ nào trong môn này.
+            <div style="margin-top: 10px;">
+              <button class="btn btn-sm btn-secondary" onclick="App.navigateTo('import', { subjectId: '${s.id}' })">+ Thêm bộ thẻ vào môn</button>
             </div>
-            <div class="deck-actions" style="flex-wrap: wrap;">
-              <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">Ôn tập</button>
-              <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">Lật thẻ</button>
-              <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">Thi thử</button>
-              <button class="btn btn-secondary" onclick="App.navigateTo('import', { deckId: '${deck.id}' })">+ Thêm câu</button>
-              <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu">🔄 Reset</button>
+          </div>
+        `;
+      } else {
+        html += '<div class="decks-grid">';
+        for (const item of s.decks) {
+          const deck = item.deck;
+          const cardCount = item.count;
+          const dueCount = item.due;
+          html += `
+            <div class="deck-card">
+              <div>
+                <div class="deck-header">
+                  <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
+                  <button class="icon-btn" style="width: 30px; height: 30px; color: var(--danger);" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')">
+                    🗑️
+                  </button>
+                </div>
+                <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
+              </div>
+              <div>
+                <div class="deck-meta">
+                  <span>📚 ${cardCount} câu</span>
+                  <span>⏰ ${dueCount} cần ôn</span>
+                </div>
+                <div class="deck-actions" style="flex-wrap: wrap;">
+                  <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">Ôn tập</button>
+                  <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">Lật thẻ</button>
+                  <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">Thi thử</button>
+                  <button class="btn btn-secondary" onclick="App.navigateTo('import', { deckId: '${deck.id}', subjectId: '${s.id}' })">+ Thêm câu</button>
+                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu">🔄 Reset</button>
+                </div>
+              </div>
             </div>
+          `;
+        }
+        html += '</div>';
+      }
+
+      html += `
           </div>
         </div>
       `;
     }
-    html += '</div>';
+
     container.innerHTML = html;
+  },
+
+  toggleSubjectCollapse(subjectId) {
+    if (this.collapsedSubjectIds.has(subjectId)) {
+      this.collapsedSubjectIds.delete(subjectId);
+    } else {
+      this.collapsedSubjectIds.add(subjectId);
+    }
+    const body = document.getElementById(`subject-body-${subjectId}`);
+    if (body) {
+      const isCollapsed = this.collapsedSubjectIds.has(subjectId);
+      body.style.display = isCollapsed ? 'none' : 'block';
+      body.classList.toggle('collapsed', isCollapsed);
+      const btn = body.parentElement?.querySelector('.subject-collapse-btn');
+      if (btn) btn.textContent = isCollapsed ? '▶' : '▼';
+    }
+  },
+
+  async startSubjectSession(subjectId, mode = 'srs') {
+    const subject = await db.getSubject(subjectId);
+    if (!subject) return;
+    const cards = await db.getDueCards(null, subjectId);
+    let sessionCards = cards;
+    let title = `🎯 Ôn Tập Môn: ${subject.name}`;
+    if (sessionCards.length === 0) {
+      sessionCards = await db.getCardsBySubject(subjectId);
+      title = `🎯 Luyện Tập Tự Do: ${subject.name}`;
+    }
+    if (sessionCards.length === 0) {
+      this.showToast(`Môn "${subject.name}" chưa có câu hỏi nào!`, 'warning');
+      return;
+    }
+    this._shuffleArray(sessionCards);
+    this.activeSession = {
+      mode: mode,
+      subjectId: subjectId,
+      deckId: null,
+      title: title,
+      cards: sessionCards,
+      currentIndex: 0,
+      score: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      blindMode: false,
+      blindRevealed: false,
+      userAnswers: {},
+      answeredList: []
+    };
+    this.navigateTo('study');
+    this.renderActiveStudyCard();
   },
 
   async confirmResetDeckProgress(deckId) {
@@ -1194,21 +1330,27 @@ const App = {
 
     if (mode === 'free') {
       // 1. Luyện tập tự do: Random toàn bộ câu hỏi
-      cards = deckId ? await db.getCardsByDeck(deckId) : await db.getAllCards();
+      if (deckId) {
+        cards = await db.getCardsByDeck(deckId);
+      } else if (options.subjectId) {
+        cards = await db.getCardsBySubject(options.subjectId);
+      } else {
+        cards = await db.getAllCards();
+      }
       title = '1. Luyện Tập Tự Do';
     } else if (mode === 'mistakes') {
       // 2. Ôn lại câu sai: Ưu tiên câu sai gần nhất hoặc sai nhiều lần
-      cards = await db.getMistakeCards(deckId);
+      cards = await db.getMistakeCards(deckId, 50, options.subjectId);
       title = '2. Ôn Lại Câu Hay Sai';
       if (cards.length === 0) {
         this.showToast('Bạn chưa có câu trả lời sai nào! Hãy làm một bài luyện tập trước nhé.', 'info');
-        cards = deckId ? await db.getCardsByDeck(deckId) : await db.getAllCards();
+        cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
       }
     } else if (mode === 'srs') {
       // 3. Spaced Repetition SM-2: Thẻ đến hạn
-      cards = deckId ? await db.getDueCards(deckId) : await db.getDueCards();
+      cards = await db.getDueCards(deckId, options.subjectId);
       if (cards.length === 0) {
-        cards = deckId ? await db.getCardsByDeck(deckId) : await db.getAllCards();
+        cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
         title = '3. Luyện Tập Tự Do (Không có câu đến hạn hôm nay)';
       } else {
         title = '3. Lặp Lại Ngắt Quãng (SM-2)';
@@ -1220,16 +1362,16 @@ const App = {
       title = `5. Ôn Theo Chủ Đề: ${topics.join(', ')}`;
     } else if (mode === 'blind') {
       // 6. Đoán trước khi xem đáp án: Ẩn các lựa chọn trước
-      cards = deckId ? await db.getCardsByDeck(deckId) : await db.getAllCards();
+      cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
       title = '6. Đoán Trước Khi Xem Đáp Án (Active Recall)';
       blindMode = true;
     } else if (mode === 'sprint') {
       // 7. Ôn nước rút: Tự động gom N câu từ các chủ đề yếu nhất
       const count = options.count || 15;
-      cards = await db.getSprintCards(count, deckId);
+      cards = await db.getSprintCards(count, deckId, options.subjectId);
       title = `7. Ôn Nước Rút (${cards.length} câu chủ đề yếu nhất) 🚀`;
     } else if (mode === 'flashcard') {
-      cards = deckId ? await db.getCardsByDeck(deckId) : await db.getAllCards();
+      cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
       title = 'Thẻ Ghi Nhớ Flashcard';
     }
 
@@ -2843,21 +2985,95 @@ const App = {
     this.completeSession();
   },
 
-  // --- IMPORT & AI PASTE VIEW ---
+  // --- IMPORT & AI PASTE VIEW (SECTION A) ---
   async setupImportView(params = {}) {
-    const decks = await db.getAllDecks();
+    const subjects = await db.getAllSubjects();
+    let currentSubjectId = params.subjectId || this.lastUsedSubjectId;
+    if (!currentSubjectId || !subjects.some(s => s.id === currentSubjectId)) {
+      if (params.deckId) {
+        const d = await db.getDeck(params.deckId);
+        if (d && d.subjectId) currentSubjectId = d.subjectId;
+      }
+    }
+    if (!currentSubjectId || !subjects.some(s => s.id === currentSubjectId)) {
+      currentSubjectId = subjects[0]?.id || 'subj_unassigned';
+    }
+
+    const curSubjObj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
+    const subjSelect = document.getElementById('import-subject-select');
+    if (subjSelect) {
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.value = currentSubjectId;
+    }
+
+    const subjLabel = document.getElementById('import-subject-dropdown-label');
+    if (subjLabel) {
+      subjLabel.textContent = curSubjObj ? `${curSubjObj.icon || '📚'} ${curSubjObj.name}` : 'Chọn môn học...';
+    }
+
+    const subjMenu = document.getElementById('import-subject-dropdown-menu');
+    if (subjMenu) {
+      let menuHtml = '';
+      subjects.forEach(s => {
+        const isActive = s.id === currentSubjectId;
+        menuHtml += `
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+          </button>
+        `;
+      });
+      menuHtml += `
+        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('import')">
+          <span>➕ Tạo môn mới...</span>
+        </button>
+      `;
+      subjMenu.innerHTML = menuHtml;
+    }
+
+    await this._refreshImportDecksDropdown(currentSubjectId, params.deckId || '__new__');
+  },
+
+  toggleImportSubjectDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('import-subject-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) wrap.classList.add('open');
+  },
+
+  async selectImportSubject(subjectId, subjectLabelText) {
+    const subjSelect = document.getElementById('import-subject-select');
+    if (subjSelect) subjSelect.value = subjectId;
+    const label = document.getElementById('import-subject-dropdown-label');
+    if (label) label.textContent = subjectLabelText;
+    const menu = document.getElementById('import-subject-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        item.classList.toggle('active', onclickAttr.includes(`'${subjectId}'`));
+      });
+    }
+    this.setLastUsedSubject(subjectId);
+    this.closeAllCyberDropdowns();
+    await this._refreshImportDecksDropdown(subjectId, '__new__');
+  },
+
+  async _refreshImportDecksDropdown(subjectId, selectedDeckId = '__new__') {
+    const decks = await db.getDecksBySubject(subjectId);
     const select = document.getElementById('import-deck-select');
     if (select) {
       let html = '<option value="__new__">+ Tạo bộ thẻ mới</option>';
       decks.forEach(d => {
-        const isSelected = params.deckId === d.id ? 'selected' : '';
+        const isSelected = selectedDeckId === d.id ? 'selected' : '';
         html += `<option value="${d.id}" ${isSelected}>${this._escapeHtml(d.name)}</option>`;
       });
       select.innerHTML = html;
+      select.value = selectedDeckId;
       this.toggleNewDeckFields();
     }
 
-    const curDeckId = select ? select.value : (params.deckId || '__new__');
+    const curDeckId = select ? select.value : selectedDeckId;
     const importMenu = document.getElementById('import-deck-dropdown-menu');
     const importLabel = document.getElementById('import-deck-dropdown-label');
     if (importMenu) {
@@ -2993,13 +3209,29 @@ const App = {
       const select = document.getElementById('import-deck-select');
       let targetDeckId = select ? select.value : '__new__';
 
+      let targetSubjectId = document.getElementById('import-subject-select')?.value || this.lastUsedSubjectId;
+      if (parsed.subject && typeof parsed.subject === 'string' && parsed.subject.trim()) {
+        const found = await db.findSubjectByName(parsed.subject.trim());
+        if (found) {
+          targetSubjectId = found.id;
+        } else {
+          const created = await db.saveSubject({ name: parsed.subject.trim(), order: 100 });
+          targetSubjectId = created.id;
+        }
+      }
+      if (!targetSubjectId) {
+        const def = await db.ensureDefaultSubject();
+        targetSubjectId = def.id;
+      }
+      this.setLastUsedSubject(targetSubjectId);
+
       if (targetDeckId === '__new__') {
         const inputName = document.getElementById('import-new-deck-name')?.value;
         const inputDesc = document.getElementById('import-new-deck-desc')?.value;
         const deckName = inputName?.trim() || parsed.deckName || 'Bộ thẻ mới';
         const deckDesc = inputDesc?.trim() || parsed.description || '';
 
-        const newDeck = await db.saveDeck({ name: deckName, description: deckDesc });
+        const newDeck = await db.saveDeck({ name: deckName, description: deckDesc, subjectId: targetSubjectId });
         targetDeckId = newDeck.id;
       }
 
@@ -3007,7 +3239,8 @@ const App = {
       const cardsToSave = parsed.cards.map(c => ({
         ...c,
         id: db.generateUniqueCardId(),
-        deckId: targetDeckId
+        deckId: targetDeckId,
+        subjectId: targetSubjectId
       }));
 
       // Create snapshot backup before saving
@@ -3051,19 +3284,92 @@ const App = {
   _lmsParsedQuestions: [],
 
   async setupImportLmsView(params = {}) {
-    const decks = await db.getAllDecks();
+    const subjects = await db.getAllSubjects();
+    let currentSubjectId = params.subjectId || this.lastUsedSubjectId;
+    if (!currentSubjectId || !subjects.some(s => s.id === currentSubjectId)) {
+      if (params.deckId) {
+        const d = await db.getDeck(params.deckId);
+        if (d && d.subjectId) currentSubjectId = d.subjectId;
+      }
+    }
+    if (!currentSubjectId || !subjects.some(s => s.id === currentSubjectId)) {
+      currentSubjectId = subjects[0]?.id || 'subj_unassigned';
+    }
+
+    const curSubjObj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
+    const subjSelect = document.getElementById('lms-subject-select');
+    if (subjSelect) {
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.value = currentSubjectId;
+    }
+
+    const subjMenu = document.getElementById('lms-subject-dropdown-menu');
+    const subjLabel = document.getElementById('lms-subject-dropdown-label');
+    if (subjLabel) {
+      subjLabel.textContent = curSubjObj ? `${curSubjObj.icon || '📚'} ${curSubjObj.name}` : 'Chọn môn học...';
+    }
+    if (subjMenu) {
+      let menuHtml = '';
+      subjects.forEach(s => {
+        const isActive = s.id === currentSubjectId;
+        menuHtml += `
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+          </button>
+        `;
+      });
+      menuHtml += `
+        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('lms')">
+          <span>➕ Tạo môn mới...</span>
+        </button>
+      `;
+      subjMenu.innerHTML = menuHtml;
+    }
+
+    await this._refreshLmsDecksDropdown(currentSubjectId, params.deckId || '__new__');
+  },
+
+  toggleLmsSubjectDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('lms-subject-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) wrap.classList.add('open');
+  },
+
+  async selectLmsSubject(subjectId, subjectLabelText) {
+    const select = document.getElementById('lms-subject-select');
+    if (select) select.value = subjectId;
+    const label = document.getElementById('lms-subject-dropdown-label');
+    if (label) label.textContent = subjectLabelText;
+    const menu = document.getElementById('lms-subject-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        item.classList.toggle('active', onclickAttr.includes(`'${subjectId}'`));
+      });
+    }
+    this.setLastUsedSubject(subjectId);
+    this.closeAllCyberDropdowns();
+    await this._refreshLmsDecksDropdown(subjectId, '__new__');
+  },
+
+  async _refreshLmsDecksDropdown(subjectId, selectedDeckId = '__new__') {
+    const decks = await db.getDecksBySubject(subjectId);
     const select = document.getElementById('lms-deck-select');
     if (select) {
       let html = '<option value="__new__">+ Tạo bộ thẻ mới</option>';
       decks.forEach(d => {
-        const isSelected = params.deckId === d.id ? 'selected' : '';
+        const isSelected = selectedDeckId === d.id ? 'selected' : '';
         html += `<option value="${d.id}" ${isSelected}>${this._escapeHtml(d.name)}</option>`;
       });
       select.innerHTML = html;
+      select.value = selectedDeckId;
       this.toggleLmsNewDeckFields();
     }
 
-    const curDeckId = select ? select.value : (params.deckId || '__new__');
+    const curDeckId = select ? select.value : selectedDeckId;
     const lmsMenu = document.getElementById('lms-deck-dropdown-menu');
     const lmsLabel = document.getElementById('lms-deck-dropdown-label');
     if (lmsMenu) {
@@ -3521,6 +3827,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     let targetDeckId = document.getElementById('lms-deck-select')?.value;
+    const targetSubjectId = document.getElementById('lms-subject-select')?.value || this.lastUsedSubjectId || (await db.ensureDefaultSubject()).id;
+    this.setLastUsedSubject(targetSubjectId);
     const batchTopic = document.getElementById('lms-batch-topic')?.value?.trim() || '';
 
     // Create new deck if needed
@@ -3530,7 +3838,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const deckName = inputName?.trim() || (batchTopic ? `LMS: ${batchTopic}` : 'Bộ câu hỏi LMS');
       const deckDesc = inputDesc?.trim() || 'Nhập từ LMS Moodle';
 
-      const newDeck = await db.saveDeck({ name: deckName, description: deckDesc });
+      const newDeck = await db.saveDeck({ name: deckName, description: deckDesc, subjectId: targetSubjectId });
       targetDeckId = newDeck.id;
     }
 
@@ -3549,6 +3857,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       return {
         id: db.generateUniqueCardId(),
         deckId: targetDeckId,
+        subjectId: targetSubjectId,
         type: isNumeric ? 'numeric' : 'multiple_choice',
         question: q.question,
         options: isNumeric ? [] : optStrings,
@@ -3659,6 +3968,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     await this.renderContributionHeatmap();
+    await this.renderSubjectPerformanceTable(allCards);
     await this.renderTopicPerformanceTable(allCards);
   },
 
@@ -3787,49 +4097,54 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   async openAddCardModal(deckId = null) {
-    const decks = await db.getAllDecks();
-    const select = document.getElementById('edit-card-deck-select');
-    const group = document.getElementById('edit-card-deck-group');
-    if (select) {
-      if (decks.length > 0) {
-        select.innerHTML = decks.map(d => `<option value="${d.id}">${this._escapeHtml(d.name)}</option>`).join('');
-        if (deckId) {
-          select.value = deckId;
-        } else if (this.currentDeck?.id) {
-          select.value = this.currentDeck.id;
-        }
-      } else {
-        select.innerHTML = '<option value="__new__">Bộ thẻ mặc định</option>';
-      }
+    const subjects = await db.getAllSubjects();
+    let currentSubjectId = this.lastUsedSubjectId;
+    if (deckId) {
+      const d = await db.getDeck(deckId);
+      if (d && d.subjectId) currentSubjectId = d.subjectId;
     }
-    if (group) group.style.display = 'block';
+    if (!currentSubjectId || !subjects.some(s => s.id === currentSubjectId)) {
+      currentSubjectId = subjects[0]?.id || 'subj_unassigned';
+    }
 
-    const selectedDeckId = select ? select.value : (deckId || decks[0]?.id || '__new__');
-    const deckMenu = document.getElementById('edit-card-deck-dropdown-menu');
-    const deckLabel = document.getElementById('edit-card-deck-dropdown-label');
-    if (deckMenu) {
-      if (decks.length > 0) {
-        let menuHtml = '';
-        decks.forEach(d => {
-          const isActive = d.id === selectedDeckId;
-          menuHtml += `
-            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardDeck('${d.id}', '${this._escapeHtml(d.name).replace(/'/g, "\\'")}')">
-              <span>🎴 ${this._escapeHtml(d.name)}</span>
-            </button>
-          `;
-        });
-        deckMenu.innerHTML = menuHtml;
-        const currentDeckObj = decks.find(d => d.id === selectedDeckId) || decks[0];
-        if (deckLabel) deckLabel.textContent = currentDeckObj ? currentDeckObj.name : 'Chọn bộ thẻ...';
-      } else {
-        deckMenu.innerHTML = `
-          <button type="button" class="cyber-dropdown-item active" onclick="App.selectEditCardDeck('__new__', 'Bộ thẻ mặc định')">
-            <span>🎴 Bộ thẻ mặc định</span>
+    const curSubj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
+    const subjSelect = document.getElementById('edit-card-subject-select');
+    if (subjSelect) {
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.value = currentSubjectId;
+    }
+
+    const subjMenu = document.getElementById('edit-card-subject-dropdown-menu');
+    const subjLabel = document.getElementById('edit-card-subject-dropdown-label');
+    if (subjLabel) {
+      subjLabel.textContent = curSubj ? `${curSubj.icon || '📚'} ${curSubj.name}` : 'Chọn môn học...';
+    }
+    if (subjMenu) {
+      let menuHtml = '';
+      subjects.forEach(s => {
+        const isActive = s.id === currentSubjectId;
+        menuHtml += `
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
-        if (deckLabel) deckLabel.textContent = 'Bộ thẻ mặc định';
-      }
+      });
+      menuHtml += `
+        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('edit-card')">
+          <span>➕ Tạo môn mới...</span>
+        </button>
+      `;
+      subjMenu.innerHTML = menuHtml;
     }
+
+    const subjGroup = document.getElementById('edit-card-subject-group');
+    if (subjGroup) subjGroup.style.display = 'block';
+
+    const group = document.getElementById('edit-card-deck-group');
+    if (group) group.style.display = 'block';
+
+    await this._refreshEditCardDecksDropdown(currentSubjectId, deckId);
 
     const title = document.querySelector('#modal-edit-card .modal-title');
     if (title) title.textContent = '➕ Thêm Câu Hỏi Mới';
@@ -3855,6 +4170,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   openEditCardModal(card) {
+    const subjGroup = document.getElementById('edit-card-subject-group');
+    if (subjGroup) subjGroup.style.display = 'none'; // Keep card in its existing subject
     const group = document.getElementById('edit-card-deck-group');
     if (group) group.style.display = 'none'; // Keep card in its existing deck
 
@@ -3882,6 +4199,76 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const modal = document.getElementById('modal-edit-card');
     if (modal) modal.classList.add('show');
+  },
+
+  toggleEditCardSubjectDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('edit-card-subject-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) wrap.classList.add('open');
+  },
+
+  async selectEditCardSubject(subjectId, subjectLabelText) {
+    const select = document.getElementById('edit-card-subject-select');
+    if (select) select.value = subjectId;
+    const label = document.getElementById('edit-card-subject-dropdown-label');
+    if (label) label.textContent = subjectLabelText;
+    const menu = document.getElementById('edit-card-subject-dropdown-menu');
+    if (menu) {
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick') || '';
+        item.classList.toggle('active', onclickAttr.includes(`'${subjectId}'`));
+      });
+    }
+    this.setLastUsedSubject(subjectId);
+    this.closeAllCyberDropdowns();
+    await this._refreshEditCardDecksDropdown(subjectId);
+  },
+
+  async _refreshEditCardDecksDropdown(subjectId, targetDeckId = null) {
+    const decks = await db.getDecksBySubject(subjectId);
+    const select = document.getElementById('edit-card-deck-select');
+    if (select) {
+      if (decks.length > 0) {
+        select.innerHTML = decks.map(d => `<option value="${d.id}">${this._escapeHtml(d.name)}</option>`).join('');
+        if (targetDeckId) {
+          select.value = targetDeckId;
+        } else {
+          select.value = decks[0].id;
+        }
+      } else {
+        select.innerHTML = '<option value="__new__">+ Tự động tạo bộ thẻ mới</option>';
+        select.value = '__new__';
+      }
+    }
+
+    const selectedDeckId = select ? select.value : (targetDeckId || decks[0]?.id || '__new__');
+    const deckMenu = document.getElementById('edit-card-deck-dropdown-menu');
+    const deckLabel = document.getElementById('edit-card-deck-dropdown-label');
+    if (deckMenu) {
+      if (decks.length > 0) {
+        let menuHtml = '';
+        decks.forEach(d => {
+          const isActive = d.id === selectedDeckId;
+          menuHtml += `
+            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardDeck('${d.id}', '${this._escapeHtml(d.name).replace(/'/g, "\\'")}')">
+              <span>🎴 ${this._escapeHtml(d.name)}</span>
+            </button>
+          `;
+        });
+        deckMenu.innerHTML = menuHtml;
+        const currentDeckObj = decks.find(d => d.id === selectedDeckId) || decks[0];
+        if (deckLabel) deckLabel.textContent = currentDeckObj ? currentDeckObj.name : 'Chọn bộ thẻ...';
+      } else {
+        deckMenu.innerHTML = `
+          <button type="button" class="cyber-dropdown-item active" onclick="App.selectEditCardDeck('__new__', '+ Tự động tạo bộ thẻ mới')">
+            <span>✨ + Tự động tạo bộ thẻ mới</span>
+          </button>
+        `;
+        if (deckLabel) deckLabel.textContent = '+ Tự động tạo bộ thẻ mới';
+      }
+    }
   },
 
   toggleEditCardDeckDropdown(e) {
@@ -4057,13 +4444,16 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       this.showToast('Đã lưu chỉnh sửa câu hỏi thành công!', 'success');
     } else {
       // 2. CREATE NEW CARD (ADD QUESTION WITHOUT OVERWRITING)
+      const targetSubjectId = document.getElementById('edit-card-subject-select')?.value || this.lastUsedSubjectId || (await db.ensureDefaultSubject()).id;
+      this.setLastUsedSubject(targetSubjectId);
+
       let targetDeckId = document.getElementById('edit-card-deck-select')?.value;
       if (!targetDeckId || targetDeckId === '__new__') {
-        const decks = await db.getAllDecks();
+        const decks = await db.getDecksBySubject(targetSubjectId);
         if (decks.length > 0) {
           targetDeckId = decks[0].id;
         } else {
-          const newDeck = await db.saveDeck({ name: 'Bộ thẻ mặc định', description: 'Tự động tạo khi thêm câu hỏi' });
+          const newDeck = await db.saveDeck({ name: 'Bộ thẻ mặc định', description: 'Tự động tạo khi thêm câu hỏi', subjectId: targetSubjectId });
           targetDeckId = newDeck.id;
         }
       }
@@ -4072,6 +4462,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const newCard = {
         id: db.generateUniqueCardId(),
         deckId: targetDeckId,
+        subjectId: targetSubjectId,
         question,
         options,
         rawOptions: options.map((t, idx) => ({ id: defaultLetters[idx], text: t })),
@@ -4412,8 +4803,63 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   currentFilteredBankCards: [],
 
   async renderQuestionBank() {
-    const allCards = await db.getAllCards();
-    const decks = await db.getAllDecks();
+    const subjects = await db.getAllSubjects();
+    if (!this.currentBankSubjectId) {
+      this.currentBankSubjectId = this.lastUsedSubjectId || subjects[0]?.id || '__all__';
+    }
+
+    const curSubj = subjects.find(s => s.id === this.currentBankSubjectId);
+    const bankSubjLabel = document.getElementById('bank-subject-dropdown-label');
+    if (bankSubjLabel) {
+      if (this.currentBankSubjectId === '__all__') {
+        bankSubjLabel.textContent = '🌐 Tất cả môn';
+      } else {
+        bankSubjLabel.textContent = curSubj ? `${curSubj.icon || '📚'} ${curSubj.name}` : 'Chọn môn học...';
+      }
+    }
+
+    const bankSubjSelect = document.getElementById('bank-subject-filter');
+    if (bankSubjSelect) {
+      let html = '<option value="__all__">🌐 Tất cả môn</option>';
+      subjects.forEach(s => {
+        const isSel = this.currentBankSubjectId === s.id ? 'selected' : '';
+        html += `<option value="${s.id}" ${isSel}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`;
+      });
+      bankSubjSelect.innerHTML = html;
+      bankSubjSelect.value = this.currentBankSubjectId;
+    }
+
+    const bankSubjMenu = document.getElementById('bank-subject-dropdown-menu');
+    if (bankSubjMenu) {
+      let menuHtml = '';
+      subjects.forEach(s => {
+        const isActive = s.id === this.currentBankSubjectId;
+        menuHtml += `
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectBankSubject('${s.id}')">
+            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+          </button>
+        `;
+      });
+      menuHtml += `
+        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <button type="button" class="cyber-dropdown-item ${this.currentBankSubjectId === '__all__' ? 'active' : ''}" onclick="App.selectBankSubject('__all__')">
+          <span>🌐 Tất cả môn</span>
+        </button>
+        <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('bank')">
+          <span>➕ Tạo môn mới...</span>
+        </button>
+      `;
+      bankSubjMenu.innerHTML = menuHtml;
+    }
+
+    // Fast indexed query: only fetch cards for selected subject, or all cards if __all__
+    const allCards = (this.currentBankSubjectId && this.currentBankSubjectId !== '__all__')
+      ? await db.getCardsBySubject(this.currentBankSubjectId)
+      : await db.getAllCards();
+
+    const decks = (this.currentBankSubjectId && this.currentBankSubjectId !== '__all__')
+      ? await db.getDecksBySubject(this.currentBankSubjectId)
+      : await db.getAllDecks();
     const decksMap = {};
     decks.forEach(d => { decksMap[d.id] = d.name; });
 
@@ -4742,6 +5188,24 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     });
   },
 
+  toggleBankSubjectDropdown(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('bank-subject-dropdown-wrap');
+    const wasOpen = wrap?.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (wrap && !wasOpen) wrap.classList.add('open');
+  },
+
+  selectBankSubject(subjectId) {
+    this.currentBankSubjectId = subjectId;
+    if (subjectId !== '__all__') {
+      this.setLastUsedSubject(subjectId);
+    }
+    this.bankFilters.topic = '';
+    this.closeAllCyberDropdowns();
+    this.renderQuestionBank();
+  },
+
   toggleBankTopicDropdown(e) {
     if (e) e.stopPropagation();
     const topicWrap = document.getElementById('bank-topic-dropdown-wrap');
@@ -5010,6 +5474,357 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
     }, 3200);
+  },
+
+  // --- SUBJECT PERFORMANCE BREAKDOWN (A3) ---
+  async renderSubjectPerformanceTable(cachedCards = null) {
+    const tbody = document.getElementById('stats-subject-tbody');
+    if (!tbody) return;
+
+    const subjects = await db.getAllSubjects();
+    const allCards = cachedCards || await db.getAllCards();
+
+    // Map cards and stats to subjects
+    const subjectStatsMap = new Map();
+    subjects.forEach(s => {
+      subjectStatsMap.set(s.id, {
+        subject: s,
+        deckCount: 0,
+        totalCards: 0,
+        dueCards: 0,
+        reviewsCount: 0,
+        correctCount: 0,
+        incorrectCount: 0
+      });
+    });
+
+    const now = Date.now();
+    const decks = await db.getAllDecks();
+    decks.forEach(d => {
+      const sId = d.subjectId || 'subj_unassigned';
+      const stat = subjectStatsMap.get(sId);
+      if (stat) stat.deckCount++;
+    });
+
+    allCards.forEach(c => {
+      const sId = c.subjectId || 'subj_unassigned';
+      const stat = subjectStatsMap.get(sId);
+      if (stat) {
+        stat.totalCards++;
+        if (!c.srs?.dueDate || c.srs.dueDate <= now) stat.dueCards++;
+        if (c.stats) {
+          stat.reviewsCount += (c.stats.reviewsCount || 0);
+          stat.correctCount += (c.stats.correctCount || 0);
+          stat.incorrectCount += (c.stats.incorrectCount || 0);
+        }
+      }
+    });
+
+    let html = '';
+    let count = 0;
+    for (const [sId, stat] of subjectStatsMap) {
+      if (stat.totalCards === 0 && stat.deckCount === 0 && sId === 'subj_unassigned' && subjects.length > 1) {
+        continue;
+      }
+      count++;
+      const attempts = stat.correctCount + stat.incorrectCount;
+      const acc = attempts > 0 ? Math.round((stat.correctCount / attempts) * 100) : null;
+      const accColor = acc === null ? 'var(--text-muted)' : acc >= 80 ? 'var(--success)' : acc >= 50 ? '#F59E0B' : 'var(--danger)';
+      const accText = acc === null ? 'Chưa thi' : `${acc}%`;
+
+      html += `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding: 10px 12px; font-weight: 600;">
+            <span style="margin-right: 6px;">${stat.subject.icon || '📚'}</span>
+            <span style="color: ${stat.subject.color || 'var(--text-primary)'};">${this._escapeHtml(stat.subject.name)}</span>
+          </td>
+          <td style="padding: 10px 12px; text-align: center;">${stat.deckCount}</td>
+          <td style="padding: 10px 12px; text-align: center;">${stat.totalCards}</td>
+          <td style="padding: 10px 12px; text-align: center; color: var(--accent-primary); font-weight: 600;">${stat.dueCards}</td>
+          <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: ${accColor};">${accText}</td>
+          <td style="padding: 10px 12px; text-align: center;">
+            ${stat.totalCards > 0 ? `
+              <button class="btn btn-sm btn-primary" onclick="App.startSubjectSession('${stat.subject.id}', 'srs')" style="padding: 3px 10px; font-size: 0.78rem;">
+                Ôn môn
+              </button>
+            ` : '-'}
+          </td>
+        </tr>
+      `;
+    }
+
+    if (count === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Chưa có môn học nào.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = html;
+  },
+
+  // --- SUBJECT MANAGEMENT CONTROLLERS (SECTION A) ---
+  _createSubjectContext: '',
+
+  openCreateSubjectModal(fromContext = '') {
+    this._createSubjectContext = fromContext;
+    this.closeAllCyberDropdowns();
+    const nameInput = document.getElementById('create-subject-name');
+    const iconInput = document.getElementById('create-subject-icon');
+    const colorInput = document.getElementById('create-subject-color');
+    if (nameInput) nameInput.value = '';
+    if (iconInput) iconInput.value = '📚';
+    if (colorInput) colorInput.value = '#8b5cf6';
+    const modal = document.getElementById('modal-create-subject');
+    if (modal) modal.classList.add('show');
+  },
+
+  async saveCreateSubject() {
+    const name = document.getElementById('create-subject-name')?.value?.trim();
+    const icon = document.getElementById('create-subject-icon')?.value?.trim() || '📚';
+    const color = document.getElementById('create-subject-color')?.value || '#8b5cf6';
+
+    if (!name) {
+      alert('Vui lòng nhập tên môn học.');
+      return;
+    }
+
+    const existing = await db.findSubjectByName(name);
+    if (existing) {
+      alert(`Môn học "${name}" đã tồn tại!`);
+      return;
+    }
+
+    const created = await db.saveSubject({ name, icon, color, order: 100 });
+    this.setLastUsedSubject(created.id);
+    this.showToast(`Đã tạo môn học "${created.name}" thành công! 🎉`, 'success');
+
+    const modal = document.getElementById('modal-create-subject');
+    if (modal) modal.classList.remove('show');
+
+    const ctx = this._createSubjectContext;
+    this._createSubjectContext = '';
+
+    if (ctx === 'import') {
+      await this.setupImportView({ subjectId: created.id });
+    } else if (ctx === 'lms') {
+      await this.setupImportLmsView({ subjectId: created.id });
+    } else if (ctx === 'edit-card') {
+      await this.openAddCardModal();
+      await this.selectEditCardSubject(created.id, `${created.icon} ${created.name}`);
+    } else if (ctx === 'bank') {
+      this.currentBankSubjectId = created.id;
+      await this.renderQuestionBank();
+    } else {
+      await this.renderDecks();
+    }
+  },
+
+  async openManageSubjectModal(subjectId) {
+    this.closeAllCyberDropdowns();
+    const subject = await db.getSubject(subjectId);
+    if (!subject) return;
+
+    document.getElementById('manage-subject-id').value = subject.id;
+    document.getElementById('manage-subject-name').value = subject.name;
+    document.getElementById('manage-subject-icon').value = subject.icon || '📚';
+    document.getElementById('manage-subject-color').value = subject.color || '#8b5cf6';
+
+    const titleEl = document.getElementById('manage-subject-modal-title');
+    if (titleEl) titleEl.textContent = `⚙️ Quản Lý Môn: ${subject.name}`;
+
+    const subjects = await db.getAllSubjects();
+    const otherSubjects = subjects.filter(s => s.id !== subject.id);
+
+    // Populate merge target select
+    const mergeSelect = document.getElementById('manage-subject-merge-target');
+    if (mergeSelect) {
+      mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+    }
+
+    // Check if subject has decks for deletion
+    const decks = await db.getDecksBySubject(subject.id);
+    const deleteReassignWrap = document.getElementById('manage-subject-delete-reassign-wrap');
+    const deleteSelect = document.getElementById('manage-subject-delete-target');
+    if (deleteReassignWrap && deleteSelect) {
+      if (decks.length > 0) {
+        deleteReassignWrap.style.display = 'block';
+        deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      } else {
+        deleteReassignWrap.style.display = 'none';
+      }
+    }
+
+    const modal = document.getElementById('modal-manage-subject');
+    if (modal) modal.classList.add('show');
+  },
+
+  async saveManageSubject() {
+    const id = document.getElementById('manage-subject-id')?.value;
+    const name = document.getElementById('manage-subject-name')?.value?.trim();
+    const icon = document.getElementById('manage-subject-icon')?.value?.trim() || '📚';
+    const color = document.getElementById('manage-subject-color')?.value || '#8b5cf6';
+
+    if (!id || !name) {
+      alert('Vui lòng nhập tên môn học.');
+      return;
+    }
+
+    const subject = await db.getSubject(id);
+    if (!subject) return;
+
+    subject.name = name;
+    subject.icon = icon;
+    subject.color = color;
+
+    await db.saveSubject(subject);
+    this.showToast(`Đã cập nhật môn học "${name}"!`, 'success');
+
+    const modal = document.getElementById('modal-manage-subject');
+    if (modal) modal.classList.remove('show');
+
+    await this.renderDecks();
+    if (this.currentView === 'bank') await this.renderQuestionBank();
+  },
+
+  async mergeCurrentSubject() {
+    const currentId = document.getElementById('manage-subject-id')?.value;
+    const targetId = document.getElementById('manage-subject-merge-target')?.value;
+
+    if (!currentId || !targetId) {
+      alert('Vui lòng chọn môn học đích để gộp.');
+      return;
+    }
+
+    const currentSubj = await db.getSubject(currentId);
+    const targetSubj = await db.getSubject(targetId);
+
+    if (!confirm(`Bạn có chắc chắn muốn gộp môn "${currentSubj.name}" vào môn "${targetSubj.name}"? Toàn bộ bộ thẻ sẽ được chuyển sang "${targetSubj.name}".`)) {
+      return;
+    }
+
+    await db.mergeSubjects(currentId, targetId);
+    this.showToast(`Đã gộp thành công vào môn "${targetSubj.name}"!`, 'success');
+
+    const modal = document.getElementById('modal-manage-subject');
+    if (modal) modal.classList.remove('show');
+
+    if (this.currentBankSubjectId === currentId) {
+      this.currentBankSubjectId = targetId;
+    }
+    this.setLastUsedSubject(targetId);
+
+    await this.renderDecks();
+    if (this.currentView === 'bank') await this.renderQuestionBank();
+  },
+
+  async confirmDeleteCurrentSubject() {
+    const currentId = document.getElementById('manage-subject-id')?.value;
+    if (!currentId) return;
+
+    if (currentId === 'subj_unassigned') {
+      alert('Không thể xóa môn mặc định "Chưa phân loại".');
+      return;
+    }
+
+    const currentSubj = await db.getSubject(currentId);
+    const decks = await db.getDecksBySubject(currentId);
+    let targetId = null;
+
+    if (decks.length > 0) {
+      targetId = document.getElementById('manage-subject-delete-target')?.value;
+      if (!targetId) {
+        alert('Môn học này vẫn còn bộ thẻ. Bạn phải chọn một môn để chuyển toàn bộ thẻ sang trước khi xóa!');
+        return;
+      }
+      const targetSubj = await db.getSubject(targetId);
+      if (!confirm(`Môn "${currentSubj.name}" đang có ${decks.length} bộ thẻ. Xóa môn này sẽ chuyển toàn bộ thẻ sang "${targetSubj.name}". Bạn có chắc chắn không?`)) {
+        return;
+      }
+    } else {
+      if (!confirm(`Bạn có chắc chắn muốn xóa môn "${currentSubj.name}"?`)) {
+        return;
+      }
+    }
+
+    await db.deleteSubject(currentId, targetId);
+    this.showToast(`Đã xóa môn "${currentSubj.name}".`, 'info');
+
+    const modal = document.getElementById('modal-manage-subject');
+    if (modal) modal.classList.remove('show');
+
+    if (this.currentBankSubjectId === currentId) {
+      this.currentBankSubjectId = targetId || '__all__';
+    }
+
+    await this.renderDecks();
+    if (this.currentView === 'bank') await this.renderQuestionBank();
+  },
+
+  async openBulkReassignModal() {
+    this.closeAllCyberDropdowns();
+    const subjects = await db.getAllSubjects();
+    const targetSelect = document.getElementById('bulk-reassign-target-subject');
+    if (targetSelect) {
+      targetSelect.innerHTML = subjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+    }
+
+    const decks = await db.getAllDecks();
+    const subjectsMap = {};
+    subjects.forEach(s => { subjectsMap[s.id] = s; });
+
+    const listEl = document.getElementById('bulk-reassign-deck-list');
+    if (listEl) {
+      if (decks.length === 0) {
+        listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Chưa có bộ thẻ nào.</p>';
+      } else {
+        let html = '';
+        decks.forEach(d => {
+          const s = subjectsMap[d.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📁' };
+          html += `
+            <label style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;">
+              <input type="checkbox" class="bulk-deck-checkbox" value="${d.id}" style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+              <span style="font-weight: 500;">${this._escapeHtml(d.name)}</span>
+              <span style="font-size: 0.78rem; color: var(--text-secondary); margin-left: auto;">${s.icon || '📁'} ${this._escapeHtml(s.name)}</span>
+            </label>
+          `;
+        });
+        listEl.innerHTML = html;
+      }
+    }
+
+    const modal = document.getElementById('modal-bulk-reassign-decks');
+    if (modal) modal.classList.add('show');
+  },
+
+  toggleSelectAllBulkDecks() {
+    const checkboxes = document.querySelectorAll('.bulk-deck-checkbox');
+    if (checkboxes.length === 0) return;
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => { cb.checked = !allChecked; });
+  },
+
+  async applyBulkReassignDecks() {
+    const targetId = document.getElementById('bulk-reassign-target-subject')?.value;
+    if (!targetId) {
+      alert('Vui lòng chọn môn học đích.');
+      return;
+    }
+
+    const checked = Array.from(document.querySelectorAll('.bulk-deck-checkbox:checked')).map(cb => cb.value);
+    if (checked.length === 0) {
+      alert('Vui lòng chọn ít nhất 1 bộ thẻ để chuyển môn.');
+      return;
+    }
+
+    const targetSubj = await db.getSubject(targetId);
+    const count = await db.reassignDecksSubject(checked, targetId);
+
+    this.showToast(`Đã chuyển thành công ${count} bộ thẻ sang môn "${targetSubj.name}"! 🎉`, 'success');
+
+    const modal = document.getElementById('modal-bulk-reassign-decks');
+    if (modal) modal.classList.remove('show');
+
+    await this.renderDecks();
+    if (this.currentView === 'bank') await this.renderQuestionBank();
   },
 
   // --- HELPERS ---
