@@ -6527,5 +6527,199 @@ body.app-hidden * {
   animation-play-state: paused !important;
 }
 
+/* ==========================================================================
+   DYNAMIC SPOTLIGHT & HOVER GLOW SYSTEM (STREAM 2)
+   High-performance GPU compositor offloaded hover effects (60-120 FPS)
+   ========================================================================== */
 
+@media (hover: hover) and (pointer: fine) {
+  /* 1. Universal Card Spotlight Base */
+  .deck-card,
+  .subject-group,
+  .stat-card,
+  .quiz-card,
+  .hero-card,
+  .glass-card,
+  .bank-card-item,
+  .study-mode-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.22s ease,
+                box-shadow 0.22s ease;
+  }
 
+  /* Spotlight radial-gradient follows cursor via --mx, --my */
+  .deck-card::before,
+  .subject-group::before,
+  .stat-card::before,
+  .quiz-card::before,
+  .bank-card-item::before,
+  .glass-card::before,
+  .study-mode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      380px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(192, 132, 252, 0.16) 0%,
+      rgba(167, 139, 250, 0.05) 45%,
+      transparent 75%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
+  }
+
+  .deck-card:hover::before,
+  .subject-group:hover::before,
+  .stat-card:hover::before,
+  .quiz-card:hover::before,
+  .bank-card-item:hover::before,
+  .glass-card:hover::before,
+  .study-mode-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Elevate interactive card children above spotlight */
+  .deck-card > *,
+  .subject-group > *,
+  .stat-card > *,
+  .quiz-card > *,
+  .bank-card-item > *,
+  .glass-card > *,
+  .study-mode-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Card Hover Transform & Inset Glow (never clipped by contain: paint) */
+  .deck-card:hover,
+  .stat-card:hover,
+  .quiz-card:hover,
+  .glass-card:hover,
+  .bank-card-item:hover,
+  .study-mode-card:hover {
+    transform: translateY(-3px) translateZ(0);
+    border-color: rgba(192, 132, 252, 0.65) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 0 16px rgba(167, 139, 250, 0.20),
+                0 8px 24px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .subject-group:hover {
+    border-color: rgba(192, 132, 252, 0.55) !important;
+    box-shadow: inset 0 0 12px rgba(167, 139, 250, 0.15) !important;
+  }
+
+  /* 2. Interactive Buttons & Options Spotlight */
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-brand,
+  .quiz-option-btn,
+  .sidebar-nav-item,
+  .tab-item {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.18s ease,
+                background-color 0.18s ease,
+                box-shadow 0.18s ease;
+  }
+
+  .btn-primary::before,
+  .btn-secondary::before,
+  .btn-brand::before,
+  .quiz-option-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      150px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.24) 0%,
+      transparent 80%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 1;
+  }
+
+  .btn-primary:hover::before,
+  .btn-secondary:hover::before,
+  .btn-brand:hover::before,
+  .quiz-option-btn:hover::before {
+    opacity: 1;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1.5px) translateZ(0);
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 20px var(--accent-glow), 0 0 16px rgba(192, 132, 252, 0.45) !important;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-1.5px) translateZ(0);
+    border-color: var(--accent) !important;
+    background: rgba(36, 29, 58, 0.95) !important;
+    box-shadow: 0 0 16px rgba(167, 139, 250, 0.3) !important;
+  }
+
+  .quiz-option-btn:hover:not([disabled]) {
+    transform: translateX(4px) translateZ(0);
+    border-color: var(--accent) !important;
+    box-shadow: inset 0 0 12px rgba(167, 139, 250, 0.22), 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .sidebar-nav-item:hover {
+    border-color: rgba(167, 139, 250, 0.35);
+    background: rgba(167, 139, 250, 0.12);
+    box-shadow: inset 0 0 10px rgba(167, 139, 250, 0.15);
+  }
+}
+
+/* 3. Touch / Mobile Devices Isolation (Strictly no sticky hover) */
+@media (hover: none), (pointer: coarse) {
+  .deck-card:active,
+  .stat-card:active,
+  .quiz-card:active,
+  .bank-card-item:active,
+  .study-mode-card:active {
+    transform: scale(0.985);
+    transition-duration: 75ms;
+  }
+
+  .btn:active,
+  .quiz-option-btn:active:not([disabled]) {
+    transform: scale(0.97);
+    transition-duration: 75ms;
+  }
+}
+
+/* 4. Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .deck-card,
+  .stat-card,
+  .quiz-card,
+  .bank-card-item,
+  .hero-card,
+  .glass-card,
+  .btn,
+  .quiz-option-btn {
+    transform: none !important;
+    transition: border-color 0.15s ease, opacity 0.15s ease !important;
+  }
+
+  .deck-card::before,
+  .stat-card::before,
+  .quiz-card::before,
+  .bank-card-item::before,
+  .btn::before,
+  .quiz-option-btn::before {
+    display: none !important;
+  }
+}

@@ -1066,6 +1066,72 @@ const App = {
         this.adaptOptionsLayout(examOptions);
       }
     });
+
+    // Initialize desktop spotlight hover tracking (Stream 2)
+    this.initSpotlightHover();
+  },
+
+  // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2) ---
+  initSpotlightHover() {
+    if (typeof window === 'undefined' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      return;
+    }
+
+    let activeTarget = null;
+    let rafId = null;
+    let clientX = 0;
+    let clientY = 0;
+
+    const targetSelector = [
+      '.deck-card',
+      '.subject-group',
+      '.stat-card',
+      '.quiz-card',
+      '.hero-card',
+      '.glass-card',
+      '.bank-card-item',
+      '.study-mode-card',
+      '.quiz-option-btn',
+      '.btn-primary',
+      '.btn-secondary',
+      '.btn-brand',
+      '.sidebar-nav-item',
+      '.tab-item'
+    ].join(', ');
+
+    const updateCoords = () => {
+      rafId = null;
+      if (!activeTarget) return;
+      const rect = activeTarget.getBoundingClientRect();
+      const x = Math.round(clientX - rect.left);
+      const y = Math.round(clientY - rect.top);
+      activeTarget.style.setProperty('--mx', `${x}px`);
+      activeTarget.style.setProperty('--my', `${y}px`);
+    };
+
+    document.addEventListener('pointermove', (e) => {
+      const match = e.target.closest(targetSelector);
+      if (!match) {
+        activeTarget = null;
+        return;
+      }
+
+      activeTarget = match;
+      clientX = e.clientX;
+      clientY = e.clientY;
+
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateCoords);
+      }
+    }, { passive: true });
+
+    document.addEventListener('pointerleave', () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      activeTarget = null;
+    }, { passive: true });
   },
 
   // --- GLOBAL STATS & STREAK ---
