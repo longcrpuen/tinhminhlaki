@@ -113,7 +113,7 @@ body {
 #bg-layer {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-color: #0c0915;
   background-size: cover;
@@ -1794,6 +1794,8 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   position: relative; overflow: hidden;
   content-visibility: auto;
   contain-intrinsic-size: 0 160px;
+  contain-intrinsic-block-size: auto 160px;
+  contain: layout style paint;
   transform: translateZ(0);
 }
 .deck-card:hover {
@@ -5162,8 +5164,9 @@ select optgroup {
   padding: 22px; margin-bottom: 16px;
   transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) ease;
   content-visibility: auto;
-  contain-intrinsic-size: 0 120px;
-  contain-intrinsic-block-size: auto 120px;
+  contain-intrinsic-size: 0 160px;
+  contain-intrinsic-block-size: auto 160px;
+  contain: layout style paint;
 }
 .bank-card-item:hover {
   border-color: var(--accent);
@@ -5722,6 +5725,10 @@ select optgroup {
   padding: 18px 20px;
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
   box-shadow: var(--shadow-sm);
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+  contain-intrinsic-block-size: auto 200px;
+  contain: layout style paint;
 }
 .lms-preview-card:hover {
   border-color: rgba(168, 85, 247, 0.4);
@@ -6165,6 +6172,7 @@ select optgroup {
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  contain: layout style;
 }
 .subject-group:hover {
   border-color: rgba(167, 139, 250, 0.40);
@@ -6302,5 +6310,42 @@ select optgroup {
     padding: 14px 10px;
   }
 }
+
+/* ========== PERFORMANCE OPTIMIZATION ENGINE (Part B) ========== */
+/* Compositor-only transitions on transform & opacity */
+body.perf-compositor-anim .quiz-progress-fill {
+  width: 100% !important;
+  transform-origin: 0% 50%;
+  transition: transform var(--dur-norm) var(--ease-out-soft) !important;
+  will-change: transform;
+}
+
+body.perf-compositor-anim .per-q-timer-fill {
+  transform-origin: 0% 50%;
+  transition: transform 1s linear !important;
+  will-change: transform;
+}
+
+body.perf-compositor-anim .sm2-retention-fill {
+  width: 100% !important;
+  transform-origin: 0% 50%;
+  transition: transform 0.8s var(--ease-out-soft) !important;
+  will-change: transform;
+}
+
+/* Fallback toggle for content-visibility */
+body.no-content-visibility .bank-card-item,
+body.no-content-visibility .deck-card,
+body.no-content-visibility .lms-preview-card {
+  content-visibility: visible !important;
+  contain: none !important;
+}
+
+/* Freeze background loops and animations on 30s idle or hidden tab (Zero GPU/CPU drain) */
+body.app-idle *,
+body.app-hidden * {
+  animation-play-state: paused !important;
+}
+
 
 

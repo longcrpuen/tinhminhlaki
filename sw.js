@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.10.0';
+const CACHE_NAME = 'mindsparks-v4.11.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -15,6 +15,8 @@ const STATIC_ASSETS = [
   './lib/katex/katex.min.css',
   './lib/katex/katex.min.js',
   './lib/katex/auto-render.min.js',
+  './js/perf-config.js',
+  './js/worker.js',
   './js/db.js',
   './js/srs.js',
   './js/parser.js',

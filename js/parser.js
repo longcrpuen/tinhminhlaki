@@ -742,6 +742,12 @@ if (typeof window !== 'undefined') {
   window.cleanRawText = cleanRawText;
   window.parseQuestions = parseQuestions;
 }
+if (typeof self !== 'undefined') {
+  self.AIParser = AIParser;
+  self.LMSParser = LMSParser;
+  self.cleanRawText = cleanRawText;
+  self.parseQuestions = parseQuestions;
+}
 if (typeof global !== 'undefined') {
   global.LMSParser = LMSParser;
   global.cleanRawText = cleanRawText;

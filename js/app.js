@@ -102,10 +102,142 @@ const App = {
     // 4. Setup PWA & Service Worker
     this.setupPWA();
 
+    // Setup Performance Engine (Part B)
+    if (typeof PERF_CONFIG !== 'undefined') {
+      if (PERF_CONFIG.COMPOSITOR_ONLY_ANIM) {
+        document.body.classList.add('perf-compositor-anim');
+      }
+      if (PERF_CONFIG.CONTENT_VISIBILITY === false) {
+        document.body.classList.add('no-content-visibility');
+      }
+    }
+    this.initWorker();
+    this.setupIdleAndVisibilityListeners();
+
     // 5. Initial Render
     this.updateHeroQuote();
     await this.updateGlobalStats();
     await this.renderDashboard();
+  },
+
+  // --- PERFORMANCE ENGINE & WEB WORKER HELPERS (Part B) ---
+  _worker: null,
+  _workerReqId: 0,
+  _workerCallbacks: new Map(),
+
+  yieldToMain() {
+    if (typeof scheduler !== 'undefined' && typeof scheduler.yield === 'function') {
+      return scheduler.yield();
+    }
+    return new Promise(resolve => {
+      if (typeof MessageChannel !== 'undefined') {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage(null);
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
+  },
+
+  initWorker() {
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') return;
+    if (typeof PERF_CONFIG !== 'undefined' && !PERF_CONFIG.USE_WEB_WORKER) return;
+    if (this._worker) return;
+
+    try {
+      this._worker = new Worker('./js/worker.js');
+      this._worker.onmessage = (e) => {
+        const { id, success, result, error } = e.data || {};
+        const cb = this._workerCallbacks.get(id);
+        if (cb) {
+          this._workerCallbacks.delete(id);
+          if (success) cb.resolve(result);
+          else cb.reject(new Error(error || 'Worker task failed'));
+        }
+      };
+      this._worker.onerror = (err) => {
+        console.warn('[WebWorker] Background worker error, falling back to main thread:', err);
+      };
+    } catch (err) {
+      console.warn('[WebWorker] Could not initialize Web Worker:', err);
+      this._worker = null;
+    }
+  },
+
+  callWorker(action, payload, transferables = []) {
+    if (!this._worker && typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
+      this.initWorker();
+    }
+    if (!this._worker) {
+      return null;
+    }
+
+    const id = ++this._workerReqId;
+    return new Promise((resolve, reject) => {
+      this._workerCallbacks.set(id, { resolve, reject });
+      try {
+        this._worker.postMessage({ id, action, payload }, transferables);
+      } catch (err) {
+        this._workerCallbacks.delete(id);
+        reject(err);
+      }
+    });
+  },
+
+  setupIdleAndVisibilityListeners() {
+    if (typeof window === 'undefined') return;
+    let idleTimeout = null;
+    const resetIdle = () => {
+      if (document.body.classList.contains('app-idle')) {
+        document.body.classList.remove('app-idle');
+      }
+      clearTimeout(idleTimeout);
+      if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.IDLE_PAUSE) {
+        idleTimeout = setTimeout(() => {
+          document.body.classList.add('app-idle');
+        }, 30000);
+      }
+    };
+
+    ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+      window.addEventListener(evt, resetIdle, { passive: true });
+    });
+    resetIdle();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        document.body.classList.add('app-hidden');
+      } else {
+        document.body.classList.remove('app-hidden');
+        resetIdle();
+      }
+    });
+  },
+
+  preloadNextCardMath(session) {
+    if (!session || !session.cards) return;
+    const nextCard = session.cards[session.currentIndex + 1];
+    if (!nextCard) return;
+
+    const runPreload = () => {
+      try {
+        if (nextCard.question) this.renderLatexText(nextCard.question);
+        if (Array.isArray(nextCard.options)) {
+          nextCard.options.forEach(opt => {
+            const txt = typeof opt === 'string' ? opt : (opt?.text || '');
+            if (txt) this.renderLatexText(txt);
+          });
+        }
+        if (nextCard.explanation) this.renderLatexText(nextCard.explanation);
+      } catch (_) {}
+    };
+
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(runPreload, { timeout: 200 });
+    } else {
+      setTimeout(runPreload, 30);
+    }
   },
 
   // --- ROBUST MIXED LATEX & TEXT PARSER & RENDERER ---
@@ -575,23 +707,6 @@ const App = {
       if (examSec) examSec.style.setProperty('display', 'none', 'important');
     }
 
-    // View specific lifecycle
-    if (viewName === 'dashboard') {
-      this.renderDashboard();
-    } else if (viewName === 'decks') {
-      this.renderDecks();
-    } else if (viewName === 'bank') {
-      this.renderQuestionBank();
-    } else if (viewName === 'import') {
-      this.setupImportView(params);
-    } else if (viewName === 'import-lms') {
-      this.setupImportLmsView(params);
-    } else if (viewName === 'stats') {
-      this.renderStatsView();
-    } else if (viewName === 'settings') {
-      this.renderSettingsView();
-    }
-
     // Update topbar title for active view
     const viewTitles = {
       dashboard: 'Ôn Tập Cá Nhân',
@@ -610,6 +725,32 @@ const App = {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const mainEl = document.querySelector('.app-main');
     if (mainEl) mainEl.scrollTop = 0;
+
+    // View specific lifecycle (scheduled after current frame to keep curtain animation at max FPS)
+    const renderTargetView = () => {
+      if (this.currentView !== viewName) return;
+      if (viewName === 'dashboard') {
+        this.renderDashboard();
+      } else if (viewName === 'decks') {
+        this.renderDecks();
+      } else if (viewName === 'bank') {
+        this.renderQuestionBank();
+      } else if (viewName === 'import') {
+        this.setupImportView(params);
+      } else if (viewName === 'import-lms') {
+        this.setupImportLmsView(params);
+      } else if (viewName === 'stats') {
+        this.renderStatsView();
+      } else if (viewName === 'settings') {
+        this.renderSettingsView();
+      }
+    };
+
+    if (!isSameView && typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => renderTargetView());
+    } else {
+      renderTargetView();
+    }
   },
 
   // --- PWA SETUP ---
@@ -1440,7 +1581,12 @@ const App = {
     }
 
     const progressFill = document.getElementById('study-progress-fill');
-    if (progressFill) progressFill.style.width = `${((current - 1) / total) * 100}%`;
+    const ratio = total > 0 ? Math.max(0, Math.min(1, (current - 1) / total)) : 0;
+    if (progressFill) {
+      progressFill.style.width = `${ratio * 100}%`;
+      progressFill.style.transform = `scaleX(${ratio})`;
+    }
+    this.preloadNextCardMath(session);
 
     // Toggle Blind Recall Button state
     const blindBtn = document.getElementById('btn-toggle-blind');
@@ -2358,8 +2504,15 @@ const App = {
     const flashcard = document.getElementById('active-flashcard');
     if (!flashcard) return;
 
+    flashcard.style.willChange = 'transform';
     flashcard.classList.toggle('flipped');
     sounds.playFlip();
+
+    const onFlipEnd = () => {
+      flashcard.style.willChange = 'auto';
+      flashcard.removeEventListener('transitionend', onFlipEnd);
+    };
+    flashcard.addEventListener('transitionend', onFlipEnd, { once: true });
 
     const isFlipped = flashcard.classList.contains('flipped');
     const revealBtn = document.getElementById('btn-flashcard-reveal');
@@ -3473,21 +3626,35 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
   },
 
-  parseLmsInput() {
+  async parseLmsInput() {
     const rawInput = document.getElementById('lms-raw-input')?.value;
     if (!rawInput || !rawInput.trim()) {
       this.showToast('Vui lòng dán nội dung copy từ LMS vào ô trước khi phân tích!', 'warning');
       return;
     }
 
-    const parser = typeof LMSParser !== 'undefined' ? LMSParser : (window.LMSParser || null);
-    if (!parser) {
-      this.showToast('Module LMSParser chưa sẵn sàng!', 'danger');
-      return;
+    let questions = null;
+    if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
+      try {
+        const workerRes = await this.callWorker('PARSE_LMS', { rawText: rawInput });
+        if (Array.isArray(workerRes) && workerRes.length > 0) {
+          questions = workerRes;
+        }
+      } catch (err) {
+        console.warn('[WebWorker] LMS parse error, falling back:', err);
+      }
     }
 
-    const parsed = parser.parse(rawInput);
-    const questions = Array.isArray(parsed) ? parsed : (parsed?.questions || []);
+    if (!questions) {
+      const parser = typeof LMSParser !== 'undefined' ? LMSParser : (window.LMSParser || null);
+      if (!parser) {
+        this.showToast('Module LMSParser chưa sẵn sàng!', 'danger');
+        return;
+      }
+      const parsed = parser.parse(rawInput);
+      questions = Array.isArray(parsed) ? parsed : (parsed?.questions || []);
+    }
+
     if (!questions || questions.length === 0) {
       this.showToast('Không tìm thấy câu hỏi nào trong dữ liệu dán vào. Vui lòng kiểm tra lại định dạng.', 'warning');
       return;
@@ -3921,22 +4088,38 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const logs = await db.getRecentLogs(500);
     const streak = await db.getMeta('streak', { count: 0, history: [] });
 
-    // States breakdown
-    const states = { new: 0, learning: 0, review: 0, mastered: 0 };
-    allCards.forEach(c => {
-      const s = c.srs?.state || 'new';
-      states[s] = (states[s] || 0) + 1;
-    });
+    // States breakdown & accuracy calculation
+    let states = null;
+    let accPct = 0;
+    let totalReviews = logs.length;
+
+    if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
+      try {
+        const statsWorkerRes = await this.callWorker('COMPUTE_STATS', { cards: allCards, logs });
+        if (statsWorkerRes && statsWorkerRes.states) {
+          states = statsWorkerRes.states;
+          accPct = statsWorkerRes.accPct;
+          totalReviews = statsWorkerRes.totalReviews;
+        }
+      } catch (err) {
+        console.warn('[WebWorker] Stats worker error, falling back:', err);
+      }
+    }
+
+    if (!states) {
+      states = { new: 0, learning: 0, review: 0, mastered: 0 };
+      allCards.forEach(c => {
+        const s = c.srs?.state || 'new';
+        states[s] = (states[s] || 0) + 1;
+      });
+      const correctReviews = logs.filter(l => l.isCorrect).length;
+      accPct = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
+    }
 
     document.getElementById('stat-breakdown-new').textContent = states.new;
     document.getElementById('stat-breakdown-learning').textContent = states.learning;
     document.getElementById('stat-breakdown-review').textContent = states.review;
     document.getElementById('stat-breakdown-mastered').textContent = states.mastered;
-
-    // Accuracy
-    const totalReviews = logs.length;
-    const correctReviews = logs.filter(l => l.isCorrect).length;
-    const accPct = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
 
     document.getElementById('stat-acc-pct').textContent = `${accPct}%`;
     document.getElementById('stat-total-reviews').textContent = totalReviews;
@@ -5089,103 +5272,122 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       return;
     }
 
-    let html = '';
-    filtered.forEach(card => {
-      const deckName = decksMap[card.deckId] || 'Bộ thẻ';
-      const diff = this.normalizeDifficulty(card.difficulty);
-      const diffLabel = diff === 'easy' ? 'Dễ' : diff === 'hard' ? 'Khó' : 'Vừa';
-      const ansIdx = card.answerIndex || 0;
+    const CHUNK_SIZE = 15;
+    listContainer.innerHTML = '';
 
-      let cardTopic = card.topic || card.tag;
-      if (typeof cardTopic === 'object' && cardTopic !== null) {
-        cardTopic = cardTopic.name || cardTopic.title || cardTopic.topic || 'Chung';
-      }
-      const displayTopic = (typeof cardTopic === 'string' && cardTopic.trim()) ? cardTopic.trim() : 'Chung';
-      const isBookmarked = isCardBookmarked(card);
-      const isFlagged = isCardFlagged(card);
-
-      const sourceBadge = card.source === 'lms'
-        ? '<span class="source-badge source-badge-lms">Nguồn: LMS</span>'
-        : card.source === 'ai'
-        ? '<span class="source-badge source-badge-ai">Nguồn: AI</span>'
-        : '<span class="source-badge source-badge-manual">Nguồn: Thủ công</span>';
-
-      const reviewBadge = card.needsReview
-        ? `<span class="badge-review-flag" title="${this._escapeHtml(card.reviewReason || 'Cần kiểm tra lại')}">⚠️ Cần kiểm tra</span>`
-        : '';
-
-      // Calculate days until SRS due
-      let srsCountdown = '';
-      if (card.srs?.dueDate) {
-        const diffMs = card.srs.dueDate - Date.now();
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        if (diffDays <= 0) {
-          srsCountdown = '<span style="color: #F59E0B; font-weight: 600;">⏰ Cần ôn hôm nay</span>';
-        } else {
-          srsCountdown = `<span style="color: var(--text-muted);">⏳ Còn ${diffDays} ngày nữa cần ôn</span>`;
+    for (let i = 0; i < filtered.length; i += CHUNK_SIZE) {
+      if (i > 0) {
+        await this.yieldToMain();
+        if (this.currentView !== 'bank' || this.currentFilteredBankCards !== filtered) {
+          return;
         }
       }
+      const chunk = filtered.slice(i, i + CHUNK_SIZE);
+      let chunkHtml = '';
+      chunk.forEach(card => {
+        chunkHtml += this._generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged);
+      });
+      listContainer.insertAdjacentHTML('beforeend', chunkHtml);
+    }
 
-      html += `
-        <div class="bank-card-item" id="bank-item-${card.id}">
-          <div class="bank-card-header">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-              ${sourceBadge}
-              ${reviewBadge}
-              <span class="topic-badge">🏷️ ${this._escapeHtml(displayTopic)}</span>
-              <span class="difficulty-badge difficulty-${diff}">● ${diffLabel}</span>
-              <span style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface-elevated); padding: 3px 8px; border-radius: var(--radius-full);">📁 ${this._escapeHtml(deckName)}</span>
-              <span style="font-size: 0.78rem;">${srsCountdown}</span>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn-card-action ${isBookmarked ? 'active-bookmark' : ''}" title="${isBookmarked ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi (⭐)'}" onclick="App.toggleBankCardBookmark('${card.id}')">
-                ${isBookmarked ? '⭐' : '☆'}
-              </button>
-              <button class="btn-card-action ${isFlagged ? 'active-flag' : ''}" title="${isFlagged ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Gắn cờ diễn đạt chưa rõ (🚩)'}" onclick="App.toggleBankCardFlag('${card.id}')">
-                ${isFlagged ? '🚩' : '⚑'}
-              </button>
-              <button class="btn-card-action" title="Sửa nhanh nội dung ✏️" onclick="App.openEditCardById('${card.id}')">
-                ✏️
-              </button>
-            </div>
-          </div>
-
-          <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
-            ${this.renderLatexText(card.question)}
-          </div>
-
-          ${card.type === 'numeric' ? `
-            <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
-              🔢 <b>Đáp án số chính xác:</b> ${this._escapeHtml(card.correct_answer !== null && card.correct_answer !== undefined ? String(card.correct_answer) : '')}
-            </div>
-          ` : `
-            <div class="bank-card-options-grid">
-              ${(card.options || []).map((opt, i) => {
-                const { letter, cleanText } = this.cleanOptionText(opt, i);
-                return `
-                <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                  <b>${letter}.</b> ${this.renderLatexText(cleanText)} ${i === ansIdx ? '✓' : ''}
-                </div>
-              `;
-              }).join('')}
-            </div>
-          `}
-
-          ${card.explanation ? `
-            <div style="font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent);">
-              💡 <b>Giải thích:</b> ${this.renderLatexText(card.explanation)}
-            </div>
-          ` : ''}
-        </div>
-      `;
-    });
-
-    listContainer.innerHTML = html;
-    listContainer.querySelectorAll('.bank-card-options-grid').forEach(grid => {
-      if (grid.querySelector('.katex-inline-wrap, .katex')) {
+    // Only run layout measurement on first few visible cards to prevent layout thrashing
+    const firstGrids = listContainer.querySelectorAll('.bank-card-options-grid');
+    for (let i = 0; i < Math.min(6, firstGrids.length); i++) {
+      const grid = firstGrids[i];
+      if (grid && grid.querySelector('.katex-inline-wrap, .katex')) {
         this.adaptOptionsLayout(grid);
       }
-    });
+    }
+  },
+
+  _generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged) {
+    const deckName = decksMap[card.deckId] || 'Bộ thẻ';
+    const diff = this.normalizeDifficulty(card.difficulty);
+    const diffLabel = diff === 'easy' ? 'Dễ' : diff === 'hard' ? 'Khó' : 'Vừa';
+    const ansIdx = card.answerIndex || 0;
+
+    let cardTopic = card.topic || card.tag;
+    if (typeof cardTopic === 'object' && cardTopic !== null) {
+      cardTopic = cardTopic.name || cardTopic.title || cardTopic.topic || 'Chung';
+    }
+    const displayTopic = (typeof cardTopic === 'string' && cardTopic.trim()) ? cardTopic.trim() : 'Chung';
+    const isBookmarked = isCardBookmarked(card);
+    const isFlagged = isCardFlagged(card);
+
+    const sourceBadge = card.source === 'lms'
+      ? '<span class="source-badge source-badge-lms">Nguồn: LMS</span>'
+      : card.source === 'ai'
+      ? '<span class="source-badge source-badge-ai">Nguồn: AI</span>'
+      : '<span class="source-badge source-badge-manual">Nguồn: Thủ công</span>';
+
+    const reviewBadge = card.needsReview
+      ? `<span class="badge-review-flag" title="${this._escapeHtml(card.reviewReason || 'Cần kiểm tra lại')}">⚠️ Cần kiểm tra</span>`
+      : '';
+
+    // Calculate days until SRS due
+    let srsCountdown = '';
+    if (card.srs?.dueDate) {
+      const diffMs = card.srs.dueDate - Date.now();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) {
+        srsCountdown = '<span style="color: #F59E0B; font-weight: 600;">⏰ Cần ôn hôm nay</span>';
+      } else {
+        srsCountdown = `<span style="color: var(--text-muted);">⏳ Còn ${diffDays} ngày nữa cần ôn</span>`;
+      }
+    }
+
+    return `
+      <div class="bank-card-item" id="bank-item-${card.id}">
+        <div class="bank-card-header">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            ${sourceBadge}
+            ${reviewBadge}
+            <span class="topic-badge">🏷️ ${this._escapeHtml(displayTopic)}</span>
+            <span class="difficulty-badge difficulty-${diff}">● ${diffLabel}</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface-elevated); padding: 3px 8px; border-radius: var(--radius-full);">📁 ${this._escapeHtml(deckName)}</span>
+            <span style="font-size: 0.78rem;">${srsCountdown}</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-card-action ${isBookmarked ? 'active-bookmark' : ''}" title="${isBookmarked ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi (⭐)'}" onclick="App.toggleBankCardBookmark('${card.id}')">
+              ${isBookmarked ? '⭐' : '☆'}
+            </button>
+            <button class="btn-card-action ${isFlagged ? 'active-flag' : ''}" title="${isFlagged ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Gắn cờ diễn đạt chưa rõ (🚩)'}" onclick="App.toggleBankCardFlag('${card.id}')">
+              ${isFlagged ? '🚩' : '⚑'}
+            </button>
+            <button class="btn-card-action" title="Sửa nhanh nội dung ✏️" onclick="App.openEditCardById('${card.id}')">
+              ✏️
+            </button>
+          </div>
+        </div>
+
+        <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+          ${this.renderLatexText(card.question)}
+        </div>
+
+        ${card.type === 'numeric' ? `
+          <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
+            🔢 <b>Đáp án số chính xác:</b> ${this._escapeHtml(card.correct_answer !== null && card.correct_answer !== undefined ? String(card.correct_answer) : '')}
+          </div>
+        ` : `
+          <div class="bank-card-options-grid">
+            ${(card.options || []).map((opt, i) => {
+              const { letter, cleanText } = this.cleanOptionText(opt, i);
+              return `
+              <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+                <b>${letter}.</b> ${this.renderLatexText(cleanText)} ${i === ansIdx ? '✓' : ''}
+              </div>
+            `;
+            }).join('')}
+          </div>
+        `}
+
+        ${card.explanation ? `
+          <div style="font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent);">
+            💡 <b>Giải thích:</b> ${this.renderLatexText(card.explanation)}
+          </div>
+        ` : ''}
+      </div>
+    `;
   },
 
   toggleBankSubjectDropdown(e) {
@@ -5325,14 +5527,50 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const updated = await db.toggleBookmark(cardId);
     const nextState = Boolean(updated?.isBookmarked ?? updated?.bookmarked ?? false);
     this.showToast(nextState ? 'Đã lưu câu hỏi ⭐' : 'Đã bỏ lưu câu hỏi', 'info');
-    await this.renderQuestionBank();
+
+    // Targeted DOM update - zero full re-render
+    const cardEl = document.getElementById(`bank-item-${cardId}`);
+    if (cardEl) {
+      const btn = cardEl.querySelector('.btn-card-action:first-child');
+      if (btn) {
+        btn.classList.toggle('active-bookmark', nextState);
+        btn.textContent = nextState ? '⭐' : '☆';
+        btn.title = nextState ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi (⭐)';
+      }
+      if (this.bankFilters.bookmarkOnly && !nextState) {
+        cardEl.remove();
+      }
+    }
+    // Update toolbar counter
+    const allCards = await db.getAllCards();
+    const count = allCards.filter(c => Boolean(c.isBookmarked ?? c.bookmarked)).length;
+    const bCountEl = document.getElementById('bank-count-bookmark');
+    if (bCountEl) bCountEl.textContent = count;
   },
 
   async toggleBankCardFlag(cardId) {
     const updated = await db.toggleFlag(cardId);
     const nextState = Boolean(updated?.isFlagged ?? updated?.flagged ?? false);
     this.showToast(nextState ? 'Đã gắn cờ "Diễn đạt chưa rõ" 🚩' : 'Đã bỏ gắn cờ', 'info');
-    await this.renderQuestionBank();
+
+    // Targeted DOM update - zero full re-render
+    const cardEl = document.getElementById(`bank-item-${cardId}`);
+    if (cardEl) {
+      const btn = cardEl.querySelector('.btn-card-action:nth-child(2)');
+      if (btn) {
+        btn.classList.toggle('active-flag', nextState);
+        btn.textContent = nextState ? '🚩' : '⚑';
+        btn.title = nextState ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Gắn cờ diễn đạt chưa rõ (🚩)';
+      }
+      if (this.bankFilters.flagOnly && !nextState) {
+        cardEl.remove();
+      }
+    }
+    // Update toolbar counter
+    const allCards = await db.getAllCards();
+    const count = allCards.filter(c => Boolean(c.isFlagged ?? c.flagged)).length;
+    const fCountEl = document.getElementById('bank-count-flag');
+    if (fCountEl) fCountEl.textContent = count;
   },
 
   async copyFlaggedAIPrompt() {

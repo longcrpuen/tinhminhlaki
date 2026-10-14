@@ -15,6 +15,8 @@ const DIST = path.join(ROOT, 'dist');
 // 1. Static Syntax & Integrity Verification
 console.log('📦 Step 1: Validating JavaScript syntax integrity...');
 const jsFilesToCheck = [
+  'js/perf-config.js',
+  'js/worker.js',
   'js/app.js',
   'js/db.js',
   'js/parser.js',
