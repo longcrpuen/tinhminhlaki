@@ -24,6 +24,33 @@ const App = {
     } catch (_) {}
   },
 
+  getLastUsedSubjectId() {
+    if (this.lastUsedSubjectId) return this.lastUsedSubjectId;
+    try {
+      return localStorage.getItem('last_used_subject_id');
+    } catch (_) {
+      return null;
+    }
+  },
+
+  _showModal(modal) {
+    if (!modal) return;
+    const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
+    if (el) {
+      el.classList.add('show');
+      document.body.classList.add('modal-open');
+    }
+  },
+
+  _closeModal(modal) {
+    if (!modal) return;
+    const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
+    if (el) el.classList.remove('show');
+    if (document.querySelectorAll('.modal-overlay.show').length === 0) {
+      document.body.classList.remove('modal-open');
+    }
+  },
+
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
@@ -2824,7 +2851,7 @@ const App = {
   async openExamModal(deckId = null) {
     this.currentDeckIdForExam = deckId;
     const modal = document.getElementById('modal-exam-setup');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleExamCountDropdown(e) {
@@ -2983,7 +3010,7 @@ const App = {
     }
 
     const modal = document.getElementById('modal-topic-picker');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleTopicSelection(el, topic) {
@@ -3003,7 +3030,7 @@ const App = {
       return;
     }
     const modal = document.getElementById('modal-topic-picker');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
     this.startSession(this.currentDeckIdForTopic, 'topic', { topics });
   },
 
@@ -3011,7 +3038,7 @@ const App = {
   openSprintModal(deckId = null) {
     this.currentDeckIdForSprint = deckId;
     const modal = document.getElementById('modal-sprint-setup');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleSprintCountDropdown(e) {
@@ -4395,7 +4422,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (previewBox) previewBox.style.display = 'none';
 
     const modal = document.getElementById('modal-edit-card');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   openEditCardModal(card) {
@@ -4427,7 +4454,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (previewBox) previewBox.style.display = 'none';
 
     const modal = document.getElementById('modal-edit-card');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleEditCardSubjectDropdown(e) {
@@ -4739,7 +4766,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     await this.updateGlobalStats();
 
     const modal = document.getElementById('modal-edit-card');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
   },
 
   // --- SESSION AUTO-SAVE & RESTORE ---
@@ -5878,7 +5905,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (iconInput) iconInput.value = '📚';
     if (colorInput) colorInput.value = '#8b5cf6';
     const modal = document.getElementById('modal-create-subject');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   async saveCreateSubject() {
@@ -5902,7 +5929,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.showToast(`Đã tạo môn học "${created.name}" thành công! 🎉`, 'success');
 
     const modal = document.getElementById('modal-create-subject');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
 
     const ctx = this._createSubjectContext;
     this._createSubjectContext = '';
@@ -6020,7 +6047,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     const modal = document.getElementById('modal-manage-subject');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleManageSubjectMergeDropdown(e) {
@@ -6099,7 +6126,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.showToast(`Đã cập nhật môn học "${name}"!`, 'success');
 
     const modal = document.getElementById('modal-manage-subject');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
 
     await this.renderDecks();
     if (this.currentView === 'bank') await this.renderQuestionBank();
@@ -6125,7 +6152,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.showToast(`Đã gộp thành công vào môn "${targetSubj.name}"!`, 'success');
 
     const modal = document.getElementById('modal-manage-subject');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
 
     if (this.currentBankSubjectId === currentId) {
       this.currentBankSubjectId = targetId;
@@ -6169,7 +6196,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.showToast(`Đã xóa môn "${currentSubj.name}".`, 'info');
 
     const modal = document.getElementById('modal-manage-subject');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
 
     if (this.currentBankSubjectId === currentId) {
       this.currentBankSubjectId = targetId || '__all__';
@@ -6236,7 +6263,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.updateBulkReassignCount();
 
     const modal = document.getElementById('modal-bulk-reassign-decks');
-    if (modal) modal.classList.add('show');
+    if (modal) this._showModal(modal);
   },
 
   toggleBulkReassignSubjectDropdown(e) {
@@ -6320,7 +6347,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.showToast(`Đã chuyển thành công ${count} bộ thẻ sang môn "${targetSubj.name}"! 🎉`, 'success');
 
     const modal = document.getElementById('modal-bulk-reassign-decks');
-    if (modal) modal.classList.remove('show');
+    if (modal) this._closeModal(modal);
 
     await this.renderDecks();
     if (this.currentView === 'bank') await this.renderQuestionBank();

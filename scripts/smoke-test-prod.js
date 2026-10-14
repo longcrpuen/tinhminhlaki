@@ -62,7 +62,16 @@ async function main() {
       }).on('error', reject);
     });
 
-    const targets = await httpGet('http://localhost:9225/json');
+    let targets = null;
+    for (let i = 0; i < 15; i++) {
+      try {
+        targets = await httpGet('http://localhost:9225/json');
+        if (targets) break;
+      } catch (e) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+    assert(targets, 'Chrome remote debugging endpoint must be reachable');
     const pageTarget = targets.find(t => t.type === 'page');
     assert(pageTarget, 'Page target must be available in Chrome');
 
