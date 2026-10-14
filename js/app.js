@@ -72,13 +72,29 @@ const App = {
     } catch (e) {}
 
     // 2. Load User Preferences (Single Dark Purple Theme is directly active on :root)
-    // Load saved background with robust error handling
+    // Load saved background with robust error handling (Stream 1)
     try {
       let savedBg = await db.getMeta('backgroundSrc', 'none');
-      if (typeof savedBg === 'string' && savedBg.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(savedBg)) {
-        savedBg = savedBg.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-      }
-      if (savedBg && savedBg !== 'none') {
+      if (savedBg === 'custom_blob') {
+        const blob = await db.getMeta('customBackgroundBlob', null);
+        if (blob instanceof Blob) {
+          await this.setBackground(blob, true);
+        } else {
+          await this.setBackground('none', true);
+        }
+      } else if (typeof savedBg === 'string' && savedBg.startsWith('data:image/')) {
+        // Migration: convert legacy base64 dataURL to Blob in IndexedDB
+        try {
+          const res = await fetch(savedBg);
+          const blob = await res.blob();
+          await this.setBackground(blob, false);
+        } catch (e) {
+          await this.setBackground('none', true);
+        }
+      } else if (savedBg && savedBg !== 'none') {
+        if (typeof savedBg === 'string' && savedBg.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(savedBg)) {
+          savedBg = savedBg.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+        }
         await this.setBackground(savedBg, true);
       }
     } catch (bgLoadErr) {
@@ -395,13 +411,17 @@ const App = {
     }
   },
 
-  // Helper: Resize and compress image on canvas before storing (max 1280px, ~120KB)
-  async _compressImage(file, maxDim = 1280, quality = 0.82) {
+  // --- BACKGROUND MANAGER & BLOB STORAGE (Stream 1) ---
+  _currentBgBlobUrl: null,
+
+  // Helper: Resize and compress image on canvas before storing as Blob in IndexedDB (max 1920px, WebP with JPEG fallback)
+  async _compressImageToBlob(file, maxDim = 1920, quality = 0.80) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
-      
+
       img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
         try {
           let w = img.width;
           let h = img.height;
@@ -414,17 +434,39 @@ const App = {
               h = maxDim;
             }
           }
+
           const canvas = document.createElement('canvas');
           canvas.width = w;
           canvas.height = h;
           const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Không thể khởi tạo Canvas 2D context.');
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, w, h);
 
-          const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-          URL.revokeObjectURL(objectUrl);
-          resolve(compressedBase64);
+          // WebP export first, fallback to JPEG
+          if (canvas.toBlob) {
+            canvas.toBlob((blob) => {
+              if (blob && blob.size > 0) {
+                resolve(blob);
+              } else {
+                // Fallback to JPEG
+                canvas.toBlob((jpegBlob) => {
+                  if (jpegBlob && jpegBlob.size > 0) {
+                    resolve(jpegBlob);
+                  } else {
+                    reject(new Error('Không thể tạo file ảnh Blob nén.'));
+                  }
+                }, 'image/jpeg', 0.82);
+              }
+            }, 'image/webp', quality);
+          } else {
+            // Older browser fallback: dataURL -> Blob
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            fetch(dataUrl).then(res => res.blob()).then(resolve).catch(reject);
+          }
         } catch (canvasErr) {
-          URL.revokeObjectURL(objectUrl);
           reject(canvasErr);
         }
       };
@@ -438,7 +480,6 @@ const App = {
     });
   },
 
-  // --- BACKGROUND MANAGER ---
   async setBackground(src, skipSave) {
     try {
       if (typeof src === 'string' && src.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(src)) {
@@ -446,13 +487,49 @@ const App = {
       }
       const layer = document.getElementById('bg-layer');
 
+      // Clear previous blob object URL if switching away
+      if (this._currentBgBlobUrl && this._currentBgBlobUrl !== src) {
+        URL.revokeObjectURL(this._currentBgBlobUrl);
+        this._currentBgBlobUrl = null;
+      }
+
       if (!src || src === 'none') {
         if (layer) {
           layer.style.backgroundImage = '';
           layer.classList.remove('active');
         }
+        document.body.classList.remove('has-custom-bg');
         document.body.style.backgroundImage = '';
+
+        if (!skipSave) {
+          await db.setMeta('backgroundSrc', 'none');
+          await db.setMeta('customBackgroundBlob', null);
+        }
+      } else if (src instanceof Blob) {
+        // Blob instance (uploaded custom wallpaper)
+        this._currentBgBlobUrl = URL.createObjectURL(src);
+        const urlVal = `url("${this._currentBgBlobUrl}")`;
+        if (layer) {
+          layer.style.backgroundImage = urlVal;
+          layer.classList.add('active');
+        }
+        document.body.classList.add('has-custom-bg');
+
+        if (!skipSave) {
+          await db.setMeta('customBackgroundBlob', src);
+          await db.setMeta('backgroundSrc', 'custom_blob');
+        }
       } else {
+        // Preset or URL string
+        if (src === 'custom_blob') {
+          const blob = await db.getMeta('customBackgroundBlob', null);
+          if (blob instanceof Blob) {
+            return this.setBackground(blob, true);
+          } else {
+            return this.setBackground('none', false);
+          }
+        }
+
         // Pre-decode image before applying to prevent UI jank
         try {
           const preloader = new Image();
@@ -464,27 +541,28 @@ const App = {
           // Continue if decode API unsupported or non-blocking error
         }
 
-        // Enclose src in quotes for safe CSS url() parsing
         const safeSrc = src.replace(/"/g, '\\"');
         const urlVal = `url("${safeSrc}")`;
         if (layer) {
           layer.style.backgroundImage = urlVal;
           layer.classList.add('active');
         }
-      }
+        document.body.classList.add('has-custom-bg');
 
-      if (!skipSave) {
-        try {
-          await db.setMeta('backgroundSrc', src || 'none');
-        } catch (dbErr) {
-          console.error('[Background] Lỗi lưu backgroundSrc vào IndexedDB:', dbErr);
-          throw dbErr;
+        if (!skipSave) {
+          await db.setMeta('backgroundSrc', src);
+          await db.setMeta('customBackgroundBlob', null);
         }
       }
 
       // Update picker thumb states
       document.querySelectorAll('.bg-thumb').forEach(thumb => {
-        thumb.classList.toggle('active', thumb.dataset.bg === (src || 'none'));
+        const thumbBg = thumb.dataset.bg;
+        if (src instanceof Blob || src === 'custom_blob') {
+          thumb.classList.remove('active');
+        } else {
+          thumb.classList.toggle('active', thumbBg === (src || 'none'));
+        }
       });
     } catch (err) {
       console.error('[Background] Lỗi cài đặt hình nền:', err);
@@ -501,21 +579,30 @@ const App = {
         this.showToast('Vui lòng chọn file ảnh hợp lệ (jpg, png, webp...)', 'warning');
         return;
       }
-      if (file.size > 15 * 1024 * 1024) {
-        this.showToast('Ảnh quá lớn (tối đa 15MB)', 'warning');
+      if (file.size > 25 * 1024 * 1024) {
+        this.showToast('Ảnh quá lớn (tối đa 25MB)', 'warning');
         return;
       }
 
-      // 1. Instant preview using createObjectURL
-      const instantPreviewUrl = URL.createObjectURL(file);
-      await this.setBackground(instantPreviewUrl, true);
       this.showToast('Đang tối ưu hóa hình nền...', 'info');
 
-      // 2. Compress image via canvas for persistent storage
-      const compressedData = await this._compressImage(file, 1280, 0.82);
+      // 1. Instant preview using temporary ObjectURL
+      const instantPreviewUrl = URL.createObjectURL(file);
+      const layer = document.getElementById('bg-layer');
+      if (layer) {
+        layer.style.backgroundImage = `url("${instantPreviewUrl}")`;
+        layer.classList.add('active');
+      }
+      document.body.classList.add('has-custom-bg');
 
-      // 3. Save compressed image to DB and apply permanently
-      await this.setBackground(compressedData, false);
+      // 2. Compress image via canvas to Blob (max 1920px, WebP with JPEG fallback)
+      const compressedBlob = await this._compressImageToBlob(file, 1920, 0.80);
+
+      // Clean up temporary preview
+      URL.revokeObjectURL(instantPreviewUrl);
+
+      // 3. Save compressed Blob to DB and apply permanently
+      await this.setBackground(compressedBlob, false);
       this.showToast('Đã lưu hình nền tùy chọn thành công! 🖼️', 'success');
 
       // Reset file input so user can re-upload same file if desired

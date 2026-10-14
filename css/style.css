@@ -126,7 +126,7 @@ hr {
 #bg-layer {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   background-color: #0c0915;
   background-size: cover;
@@ -162,6 +162,10 @@ hr {
 
 #bg-layer.active {
   opacity: 1;
+}
+
+body.has-custom-bg {
+  background-color: transparent !important;
 }
 
 /* Ambient single subtle glowing spot (radial-gradient tím dạ quang độ mờ 15% - Zero FPS drop) */
