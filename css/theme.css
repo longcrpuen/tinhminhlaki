@@ -1,16 +1,12 @@
 /* ==========================================================================
    MINDSARKS - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
+   Tactile & Calm Knowledge Workspace (Obsidian Carbon & Electric Indigo)
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
    - File này quản lý tất cả các biến màu sắc, khoảng cách, bo góc và typography.
    - Bạn có thể trực tiếp đổi các mã màu bên dưới (dạng #HEX hoặc rgba).
-   - Muốn đổi màu Tím chủ đạo sang màu khác (VD: Xanh ngọc, Hồng, Vàng cam),
-     chỉ cần sửa mã màu tại mục 2 (MÀU ĐIỂM NHẤN CHÍNH --accent).
-   - Tuân thủ nghiêm ngặt DESIGN-RULES.md & WCAG AA:
-     * Dark mode dịu mộng mơ (Liquid Glass Violet)
-     * Thang chữ clamp() thích ứng Desktop & Mobile
-     * Focus ring rõ ràng cho điều hướng bàn phím
-     * Giới hạn hiệu năng: GPU-friendly, không box-shadow/filter animation
+   - Màu nhấn mặc định: Electric Indigo (#5E6AD2) - Điềm tĩnh, chuẩn mực học thuật.
+   - Tuân thủ nghiêm ngặt WCAG AA (Contrast >= 4.5:1), GPU 120fps (không filter blur animation).
    ========================================================================== */
 
 :root {
@@ -22,76 +18,81 @@
   /* ==========================================
      1. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
      - ENABLE_GLASS_BLUR: 0 = Tắt blur toàn bộ card danh sách để giữ 90-120 FPS
-     - Blur chỉ dùng ở tối đa vài bề mặt lớn cố định (topbar, sidebar, modal)
+     - Blur chỉ dùng ở tối đa vài bề mặt lớn cố định (topbar, sidebar, modal scrim)
      ========================================== */
   --ENABLE_GLASS_BLUR: 0;
   --glass-blur-radius: 8px;
   --glass-backdrop-filter: none;
 
   /* ==========================================
-     2. MÀU ĐIỂM NHẤN (ACCENT COLORS)
+     2. MÀU ĐIỂM NHẤN (ACCENT COLORS - CALM & FOCUSED)
      ========================================== */
-  --accent: #a78bfa;                     /* Tím nhạt rực rỡ (Accent chính) */
-  --accent-secondary: #c084fc;           /* Tím phong lan (Accent phụ) */
-  --accent-glow: rgba(167, 139, 250, 0.22); /* Vầng sáng hào quang tím nhẹ */
-  --accent-subtle-bg: rgba(167, 139, 250, 0.12); /* Nền mờ tím siêu nhẹ */
-  --accent-border: rgba(167, 139, 250, 0.28);    /* Viền ánh tím nhẹ */
-  
-  /* Gradient thương hiệu */
-  --brand-gradient: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f472b6 100%);
-  --brand-gradient-subtle: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(192, 132, 252, 0.06) 100%);
-  --glow-color: rgba(167, 139, 250, 0.16);
+  --accent: #5E6AD2;                        /* Electric Indigo (Accent chính) */
+  --accent-primary: #5E6AD2;
+  --accent-secondary: #7C88E8;              /* Indigo sáng nhẹ */
+  --accent-hover: #6E7BE2;
+  --accent-active: #4F5BC4;
+  --accent-glow: rgba(94, 106, 210, 0.20);  /* Hào quang indigo dịu */
+  --accent-subtle-bg: rgba(94, 106, 210, 0.10); /* Nền mờ siêu nhẹ */
+  --accent-border: rgba(94, 106, 210, 0.25);    /* Viền ánh indigo nhẹ */
+  --accent-surface: rgba(94, 106, 210, 0.12);
+
+  /* Gradient nhận diện điềm tĩnh, tri thức */
+  --brand-gradient: linear-gradient(135deg, #5E6AD2 0%, #7C88E8 50%, #38BDF8 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(94, 106, 210, 0.12) 0%, rgba(124, 136, 232, 0.05) 100%);
+  --glow-color: rgba(94, 106, 210, 0.15);
 
   /* ==========================================
-     3. MÀU NỀN & BỀ MẶT KÍNH TĨNH (SURFACES & ALPHA)
-     Dùng màu có sẵn alpha channel để triệt tiêu sụt giảm FPS khi cuộn
+     3. MÀU NỀN & BỀ MẶT OBSIDIAN CARBON (TACTILE SURFACES)
      ========================================== */
-  --bg-base: #090A0F;                    /* Nền đen sâu chuẩn Dark Tech */
-  --bg-surface: rgba(18, 19, 26, 0.85);  /* Nền panel tĩnh có alpha */
-  --bg-surface-elevated: rgba(28, 29, 38, 0.92); /* Nền panel nổi cao hơn */
-  --bg-card: rgba(18, 19, 26, 0.85);     /* Nền card câu hỏi & thẻ học */
-  --bg-card-hover: rgba(28, 29, 40, 0.90); /* Nền card khi hover */
-  --bg-card-active: rgba(34, 32, 48, 0.95); /* Nền card khi nhấn */
-  --bg-overlay: rgba(9, 10, 15, 0.88);   /* Nền backdrop modal */
-  
-  --glass-tint: rgba(18, 19, 26, 0.85);  /* Lớp nền thẻ học và panel */
-  --glass-border: rgba(167, 139, 250, 0.20); /* Viền sáng kính */
-  --glass-border-subtle: rgba(167, 139, 250, 0.10); /* Viền kính siêu mờ */
-  --glass-highlight: rgba(255, 255, 255, 0.10); /* Điểm sáng phản chiếu */
-  
-  --border-color: rgba(167, 139, 250, 0.15); /* Đường kẻ viền mờ */
-  --border-focus: rgba(167, 139, 250, 0.65); /* Viền sáng khi active/focus */
+  --bg-base: #090A0F;                       /* Nền đen sâu chuẩn Obsidian */
+  --bg-canvas: #090A0F;
+  --bg-surface: rgba(18, 19, 26, 0.85);     /* Bề mặt panel chuẩn */
+  --bg-surface-elevated: rgba(28, 29, 38, 0.92); /* Bề mặt nổi (Dropdown, Tooltip, Popover) */
+  --bg-card: rgba(18, 19, 26, 0.85);        /* Nền card câu hỏi & thẻ học */
+  --bg-card-hover: rgba(28, 29, 40, 0.90);  /* Nền card khi hover */
+  --bg-card-active: rgba(34, 35, 48, 0.95); /* Nền card khi nhấn */
+  --bg-overlay: rgba(9, 10, 15, 0.88);      /* Nền backdrop modal */
+
+  --glass-tint: rgba(18, 19, 26, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08); /* Viền mảnh sắc nét */
+  --glass-border-subtle: rgba(255, 255, 255, 0.05);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+
+  --border-color: rgba(255, 255, 255, 0.08); /* Viền ngăn cách */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-focus: rgba(94, 106, 210, 0.65);  /* Viền focus rõ ràng */
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
   /* ==========================================
-     4. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS - WCAG AA)
-     Độ tương phản tối thiểu 4.5:1 trên mọi nền tối
+     4. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS - WCAG AAA/AA)
      ========================================== */
-  --text-primary: #f8f6fd;                /* Chữ chính: Trắng tím sáng (16.5:1) */
-  --text-secondary: #c4bcdc;              /* Chữ phụ: Tím xám dịu mắt (10.1:1) */
-  --text-muted: #9d92b5;                  /* Chữ mờ / caption: Đạt chuẩn 4.6:1 */
-  --text-accent: #c084fc;                 /* Chữ điểm nhấn */
+  --text-primary: #F8FAFC;                  /* Chữ chính: Trắng sáng tự nhiên (17:1) */
+  --text-secondary: #CBD5E1;                /* Chữ phụ: Xám bạc sắc nét (10:1 chuẩn WCAG AAA) */
+  --text-muted: #94A3B8;                    /* Chữ chú thích/placeholder: (6.2:1 chuẩn WCAG AA) */
+  --text-accent: #818CF8;                   /* Chữ điểm nhấn */
 
   /* ==========================================
-     5. MÀU PHẢN HỒI KẾT QUẢ & TRẠNG THÁI (FEEDBACK & STATUS)
+     5. MÀU PHẢN HỒI KẾT QUẢ & TRẠNG THÁI (SEMANTIC FEEDBACK)
      ========================================== */
-  --success: #6fcf97;                     /* Xanh ngọc: Đúng, hoàn thành */
-  --success-bg: rgba(111, 207, 151, 0.12);
-  --success-border: rgba(111, 207, 151, 0.30);
-  --success-glow: rgba(111, 207, 151, 0.25);
-  
-  --danger: #e27d8b;                      /* Hồng san hô: Sai, cảnh báo */
-  --danger-bg: rgba(226, 125, 139, 0.12);
-  --danger-border: rgba(226, 125, 139, 0.30);
-  --danger-glow: rgba(226, 125, 139, 0.25);
-  
-  --warning: #e0b45c;                     /* Vàng ấm: Chú ý, cần ôn tập */
-  --warning-bg: rgba(224, 180, 92, 0.12);
-  --warning-border: rgba(224, 180, 92, 0.30);
-  
-  --info: #7bb8e0;                        /* Xanh lơ: Hướng dẫn, gợi ý */
-  --info-bg: rgba(123, 184, 224, 0.12);
-  --info-border: rgba(123, 184, 224, 0.30);
-  --streak-color: #f59e0b;                /* Vàng cam: Biểu tượng streak */
+  --success: #34D399;                       /* Xanh lục bảo dịu: Đúng, thuộc */
+  --success-bg: rgba(52, 211, 153, 0.10);
+  --success-border: rgba(52, 211, 153, 0.30);
+  --success-glow: rgba(52, 211, 153, 0.20);
+
+  --danger: #F87171;                        /* Đỏ san hô trầm: Sai, quên */
+  --danger-bg: rgba(248, 113, 113, 0.10);
+  --danger-border: rgba(248, 113, 113, 0.30);
+  --danger-glow: rgba(248, 113, 113, 0.20);
+
+  --warning: #FBBF24;                       /* Hổ phách ấm: Đến hạn, khó */
+  --warning-bg: rgba(251, 191, 36, 0.10);
+  --warning-border: rgba(251, 191, 36, 0.30);
+
+  --info: #60A5FA;                          /* Xanh lam thanh: Thông tin */
+  --info-bg: rgba(96, 165, 250, 0.10);
+  --info-border: rgba(96, 165, 250, 0.30);
+  --streak-color: #F59E0B;                  /* Cam rực: Streak */
 
   /* ==========================================
      6. THANG KHOẢNG CÁCH (SPACING SCALE)
@@ -108,15 +109,13 @@
 
   /* ==========================================
      7. THANG TYPOGRAPHY (TYPOGRAPHY SCALE VIA CLAMP)
-     Heading: Pixel font. UI / Body: đúng 1 font sans-serif dễ đọc.
      ========================================== */
-  --font-heading: 'Pixelify Sans', 'VT323', monospace;
+  --font-heading: var(--font-display, var(--font-sans));
   --font-pixel: 'Pixelify Sans', 'VT323', monospace;
-  --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: var(--font-sans, system-ui, sans-serif);
   --font-family: var(--font-body);
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, monospace;
 
-  /* Cỡ chữ co giãn mượt mà theo viewport (Mobile -> Desktop) */
   --text-display: clamp(1.85rem, 3.5vw + 1rem, 2.75rem);
   --text-h1: clamp(1.4rem, 2.2vw + 0.8rem, 2rem);
   --text-h2: clamp(1.15rem, 1.5vw + 0.7rem, 1.5rem);
@@ -125,13 +124,11 @@
   --text-sm: clamp(0.82rem, 0.25vw + 0.75rem, 0.88rem);
   --text-xs: clamp(0.72rem, 0.15vw + 0.68rem, 0.78rem);
 
-  /* Chiều cao dòng (Line-heights) */
   --leading-tight: 1.15;
   --leading-snug: 1.35;
   --leading-normal: 1.55;
   --leading-relaxed: 1.7;
 
-  /* Khoảng cách chữ (Letter-spacing / Tracking) */
   --tracking-tighter: -0.035em;
   --tracking-tight: -0.025em;
   --tracking-normal: 0em;
@@ -152,40 +149,39 @@
   --radius-full: 9999px;
 
   /* ==========================================
-     9. HIỆU ỨNG ĐỔ BÓNG & GLOW NEON
-     Bán kính <= 14px để giữ GPU fill-rate siêu tốc và 90-120 FPS
+     9. ĐỔ BÓNG & HIGHLIGHT TINH TẾ (TACTILE SHADOWS)
+     Loại bỏ hoàn toàn glow tím neon chói lọi; chỉ dùng bóng sâu tự nhiên
      ========================================== */
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.38);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.55);
   --shadow-glow: 0 0 12px var(--accent-glow);
-  --neon-glow-primary: 0 0 10px rgba(167, 139, 250, 0.30);
-  --neon-glow-hover: 0 4px 14px rgba(167, 139, 250, 0.40);
-  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.30), 0 0 8px rgba(167, 139, 250, 0.15);
-  --border-focus-glow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+  --neon-glow-primary: 0 0 10px rgba(94, 106, 210, 0.25);
+  --neon-glow-hover: 0 4px 14px rgba(94, 106, 210, 0.30);
+  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 8px rgba(94, 106, 210, 0.12);
+  --border-focus-glow: 0 0 0 2px rgba(94, 106, 210, 0.35);
 
   /* ==========================================
-     10. ACCESSIBLE FOCUS RING (TRUY CẬP BÀN PHÍM)
+     10. ACCESSIBLE FOCUS RING
      ========================================== */
   --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
   --focus-ring-inset: inset 0 0 0 2px var(--accent);
 
   /* ==========================================
-     11. TỐC ĐỘ & EASING CHUYỂN ĐỘNG (ANIMATION EASING)
-     Deceleration mượt mà, không overshoot gây giật
+     11. TỐC ĐỘ & EASING CHUYỂN ĐỘNG (EMIL KOWALSKI PHYSICS)
      ========================================== */
-  --dur-instant: 100ms;
-  --dur-fast: 200ms;
-  --dur-norm: 300ms;
-  --dur-slow: 400ms;
+  --dur-instant: 80ms;
+  --dur-fast: 160ms;
+  --dur-norm: 260ms;
+  --dur-slow: 380ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 
   /* ==========================================
-     12. KÍCH THƯỚC BỐ CỤC KHUNG CHUẨN (LAYOUT CONSTANTS)
+     12. KÍCH THƯỚC BỐ CỤC KHUNG CHUẨN
      ========================================== */
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 72px;

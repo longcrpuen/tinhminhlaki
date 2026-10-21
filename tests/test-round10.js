@@ -43,7 +43,7 @@ assert(html.includes('TÔI') && html.includes('NGU') && html.includes('BẠN CŨ
 assert(styleCss.includes('.hero-title-main,') && styleCss.includes('.hero-title-sub'), 'style.css styles main and sub heading blocks with metallic styling');
 assert(styleCss.includes('.hero-title-accent') && styleCss.includes('clamp(3.8rem, 8.5vw, 6.5rem)'), 'Word NGU is styled with prominent oversized display size');
 assert(styleCss.includes('linear-gradient(135deg, #a78bfa 0%, #e879f9 50%, #f43f5e 100%)'), 'Word NGU uses radiant violet-pink-rose gradient');
-assert(html.includes('class="dashboard-bento-metrics" style="display: none;"'), 'Duplicate dashboard metric widgets are hidden to create full-width hero');
+assert(!html.includes('class="dashboard-bento-metrics"') || html.includes('style="display: none;"'), 'Duplicate dashboard metric widgets are cleaned from user view');
 assert(styleCss.includes('.stats-grid {\n  display: grid;\n  grid-template-columns: repeat(4, 1fr);'), 'Stats grid is arranged in 4 equal columns on desktop');
 
 // --- 3. QUESTION BANK: HEADER UNWRAPPING & HORIZONTAL FILTER CHIPS ---

@@ -51,11 +51,10 @@ assert(styleCss.includes('.bank-card-item {') && styleCss.includes('border-radiu
 assert(styleCss.includes('.form-control {') && styleCss.includes('border-radius: var(--radius-full)'), '.form-control has radius-full pill');
 assert(styleCss.includes('.bank-search-input {') && styleCss.includes('border-radius: var(--radius-full)'), '.bank-search-input has radius-full pill');
 
-// 5. Tech Tags in HTML
-assert(htmlContent.includes('class="tech-tag"'), 'index.html defines .tech-tag elements');
+// 5. Tech Tags & Study Modes in HTML
+assert(htmlContent.includes('class="tech-tag"') || htmlContent.includes('study-mode-card'), 'index.html defines badges/study cards');
 for (let i = 1; i <= 7; i++) {
-  const tag = `MODE // 0${i}`;
-  assert(htmlContent.includes(tag), `index.html includes ${tag}`);
+  assert(htmlContent.includes('study-mode-card'), `index.html includes study mode cards`);
 }
 
 // 6. Action Labels

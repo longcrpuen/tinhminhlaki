@@ -3,7 +3,68 @@
  * Single Page Application Logic, PWA, SRS & Quiz Modes
  */
 
+const UnifiedDropdown = {
+  closeAll() {
+    document.querySelectorAll('.cyber-dropdown.open, .unified-dropdown.open, [data-dropdown].open').forEach(el => {
+      el.classList.remove('open', 'dropup');
+      const trigger = el.querySelector('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    });
+  },
+
+  open(wrap) {
+    if (!wrap) return;
+    this.closeAll();
+    const trigger = wrap.querySelector('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+      const rect = trigger.getBoundingClientRect();
+      if (window.innerHeight - rect.bottom < 240 && rect.top > 240) {
+        wrap.classList.add('dropup');
+      } else {
+        wrap.classList.remove('dropup');
+      }
+    }
+    wrap.classList.add('open');
+  },
+
+  toggle(target, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    let wrap = null;
+    if (typeof target === 'string') {
+      wrap = document.getElementById(target) || document.getElementById(`${target}-wrap`) || document.querySelector(`[data-dropdown="${target}"]`);
+    } else if (target && target.nodeType) {
+      wrap = target.closest?.('.cyber-dropdown, .unified-dropdown, [data-dropdown]') || target;
+    }
+    if (!wrap) return;
+    const wasOpen = wrap.classList.contains('open');
+    this.closeAll();
+    if (!wasOpen) {
+      this.open(wrap);
+    }
+  },
+
+  init() {
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
+      if (trigger) {
+        e.stopPropagation();
+        const wrap = trigger.closest('.cyber-dropdown, .unified-dropdown, [data-dropdown]');
+        if (wrap) {
+          this.toggle(wrap);
+          return;
+        }
+      }
+      if (!e.target.closest('.cyber-dropdown, .unified-dropdown, [data-dropdown]')) {
+        this.closeAll();
+      }
+    });
+  }
+};
+if (typeof window !== 'undefined') window.UnifiedDropdown = UnifiedDropdown;
+
 const App = {
+  UnifiedDropdown: UnifiedDropdown,
   currentView: 'dashboard',
   currentDeck: null,
   activeSession: null,
@@ -54,6 +115,7 @@ const App = {
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
+    if (typeof UnifiedDropdown !== 'undefined') UnifiedDropdown.init();
     await db.init();
 
     // Check migration notice (Section A)
@@ -1581,22 +1643,22 @@ const App = {
                 <div class="deck-header">
                   <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
                   <button class="icon-btn" style="width: 30px; height: 30px; color: var(--danger);" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')">
-                    🗑️
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                   </button>
                 </div>
                 <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
               </div>
               <div>
                 <div class="deck-meta">
-                  <span>📚 ${cardCount} câu</span>
-                  <span>⏰ ${dueCount} cần ôn</span>
+                  <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>${cardCount} câu</span>
+                  <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${dueCount} cần ôn</span>
                 </div>
                 <div class="deck-actions" style="flex-wrap: wrap;">
                   <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">Ôn tập</button>
                   <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">Lật thẻ</button>
                   <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">Thi thử</button>
                   <button class="btn btn-secondary" onclick="App.navigateTo('import', { deckId: '${deck.id}', subjectId: '${s.id}' })">+ Thêm câu</button>
-                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu">🔄 Reset</button>
+                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>Reset</button>
                 </div>
               </div>
             </div>
@@ -3558,7 +3620,17 @@ const App = {
     const alertBox = document.getElementById('import-validation-alert');
 
     try {
-      const parsed = AIParser.parse(rawInput);
+      let parsed = null;
+      if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
+        try {
+          parsed = await this.callWorker('PARSE_AI_JSON', { rawInput });
+        } catch (workerErr) {
+          console.warn('[WebWorker] AI JSON parse worker error, falling back:', workerErr);
+        }
+      }
+      if (!parsed) {
+        parsed = AIParser.parse(rawInput);
+      }
 
       // Handle validation warnings / errors
       if (parsed.errors && parsed.errors.length > 0) {
@@ -5651,6 +5723,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   closeAllCyberDropdowns() {
+    if (typeof UnifiedDropdown !== 'undefined') {
+      UnifiedDropdown.closeAll();
+      return;
+    }
     document.querySelectorAll('.cyber-dropdown.open').forEach(el => {
       el.classList.remove('open', 'dropup');
       const trigger = el.querySelector('.cyber-dropdown-trigger');
@@ -5659,6 +5735,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   _openCyberDropdown(wrap) {
+    if (typeof UnifiedDropdown !== 'undefined') {
+      UnifiedDropdown.open(wrap);
+      return;
+    }
     if (!wrap) return;
     this.closeAllCyberDropdowns();
     const trigger = wrap.querySelector('.cyber-dropdown-trigger');

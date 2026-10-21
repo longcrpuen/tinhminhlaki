@@ -1,14 +1,11 @@
 /* ==========================================================================
-   MINDSARKS - CẤU HÌNH PHÔNG CHỮ (FONTS CONFIG)
-   
-   HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
-   - File này quản lý tất cả các kiểu chữ được sử dụng trong toàn bộ ứng dụng.
-   - Bạn có thể đổi tên font hoặc thêm font yêu thích bằng cách sửa các biến bên dưới.
+   MINDSPARKS - CẤU HÌNH PHÔNG CHỮ CHUẨN (TYPOGRAPHY CONFIG)
+   Offline-First High-Craft Editorial Study Workspace
    ========================================================================== */
 
-/* 1. KHAI BÁO FONT CỤC BỘ (100% Offline, không cần kết nối mạng) */
+/* 1. KHAI BÁO FONT CỤC BỘ (100% Offline) */
 
-/* Font pixel chính: Pixelify Sans Bold — nét dày, đậm, dễ đọc, đẹp */
+/* Font pixel: Pixelify Sans Bold */
 @font-face {
   font-family: 'Pixelify Sans';
   font-style: normal;
@@ -26,7 +23,7 @@
   src: url('../lib/fonts/vt323.ttf') format('truetype');
 }
 
-/* Font viết tay thanh lịch: Caveat */
+/* Font viết tay fallback: Caveat */
 @font-face {
   font-family: 'Caveat';
   font-style: normal;
@@ -35,41 +32,21 @@
   src: url('../lib/fonts/caveat.ttf') format('truetype');
 }
 
-/* 2. CÁC BIẾN FONT DÙNG TRONG TOÀN APP */
+/* 2. HỆ THỐNG 3 VAI TRÒ PHÔNG CHỮ CHÍNH & TOKEN TƯƠNG THÍCH */
 :root {
-  /* ========================================================================
-     A. FONT TIÊU ĐỀ & ĐIỂM NHẤN PIXEL (--font-pixel)
-     - Tuân thủ DESIGN-RULES.md: Heading dùng font pixel (Pixelify Sans / VT323)
-     - Mọi thứ còn lại dùng 1 font thường dễ đọc (--font-body)
-     ======================================================================== */
+  /* Role 1: --font-sans (Giao diện chính, câu hỏi, đáp án, nút bấm - Sắc nét, dễ đọc) */
+  --font-sans: 'Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: var(--font-sans);
+
+  /* Role 2: --font-display (Editorial / Tiêu đề Hero / Danh ngôn - Dùng cực kỳ tiết chế) */
+  --font-display: 'Plus Jakarta Sans', 'Montserrat', 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-editorial: var(--font-display);
+  --font-poster: var(--font-display);
   --font-pixel: 'Pixelify Sans', 'VT323', monospace;
 
-  /* ========================================================================
-     B. FONT MÔ TẢ & GỢI Ý (--font-script)
-     ======================================================================== */
+  /* Role 3: --font-mono (JetBrains Mono cho số liệu tabular-nums, đếm ngược, JSON/LMS) */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+
+  /* Tương thích ngược */
   --font-script: var(--font-body);
-
-  /* ========================================================================
-     C. FONT ĐỌC THÔNG THƯỜNG DỄ CHỊU CHO MẮT (--font-body)
-     - Plus Jakarta Sans kết hợp Inter, letter-spacing: -0.025em
-     ======================================================================== */
-  --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-  /* ========================================================================
-     D. FONT KỸ THUẬT / MONOSPACE (--font-mono)
-     ======================================================================== */
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-
-  /* ========================================================================
-     E. FONT EDITORIAL SERIF / NGHỆ THUẬT (--font-editorial)
-     - Dùng cho chữ điểm nhấn nghiêng trong Hero Heading siêu to
-     ======================================================================== */
-  --font-editorial: 'Montserrat', 'Be Vietnam Pro', 'Anton', 'Playfair Display', Georgia, serif;
-
-  /* ========================================================================
-     F. FONT POSTER HEAVY DISPLAY (--font-poster)
-     - Dành riêng cho Headline tiêu đề chính cực đại phong cách Poster
-     - Montserrat 900 Black + Be Vietnam Pro 900 Black (100% chuẩn dấu tiếng Việt)
-     ======================================================================== */
-  --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Anton', 'Plus Jakarta Sans', system-ui, sans-serif;
 }

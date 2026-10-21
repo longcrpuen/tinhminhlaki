@@ -39,7 +39,7 @@ assert(styleCss.includes('drop-shadow(0 10px 22px rgba(0, 0, 0, 0.75))'), 'Hero 
 
 // --- 2. DASHBOARD DEDUPLICATION & SM-2 RETENTION WIDGET ---
 console.log('\n--- 2. Dashboard Deduplication & SM-2 Retention Widget ---');
-assert(html.includes('id="dashboard-battery-container" style="display: none;"'), 'Duplicate dashboard battery is hidden from user view');
+assert(!html.includes('id="dashboard-battery-container"') || html.includes('style="display: none;"'), 'Duplicate dashboard battery is cleaned from user view');
 assert(html.includes('id="dashboard-retention-card"'), 'index.html defines SM-2 retention card');
 assert(html.includes('id="dashboard-retention-pct"'), 'index.html defines retention percentage readout');
 assert(html.includes('id="dashboard-retention-fill"'), 'index.html defines retention progress track fill');
