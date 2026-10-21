@@ -1,0 +1,779 @@
+/* ==========================================================================
+   MINDSPARKS / TINHMINHLAKEY — THERMAL TOOLS & DROPDOWN Z-INDEX ENGINE
+   Module: css/thermal-tools.css (Sub-Agent C - Exclusive File)
+   Stack: Ultraviolet Thermal Camera × Dark Tactile Neumorphism
+   Views:
+     - Z-Index & Stacking Context Hotfix (Universal Dropdowns)
+     - Ngân Hàng Câu Hỏi (#view-bank)
+     - Dán AI (#view-import)
+     - Nhập LMS (#view-import-lms)
+     - Heatmap & Thống Kê (#view-stats)
+   ========================================================================== */
+
+/* ==========================================================================
+   MỤC 1: VÁ DỨT ĐIỂM LỖI STACKING CONTEXT & Z-INDEX DROPDOWN
+   Giải quyết triệt để lỗi dropdown trong tab Dán AI (#view-import), Nhập LMS
+   (#view-import-lms), Ngân hàng (#view-bank) và Modals bị chìm dưới ô input/textarea.
+   ========================================================================== */
+
+/* 1.1 Reset stacking context cho toàn bộ con trực tiếp trong các card lớn */
+.deck-card > *,
+.subject-group > *,
+.stat-card > *,
+.quiz-card > *,
+.bank-card-item > *,
+.glass-card > *,
+.study-mode-card > * {
+  position: relative;
+  z-index: auto !important;
+}
+
+/* 1.2 Khi có cyber-dropdown mở: gỡ bỏ hoàn toàn clipping overflow và contain isolation */
+.quiz-card:has(.cyber-dropdown.open),
+.lms-config-card:has(.cyber-dropdown.open),
+.hero-card:has(.cyber-dropdown.open),
+.modal-box:has(.cyber-dropdown.open) {
+  overflow: visible !important;
+  contain: none !important;
+  z-index: 500 !important;
+}
+
+/* 1.3 Nâng stacking context của container cha chứa dropdown mở lên tầng cao nhất (9990) */
+.form-group:has(.cyber-dropdown.open),
+.lms-config-grid:has(.cyber-dropdown.open),
+.bank-filter-bar:has(.cyber-dropdown.open),
+.lms-preview-card:has(.cyber-dropdown.open),
+.lms-card-actions:has(.cyber-dropdown.open),
+.lms-meta-row:has(.cyber-dropdown.open) {
+  position: relative !important;
+  z-index: 9990 !important;
+}
+
+/* 1.4 Quy chuẩn z-index phân tầng cho bản thân Dropdown & Dropdown Menu */
+.cyber-dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+.cyber-dropdown.open {
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+.cyber-dropdown.open .cyber-dropdown-menu {
+  z-index: 10000 !important;
+  background: linear-gradient(160deg, #1b1033 0%, #0d071a 100%) !important;
+  border: 1px solid rgba(236, 72, 153, 0.48) !important;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.94),
+    0 0 24px rgba(168, 85, 247, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+/* ==========================================================================
+   MỤC 2: CYBER VIOLET & THERMAL INFRARED DROPDOWN UI POLISH
+   ========================================================================== */
+
+.cyber-dropdown-trigger {
+  background: linear-gradient(145deg, #1a1030 0%, #0e071c 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.28) !important;
+  box-shadow: var(--neu-raised-sm) !important;
+  border-radius: 12px !important;
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cyber-dropdown-trigger:hover,
+.cyber-dropdown.open .cyber-dropdown-trigger {
+  border-color: var(--thermal-magenta) !important;
+  box-shadow:
+    0 0 16px rgba(236, 72, 153, 0.40),
+    inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+  color: #ffffff !important;
+}
+
+.cyber-dropdown-chevron {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease !important;
+  color: var(--text-muted) !important;
+}
+
+.cyber-dropdown.open .cyber-dropdown-chevron {
+  transform: rotate(180deg) !important;
+  color: var(--thermal-magenta) !important;
+}
+
+.cyber-dropdown-menu {
+  border-radius: 14px !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 6px !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) #0d071a;
+}
+
+.cyber-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cyber-dropdown-menu::-webkit-scrollbar-track {
+  background: #0d071a;
+  border-radius: 6px;
+}
+
+.cyber-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 6px;
+}
+
+.cyber-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--thermal-magenta);
+}
+
+.cyber-dropdown-item {
+  border-radius: 8px !important;
+  color: var(--text-secondary) !important;
+  padding: 9px 12px !important;
+  font-size: 0.88rem !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid transparent !important;
+}
+
+.cyber-dropdown-item:hover,
+.cyber-dropdown-item.active,
+.cyber-dropdown-item:focus-visible {
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.20) 100%) !important;
+  border-color: rgba(236, 72, 153, 0.35) !important;
+  color: #ffffff !important;
+  outline: none !important;
+  box-shadow: inset 0 0 10px rgba(236, 72, 153, 0.22) !important;
+  transform: translateX(2px);
+}
+
+.cyber-dropdown-item .item-count {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem !important;
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--accent-bright) !important;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.cyber-dropdown-item:hover .item-count,
+.cyber-dropdown-item.active .item-count {
+  background: rgba(236, 72, 153, 0.25);
+  color: #ffffff !important;
+  border-color: rgba(236, 72, 153, 0.45);
+}
+
+/* ==========================================================================
+   MỤC 3: HỐC LÕM NEUMORPHIC (RECESSED WELLS) CHO TOÀN BỘ INPUT, SEARCH & TEXTAREA
+   ========================================================================== */
+
+.form-control,
+.bank-search-input,
+.lms-question-edit-box,
+.lms-numeric-input,
+.bg-url-input,
+.numeric-input,
+#lms-batch-answers {
+  background: var(--bg-well) !important;
+  border: 1px solid rgba(168, 85, 247, 0.20) !important;
+  box-shadow: var(--neu-inset) !important;
+  color: var(--text-primary) !important;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.form-control:focus,
+.bank-search-input:focus,
+.lms-question-edit-box:focus,
+.lms-numeric-input:focus,
+.bg-url-input:focus,
+.numeric-input:focus,
+#lms-batch-answers:focus {
+  border-color: var(--thermal-magenta) !important;
+  box-shadow: var(--neu-inset), 0 0 14px rgba(236, 72, 153, 0.30) !important;
+  outline: none !important;
+}
+
+.form-control::placeholder,
+.bank-search-input::placeholder,
+.lms-question-edit-box::placeholder,
+.lms-numeric-input::placeholder,
+.bg-url-input::placeholder,
+#lms-batch-answers::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.70;
+}
+
+/* ==========================================================================
+   MỤC 4: BIỂU ĐỒ HEATMAP 365 NGÀY — THANG MÀU CAMERA NHIỆT HỒNG NGOẠI (FLIR)
+   ========================================================================== */
+
+.heatmap-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 24px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.heatmap-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--thermal-spectrum);
+  opacity: 0.85;
+}
+
+.heatmap-grid {
+  gap: 4px;
+}
+
+.heatmap-cell {
+  border-radius: 3px !important;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.45) !important;
+  z-index: 30 !important;
+}
+
+/* Thang màu 5 cấp độ Camera Nhiệt */
+.heatmap-cell.level-0 {
+  background: #0b0616 !important;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.90) !important;
+  border: 1px solid rgba(168, 85, 247, 0.08) !important;
+}
+
+.heatmap-cell.level-1 {
+  background: #5b21b6 !important;
+  border: 1px solid rgba(139, 92, 246, 0.30) !important;
+  box-shadow: 0 0 4px rgba(91, 33, 182, 0.40) !important;
+}
+
+.heatmap-cell.level-2 {
+  background: #a855f7 !important;
+  border: 1px solid rgba(192, 132, 252, 0.50) !important;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.50) !important;
+}
+
+.heatmap-cell.level-3 {
+  background: #ec4899 !important;
+  border: 1px solid rgba(244, 114, 182, 0.60) !important;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.60) !important;
+}
+
+.heatmap-cell.level-4 {
+  background: #ff5e3a !important;
+  border: 1px solid #fde047 !important;
+  box-shadow: 0 0 12px rgba(255, 94, 58, 0.80), 0 0 4px #fde047 !important;
+}
+
+.heatmap-cell.today {
+  outline: 2px solid var(--thermal-gold) !important;
+  outline-offset: 1px !important;
+  animation: thermalPulseToday 2.2s infinite ease-in-out;
+}
+
+@keyframes thermalPulseToday {
+  0%, 100% { outline-color: var(--thermal-gold); }
+  50% { outline-color: var(--thermal-magenta); }
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.heatmap-legend .heatmap-cell {
+  width: 13px;
+  height: 13px;
+}
+
+/* ==========================================================================
+   MỤC 5: GIAO DIỆN NGÂN HÀNG CÂU HỎI (#view-bank)
+   ========================================================================== */
+
+#view-bank .bank-header-wrap {
+  border-bottom: 1px solid rgba(168, 85, 247, 0.16);
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+}
+
+#view-bank .bank-main-heading {
+  background: linear-gradient(135deg, #f9f6ff 30%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+#view-bank .bank-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#view-bank .bank-search-input {
+  min-height: 46px;
+  padding: 11px 20px;
+  border-radius: var(--radius-full, 9999px) !important;
+  font-size: 0.92rem;
+}
+
+/* Chips lọc chủ đề phong cách Thermal HUD */
+.bank-topic-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 12px 2px;
+  margin-bottom: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+}
+
+.bank-topic-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 9999px);
+  background: linear-gradient(145deg, #180d2c 0%, #0d061a 100%);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--neu-raised-sm);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bank-topic-chip:hover {
+  border-color: rgba(236, 72, 153, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.bank-topic-chip.active {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.45) !important;
+}
+
+/* Thẻ câu hỏi trong Ngân hàng (Dark Neumorphic Card) */
+.bank-card-item {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  border-radius: 18px !important;
+  padding: 22px !important;
+  margin-bottom: 18px !important;
+  box-shadow: var(--neu-raised-sm) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 180px;
+}
+
+.bank-card-item:hover {
+  border-color: rgba(236, 72, 153, 0.45) !important;
+  box-shadow: var(--neu-raised), 0 0 20px rgba(168, 85, 247, 0.22) !important;
+  transform: translateY(-2px);
+}
+
+/* Lưới hiển thị các phương án đáp án trong ngân hàng */
+.bank-card-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.bank-card-options-grid > div {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #150c26 0%, #0d061a 100%);
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  transition: all 0.15s ease;
+}
+
+.bank-card-options-grid > div.bank-option-correct,
+.bank-card-options-grid > div[style*="border-color: var(--success)"],
+.bank-card-options-grid > div[style*="border-color: #10B981"] {
+  background: linear-gradient(145deg, rgba(52, 211, 153, 0.14) 0%, #0d061a 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.50) !important;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.20) !important;
+  color: #f0fdf4 !important;
+}
+
+/* Nút thao tác trên thẻ ngân hàng (Bookmark ⭐, Flag 🚩, Edit ✏️) */
+.bank-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bank-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-well);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  color: var(--text-muted);
+  box-shadow: var(--neu-inset);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bank-action-btn:hover {
+  border-color: var(--thermal-magenta);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.bank-action-btn.active,
+.bank-action-btn.bookmarked {
+  color: #fde047 !important;
+  border-color: rgba(253, 224, 71, 0.5) !important;
+  box-shadow: 0 0 10px rgba(253, 224, 71, 0.35), var(--neu-inset) !important;
+}
+
+.bank-action-btn.flagged {
+  color: var(--thermal-crimson) !important;
+  border-color: rgba(255, 42, 109, 0.55) !important;
+  box-shadow: 0 0 10px rgba(255, 42, 109, 0.35), var(--neu-inset) !important;
+}
+
+/* ==========================================================================
+   MỤC 6: GIAO DIỆN DÁN CÂU HỎI AI (#view-import)
+   ========================================================================== */
+
+#view-import .hero-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#view-import .hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed 0%, #ec4899 50%, #ff5e3a 100%);
+}
+
+#view-import .quiz-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 26px !important;
+}
+
+#view-import textarea#import-raw-input {
+  min-height: 200px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.85rem !important;
+  line-height: 1.6 !important;
+  border-radius: 14px !important;
+  padding: 16px 18px !important;
+}
+
+#import-validation-alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-top: 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+#import-validation-alert.alert-success {
+  background: rgba(52, 211, 153, 0.14) !important;
+  border: 1px solid rgba(52, 211, 153, 0.40) !important;
+  color: #34d399 !important;
+}
+
+#import-validation-alert.alert-danger {
+  background: rgba(255, 42, 109, 0.14) !important;
+  border: 1px solid rgba(255, 42, 109, 0.45) !important;
+  color: #ff2a6d !important;
+}
+
+/* ==========================================================================
+   MỤC 7: GIAO DIỆN NHẬP LMS (#view-import-lms) & PREVIEW CARDS
+   ========================================================================== */
+
+.lms-config-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 24px !important;
+}
+
+.lms-format-guide-card {
+  background: linear-gradient(145deg, #150c26 0%, #0b0517 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.20) !important;
+  box-shadow: var(--neu-inset) !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.lms-sample-snippet {
+  background: #090512 !important;
+  border: 1px solid rgba(168, 85, 247, 0.15) !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.78rem !important;
+  color: var(--text-secondary) !important;
+}
+
+.lms-sample-line.header-line {
+  color: var(--accent-bright) !important;
+  font-weight: 700;
+}
+
+.lms-sample-line.q-line {
+  color: #ffffff !important;
+  margin: 4px 0;
+}
+
+.lms-sample-line.choice-line {
+  color: #d0c4ea !important;
+}
+
+#lms-raw-input.lms-textarea {
+  min-height: 200px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.86rem !important;
+  line-height: 1.55 !important;
+  border-radius: 14px !important;
+}
+
+/* Khối gán đáp án hàng loạt */
+#lms-batch-panel {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 20px 24px !important;
+}
+
+/* Thẻ xem trước từng câu hỏi LMS (Preview Cards) */
+.lms-preview-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  border-radius: 16px !important;
+  padding: 20px 22px !important;
+  margin-bottom: 16px !important;
+  box-shadow: var(--neu-raised-sm) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+}
+
+.lms-preview-card:hover {
+  border-color: rgba(236, 72, 153, 0.40) !important;
+  box-shadow: var(--neu-raised), 0 0 18px rgba(168, 85, 247, 0.20) !important;
+}
+
+.lms-preview-card.needs-review {
+  border-color: rgba(255, 42, 109, 0.55) !important;
+  background: linear-gradient(180deg, rgba(255, 42, 109, 0.08) 0%, rgba(20, 11, 36, 0.96) 100%) !important;
+  box-shadow: 0 0 16px rgba(255, 42, 109, 0.20) !important;
+}
+
+.lms-question-edit-box {
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 12px !important;
+}
+
+/* Các hàng phương án trắc nghiệm trong thẻ LMS */
+.lms-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px !important;
+  background: var(--bg-well) !important;
+  border: 1px solid rgba(168, 85, 247, 0.18) !important;
+  box-shadow: var(--neu-inset) !important;
+  margin-bottom: 8px;
+  transition: all 0.15s ease !important;
+}
+
+.lms-option-row.is-correct {
+  border-color: rgba(52, 211, 153, 0.60) !important;
+  background: linear-gradient(145deg, rgba(52, 211, 153, 0.12) 0%, #0a0514 100%) !important;
+  box-shadow: var(--neu-inset), 0 0 10px rgba(52, 211, 153, 0.25) !important;
+}
+
+.lms-option-row .lms-option-letter {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--accent-bright);
+}
+
+.lms-option-row.is-correct .lms-option-letter {
+  color: #34d399 !important;
+}
+
+.lms-numeric-row {
+  background: var(--bg-well) !important;
+  border: 1px dashed rgba(168, 85, 247, 0.35) !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  box-shadow: var(--neu-inset) !important;
+}
+
+/* ==========================================================================
+   MỤC 8: BẢNG ĐIỀU KHIỂN THỐNG KÊ (#view-stats)
+   ========================================================================== */
+
+#view-stats .stat-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--neu-raised-sm) !important;
+  padding: 20px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#view-stats .stat-card:hover {
+  border-color: rgba(236, 72, 153, 0.45) !important;
+  box-shadow: var(--neu-raised), 0 0 16px rgba(168, 85, 247, 0.20) !important;
+  transform: translateY(-2px);
+}
+
+/* Thẻ Chuỗi ngày kiên trì (Infrared Thermal Flame Glow) */
+.stat-card-streak {
+  background: linear-gradient(145deg, #220f38 0%, #120722 100%) !important;
+  border: 1px solid rgba(255, 107, 53, 0.40) !important;
+  box-shadow: var(--neu-raised-sm), 0 0 20px rgba(255, 107, 53, 0.20) !important;
+}
+
+.streak-flame-glow {
+  box-shadow: 0 0 18px rgba(255, 107, 53, 0.60) !important;
+  background: linear-gradient(135deg, #ff2a6d 0%, #ff6b35 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Khối phân bố cấp độ ghi nhớ SM-2 */
+.sm2-distribution-card {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  box-shadow: var(--neu-raised) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 24px !important;
+}
+
+.sm2-breakdown-grid > div {
+  background: var(--bg-well) !important;
+  border: 1px solid rgba(168, 85, 247, 0.18) !important;
+  box-shadow: var(--neu-inset) !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  text-align: center;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.sm2-breakdown-grid > div:hover {
+  border-color: var(--thermal-magenta);
+  transform: translateY(-2px);
+}
+
+/* Bảng hiệu suất theo môn học và chủ đề */
+#view-stats table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#view-stats table th {
+  padding: 12px 14px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+}
+
+#view-stats table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+#view-stats table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+#view-stats table tbody tr:hover {
+  background: rgba(168, 85, 247, 0.08);
+}
+
+/* ==========================================================================
+   MỤC 9: TỐI ƯU HÓA RESPONSIVE & MOBILE HUD
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .bank-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .bank-filter-bar .bank-search-input,
+  .bank-filter-bar .cyber-dropdown {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .cyber-dropdown.open .cyber-dropdown-menu {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .bank-card-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lms-preview-card {
+    padding: 16px !important;
+  }
+}

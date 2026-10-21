@@ -1,102 +1,120 @@
 /* ==========================================================================
-   MINDSARKS - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
-   Tactile & Calm Knowledge Workspace (Obsidian Carbon & Electric Indigo)
+   MINDSPARKS / TINHMINHLAKEY — ULTRAVIOLET THERMAL & DARK NEUMORPHISM TOKENS
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
    - File này quản lý tất cả các biến màu sắc, khoảng cách, bo góc và typography.
-   - Bạn có thể trực tiếp đổi các mã màu bên dưới (dạng #HEX hoặc rgba).
-   - Màu nhấn mặc định: Electric Indigo (#5E6AD2) - Điềm tĩnh, chuẩn mực học thuật.
-   - Tuân thủ nghiêm ngặt WCAG AA (Contrast >= 4.5:1), GPU 120fps (không filter blur animation).
+   - Bảng màu: Ultraviolet Thermal Camera × Dark Tactile Neumorphism.
    ========================================================================== */
-
 :root {
-  /* ==========================================
-     0. THIẾT LẬP MÀU HỆ THỐNG
-     ========================================== */
   color-scheme: dark;
 
-  /* ==========================================
-     1. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
-     - ENABLE_GLASS_BLUR: 0 = Tắt blur toàn bộ card danh sách để giữ 90-120 FPS
-     - Blur chỉ dùng ở tối đa vài bề mặt lớn cố định (topbar, sidebar, modal scrim)
-     ========================================== */
+  /* 1. QUANG PHỔ TÍM TỬ NGOẠI & CAMERA NHIỆT (ULTRAVIOLET & THERMAL INFRARED) */
+  --accent: #a855f7;                         /* Tím tử ngoại chủ đạo */
+  --accent-bright: #c084fc;                  /* Tím Lavender phát sáng */
+  --accent-deep: #6d28d9;                    /* Tím Indigo sâu */
+  --accent-primary: #a855f7;
+  --accent-secondary: #c084fc;
+  --accent-hover: #9333ea;
+  --accent-active: #7e22ce;
+  --thermal-magenta: #ec4899;                /* Hồng nhiệt ngoại */
+  --thermal-crimson: #ff2a6d;                /* Đỏ hồng ngoại tâm nhiệt */
+  --thermal-orange: #ff6b35;                 /* Cam bức xạ nhiệt */
+  --thermal-gold: #fde047;                   /* Vàng trắng điểm cực nhiệt */
+
+  --accent-glow: rgba(168, 85, 247, 0.35);
+  --thermal-glow: rgba(236, 72, 153, 0.38);
+  --accent-subtle-bg: rgba(168, 85, 247, 0.14);
+  --accent-border: rgba(168, 85, 247, 0.32);
+  --accent-surface: rgba(168, 85, 247, 0.14);
+
+  /* Dải màu Gradient Camera Nhiệt (Tuyệt đối không dùng màu xám!) */
+  --brand-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 38%, #ec4899 78%, #ff5e3a 100%);
+  --thermal-spectrum: linear-gradient(90deg, #2e1065 0%, #6d28d9 22%, #a855f7 45%, #ec4899 68%, #ff5e3a 86%, #fde047 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(236, 72, 153, 0.10) 100%);
+  --glow-color: rgba(168, 85, 247, 0.25);
+
+  /* 2. BỀ MẶT DARK NEUMORPHISM (TÍM ĐÊM XÚC GIÁC) */
+  --bg-base: #090512;                        /* Nền đen tím vũ trụ */
+  --bg-canvas: #090512;
+  --bg-surface: #130b24;                     /* Nền bề mặt Neumorphic chuẩn */
+  --bg-surface-elevated: #1b1033;            /* Nền khối nổi cao */
+  --bg-well: #0a0514;                        /* Hốc lõm Neumorphic (Recessed Well) */
+  --bg-card: linear-gradient(145deg, rgba(28, 17, 52, 0.92) 0%, rgba(16, 9, 31, 0.96) 100%);
+  --bg-card-hover: linear-gradient(145deg, rgba(38, 23, 70, 0.94) 0%, rgba(22, 12, 42, 0.98) 100%);
+  --bg-card-active: linear-gradient(145deg, rgba(46, 28, 84, 0.96) 0%, rgba(26, 14, 50, 1) 100%);
+  --bg-overlay: rgba(9, 5, 18, 0.92);
+
+  --glass-tint: rgba(20, 12, 38, 0.90);
+  --glass-border: rgba(168, 85, 247, 0.24);
+  --glass-border-subtle: rgba(168, 85, 247, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --border-color: rgba(168, 85, 247, 0.22);
+  --border-subtle: rgba(168, 85, 247, 0.15);
+  --border-focus: rgba(236, 72, 153, 0.70);
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+
+  /* 3. BÓNG ĐỔ VẬT LÝ NEUMORPHISM (EXTRUDED & RECESSED SHADOWS) */
+  --neu-raised:
+    10px 10px 24px rgba(3, 1, 9, 0.92),
+    -5px -5px 16px rgba(139, 92, 246, 0.09),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  --neu-raised-sm:
+    5px 5px 12px rgba(3, 1, 9, 0.88),
+    -3px -3px 8px rgba(139, 92, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --neu-inset:
+    inset 6px 6px 14px rgba(2, 0, 7, 0.95),
+    inset -4px -4px 10px rgba(139, 92, 246, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  --neu-btn-primary:
+    0 8px 20px -4px rgba(168, 85, 247, 0.60),
+    0 3px 8px rgba(236, 72, 153, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 4px rgba(28, 6, 56, 0.75);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.50);
+  --shadow-md: var(--neu-raised-sm);
+  --shadow-lg: var(--neu-raised);
+  --shadow-glow: 0 0 14px var(--accent-glow);
+  --neon-glow-primary: 0 0 14px rgba(168, 85, 247, 0.40);
+  --neon-glow-hover: 0 4px 18px rgba(236, 72, 153, 0.45);
+  --card-hover-glow: var(--neu-raised), 0 0 16px rgba(168, 85, 247, 0.25);
+  --border-focus-glow: 0 0 0 2px rgba(236, 72, 153, 0.45);
+
+  /* 4. TYPOGRAPHY & TRẠNG THÁI NGỮ NGHĨA */
+  --text-primary: #f9f6ff;
+  --text-secondary: #d0c4ea;
+  --text-muted: #9b8ab8;
+  --text-accent: #e879f9;
+
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.14);
+  --success-border: rgba(52, 211, 153, 0.38);
+  --success-glow: rgba(52, 211, 153, 0.25);
+
+  --danger: #ff2a6d;
+  --danger-bg: rgba(255, 42, 109, 0.14);
+  --danger-border: rgba(255, 42, 109, 0.38);
+  --danger-glow: rgba(255, 42, 109, 0.25);
+
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.14);
+  --warning-border: rgba(251, 191, 36, 0.38);
+
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.14);
+  --info-border: rgba(56, 189, 248, 0.38);
+  --streak-color: #ff6b35;
+
+  /* Performance & Focus controls */
   --ENABLE_GLASS_BLUR: 0;
   --glass-blur-radius: 8px;
   --glass-backdrop-filter: none;
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+  --focus-ring-inset: inset 0 0 0 2px var(--accent);
 
-  /* ==========================================
-     2. MÀU ĐIỂM NHẤN (ACCENT COLORS - CALM & FOCUSED)
-     ========================================== */
-  --accent: #5E6AD2;                        /* Electric Indigo (Accent chính) */
-  --accent-primary: #5E6AD2;
-  --accent-secondary: #7C88E8;              /* Indigo sáng nhẹ */
-  --accent-hover: #6E7BE2;
-  --accent-active: #4F5BC4;
-  --accent-glow: rgba(94, 106, 210, 0.20);  /* Hào quang indigo dịu */
-  --accent-subtle-bg: rgba(94, 106, 210, 0.10); /* Nền mờ siêu nhẹ */
-  --accent-border: rgba(94, 106, 210, 0.25);    /* Viền ánh indigo nhẹ */
-  --accent-surface: rgba(94, 106, 210, 0.12);
-
-  /* Gradient nhận diện điềm tĩnh, tri thức */
-  --brand-gradient: linear-gradient(135deg, #5E6AD2 0%, #7C88E8 50%, #38BDF8 100%);
-  --brand-gradient-subtle: linear-gradient(135deg, rgba(94, 106, 210, 0.12) 0%, rgba(124, 136, 232, 0.05) 100%);
-  --glow-color: rgba(94, 106, 210, 0.15);
-
-  /* ==========================================
-     3. MÀU NỀN & BỀ MẶT OBSIDIAN CARBON (TACTILE SURFACES)
-     ========================================== */
-  --bg-base: #090A0F;                       /* Nền đen sâu chuẩn Obsidian */
-  --bg-canvas: #090A0F;
-  --bg-surface: rgba(18, 19, 26, 0.85);     /* Bề mặt panel chuẩn */
-  --bg-surface-elevated: rgba(28, 29, 38, 0.92); /* Bề mặt nổi (Dropdown, Tooltip, Popover) */
-  --bg-card: rgba(18, 19, 26, 0.85);        /* Nền card câu hỏi & thẻ học */
-  --bg-card-hover: rgba(28, 29, 40, 0.90);  /* Nền card khi hover */
-  --bg-card-active: rgba(34, 35, 48, 0.95); /* Nền card khi nhấn */
-  --bg-overlay: rgba(9, 10, 15, 0.88);      /* Nền backdrop modal */
-
-  --glass-tint: rgba(18, 19, 26, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.08); /* Viền mảnh sắc nét */
-  --glass-border-subtle: rgba(255, 255, 255, 0.05);
-  --glass-highlight: rgba(255, 255, 255, 0.06);
-
-  --border-color: rgba(255, 255, 255, 0.08); /* Viền ngăn cách */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-focus: rgba(94, 106, 210, 0.65);  /* Viền focus rõ ràng */
-  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
-  /* ==========================================
-     4. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS - WCAG AAA/AA)
-     ========================================== */
-  --text-primary: #F8FAFC;                  /* Chữ chính: Trắng sáng tự nhiên (17:1) */
-  --text-secondary: #CBD5E1;                /* Chữ phụ: Xám bạc sắc nét (10:1 chuẩn WCAG AAA) */
-  --text-muted: #94A3B8;                    /* Chữ chú thích/placeholder: (6.2:1 chuẩn WCAG AA) */
-  --text-accent: #818CF8;                   /* Chữ điểm nhấn */
-
-  /* ==========================================
-     5. MÀU PHẢN HỒI KẾT QUẢ & TRẠNG THÁI (SEMANTIC FEEDBACK)
-     ========================================== */
-  --success: #34D399;                       /* Xanh lục bảo dịu: Đúng, thuộc */
-  --success-bg: rgba(52, 211, 153, 0.10);
-  --success-border: rgba(52, 211, 153, 0.30);
-  --success-glow: rgba(52, 211, 153, 0.20);
-
-  --danger: #F87171;                        /* Đỏ san hô trầm: Sai, quên */
-  --danger-bg: rgba(248, 113, 113, 0.10);
-  --danger-border: rgba(248, 113, 113, 0.30);
-  --danger-glow: rgba(248, 113, 113, 0.20);
-
-  --warning: #FBBF24;                       /* Hổ phách ấm: Đến hạn, khó */
-  --warning-bg: rgba(251, 191, 36, 0.10);
-  --warning-border: rgba(251, 191, 36, 0.30);
-
-  --info: #60A5FA;                          /* Xanh lam thanh: Thông tin */
-  --info-bg: rgba(96, 165, 250, 0.10);
-  --info-border: rgba(96, 165, 250, 0.30);
-  --streak-color: #F59E0B;                  /* Cam rực: Streak */
-
-  /* ==========================================
-     6. THANG KHOẢNG CÁCH (SPACING SCALE)
-     ========================================== */
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -107,9 +125,7 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* ==========================================
-     7. THANG TYPOGRAPHY (TYPOGRAPHY SCALE VIA CLAMP)
-     ========================================== */
+  /* Typography scale */
   --font-heading: var(--font-display, var(--font-sans));
   --font-pixel: 'Pixelify Sans', 'VT323', monospace;
   --font-body: var(--font-sans, system-ui, sans-serif);
@@ -136,9 +152,7 @@
   --tracking-wider: 0.08em;
   --tracking-pixel: 0.04em;
 
-  /* ==========================================
-     8. BO GÓC (BORDER RADII)
-     ========================================== */
+  /* Border Radii */
   --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -148,29 +162,7 @@
   --radius-card-lg: 28px;
   --radius-full: 9999px;
 
-  /* ==========================================
-     9. ĐỔ BÓNG & HIGHLIGHT TINH TẾ (TACTILE SHADOWS)
-     Loại bỏ hoàn toàn glow tím neon chói lọi; chỉ dùng bóng sâu tự nhiên
-     ========================================== */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.38);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.55);
-  --shadow-glow: 0 0 12px var(--accent-glow);
-  --neon-glow-primary: 0 0 10px rgba(94, 106, 210, 0.25);
-  --neon-glow-hover: 0 4px 14px rgba(94, 106, 210, 0.30);
-  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 8px rgba(94, 106, 210, 0.12);
-  --border-focus-glow: 0 0 0 2px rgba(94, 106, 210, 0.35);
-
-  /* ==========================================
-     10. ACCESSIBLE FOCUS RING
-     ========================================== */
-  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
-  --focus-ring-inset: inset 0 0 0 2px var(--accent);
-
-  /* ==========================================
-     11. TỐC ĐỘ & EASING CHUYỂN ĐỘNG (EMIL KOWALSKI PHYSICS)
-     ========================================== */
+  /* Motion Physics (Emil Kowalski) */
   --dur-instant: 80ms;
   --dur-fast: 160ms;
   --dur-norm: 260ms;
@@ -180,9 +172,7 @@
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 
-  /* ==========================================
-     12. KÍCH THƯỚC BỐ CỤC KHUNG CHUẨN
-     ========================================== */
+  /* Layout dimensions */
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 72px;
   --header-height: 64px;
