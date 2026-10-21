@@ -44,27 +44,7 @@
   <!-- ==========================================================================
        DATAMOSH GLITCH & CHROMATIC DISPLACEMENT SVG FILTER
        ========================================================================== -->
-  <svg id="datamosh-svg-defs" style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
-    <defs>
-      <filter id="datamosh-glitch" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04 0.95" numOctaves="1" result="noise" seed="5">
-          <animate attributeName="baseFrequency" values="0.04 0.95; 0.15 0.05; 0.08 0.8; 0.04 0.95" dur="0.34s" repeatCount="1" />
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-        <feColorMatrix in="displaced" type="matrix"
-          values="1 0 0 0 0
-                  0 0 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" result="red_blue" />
-        <feOffset in="red_blue" dx="-4" dy="1" result="offset_red" />
-        <feBlend in="SourceGraphic" in2="offset_red" mode="screen" result="chromatic" />
-        <feMerge>
-          <feMergeNode in="chromatic" />
-          <feMergeNode in="displaced" opacity="0.6" />
-        </feMerge>
-      </filter>
-    </defs>
-  </svg>
+  
   <!-- Background Layer for Custom Wallpapers -->
   <div id="bg-layer"></div>
 
@@ -166,155 +146,116 @@
         
         <!-- 1. DASHBOARD VIEW -->
         <!-- 1. DASHBOARD VIEW (ULTRAVIOLET THERMAL CAMERA × DARK NEUMORPHISM × DATAMOSH) -->
+        <!-- 1. DASHBOARD VIEW (SOFT VIOLET-ROSE × AIRY STACKED DASHBOARD) -->
         <section id="view-dashboard" class="view-section active">
           
-          <!-- SÂN KHẤU HERO SPLIT 2 CỘT -->
-          <div class="thermal-hero-stage">
-            
-            <!-- CỘT TRÁI: FLIR INFRARED THERMAL POSTER CARD -->
-            <div class="thermal-poster-card hero-card" id="thermal-hero-card">
-              <!-- 4 Góc Ngắm Ống Kính FLIR -->
-              <div class="flir-corner flir-corner-tl"></div>
-              <div class="flir-corner flir-corner-tr"></div>
-              <div class="flir-corner flir-corner-bl"></div>
-              <div class="flir-corner flir-corner-br"></div>
-              
-              <!-- Lưới Quét Cảm Biến Nhiệt -->
-              <div class="thermal-scanline-overlay"></div>
+          <div class="dashboard-vertical-stack">
+            <!-- 1. KHỐI HERO QUOTE TRẢI RỘNG TOÀN KHUNG Ở TRÊN -->
+            <div class="hero-card" id="thermal-hero-card">
+              <div class="hero-content">
+                <div class="hero-heading-scrim" style="width: 100%;">
+                  <div class="hero-top-meta">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <span class="tech-tag">SPACED REPETITION SM-2</span>
+                      <span class="tech-tag subtle">OFFLINE PWA</span>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="App.triggerDatamoshQuote()" title="Đổi câu Quote ngẫu nhiên">
+                      ↻ Đổi Quote
+                    </button>
+                  </div>
 
-              <!-- Thanh HUD FLIR Phía Trên -->
-              <div class="thermal-hud-topbar">
-                <span class="thermal-telemetry-badge">
-                  <span class="thermal-status-dot"></span>
-                  FLIR IR-60 // ACTIVE SENSOR
-                </span>
-                
-                <div class="thermal-colorbar-wrapper">
-                  <span class="thermal-colorbar-label">MIN</span>
-                  <div class="thermal-colorbar"></div>
-                  <span class="thermal-colorbar-label">PEAK</span>
+                  <h2 class="hero-title" id="hero-title">
+                    <span class="hero-title-main">TÔI</span>
+                    <span class="hero-title-accent">NGU</span>
+                    <span class="hero-title-sub">BẠN CŨNG THẾ</span>
+                  </h2>
+
+                  <div class="thermal-quote-subtext">
+                    <p class="hero-desc" id="hero-quote-content">
+                      Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.
+                    </p>
+                    <span id="hero-quote-author" style="display: none;">MindSparks Neural Core</span>
+                  </div>
+
+                  <div class="hero-actions">
+                    <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      Ôn tập hôm nay
+                    </button>
+                    <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                      Ôn câu hay sai
+                    </button>
+                    <button class="btn btn-secondary" onclick="App.navigateTo('import')">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+                      Dán câu hỏi AI
+                    </button>
+                  </div>
                 </div>
-
-                <button type="button" class="neu-micro-btn" onclick="App.triggerDatamoshQuote()" title="Tạo hiệu ứng Datamosh và đổi câu truyền cảm hứng ngẫu nhiên">
-                  ⇄ DATAMOSH QUOTE
-                </button>
-              </div>
-
-              <!-- Nội Dung Headline & Danh Ngôn Poster -->
-              <div class="thermal-poster-body">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-                  <span class="tech-tag">SPACED REPETITION SM-2</span>
-                  <span class="tech-tag subtle">OFFLINE PWA</span>
-                </div>
-
-                <h2 class="hero-title" id="hero-title">
-                  <span class="hero-title-main">TÔI</span>
-                  <span class="hero-title-accent">NGU</span>
-                  <span class="hero-title-sub">BẠN CŨNG THẾ</span>
-                </h2>
-
-                <div class="thermal-quote-subtext">
-                  <p class="hero-desc" id="hero-quote-content">
-                    Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.
-                  </p>
-                  <span id="hero-quote-author" style="display: none;">MindSparks Neural Core</span>
-                </div>
-              </div>
-
-              <!-- Cụm Nút Hành Động Tactile Neumorphic -->
-              <div class="thermal-poster-actions hero-actions">
-                <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  Ôn tập hôm nay
-                </button>
-                <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                  Ôn câu hay sai
-                </button>
-                <button class="btn btn-secondary" onclick="App.navigateTo('import')">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
-                  Dán câu hỏi AI
-                </button>
               </div>
             </div>
 
-            <!-- CỘT PHẢI: BUỒNG ĐO NHIỆT TRÍ NHỚ (TELEMETRY CONSOLE) -->
-            <div class="neu-telemetry-console">
-              <!-- Header Buồng Đo -->
-              <div class="telemetry-console-header">
-                <span class="telemetry-title">⚡ BUỒNG ĐO NHIỆT TRÍ NHỚ</span>
-                <span class="telemetry-pulse-dot" title="Cảm biến đo lường trí nhớ thời gian thực"></span>
-              </div>
-
-              <!-- 4 Hốc Số Liệu Lõm Sâu (Recessed Stat Wells) -->
-              <div class="neu-stat-wells-grid stats-grid">
-                <!-- Hốc 1: Cần ôn hôm nay -->
-                <div class="neu-stat-well stat-card">
-                  <div class="stat-well-header">
-                    <span class="stat-well-label">CẦN ÔN HÔM NAY</span>
-                    <span class="stat-well-tag amber">DUE</span>
-                  </div>
-                  <div class="stat-well-value stat-info">
+            <!-- 2. KHỐI STATUS NẰM NGAY DƯỚI QUOTE (4 CỘT ĐỀU NHAU + THANH ĐỘ BỀN SM-2) -->
+            <div class="dashboard-status-bar">
+              <div class="stats-grid">
+                <!-- Thẻ 1: Cần ôn hôm nay -->
+                <div class="stat-card">
+                  <div class="stat-icon-wrap amber">⏰</div>
+                  <div class="stat-info">
                     <span class="stat-num" id="stat-due-today">0</span>
+                    <span class="stat-label">Cần ôn hôm nay</span>
                     <span id="stat-reviews" style="display: none;">0</span>
                   </div>
-                  <span class="stat-well-sub">Chu kỳ SM-2</span>
                 </div>
 
-                <!-- Hốc 2: Chuỗi ngày liên tục -->
-                <div class="neu-stat-well stat-card">
-                  <div class="stat-well-header">
-                    <span class="stat-well-label">CHUỖI LIÊN TỤC</span>
-                    <span class="stat-well-tag orange">STREAK</span>
-                  </div>
-                  <div class="stat-well-value stat-info">
+                <!-- Thẻ 2: Chuỗi liên tục -->
+                <div class="stat-card">
+                  <div class="stat-icon-wrap purple">🔥</div>
+                  <div class="stat-info">
                     <span class="stat-num" id="stat-streak-days">0 ngày</span>
+                    <span class="stat-label">Chuỗi liên tục</span>
                     <span id="stat-streak" style="display: none;">0</span>
                   </div>
-                  <span class="stat-well-sub">Kỷ luật tư duy</span>
                 </div>
 
-                <!-- Hốc 3: Đã thành thạo -->
-                <div class="neu-stat-well stat-card">
-                  <div class="stat-well-header">
-                    <span class="stat-well-label">ĐÃ THÀNH THẠO</span>
-                    <span class="stat-well-tag green">MASTERED</span>
-                  </div>
-                  <div class="stat-well-value stat-info">
+                <!-- Thẻ 3: Đã thành thạo -->
+                <div class="stat-card">
+                  <div class="stat-icon-wrap green">🏆</div>
+                  <div class="stat-info">
                     <span class="stat-num" id="stat-mastered-cards">0</span>
+                    <span class="stat-label">Đã thành thạo</span>
                     <span id="stat-mastered" style="display: none;">0</span>
                   </div>
-                  <span class="stat-well-sub">Ghi nhớ dài hạn</span>
                 </div>
 
-                <!-- Hốc 4: Tổng số câu hỏi trong kho -->
-                <div class="neu-stat-well stat-card">
-                  <div class="stat-well-header">
-                    <span class="stat-well-label">TỔNG SỐ CÂU HỎI</span>
-                    <span class="stat-well-tag purple">TOTAL</span>
-                  </div>
-                  <div class="stat-well-value stat-info">
+                <!-- Thẻ 4: Tổng số câu hỏi -->
+                <div class="stat-card">
+                  <div class="stat-icon-wrap indigo">📚</div>
+                  <div class="stat-info">
                     <span class="stat-num" id="stat-total-cards">0</span>
+                    <span class="stat-label">Tổng số câu hỏi</span>
                     <span id="stat-accuracy" style="display: none;">100%</span>
                   </div>
-                  <span class="stat-well-sub">Toàn bộ kho thẻ</span>
                 </div>
               </div>
 
-              <!-- Thanh Phổ Nhiệt SM-2 & Mini Heatmap 7 Ngày -->
-              <div class="neu-retention-strip sm2-retention-card" id="dashboard-retention-card">
-                <div class="neu-retention-strip-header">
-                  <span class="retention-strip-title">ĐỘ BỀN LƯU GIỮ (SM-2)</span>
-                  <span class="retention-strip-pct sm2-retention-pct" id="dashboard-retention-pct">96%</span>
+              <!-- Thanh Độ Bền Lưu Giữ SM-2 & Mini Heatmap 7 Ngày -->
+              <div class="sm2-status-banner sm2-retention-card" id="dashboard-retention-card">
+                <div style="flex: 1; min-width: 240px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.04em;">⚡ ĐỘ BỀN LƯU GIỮ (SM-2)</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span id="dashboard-retention-status" class="sm2-retention-desc" style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Tối ưu (Optimal)</span>
+                      <span id="dashboard-retention-pct" class="sm2-retention-pct" style="font-family: var(--font-pixel); font-size: 1.15rem; font-weight: 800; color: var(--text-accent);">96%</span>
+                    </div>
+                  </div>
+                  <div class="sm2-retention-track">
+                    <div class="sm2-retention-fill" id="dashboard-retention-fill" style="width: 96%;"></div>
+                  </div>
                 </div>
-                
-                <div class="retention-track-well sm2-retention-track">
-                  <div id="dashboard-retention-fill" class="retention-fill-thermal sm2-retention-fill" style="width: 96%;"></div>
-                </div>
-
-                <div class="retention-footer-meta">
-                  <span id="dashboard-retention-status" class="sm2-retention-desc">Tối ưu (Optimal)</span>
-                  <div class="mini-heatmap-days" id="mini-heatmap-days">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">7 ngày qua:</span>
+                  <div class="mini-heatmap-days" id="mini-heatmap-days" style="min-width: 190px;">
                     <div class="mini-day-dot active" title="Ngày 1"><span class="day-dot-label">1</span></div>
                     <div class="mini-day-dot active" title="Ngày 2"><span class="day-dot-label">2</span></div>
                     <div class="mini-day-dot active" title="Ngày 3"><span class="day-dot-label">3</span></div>
@@ -325,26 +266,25 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Khối DOM Ẩn Giữ Lại Để Tương Thích Tuyệt Đối 100% Với Test Suite & App.js -->
-              <div class="dashboard-bento-metrics" style="display: none;">
-                <div class="daily-radial-card" id="dashboard-radial-container">
-                  <svg class="daily-radial-svg" viewBox="0 0 100 100">
-                    <circle class="daily-radial-track" cx="50" cy="50" r="40"></circle>
-                    <circle id="daily-radial-bar" class="daily-radial-fill" cx="50" cy="50" r="40"></circle>
-                  </svg>
-                  <span id="daily-radial-pct">0%</span>
-                  <span id="daily-radial-count">0 / 20 câu</span>
-                </div>
-                <div id="dashboard-battery-container" style="display: none;" class="pixel-battery-wrapper">
-                  <span id="dashboard-battery-pct">0%</span>
-                  <div id="dashboard-battery-fill" style="width: 0%;"></div>
-                  <span id="dashboard-battery-sub">0 / 20 câu</span>
-                  <div class="pixel-battery-segments" id="dashboard-battery-segments"></div>
-                </div>
-              </div>
             </div>
+          </div>
 
+          <!-- Khối DOM Ẩn Giữ Lại Để Tương Thích Tuyệt Đối 100% Với Test Suite & App.js -->
+          <div class="dashboard-bento-metrics" style="display: none;">
+            <div class="daily-radial-card" id="dashboard-radial-container">
+              <svg class="daily-radial-svg" viewBox="0 0 100 100">
+                <circle class="daily-radial-track" cx="50" cy="50" r="40"></circle>
+                <circle id="daily-radial-bar" class="daily-radial-fill" cx="50" cy="50" r="40"></circle>
+              </svg>
+              <span id="daily-radial-pct">0%</span>
+              <span id="daily-radial-count">0 / 20 câu</span>
+            </div>
+            <div id="dashboard-battery-container" style="display: none;" class="pixel-battery-wrapper">
+              <span id="dashboard-battery-pct">0%</span>
+              <div id="dashboard-battery-fill" style="width: 0%;"></div>
+              <span id="dashboard-battery-sub">0 / 20 câu</span>
+              <div class="pixel-battery-segments" id="dashboard-battery-segments"></div>
+            </div>
           </div>
 
           <!-- 7 CHẾ ĐỘ ÔN TẬP THÔNG MINH (MA TRẬN BENTO 12 CỘT) -->

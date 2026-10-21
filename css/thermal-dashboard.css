@@ -1,27 +1,77 @@
 /* ==========================================================================
-   MINDSPARKS / TINHMINHLAKEY — ULTRAVIOLET THERMAL CAMERA & DARK NEUMORPHISM
+   MINDSPARKS / TINHMINHLAKEY — SOFT VIOLET-ROSE DASHBOARD & AIRY SURFACES
    Module: css/thermal-dashboard.css
-   Author: Sub-Agent A (Parallel Execution Workflow)
-   Scope: Landing Page (#view-dashboard), Thư Viện (#view-decks) & Datamosh
-   Specification: docs/promt/p1.md (Section 4.1)
+   Author: Sub-Agent A (Phase 3 Parallel Execution Workflow)
+   Specification: docs/promt/p2.md (Section 3.2)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. TACTILE NEUMORPHIC BUTTONS (100% THERMAL GRADIENT & RECESSED BEVELS)
+   1. XÓA SỔ NÚT FOCUS MODE DƯ THỪA & CĂN CHỈNH LAYOUT KHI THU GỌN SIDEBAR
    -------------------------------------------------------------------------- */
+#btn-focus-exit,
+.focus-exit-btn,
+#btn-card-focus {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
 
-/* Primary Action Buttons: 100% Thermal Gradient, No Gray/Blue! */
+body.focus-mode-active .app-sidebar {
+  display: flex !important;
+}
+body.focus-mode-active .app-topbar {
+  display: flex !important;
+}
+
+.app-main {
+  margin-left: var(--sidebar-width, 260px) !important;
+  width: calc(100% - var(--sidebar-width, 260px)) !important;
+  max-width: calc(100% - var(--sidebar-width, 260px)) !important;
+  transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.app-main.sidebar-collapsed {
+  margin-left: 72px !important;
+  width: calc(100% - 72px) !important;
+  max-width: calc(100% - 72px) !important;
+}
+
+.content-wrapper {
+  max-width: 1280px !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 24px 28px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 840px) {
+  .app-main,
+  .app-main.sidebar-collapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .content-wrapper {
+    padding: 16px 14px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. NÚT BẤM CHUYỂN MÀU NHẸ NHÀNG (SOFT VIOLET-ROSE) & ÍT BÓNG ĐỔ
+   -------------------------------------------------------------------------- */
 .btn-primary,
 .btn-deck-study,
 #dashboard-study-btn,
 .subject-group-actions .btn-primary {
   background: var(--brand-gradient) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  box-shadow: var(--neu-btn-primary) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-  font-weight: 700 !important;
-  letter-spacing: 0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.22) !important;
+  text-shadow: none !important;
+  font-weight: 600 !important;
   border-radius: 12px;
   padding: 10px 20px;
   display: inline-flex;
@@ -29,42 +79,31 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.16s ease,
-              background 0.22s ease,
-              border-color 0.16s ease !important;
-  position: relative;
-  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease !important;
 }
 
 .btn-primary:hover,
 .btn-deck-study:hover,
 #dashboard-study-btn:hover,
 .subject-group-actions .btn-primary:hover {
-  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 35%, #f43f5e 75%, #ff8a00 100%) !important;
-  box-shadow:
-    0 10px 26px -2px rgba(236, 72, 153, 0.65),
-    0 0 18px rgba(168, 85, 247, 0.50),
-    inset 0 1px 2px rgba(255, 255, 255, 0.65) !important;
-  border-color: rgba(255, 255, 255, 0.45) !important;
-  transform: translateY(-2px);
+  background: var(--brand-gradient-hover) !important;
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.28) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-primary:active,
 .btn-deck-study:active,
 #dashboard-study-btn:active,
 .subject-group-actions .btn-primary:active {
-  transform: translateY(1px) scale(0.97) !important;
-  box-shadow: var(--neu-inset) !important;
+  transform: translateY(0) scale(0.98) !important;
 }
 
-/* Secondary Action Buttons: Dark Tactile Neumorphic Elevated */
 .btn-secondary,
 .subject-group-actions .btn-secondary {
-  background: linear-gradient(145deg, #1d1236 0%, #120a22 100%) !important;
+  background: rgba(34, 25, 58, 0.72) !important;
   color: var(--text-primary) !important;
-  border: 1px solid rgba(168, 85, 247, 0.25) !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  box-shadow: none !important;
   border-radius: 12px;
   padding: 10px 18px;
   font-weight: 600;
@@ -73,35 +112,28 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: transform 0.16s ease,
-              box-shadow 0.16s ease,
-              border-color 0.16s ease,
-              color 0.16s ease !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, color 0.16s ease !important;
 }
 
 .btn-secondary:hover,
 .subject-group-actions .btn-secondary:hover {
-  border-color: rgba(236, 72, 153, 0.55) !important;
-  color: #ffffff !important;
-  box-shadow:
-    6px 6px 16px rgba(2, 0, 8, 0.95),
-    -3px -3px 10px rgba(168, 85, 247, 0.16),
-    inset 0 0 12px rgba(236, 72, 153, 0.18) !important;
-  transform: translateY(-1.5px);
+  background: rgba(48, 35, 80, 0.85) !important;
+  border-color: rgba(244, 114, 182, 0.42) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.14) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-secondary:active,
 .subject-group-actions .btn-secondary:active {
-  transform: translateY(1px) scale(0.98) !important;
-  box-shadow: var(--neu-inset) !important;
+  transform: translateY(0) scale(0.98) !important;
 }
 
 /* Micro Tactical Buttons (e.g. Datamosh Trigger) */
 .neu-micro-btn {
-  background: linear-gradient(145deg, #1a0f30 0%, #100720 100%);
-  border: 1px solid rgba(236, 72, 153, 0.45);
-  box-shadow: var(--neu-raised-sm);
-  color: #f472b6;
+  background: rgba(34, 25, 58, 0.72) !important;
+  border: 1px solid rgba(192, 132, 252, 0.25) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  color: #f472b6 !important;
   border-radius: 9999px;
   padding: 5px 13px;
   font-size: 0.72rem;
@@ -113,214 +145,127 @@
   gap: 6px;
   cursor: pointer;
   user-select: none;
-  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.18s ease;
 }
 
 .neu-micro-btn:hover {
-  background: linear-gradient(145deg, #271448 0%, #160a2c 100%);
-  border-color: #ec4899;
-  color: #ffffff;
-  box-shadow:
-    0 0 14px rgba(236, 72, 153, 0.5),
-    var(--neu-raised-sm);
+  background: rgba(48, 35, 80, 0.9) !important;
+  border-color: rgba(244, 114, 182, 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.3) !important;
   transform: translateY(-1px);
 }
 
 .neu-micro-btn:active {
-  transform: translateY(1px) scale(0.96);
-  box-shadow: var(--neu-inset);
+  transform: translateY(0) scale(0.97);
 }
 
 /* --------------------------------------------------------------------------
-   2. SÂN KHẤU HERO SPLIT 2 CỘT (.thermal-hero-stage)
+   3. BỐ CỤC DASHBOARD XẾP DỌC CÂN ĐỐI (HERO QUOTE Ở TRÊN - STATUS STRIP Ở DƯỚI)
    -------------------------------------------------------------------------- */
-
-.thermal-hero-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
-  gap: 24px;
+.dashboard-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   margin-bottom: 28px;
-  align-items: stretch;
-  position: relative;
+  width: 100%;
 }
 
-@media (max-width: 1024px) {
-  .thermal-hero-stage {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+/* Fallback tương thích nếu thẻ cũ vẫn còn trong DOM trước khi hoàn tất Phase 4 */
+.thermal-hero-stage {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  margin-bottom: 28px !important;
+  width: 100% !important;
 }
 
-/* --- CỘT TRÁI: FLIR INFRARED THERMAL POSTER CARD --- */
+/* Khối Quote ở trên: Trải rộng 100%, không vòng tròn cắt cứng, không vạch ngắm rườm rà */
+.hero-card,
 .thermal-poster-card {
-  background: linear-gradient(145deg, #150b29 0%, #0c051a 100%);
-  border: 1px solid rgba(168, 85, 247, 0.28);
-  border-radius: 24px;
-  box-shadow: var(--neu-raised);
-  padding: 28px 32px;
+  width: 100% !important;
+  margin-bottom: 0 !important;
+  padding: 28px 32px !important;
+  background: linear-gradient(135deg, rgba(30, 20, 54, 0.82) 0%, rgba(20, 14, 38, 0.88) 100%) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-sm) !important;
   position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 380px;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Interactive Cursor Thermal Dissipation Aura */
-.thermal-poster-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    circle 260px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(236, 72, 153, 0.16) 0%,
-    rgba(124, 58, 237, 0.08) 45%,
-    transparent 80%
-  );
-  pointer-events: none;
-  z-index: 1;
-  transition: opacity 0.3s ease;
-}
-
-/* Subtle Horizontal Scanlines Overlay */
-.thermal-scanline-overlay {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(168, 85, 247, 0.025) 2px,
-    rgba(168, 85, 247, 0.025) 4px
-  );
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.85;
-}
-
-/* FLIR Viewfinder Corner Brackets */
+/* Xóa hoàn toàn vòng tròn sáng vô duyên, scanline và vạch ngắm trên Hero Quote */
+.hero-card::before,
+.hero-card::after,
+.thermal-poster-card::before,
+.thermal-poster-card::after,
+.thermal-aura-layer,
+.thermal-scanline-overlay,
 .flir-corner {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: rgba(236, 72, 153, 0.75);
-  border-style: solid;
-  pointer-events: none;
-  z-index: 3;
-}
-.flir-corner-tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
-.flir-corner-tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
-.flir-corner-bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
-.flir-corner-br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
-
-/* Thermal HUD Top Bar */
-.thermal-hud-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 4;
-  flex-wrap: wrap;
+  display: none !important;
 }
 
-.thermal-telemetry-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  color: #c084fc;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.28);
-  border-radius: 6px;
-  padding: 3px 9px;
-  text-transform: uppercase;
-}
-
-.thermal-status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ff2a6d;
-  box-shadow: 0 0 8px #ff2a6d;
-  animation: thermal-beacon 1.8s infinite ease-in-out;
-}
-
-@keyframes thermal-beacon {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.45; transform: scale(0.85); }
-}
-
-/* Thước Màu Phổ Nhiệt FLIR Colorbar */
-.thermal-colorbar-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.thermal-colorbar-label {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-}
-
-.thermal-colorbar {
-  width: 90px;
-  height: 7px;
-  border-radius: 9999px;
-  background: var(--thermal-spectrum);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 6px rgba(236, 72, 153, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/* Poster Card Headline & Quote Content */
+.hero-heading-scrim,
 .thermal-poster-body {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
   position: relative;
-  z-index: 4;
-  margin: 12px 0 24px 0;
+  z-index: 1;
 }
 
-.hero-title,
-#hero-title {
-  margin: 0 0 14px 0;
-  line-height: 1.15;
+.hero-top-meta,
+.thermal-hud-topbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 14px !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Font chữ Quote: Dày dặn (ExtraBold/Black 800-900), đồng bộ kích thước, không tràn lề */
+#hero-title,
+.hero-title {
+  font-family: var(--font-poster) !important;
+  font-weight: 800 !important;
+  font-size: clamp(1.55rem, 2.8vw, 2.25rem) !important;
+  line-height: 1.28 !important;
+  letter-spacing: -0.02em !important;
   text-transform: uppercase;
-  font-family: var(--font-poster, 'Montserrat', sans-serif);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  margin: 0 0 12px 0 !important;
+  padding: 0 !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .hero-title-main,
 .hero-title-sub {
-  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
-  font-weight: 800;
-  color: #f3e8ff;
-  letter-spacing: 0.02em;
-  will-change: transform;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+  font-family: inherit !important;
+  font-weight: 800 !important;
+  font-size: inherit !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: none !important;
+  filter: none !important;
 }
 
 .hero-title-accent {
-  font-size: clamp(3.6rem, 7.5vw, 5.8rem);
-  line-height: 0.95;
-  font-weight: 900;
-  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #ff5e3a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 22px rgba(236, 72, 153, 0.65));
-  display: inline-block;
-  transform: scale(1.05);
-  transform-origin: left center;
-  margin: 4px 0;
+  font-family: inherit !important;
+  font-weight: 900 !important;
+  font-size: inherit !important;
+  font-style: normal !important;
+  background: var(--quote-accent-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  filter: none !important;
+  padding: 0 2px;
 }
 
 .hero-desc,
@@ -328,233 +273,212 @@
   color: var(--text-secondary);
   font-size: clamp(0.9rem, 1.1vw, 1.05rem);
   line-height: 1.55;
-  max-width: 540px;
-  margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  max-width: 680px;
+  margin: 0 0 16px 0;
+  text-shadow: none;
 }
 
-/* Poster Card Action Buttons */
+.hero-actions,
 .thermal-poster-actions {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
   position: relative;
-  z-index: 4;
+  z-index: 1;
+}
+
+/* Khối Status ở dưới: Hàng 4 cột cân đối + Thanh độ bền lưu giữ SM-2 */
+.dashboard-status-bar,
+.neu-telemetry-console {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+#view-dashboard .stats-grid,
+.neu-stat-wells-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+}
+
+@media (max-width: 900px) {
+  #view-dashboard .stats-grid,
+  .neu-stat-wells-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #view-dashboard .stats-grid,
+  .neu-stat-wells-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
-   3. CỘT PHẢI: BUỒNG ĐO NHIỆT TRÍ NHỚ (.neu-telemetry-console)
+   4. THẺ CARD THANH THOÁT & SPOTLIGHT TÍM HỒNG PASTEL (ORCHID ROSE SPOTLIGHT)
    -------------------------------------------------------------------------- */
-
-.neu-telemetry-console {
-  background: linear-gradient(145deg, #130a26 0%, #0a0416 100%);
-  border: 1px solid rgba(168, 85, 247, 0.22);
-  border-radius: 24px;
-  box-shadow: var(--neu-raised);
-  padding: 24px 26px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 18px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Header Buồng Đo Nhiệt */
-.telemetry-console-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.16);
-  padding-bottom: 12px;
-}
-
-.telemetry-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #e879f9;
-  text-transform: uppercase;
-}
-
-.telemetry-pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 10px #34d399;
-  animation: telemetry-pulse 2s infinite ease-in-out;
-}
-
-@keyframes telemetry-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-/* 4 Hốc Số Liệu Lõm Sâu (.neu-stat-well) */
-.neu-stat-wells-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
+.stat-card,
+.study-mode-card,
+.deck-card,
+.subject-group,
+.quiz-card,
+.bank-card-item,
 .neu-stat-well {
-  background: var(--bg-well);
-  border: 1px solid rgba(168, 85, 247, 0.18);
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: var(--neu-inset);
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-radius: var(--radius-card) !important;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-card::before,
+  .study-mode-card::before,
+  .deck-card::before,
+  .bank-card-item::before,
+  .neu-stat-well::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      360px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(244, 114, 182, 0.13) 0%,
+      rgba(192, 132, 252, 0.06) 45%,
+      transparent 78%
+    ) !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 0;
+  }
+
+  .stat-card:hover::before,
+  .study-mode-card:hover::before,
+  .deck-card:hover::before,
+  .bank-card-item:hover::before,
+  .neu-stat-well:hover::before {
+    opacity: 1 !important;
+  }
+
+  .stat-card:hover,
+  .study-mode-card:hover,
+  .deck-card:hover,
+  .bank-card-item:hover,
+  .neu-stat-well:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(244, 114, 182, 0.38) !important;
+    box-shadow: var(--card-hover-glow) !important;
+  }
+}
+
+/* Stat card interior layout */
+.stat-card {
+  padding: 16px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.2);
 }
 
-.neu-stat-well:hover {
-  border-color: rgba(236, 72, 153, 0.4);
+.stat-icon-wrap.amber {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+.stat-icon-wrap.purple {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.25);
+}
+.stat-icon-wrap.green {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.25);
+}
+.stat-icon-wrap.indigo {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.25);
 }
 
-.stat-well-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.stat-well-label {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.stat-well-tag {
-  font-size: 0.6rem;
-  font-family: var(--font-mono, monospace);
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.stat-well-tag.amber {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.stat-well-tag.orange {
-  background: rgba(255, 107, 53, 0.15);
-  color: #ff6b35;
-  border: 1px solid rgba(255, 107, 53, 0.3);
-}
-
-.stat-well-tag.green {
-  background: rgba(52, 211, 153, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.3);
-}
-
-.stat-well-tag.purple {
-  background: rgba(192, 132, 252, 0.15);
-  color: #c084fc;
-  border: 1px solid rgba(192, 132, 252, 0.3);
-}
-
-.stat-well-value {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.stat-well-value .stat-num {
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono, monospace);
-  font-weight: 800;
-  font-size: 1.65rem;
-  line-height: 1.1;
-  color: #f9f6ff;
-  letter-spacing: -0.02em;
-}
-
-.stat-well-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* Thanh Phổ Nhiệt SM-2 (.neu-retention-strip) */
-.neu-retention-strip {
-  background: linear-gradient(145deg, #180d32 0%, #0d061c 100%);
-  border: 1px solid rgba(168, 85, 247, 0.20);
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: var(--neu-raised-sm);
+.stat-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.neu-retention-strip-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.retention-strip-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #d0c4ea;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.retention-strip-pct {
-  font-family: var(--font-mono, monospace);
-  font-weight: 800;
-  font-size: 1rem;
-  color: #ec4899;
-}
-
-.retention-track-well {
-  background: var(--bg-well);
-  box-shadow: var(--neu-inset);
-  border-radius: 9999px;
-  height: 9px;
+  gap: 2px;
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(168, 85, 247, 0.15);
+  z-index: 1;
 }
 
-.retention-fill-thermal {
-  height: 100%;
-  border-radius: 9999px;
-  background: var(--thermal-spectrum);
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.6);
-  transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+.stat-info .stat-num {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+  font-family: var(--font-heading);
 }
 
-.retention-footer-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.72rem;
+.stat-info .stat-label {
+  font-size: 0.78rem;
   color: var(--text-muted);
+  font-weight: 500;
 }
 
-/* Mini 7-day Heatmap Dots */
+/* Thanh Độ Bền Lưu Giữ SM-2 nằm gọn ngang dưới 4 ô chỉ số */
+.sm2-status-banner,
+.neu-retention-strip {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  flex-wrap: wrap !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.sm2-retention-track,
+.retention-track-well {
+  background: var(--bg-well) !important;
+  border-radius: 9999px !important;
+  height: 8px !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(192, 132, 252, 0.15) !important;
+}
+
+.sm2-retention-fill,
+.retention-fill-thermal {
+  height: 100% !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(90deg, #7c3aed 0%, #ec4899 50%, #f472b6 100%) !important;
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.4) !important;
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Mini 7-day Heatmap */
 .mini-heatmap-days {
   display: flex;
   align-items: center;
@@ -562,16 +486,15 @@
 }
 
 .mini-day-dot {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
-  background: #180b30;
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  box-shadow: var(--neu-inset);
+  background: rgba(30, 20, 54, 0.85);
+  border: 1px solid rgba(192, 132, 252, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   font-family: var(--font-mono, monospace);
   color: var(--text-muted);
   cursor: default;
@@ -579,22 +502,21 @@
 }
 
 .mini-day-dot.active {
-  background: #a855f7;
-  border-color: #c084fc;
-  color: #ffffff;
-  box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+  background: #a855f7 !important;
+  border-color: #c084fc !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.4) !important;
 }
 
 .mini-day-dot.today {
-  background: #ec4899;
-  border-color: #ff6b35;
-  box-shadow: 0 0 8px rgba(236, 72, 153, 0.75);
+  background: #ec4899 !important;
+  border-color: #f472b6 !important;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.6) !important;
 }
 
 /* --------------------------------------------------------------------------
-   4. MA TRẬN BENTO 12 CỘT BẤT ĐỐI XỨNG (.bento-modes-matrix)
+   5. MA TRẬN BENTO 12 CỘT CHO 7 CHẾ ĐỘ HỌC (.bento-modes-matrix)
    -------------------------------------------------------------------------- */
-
 .bento-modes-matrix {
   display: grid !important;
   grid-template-columns: repeat(12, 1fr) !important;
@@ -603,17 +525,14 @@
   margin-bottom: 36px !important;
 }
 
-/* Hàng trên: 2 card 6 cột (Mode 3 & Mode 2) */
 .bento-mode-span-6 {
   grid-column: span 6 !important;
 }
 
-/* Hàng giữa: 3 card 4 cột (Mode 7, Mode 6 & Mode 4) */
 .bento-mode-span-4 {
   grid-column: span 4 !important;
 }
 
-/* Responsive Breakpoints cho Bento Matrix */
 @media (max-width: 960px) {
   .bento-mode-span-6 {
     grid-column: span 12 !important;
@@ -633,35 +552,12 @@
   }
 }
 
-/* Tactile Neumorphic Styling for Study Mode Cards */
 .study-mode-card {
-  background: linear-gradient(145deg, #160c2b 0%, #0d061c 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  border-radius: 20px !important;
-  box-shadow: var(--neu-raised-sm) !important;
   padding: 22px 24px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
   cursor: pointer !important;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.2s ease,
-              box-shadow 0.2s ease !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.study-mode-card:hover {
-  transform: translateY(-3px) !important;
-  border-color: rgba(236, 72, 153, 0.5) !important;
-  box-shadow:
-    var(--neu-raised),
-    0 0 20px rgba(168, 85, 247, 0.25) !important;
-}
-
-.study-mode-card:active {
-  transform: translateY(1px) scale(0.985) !important;
-  box-shadow: var(--neu-inset) !important;
 }
 
 .study-mode-topbar {
@@ -676,8 +572,7 @@
   height: 40px;
   border-radius: 12px;
   background: var(--bg-well);
-  border: 1px solid rgba(168, 85, 247, 0.22);
-  box-shadow: var(--neu-inset);
+  border: 1px solid rgba(192, 132, 252, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -685,9 +580,9 @@
 }
 
 .study-mode-card:hover .study-mode-icon-well {
-  border-color: rgba(236, 72, 153, 0.5);
-  color: #ff6b35;
-  box-shadow: var(--neu-inset), 0 0 10px rgba(236, 72, 153, 0.35);
+  border-color: rgba(244, 114, 182, 0.5);
+  color: #f472b6;
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.3);
 }
 
 .study-mode-title {
@@ -744,27 +639,17 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. THƯ VIỆN BỘ CÂU HỎI & MÔN HỌC (#view-decks)
+   6. THƯ VIỆN BỘ CÂU HỎI & MÔN HỌC (#view-decks)
    -------------------------------------------------------------------------- */
-
 .subject-group {
-  background: linear-gradient(145deg, #150b29 0%, #0d061c 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  border-radius: 20px !important;
-  box-shadow: var(--neu-raised-sm) !important;
   margin-bottom: 22px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.subject-group:hover {
-  border-color: rgba(168, 85, 247, 0.38) !important;
 }
 
 .subject-group-header {
   padding: 16px 22px !important;
-  background: linear-gradient(145deg, #1a0f33 0%, #110824 100%) !important;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.18) !important;
+  background: rgba(30, 20, 54, 0.9) !important;
+  border-bottom: 1px solid rgba(192, 132, 252, 0.18) !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -782,8 +667,7 @@
 
 .subject-badge {
   background: var(--bg-well) !important;
-  border: 1px solid rgba(168, 85, 247, 0.20) !important;
-  box-shadow: var(--neu-inset) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
   border-radius: 9999px;
   padding: 2px 10px;
   font-size: 0.72rem;
@@ -796,24 +680,11 @@
 }
 
 .deck-card {
-  background: linear-gradient(145deg, #170d2f 0%, #0e061e 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--neu-raised-sm) !important;
   padding: 20px !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-.deck-card:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(236, 72, 153, 0.45) !important;
-  box-shadow:
-    var(--neu-raised),
-    0 0 16px rgba(168, 85, 247, 0.22) !important;
 }
 
 .deck-name {
@@ -848,35 +719,33 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. DATAMOSH GLITCH KEYFRAME ANIMATION & FILTER TRIGGER
+   7. DATAMOSH GLITCH & QUOTE REFRESH ANIMATION (HIGH PERFORMANCE 120 FPS)
    -------------------------------------------------------------------------- */
-
 .datamosh-active {
-  filter: url(#datamosh-glitch) !important;
-  animation: datamosh-pulse 0.34s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  animation: datamosh-pulse 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
   transform-origin: center center;
-  will-change: filter, transform;
+  will-change: transform, opacity;
 }
 
 @keyframes datamosh-pulse {
   0% {
-    filter: url(#datamosh-glitch) contrast(1.4) brightness(1.2);
     transform: scale(1) skewX(-1.5deg);
+    opacity: 0.85;
   }
   25% {
-    filter: url(#datamosh-glitch) hue-rotate(25deg) saturate(1.8);
-    transform: scale(1.01) skewX(2deg) translateY(-1px);
+    transform: scale(1.02) skewX(2deg) translateY(-1px);
+    opacity: 0.95;
   }
   50% {
-    filter: url(#datamosh-glitch) hue-rotate(-20deg) contrast(1.6);
     transform: scale(0.99) skewX(-1deg);
+    opacity: 0.9;
   }
   75% {
-    filter: url(#datamosh-glitch) saturate(1.3);
-    transform: scale(1.005) skewX(0.5deg);
+    transform: scale(1.01) skewX(0.5deg);
+    opacity: 1;
   }
   100% {
-    filter: none;
     transform: scale(1) skewX(0deg);
+    opacity: 1;
   }
 }

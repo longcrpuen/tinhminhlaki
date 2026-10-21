@@ -1,69 +1,77 @@
 /* ==========================================================================
    MINDSPARKS / TINHMINHLAKEY — NEUMORPHIC STUDY & 3D FLASHCARD MODULE
    File: css/neumorph-study.css
-   Author: Sub-Agent B (Parallel Execution Track 2)
-   Design System: Ultraviolet Thermal Camera × Dark Tactile Neumorphism
-   Scopes: #view-study, #view-exam, #modal-session-complete, .quiz-card
+   Author: Sub-Agent B (Parallel Execution Track 2 — Phase 3)
+   Design System: Soft Violet-Rose Vibe × Airy Tactile Neumorphism (120 FPS)
+   Scopes: #view-study, #view-exam, #modal-session-complete, .quiz-card, #study-flashcard-area
    ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. QUIZ & FLASHCARD CONTAINER EXPANSION FOR DESKTOP
+   -------------------------------------------------------------------------- */
+#view-study .quiz-container,
+#view-exam .quiz-container,
+body.flashcard-active .quiz-container,
+body.quiz-active .quiz-container {
+  max-width: 860px !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
 
 /* --------------------------------------------------------------------------
    1. QUIZ PANEL & PROGRESS SYSTEM (.quiz-card, .quiz-progress-track, .quiz-progress-fill)
    -------------------------------------------------------------------------- */
 
-/* Bảng điều khiển Dark Neumorphism nổi khối (Extruded Tactile Deck) */
+/* Bảng điều khiển học tập Soft Violet thanh thoát, bóng đổ dịu mắt */
 #view-study .quiz-card,
 #view-exam .quiz-card,
 .quiz-card {
-  background: linear-gradient(145deg, rgba(27, 16, 51, 0.94) 0%, rgba(15, 8, 29, 0.98) 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: var(--radius-card, 24px) !important;
-  box-shadow: var(--neu-raised) !important;
+  background: var(--bg-card, rgba(24, 18, 42, 0.78)) !important;
+  border: 1px solid var(--glass-border, rgba(192, 132, 252, 0.16)) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  box-shadow: var(--shadow-sm, 0 4px 12px rgba(6, 3, 15, 0.20)) !important;
   position: relative !important;
   overflow: visible !important;
   transform: translateZ(0);
-  transition: box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease !important;
+  transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
   box-sizing: border-box !important;
   max-width: 100% !important;
 }
 
 #view-study .quiz-card:hover,
 #view-exam .quiz-card:hover {
-  border-color: rgba(236, 72, 153, 0.45) !important;
-  box-shadow:
-    12px 12px 28px rgba(3, 1, 9, 0.95),
-    -6px -6px 20px rgba(168, 85, 247, 0.12),
-    0 0 20px rgba(168, 85, 247, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(244, 114, 182, 0.38) !important;
+  box-shadow: var(--card-hover-glow, 0 6px 20px rgba(168, 85, 247, 0.14), 0 0 12px rgba(244, 114, 182, 0.10)) !important;
 }
 
-/* Rãnh tiến độ lõm sâu (Recessed Well) */
+/* Rãnh tiến độ lõm nhẹ nhàng */
 .quiz-progress-track {
-  background: var(--bg-well, #0a0514) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  box-shadow: var(--neu-inset) !important;
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.18) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: var(--radius-full, 9999px) !important;
-  height: 12px !important;
+  height: 10px !important;
   margin: 0 14px !important;
   overflow: hidden !important;
   position: relative !important;
   box-sizing: border-box !important;
 }
 
-/* Thanh Fill chạy dải quang phổ nhiệt (Thermal Spectrum Fill) */
+/* Thanh Fill chạy dải quang phổ nhiệt Tím - Hồng Orchid */
 .quiz-progress-fill {
   height: 100% !important;
-  background: var(--thermal-spectrum, linear-gradient(90deg, #2e1065 0%, #6d28d9 22%, #a855f7 45%, #ec4899 68%, #ff5e3a 86%, #fde047 100%)) !important;
-  box-shadow: 0 0 14px rgba(236, 72, 153, 0.65), 0 0 6px rgba(253, 224, 71, 0.5) !important;
+  background: linear-gradient(90deg, #7c3aed 0%, #a855f7 35%, #ec4899 75%, #f472b6 100%) !important;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.45) !important;
   border-radius: var(--radius-full, 9999px) !important;
-  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* Thanh đếm ngược theo câu (Per-Question Countdown Bar) */
 .per-q-timer-track {
-  background: var(--bg-well, #0a0514) !important;
-  border: 1px solid rgba(168, 85, 247, 0.2) !important;
-  box-shadow: var(--neu-inset) !important;
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.16) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
   border-radius: var(--radius-full, 9999px) !important;
   height: 6px !important;
   overflow: hidden !important;
@@ -71,17 +79,17 @@
 }
 .per-q-timer-fill {
   height: 100% !important;
-  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #ff2a6d 100%) !important;
-  box-shadow: 0 0 8px rgba(255, 42, 109, 0.5) !important;
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 60%, #f472b6 100%) !important;
+  box-shadow: 0 0 8px rgba(244, 114, 182, 0.4) !important;
   border-radius: var(--radius-full, 9999px) !important;
   transition: width 1s linear !important;
 }
 
 /* Badges & Meta Chips */
 .quiz-tag {
-  background: linear-gradient(145deg, #1d1136 0%, #110922 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.28) !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  background: rgba(33, 25, 56, 0.85) !important;
+  border: 1px solid rgba(192, 132, 252, 0.22) !important;
+  box-shadow: var(--shadow-xs) !important;
   color: var(--accent-bright, #c084fc) !important;
   border-radius: var(--radius-full, 9999px) !important;
   font-weight: 600 !important;
@@ -91,93 +99,89 @@
 
 /* Secondary Actions Toolbar */
 .card-actions-toolbar .btn-card-action {
-  background: linear-gradient(145deg, #1b1033 0%, #100820 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  box-shadow: var(--neu-raised-sm) !important;
-  color: var(--text-secondary, #d0c4ea) !important;
+  background: rgba(30, 22, 52, 0.75) !important;
+  border: 1px solid rgba(192, 132, 252, 0.18) !important;
+  box-shadow: var(--shadow-xs) !important;
+  color: var(--text-secondary, #cdc3e6) !important;
   border-radius: 10px !important;
-  transition: all 0.15s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
 }
 .card-actions-toolbar .btn-card-action:hover {
   color: #ffffff !important;
-  border-color: var(--thermal-magenta, #ec4899) !important;
-  transform: translateY(-1.5px) !important;
-  box-shadow:
-    4px 4px 10px rgba(2, 0, 7, 0.9),
-    -2px -2px 6px rgba(168, 85, 247, 0.14),
-    0 0 10px rgba(236, 72, 153, 0.3) !important;
+  border-color: rgba(244, 114, 182, 0.45) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.18) !important;
 }
 .card-actions-toolbar .btn-card-action:active {
-  transform: translateY(1px) scale(0.96) !important;
-  box-shadow: var(--neu-inset) !important;
+  transform: translateY(0) scale(0.96) !important;
 }
 
 /* Question Headline */
 .quiz-question-text {
-  color: var(--text-primary, #f9f6ff) !important;
+  color: var(--text-primary, #f8f6fd) !important;
   font-family: var(--font-body, system-ui, sans-serif) !important;
   font-weight: 700 !important;
   line-height: 1.5 !important;
   letter-spacing: -0.015em !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+  text-shadow: none !important;
 }
 
 /* Blind Active Recall Box */
 .blind-recall-box {
-  background: linear-gradient(145deg, #160c2b 0%, #0d0619 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.25) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--neu-inset) !important;
+  background: rgba(20, 14, 38, 0.85) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   padding: 24px 20px !important;
   text-align: center !important;
 }
 .blind-recall-box .btn-reveal-options {
-  background: var(--brand-gradient, linear-gradient(135deg, #7c3aed 0%, #a855f7 38%, #ec4899 78%, #ff5e3a 100%)) !important;
+  background: var(--brand-gradient, linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%)) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  box-shadow: var(--neu-btn-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.22) !important;
   border-radius: 9999px !important;
   font-weight: 700 !important;
   padding: 10px 22px !important;
   cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease !important;
 }
 .blind-recall-box .btn-reveal-options:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 10px 24px -2px rgba(236, 72, 153, 0.6), 0 0 16px rgba(168, 85, 247, 0.45) !important;
+  background: var(--brand-gradient-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.28) !important;
 }
 .blind-recall-box .btn-reveal-options:active {
-  transform: translateY(1px) scale(0.97) !important;
-  box-shadow: var(--neu-inset) !important;
+  transform: translateY(0) scale(0.98) !important;
 }
 
 /* Numeric Answer Input Card */
 .numeric-input-card {
-  background: linear-gradient(145deg, #170d2d 0%, #0d071a 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.25) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  background: rgba(24, 18, 42, 0.78) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-sm) !important;
   padding: 20px !important;
 }
 .numeric-input {
-  background: var(--bg-well, #0a0514) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  box-shadow: var(--neu-inset) !important;
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: 12px !important;
-  color: var(--text-primary, #f9f6ff) !important;
+  color: var(--text-primary, #f8f6fd) !important;
   font-family: var(--font-mono, monospace) !important;
   padding: 12px 16px !important;
   font-size: 1.1rem !important;
 }
 .numeric-input:focus {
-  border-color: var(--thermal-magenta, #ec4899) !important;
-  box-shadow: var(--neu-inset), 0 0 12px rgba(236, 72, 153, 0.35) !important;
+  border-color: var(--border-focus, rgba(244, 114, 182, 0.55)) !important;
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.25) !important;
   outline: none !important;
 }
 
 
 /* --------------------------------------------------------------------------
-   2. TACTILE NEUMORPHIC KEYCAPS (.quiz-option-btn, .quiz-option-letter)
+   2. CLEAN QUIZ OPTIONS (BỎ HOÀN TOÀN KHUNG HỘP BỌC CHỮ CÁI A, B, C, D)
    -------------------------------------------------------------------------- */
 
 /* Bố cục lưới đáp án 2x2 trên Desktop */
@@ -201,30 +205,27 @@
   grid-template-columns: 1fr !important;
 }
 
-/* 4 Phím Bấm Vật Lý Nổi Khối (Tactile Neumorphic Keycaps) */
+/* Nút đáp án: Nền tím tối nhẹ nhàng, bo góc 14px, viền mảnh tinh tế, padding thoải mái */
 .quiz-option-btn {
+  background: rgba(30, 22, 52, 0.75) !important;
+  border: 1.5px solid rgba(192, 132, 252, 0.20) !important;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.14)) !important;
+  border-radius: 14px !important;
+  padding: 14px 18px !important;
   display: flex !important;
-  align-items: center !important;
-  gap: 14px !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
   min-height: 52px !important;
   height: auto !important;
-  padding: 13px 18px !important;
-  background: linear-gradient(145deg, #1b1033 0%, #110920 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised-sm) !important;
-  border-radius: 16px !important;
-  color: var(--text-primary, #f9f6ff) !important;
+  color: var(--text-primary, #f8f6fd) !important;
   cursor: pointer !important;
   text-align: left !important;
   position: relative !important;
   box-sizing: border-box !important;
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.18s ease,
-              background 0.18s ease !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
   user-select: none !important;
   -webkit-user-select: none !important;
   -webkit-tap-highlight-color: transparent !important;
@@ -232,57 +233,45 @@
   overflow: hidden !important;
 }
 
-/* Hiệu ứng hover nổi cao hơn */
 .quiz-option-btn:hover:not([disabled]) {
-  background: linear-gradient(145deg, #221440 0%, #140b26 100%) !important;
-  border-color: rgba(236, 72, 153, 0.45) !important;
-  box-shadow:
-    7px 7px 18px rgba(2, 0, 7, 0.95),
-    -4px -4px 12px rgba(168, 85, 247, 0.14),
-    0 0 16px rgba(168, 85, 247, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
-  transform: translateY(-2px) !important;
+  background: rgba(44, 32, 74, 0.88) !important;
+  border-color: rgba(244, 114, 182, 0.50) !important;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.16) !important;
+  transform: translateY(-1px) !important;
 }
 
-/* Hiệu ứng active thụt lún vật lý (Tactile Keycap Depression) */
 .quiz-option-btn:active:not([disabled]) {
-  background: linear-gradient(145deg, #110920 0%, #1b1033 100%) !important;
-  border-color: rgba(168, 85, 247, 0.38) !important;
-  box-shadow: var(--neu-inset) !important;
-  transform: translateY(1px) scale(0.98) !important;
-  transition-duration: 0.08s !important;
+  transform: translateY(1px) scale(0.99) !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
-/* Recessed Letter Well: 30x30px Hốc lõm phím bấm */
+/* CHỮ CÁI A. B. C. D.: XÓA SẠCH HỘP VUÔNG, BACKGROUND, BORDER, SHADOW!
+   Hiển thị dạng chữ in đậm sắc nét, nằm tự nhiên ngay trước nội dung đáp án */
 .quiz-option-letter {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 30px !important;
-  height: 30px !important;
-  min-width: 30px !important;
-  min-height: 30px !important;
-  border-radius: 8px !important;
-  background: var(--bg-well, #0a0514) !important;
-  box-shadow: var(--neu-inset) !important;
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 2px 0 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   color: #e879f9 !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  font-family: var(--font-heading, var(--font-body, system-ui)) !important;
-  font-size: 0.92rem !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
   flex-shrink: 0 !important;
-  line-height: 1 !important;
-  box-sizing: border-box !important;
-  transition: all 0.18s ease !important;
-  margin: 0 !important;
 }
 
-/* Nội dung đáp án */
+/* Nội dung văn bản / KaTeX đáp án */
 .quiz-option-content {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   max-width: 100% !important;
-  color: var(--text-primary, #f9f6ff) !important;
+  color: var(--text-primary, #f8f6fd) !important;
   line-height: 1.5 !important;
   font-size: 0.96rem !important;
   font-weight: 500 !important;
@@ -292,51 +281,45 @@
   white-space: normal !important;
 }
 
-/* Trạng thái Correct: Phát sáng xanh ngọc */
+/* Trạng thái Correct: Phát sáng xanh ngọc nhẹ nhàng */
 .quiz-option-btn.correct {
-  background: linear-gradient(145deg, #0e2b1f 0%, #071710 100%) !important;
+  background: linear-gradient(145deg, rgba(14, 43, 31, 0.90) 0%, rgba(7, 23, 16, 0.94) 100%) !important;
   border: 1.5px solid #34d399 !important;
-  box-shadow:
-    0 0 22px rgba(52, 211, 153, 0.35),
-    inset 0 0 14px rgba(52, 211, 153, 0.18),
-    5px 5px 12px rgba(2, 0, 7, 0.9) !important;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.28), var(--shadow-xs) !important;
   color: #ffffff !important;
   animation: keycapCorrectPulse 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 .quiz-option-btn.correct .quiz-option-letter {
-  background: #05140e !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: #34d399 !important;
-  border-color: #34d399 !important;
-  box-shadow: inset 0 0 8px rgba(52, 211, 153, 0.35) !important;
 }
 .quiz-option-btn.correct .quiz-option-content {
   color: #ffffff !important;
   font-weight: 600 !important;
 }
 
-/* Trạng thái Incorrect: Phát sáng đỏ hồng ngoại */
+/* Trạng thái Incorrect: Phát sáng đỏ hồng nhẹ nhàng */
 .quiz-option-btn.incorrect {
-  background: linear-gradient(145deg, #300c19 0%, #17050c 100%) !important;
+  background: linear-gradient(145deg, rgba(48, 12, 25, 0.90) 0%, rgba(23, 5, 12, 0.94) 100%) !important;
   border: 1.5px solid #ff2a6d !important;
-  box-shadow:
-    0 0 22px rgba(255, 42, 109, 0.35),
-    inset 0 0 14px rgba(255, 42, 109, 0.18),
-    5px 5px 12px rgba(2, 0, 7, 0.9) !important;
+  box-shadow: 0 0 16px rgba(255, 42, 109, 0.28), var(--shadow-xs) !important;
   color: #ffffff !important;
   animation: keycapIncorrectShake 0.36s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 .quiz-option-btn.incorrect .quiz-option-letter {
-  background: #140409 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: #ff2a6d !important;
-  border-color: #ff2a6d !important;
-  box-shadow: inset 0 0 8px rgba(255, 42, 109, 0.35) !important;
 }
 .quiz-option-btn.incorrect .quiz-option-content {
   color: #ffffff !important;
   font-weight: 600 !important;
 }
 
-/* Animation khi chọn đáp án */
+/* Animations khi chọn đáp án */
 @keyframes keycapCorrectPulse {
   0%   { transform: scale(0.98); }
   50%  { transform: scale(1.02); }
@@ -406,29 +389,41 @@
    4. THẺ FLASHCARD 3D & 4 NÚT SRS SM-2 (#study-flashcard-area, .srs-btn)
    -------------------------------------------------------------------------- */
 
-#study-flashcard-area {
-  max-width: 680px;
-  margin: 0 auto;
-  width: 100%;
+#study-flashcard-area,
+.flashcard-player-container,
+body.flashcard-active .flashcard-player-container,
+body.flashcard-active #study-flashcard-area {
+  max-width: 840px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  gap: 16px !important;
+  box-sizing: border-box !important;
 }
 
-.flashcard-stage {
+.flashcard-stage,
+body.flashcard-active .flashcard-stage {
   perspective: 1200px !important;
   -webkit-perspective: 1200px !important;
   width: 100% !important;
-  height: 340px !important;
-  min-height: 280px !important;
+  height: clamp(380px, 50vh, 460px) !important;
+  min-height: 380px !important;
+  max-height: 480px !important;
   display: flex !important;
   flex-direction: column !important;
   position: relative !important;
-  margin-bottom: 0 !important;
+  margin: 0 auto !important;
 }
 
-/* Card lật 3D với đường cong chuyển động tự nhiên */
+/* Card lật 3D mượt mà */
 .flashcard-card,
-.flashcard-inner {
+.flashcard-inner,
+body.flashcard-active .flashcard-card {
   width: 100% !important;
   height: 100% !important;
+  min-height: 380px !important;
+  max-height: 480px !important;
   position: relative !important;
   transform-style: preserve-3d !important;
   -webkit-transform-style: preserve-3d !important;
@@ -436,29 +431,30 @@
   cursor: pointer !important;
   user-select: none !important;
   -webkit-user-select: none !important;
-  border-radius: var(--radius-card, 22px) !important;
+  border-radius: 22px !important;
 }
 
 .flashcard-card.flipped,
-.flashcard-inner.flipped {
+.flashcard-inner.flipped,
+body.flashcard-active .flashcard-card.flipped {
   transform: rotateY(180deg) !important;
   -webkit-transform: rotateY(180deg) !important;
 }
 
-/* Mặt Thẻ Neumorphic Dark Violet Tactile */
-.flashcard-face {
+/* Mặt thẻ Neumorphic Soft Violet Tactile */
+.flashcard-face,
+body.flashcard-active .flashcard-face {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
-  border-radius: var(--radius-card, 22px) !important;
-  background: linear-gradient(145deg, #1b1035 0%, #0e071c 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.28) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: var(--neu-raised) !important;
-  padding: 24px 28px !important;
+  border-radius: 22px !important;
+  background: linear-gradient(145deg, rgba(32, 23, 56, 0.94) 0%, rgba(20, 14, 36, 0.96) 100%) !important;
+  border: 1px solid rgba(192, 132, 252, 0.26) !important;
+  box-shadow: var(--shadow-md, 0 6px 20px rgba(6, 3, 15, 0.24)) !important;
+  padding: 28px 36px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
@@ -467,49 +463,54 @@
 }
 
 /* Mặt trước */
-.flashcard-front {
+.flashcard-front,
+body.flashcard-active .flashcard-front {
   transform: rotateY(0deg) !important;
   -webkit-transform: rotateY(0deg) !important;
   z-index: 2;
 }
 
 /* Mặt sau */
-.flashcard-back {
+.flashcard-back,
+body.flashcard-active .flashcard-back {
   transform: rotateY(180deg) !important;
   -webkit-transform: rotateY(180deg) !important;
-  background: linear-gradient(145deg, #1f123c 0%, #100822 100%) !important;
-  border-color: rgba(236, 72, 153, 0.4) !important;
-  box-shadow:
-    var(--neu-raised),
-    0 0 24px rgba(168, 85, 247, 0.22) !important;
+  background: linear-gradient(145deg, rgba(38, 25, 66, 0.96) 0%, rgba(22, 14, 40, 0.98) 100%) !important;
+  border-color: rgba(244, 114, 182, 0.42) !important;
+  box-shadow: var(--shadow-md), 0 0 20px rgba(168, 85, 247, 0.16) !important;
   z-index: 1;
 }
 
-.flashcard-card.flipped .flashcard-front {
+.flashcard-card.flipped .flashcard-front,
+body.flashcard-active .flashcard-card.flipped .flashcard-front {
   z-index: 1 !important;
   pointer-events: none;
 }
-.flashcard-card.flipped .flashcard-back {
+.flashcard-card.flipped .flashcard-back,
+body.flashcard-active .flashcard-card.flipped .flashcard-back {
   z-index: 3 !important;
   pointer-events: auto;
 }
 
 /* Nội dung bên trong thẻ Flashcard */
-.flashcard-face-header {
+.flashcard-face-header,
+body.flashcard-active .flashcard-face-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   flex-shrink: 0;
 }
-.flashcard-flip-badge {
-  font-size: 0.76rem !important;
+.flashcard-flip-badge,
+body.flashcard-active .flashcard-flip-badge {
+  font-size: 0.78rem !important;
   font-weight: 600 !important;
-  color: var(--thermal-magenta, #ec4899) !important;
+  color: var(--accent-rose, #f472b6) !important;
   letter-spacing: 0.03em !important;
 }
 
-.flashcard-content-wrap {
+.flashcard-content-wrap,
+body.flashcard-active .flashcard-content-wrap {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -520,68 +521,90 @@
   text-align: center;
   word-break: break-word;
 }
-.flashcard-question-text {
-  font-size: clamp(1.15rem, 2.3vw, 1.45rem) !important;
+
+/* Cỡ chữ câu hỏi thoáng đãng */
+.flashcard-question-text,
+body.flashcard-active .flashcard-question-text {
+  font-size: clamp(1.25rem, 2.1vw, 1.55rem) !important;
   font-weight: 700 !important;
-  color: var(--text-primary, #f9f6ff) !important;
+  color: var(--text-primary, #f8f6fd) !important;
   line-height: 1.55 !important;
   margin: 0 !important;
 }
-.flashcard-answer-label {
-  font-size: 0.74rem !important;
+
+/* Nhãn đáp án đúng */
+.flashcard-answer-label,
+body.flashcard-active .flashcard-answer-label {
+  font-size: 0.76rem !important;
   font-weight: 800 !important;
   color: #34d399 !important;
   letter-spacing: 0.08em !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 8px !important;
 }
-.flashcard-answer-text {
-  font-size: clamp(1.2rem, 2.5vw, 1.55rem) !important;
+
+/* Cỡ chữ đáp án lớn rõ, nổi bật */
+.flashcard-answer-text,
+body.flashcard-active .flashcard-answer-text {
+  font-size: clamp(1.3rem, 2.2vw, 1.65rem) !important;
   font-weight: 800 !important;
   color: #34d399 !important;
   line-height: 1.45 !important;
-  margin: 0 0 10px 0 !important;
-  text-shadow: 0 0 16px rgba(52, 211, 153, 0.4) !important;
+  margin: 0 0 12px 0 !important;
+  text-shadow: 0 0 16px rgba(52, 211, 153, 0.35) !important;
 }
 
-/* Hốc giải thích lõm Neumorphic trong Flashcard Back */
-.flashcard-explanation-box {
-  background: var(--bg-well, #0a0514) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  box-shadow: var(--neu-inset) !important;
+/* Hốc giải thích lõm nhẹ nhàng trong Flashcard Back */
+.flashcard-explanation-box,
+body.flashcard-active .flashcard-explanation-box {
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: 14px !important;
-  padding: 12px 16px !important;
+  padding: 12px 18px !important;
   text-align: left !important;
   margin-top: 10px !important;
 }
-.flashcard-explanation-header {
+.flashcard-explanation-header,
+body.flashcard-active .flashcard-explanation-header {
   font-size: 0.78rem !important;
   font-weight: 700 !important;
-  color: var(--thermal-magenta, #ec4899) !important;
+  color: var(--accent-rose, #f472b6) !important;
   margin-bottom: 4px !important;
 }
-.flashcard-explanation-text {
-  font-size: 0.86rem !important;
+.flashcard-explanation-text,
+body.flashcard-active .flashcard-explanation-text {
+  font-size: 0.88rem !important;
   line-height: 1.55 !important;
-  color: var(--text-secondary, #d0c4ea) !important;
+  color: var(--text-secondary, #cdc3e6) !important;
 }
 
-/* 4 Phím Đánh Giá SRS SM-2 (Tactile Mechanical Buttons) */
-.srs-ratings-bar {
+/* Bottom Actions Toolbar */
+.flashcard-bottom-actions,
+body.flashcard-active .flashcard-bottom-actions {
+  max-width: 840px !important;
+  margin-top: 12px !important;
+  width: 100% !important;
+}
+
+/* 4 Phím Đánh Giá SRS SM-2 */
+.srs-ratings-bar,
+body.flashcard-active .srs-ratings-bar {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
   gap: 12px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  margin-top: 14px !important;
+  margin-top: 12px !important;
 }
 
-.srs-btn {
+.srs-btn,
+body.flashcard-active .srs-btn {
   height: 54px !important;
   min-height: 54px !important;
   border-radius: 14px !important;
-  background: linear-gradient(145deg, #1b1033 0%, #110920 100%) !important;
-  box-shadow: var(--neu-raised-sm) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  background: linear-gradient(145deg, rgba(30, 22, 52, 0.85) 0%, rgba(18, 12, 34, 0.92) 100%) !important;
+  box-shadow: var(--shadow-xs) !important;
+  border: 1px solid rgba(192, 132, 252, 0.22) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -596,89 +619,95 @@
   user-select: none !important;
 }
 
-.srs-btn:hover {
-  transform: translateY(-2px) !important;
+.srs-btn:hover,
+body.flashcard-active .srs-btn:hover {
+  transform: translateY(-1.5px) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
-.srs-btn:active {
-  transform: translateY(1px) scale(0.97) !important;
-  box-shadow: var(--neu-inset) !important;
+
+.srs-btn:active,
+body.flashcard-active .srs-btn:active {
+  transform: translateY(1px) scale(0.98) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
-.srs-btn .srs-label {
+
+.srs-btn .srs-label,
+body.flashcard-active .srs-btn .srs-label {
   font-size: 0.82rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.02em !important;
 }
-.srs-btn .srs-interval {
+.srs-btn .srs-interval,
+body.flashcard-active .srs-btn .srs-interval {
   font-size: 0.72rem !important;
   font-weight: 600 !important;
   padding: 1px 8px !important;
   border-radius: 6px !important;
-  box-shadow: var(--neu-inset) !important;
   line-height: 1.3 !important;
 }
 
-/* Nút 1: Chưa thuộc (< 10p) — Crimson Thermal */
+/* Nút 1: Chưa thuộc (< 10p) */
 .srs-btn-again {
-  border-color: rgba(255, 42, 109, 0.38) !important;
-  color: #ff85a1 !important;
+  border-color: rgba(244, 63, 94, 0.38) !important;
+  color: #fb7185 !important;
 }
 .srs-btn-again:hover {
-  border-color: #ff2a6d !important;
-  box-shadow: 0 0 16px rgba(255, 42, 109, 0.45), var(--neu-raised-sm) !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.35) !important;
   color: #ffffff !important;
 }
 .srs-btn-again .srs-interval {
-  background: rgba(255, 42, 109, 0.18) !important;
-  color: #ff2a6d !important;
-  border: 1px solid rgba(255, 42, 109, 0.35) !important;
+  background: rgba(244, 63, 94, 0.15) !important;
+  color: #f43f5e !important;
+  border: 1px solid rgba(244, 63, 94, 0.30) !important;
 }
 
-/* Nút 2: Khó nhớ (1 ngày) — Orange Radiation */
+/* Nút 2: Khó nhớ (1 ngày) */
 .srs-btn-hard {
-  border-color: rgba(255, 107, 53, 0.38) !important;
-  color: #ffaa80 !important;
+  border-color: rgba(251, 146, 60, 0.38) !important;
+  color: #fdba74 !important;
 }
 .srs-btn-hard:hover {
-  border-color: #ff6b35 !important;
-  box-shadow: 0 0 16px rgba(255, 107, 53, 0.45), var(--neu-raised-sm) !important;
+  border-color: #fb923c !important;
+  box-shadow: 0 0 14px rgba(251, 146, 60, 0.35) !important;
   color: #ffffff !important;
 }
 .srs-btn-hard .srs-interval {
-  background: rgba(255, 107, 53, 0.18) !important;
-  color: #ff6b35 !important;
-  border: 1px solid rgba(255, 107, 53, 0.35) !important;
+  background: rgba(251, 146, 60, 0.15) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(251, 146, 60, 0.30) !important;
 }
 
-/* Nút 3: Nhớ tốt (3 ngày) — Ultraviolet Thermal Magenta */
+/* Nút 3: Nhớ tốt (3 ngày) */
 .srs-btn-good {
   border-color: rgba(236, 72, 153, 0.38) !important;
   color: #f472b6 !important;
 }
 .srs-btn-good:hover {
   border-color: #ec4899 !important;
-  box-shadow: 0 0 16px rgba(236, 72, 153, 0.45), var(--neu-raised-sm) !important;
+  box-shadow: 0 0 14px rgba(236, 72, 153, 0.35) !important;
   color: #ffffff !important;
 }
 .srs-btn-good .srs-interval {
-  background: rgba(236, 72, 153, 0.18) !important;
+  background: rgba(236, 72, 153, 0.15) !important;
   color: #ec4899 !important;
-  border: 1px solid rgba(236, 72, 153, 0.35) !important;
+  border: 1px solid rgba(236, 72, 153, 0.30) !important;
 }
 
-/* Nút 4: Rất dễ (6 ngày) — Emerald Mint */
+/* Nút 4: Rất dễ (6 ngày) */
 .srs-btn-easy {
   border-color: rgba(52, 211, 153, 0.38) !important;
   color: #6ee7b7 !important;
 }
 .srs-btn-easy:hover {
   border-color: #34d399 !important;
-  box-shadow: 0 0 16px rgba(52, 211, 153, 0.45), var(--neu-raised-sm) !important;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.35) !important;
   color: #ffffff !important;
 }
 .srs-btn-easy .srs-interval {
-  background: rgba(52, 211, 153, 0.18) !important;
+  background: rgba(52, 211, 153, 0.15) !important;
   color: #34d399 !important;
-  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+  border: 1px solid rgba(52, 211, 153, 0.30) !important;
 }
 
 
@@ -687,20 +716,17 @@
    -------------------------------------------------------------------------- */
 
 #modal-session-complete .modal-box {
-  background: linear-gradient(150deg, #1b1035 0%, #0d0619 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.32) !important;
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.95),
-    0 0 35px rgba(168, 85, 247, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.14) !important;
+  background: linear-gradient(150deg, rgba(27, 16, 53, 0.95) 0%, rgba(13, 6, 25, 0.98) 100%) !important;
+  border: 1px solid rgba(192, 132, 252, 0.28) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(168, 85, 247, 0.18) !important;
   border-radius: 24px !important;
 }
 
-/* Khung Pin Neumorphic Raised */
+/* Khung Pin */
 .pixel-battery-wrapper {
-  background: linear-gradient(145deg, #190e30 0%, #0e071c 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.28) !important;
-  box-shadow: var(--neu-raised) !important;
+  background: rgba(25, 14, 48, 0.85) !important;
+  border: 1px solid rgba(192, 132, 252, 0.24) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: 18px !important;
   padding: 16px !important;
   width: 100% !important;
@@ -708,66 +734,58 @@
   box-sizing: border-box !important;
 }
 
-/* Vỏ Pin Hốc Lõm (Recessed Battery Shell) */
+/* Vỏ Pin Hốc Lõm */
 .pixel-battery-shell {
-  background: var(--bg-well, #0a0514) !important;
-  box-shadow: var(--neu-inset) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
   border-radius: 6px 0 0 6px !important;
   height: 28px !important;
   box-sizing: border-box !important;
 }
 
-/* Đầu Cực Pin Nhô Phải */
+/* Đầu Cực Pin */
 .pixel-battery-cap {
   background: linear-gradient(180deg, #a855f7 0%, #ec4899 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   border-left: none !important;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.45) !important;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.35) !important;
   border-radius: 0 4px 4px 0 !important;
   width: 7px !important;
   height: 16px !important;
 }
 
-/* Phân đoạn Pin quang phổ nhiệt */
 .pixel-battery-segment {
   border-radius: 2px !important;
 }
 
-/* Trạng thái Overcharge (100% Perfect): Thermal Infrared Overcharge rực rỡ */
 .pixel-battery-wrapper.charged,
 .pixel-battery-wrapper.overcharged {
-  border-color: #ff2a6d !important;
-  box-shadow:
-    0 0 30px rgba(255, 42, 109, 0.65),
-    0 0 60px rgba(236, 72, 153, 0.4),
-    var(--neu-raised) !important;
+  border-color: #ec4899 !important;
+  box-shadow: 0 0 25px rgba(236, 72, 153, 0.4), var(--shadow-sm) !important;
 }
 .pixel-battery-wrapper.charged .pixel-battery-shell,
 .pixel-battery-wrapper.overcharged .pixel-battery-shell {
-  border-color: #ff2a6d !important;
-  box-shadow:
-    inset 0 0 12px rgba(0, 0, 0, 0.9),
-    0 0 25px rgba(255, 42, 109, 0.55) !important;
+  border-color: #ec4899 !important;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8), 0 0 16px rgba(236, 72, 153, 0.35) !important;
 }
 .pixel-battery-wrapper.charged .pixel-battery-cap,
 .pixel-battery-wrapper.overcharged .pixel-battery-cap {
-  background: #ff2a6d !important;
-  border-color: #ff6b35 !important;
-  box-shadow: 0 0 18px #ff2a6d, 0 0 26px rgba(255, 107, 53, 0.6) !important;
+  background: #ec4899 !important;
+  box-shadow: 0 0 14px #ec4899 !important;
 }
 .pixel-battery-wrapper.charged .pixel-battery-segment.active,
 .pixel-battery-wrapper.overcharged .pixel-battery-segment.active {
-  background: linear-gradient(135deg, #ec4899 0%, #ff2a6d 45%, #ff6b35 85%, #fde047 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 0 16px rgba(255, 42, 109, 0.85), inset 0 0 6px #ffffff !important;
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 60%, #34d399 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.6) !important;
 }
 
-/* Số liệu thống kê dạng Neumorphic Well */
+/* Số liệu thống kê dạng Well */
 #modal-session-complete .summary-card > div:nth-child(1) > div:nth-child(2) {
-  background: var(--bg-well, #0a0514) !important;
-  box-shadow: var(--neu-inset) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  background: var(--bg-well, rgba(15, 11, 28, 0.75)) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
   border-radius: 14px !important;
   padding: 12px 18px !important;
   width: 100% !important;
@@ -777,26 +795,24 @@
   font-size: 1.25rem !important;
   font-weight: 800 !important;
   color: #ffffff !important;
-  text-shadow: 0 0 14px rgba(168, 85, 247, 0.6) !important;
 }
 #result-battery-pct {
-  color: #fde047 !important;
-  text-shadow: 0 0 14px rgba(253, 224, 71, 0.5) !important;
+  color: #f472b6 !important;
 }
 #result-battery-badge {
-  background: linear-gradient(135deg, rgba(255, 42, 109, 0.25), rgba(255, 107, 53, 0.25)) !important;
-  border: 1px solid #ff2a6d !important;
-  box-shadow: 0 0 14px rgba(255, 42, 109, 0.5), var(--neu-inset) !important;
-  color: #fde047 !important;
+  background: rgba(236, 72, 153, 0.2) !important;
+  border: 1px solid #ec4899 !important;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.3) !important;
+  color: #f472b6 !important;
   padding: 4px 12px !important;
   border-radius: 9999px !important;
 }
 
 /* Explanation Box & Action Buttons */
 .quiz-explanation-box {
-  background: linear-gradient(145deg, #140b25 0%, #0a0514 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-inset) !important;
+  background: rgba(20, 14, 38, 0.85) !important;
+  border: 1px solid rgba(192, 132, 252, 0.20) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: var(--radius-md, 14px) !important;
   padding: 18px 20px !important;
   margin-top: 18px !important;
@@ -813,37 +829,98 @@
 .btn-quiz-next,
 #btn-quiz-next,
 #btn-exam-next {
-  background: var(--brand-gradient, linear-gradient(135deg, #7c3aed 0%, #a855f7 38%, #ec4899 78%, #ff5e3a 100%)) !important;
+  background: var(--brand-gradient, linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%)) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  box-shadow: var(--neu-btn-primary) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.22) !important;
+  text-shadow: none !important;
   font-weight: 700 !important;
   border-radius: 9999px !important;
   padding: 12px 28px !important;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease !important;
   cursor: pointer !important;
 }
 .btn-quiz-next:hover,
 #btn-quiz-next:hover,
 #btn-exam-next:hover {
-  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 35%, #f43f5e 75%, #ff8a00 100%) !important;
-  box-shadow:
-    0 10px 26px -2px rgba(236, 72, 153, 0.65),
-    0 0 18px rgba(168, 85, 247, 0.50),
-    inset 0 1px 2px rgba(255, 255, 255, 0.65) !important;
-  transform: translateY(-2px);
+  background: var(--brand-gradient-hover) !important;
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.28) !important;
+  transform: translateY(-1px);
 }
 .btn-quiz-next:active,
 #btn-quiz-next:active,
 #btn-exam-next:active {
-  transform: translateY(1px) scale(0.97) !important;
-  box-shadow: var(--neu-inset) !important;
+  transform: translateY(0) scale(0.98) !important;
 }
 
 
 /* --------------------------------------------------------------------------
-   6. RESPONSIVE BREAKPOINT CHO MOBILE (< 768px, test viewport 375x667)
+   6. PHÓNG TO CHẾ ĐỘ FLASHCARD TRÊN DESKTOP & TABLET (min-width: 769px)
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 769px) {
+  #study-flashcard-area,
+  .flashcard-player-container,
+  body.flashcard-active .flashcard-player-container {
+    max-width: 840px !important;
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  .flashcard-stage,
+  body.flashcard-active .flashcard-stage {
+    height: clamp(380px, 50vh, 460px) !important;
+    min-height: 380px !important;
+    max-height: 480px !important;
+    width: 100% !important;
+  }
+
+  .flashcard-card,
+  body.flashcard-active .flashcard-card {
+    height: 100% !important;
+    min-height: 380px !important;
+    max-height: 480px !important;
+  }
+
+  .flashcard-face,
+  body.flashcard-active .flashcard-face {
+    padding: 28px 36px !important;
+    border-radius: 22px !important;
+    background: linear-gradient(145deg, rgba(32, 23, 56, 0.94) 0%, rgba(20, 14, 36, 0.96) 100%) !important;
+    border: 1px solid rgba(192, 132, 252, 0.26) !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  .flashcard-question-text,
+  body.flashcard-active .flashcard-question-text {
+    font-size: clamp(1.25rem, 2.1vw, 1.55rem) !important;
+    line-height: 1.55 !important;
+  }
+
+  .flashcard-answer-text,
+  body.flashcard-active .flashcard-answer-text {
+    font-size: clamp(1.3rem, 2.2vw, 1.65rem) !important;
+    line-height: 1.45 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .flashcard-bottom-actions,
+  body.flashcard-active .flashcard-bottom-actions {
+    max-width: 840px !important;
+    margin-top: 12px !important;
+  }
+
+  .srs-btn,
+  body.flashcard-active .srs-btn {
+    height: 54px !important;
+    min-height: 54px !important;
+    border-radius: 14px !important;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   7. RESPONSIVE BREAKPOINT CHO MOBILE (< 768px, test viewport 375x667)
    -------------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
@@ -860,14 +937,21 @@
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 10px 14px !important;
+    padding: 12px 14px !important;
     min-height: 48px !important;
+    border-radius: 12px !important;
+    gap: 8px !important;
+  }
+
+  .quiz-option-letter {
+    font-size: 0.95rem !important;
+    display: inline !important;
   }
 
   #view-study .quiz-card,
   #view-exam .quiz-card,
   .quiz-card {
-    padding: 20px 16px !important;
+    padding: 18px 14px !important;
     border-radius: 18px !important;
     box-sizing: border-box !important;
     max-width: 100% !important;
@@ -881,16 +965,44 @@
     margin: 0 8px !important;
   }
 
-  .flashcard-stage {
-    height: 310px !important;
+  .flashcard-stage,
+  body.flashcard-active .flashcard-stage {
+    height: clamp(310px, 48vh, 360px) !important;
+    min-height: 300px !important;
+    max-height: 380px !important;
   }
 
-  .flashcard-face {
-    padding: 18px 20px !important;
+  .flashcard-card,
+  body.flashcard-active .flashcard-card {
+    min-height: 300px !important;
+    max-height: 380px !important;
+  }
+
+  .flashcard-face,
+  body.flashcard-active .flashcard-face {
+    padding: 20px 18px !important;
     border-radius: 18px !important;
   }
 
-  .srs-ratings-bar {
+  .flashcard-question-text,
+  body.flashcard-active .flashcard-question-text {
+    font-size: clamp(1.1rem, 4.2vw, 1.3rem) !important;
+  }
+
+  .flashcard-answer-text,
+  body.flashcard-active .flashcard-answer-text {
+    font-size: clamp(1.15rem, 4.4vw, 1.35rem) !important;
+  }
+
+  .srs-ratings-bar,
+  body.flashcard-active .srs-ratings-bar {
     gap: 8px !important;
+  }
+
+  .srs-btn,
+  body.flashcard-active .srs-btn {
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
   }
 }

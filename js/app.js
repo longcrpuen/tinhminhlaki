@@ -2726,7 +2726,18 @@ const App = {
     if (card.type === 'numeric') {
       correctOpt = '🔢 ' + (card.correct_answer !== undefined ? card.correct_answer : '');
     } else {
-      correctOpt = card.options?.[card.answerIndex] || 'Đáp án';
+      let ansIdx = typeof card.answerIndex === 'number' && card.answerIndex >= 0 ? card.answerIndex : 0;
+      const targetId = card.correct_option_id || card.correctOptionId;
+      if (targetId) {
+        const foundIdx = card.options.findIndex((o, idx) => {
+          const id = (typeof o === 'object' && o !== null && o.id) ? String(o.id).toLowerCase() : ['a', 'b', 'c', 'd', 'e'][idx];
+          return id === String(targetId).toLowerCase();
+        });
+        if (foundIdx !== -1) ansIdx = foundIdx;
+      }
+      const rawOpt = card.options?.[ansIdx] ?? card.options?.[0];
+      const { letter, cleanText } = this.cleanOptionText(rawOpt, ansIdx);
+      correctOpt = `${letter}. ${cleanText}`;
     }
     const ansEl = document.getElementById('flashcard-answer-text');
     if (ansEl) ansEl.innerHTML = this.renderLatexText(correctOpt);

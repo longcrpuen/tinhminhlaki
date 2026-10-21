@@ -1,19 +1,21 @@
 /* ==========================================================================
    MINDSPARKS / TINHMINHLAKEY — THERMAL TOOLS & DROPDOWN Z-INDEX ENGINE
    Module: css/thermal-tools.css (Sub-Agent C - Exclusive File)
-   Stack: Ultraviolet Thermal Camera × Dark Tactile Neumorphism
+   Stack: Soft Violet-Rose & Low-Shadow Airy Surfaces
    Views:
      - Z-Index & Stacking Context Hotfix (Universal Dropdowns)
      - Ngân Hàng Câu Hỏi (#view-bank)
      - Dán AI (#view-import)
      - Nhập LMS (#view-import-lms)
-     - Heatmap & Thống Kê (#view-stats)
+     - Heatmap 365 Ngày FLIR & Thống Kê (#view-stats)
+     - Cài Đặt & Sao Lưu Dữ Liệu (#view-settings)
    ========================================================================== */
 
 /* ==========================================================================
-   MỤC 1: VÁ DỨT ĐIỂM LỖI STACKING CONTEXT & Z-INDEX DROPDOWN
-   Giải quyết triệt để lỗi dropdown trong tab Dán AI (#view-import), Nhập LMS
-   (#view-import-lms), Ngân hàng (#view-bank) và Modals bị chìm dưới ô input/textarea.
+   MỤC 1: VÁ DỨT ĐIỂM LỖI STACKING CONTEXT & Z-INDEX DROPDOWN (BẢO TOÀN 100%)
+   Đảm bảo 100% Dropdown trong tab Dán AI, Nhập LMS, Ngân Hàng Câu Hỏi, Cài Đặt
+   và Modals luôn nổi lên tầng trên cùng (z-index: 10000 !important) và không bị
+   bất kỳ ô input, textarea hay thẻ bên dưới đè lên.
    ========================================================================== */
 
 /* 1.1 Reset stacking context cho toàn bộ con trực tiếp trong các card lớn */
@@ -32,7 +34,11 @@
 .quiz-card:has(.cyber-dropdown.open),
 .lms-config-card:has(.cyber-dropdown.open),
 .hero-card:has(.cyber-dropdown.open),
-.modal-box:has(.cyber-dropdown.open) {
+.modal-box:has(.cyber-dropdown.open),
+.settings-card:has(.cyber-dropdown.open),
+.bank-card-item:has(.cyber-dropdown.open),
+.lms-preview-card:has(.cyber-dropdown.open),
+.glass-card:has(.cyber-dropdown.open) {
   overflow: visible !important;
   contain: none !important;
   z-index: 500 !important;
@@ -44,7 +50,10 @@
 .bank-filter-bar:has(.cyber-dropdown.open),
 .lms-preview-card:has(.cyber-dropdown.open),
 .lms-card-actions:has(.cyber-dropdown.open),
-.lms-meta-row:has(.cyber-dropdown.open) {
+.lms-meta-row:has(.cyber-dropdown.open),
+.settings-group:has(.cyber-dropdown.open),
+.modal-body:has(.cyber-dropdown.open),
+.bg-custom-bar:has(.cyber-dropdown.open) {
   position: relative !important;
   z-index: 9990 !important;
 }
@@ -62,22 +71,22 @@
 
 .cyber-dropdown.open .cyber-dropdown-menu {
   z-index: 10000 !important;
-  background: linear-gradient(160deg, #1b1033 0%, #0d071a 100%) !important;
-  border: 1px solid rgba(236, 72, 153, 0.48) !important;
+  background: linear-gradient(160deg, rgba(27, 16, 51, 0.98) 0%, rgba(13, 7, 26, 0.98) 100%) !important;
+  border: 1px solid rgba(244, 114, 182, 0.45) !important;
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.94),
-    0 0 24px rgba(168, 85, 247, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    0 16px 36px rgba(6, 3, 15, 0.45),
+    0 0 16px rgba(168, 85, 247, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 /* ==========================================================================
-   MỤC 2: CYBER VIOLET & THERMAL INFRARED DROPDOWN UI POLISH
+   MỤC 2: CYBER VIOLET & SOFT ROSE DROPDOWN UI POLISH (AIRY LOW-SHADOW)
    ========================================================================== */
 
 .cyber-dropdown-trigger {
-  background: linear-gradient(145deg, #1a1030 0%, #0e071c 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.28) !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  background: rgba(24, 18, 42, 0.78) !important;
+  border: 1px solid rgba(192, 132, 252, 0.22) !important;
+  box-shadow: var(--shadow-xs) !important;
   border-radius: 12px !important;
   color: var(--text-primary) !important;
   font-weight: 500 !important;
@@ -86,10 +95,10 @@
 
 .cyber-dropdown-trigger:hover,
 .cyber-dropdown.open .cyber-dropdown-trigger {
-  border-color: var(--thermal-magenta) !important;
+  border-color: rgba(244, 114, 182, 0.55) !important;
   box-shadow:
-    0 0 16px rgba(236, 72, 153, 0.40),
-    inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+    0 4px 14px rgba(244, 114, 182, 0.20),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
 }
 
@@ -100,16 +109,16 @@
 
 .cyber-dropdown.open .cyber-dropdown-chevron {
   transform: rotate(180deg) !important;
-  color: var(--thermal-magenta) !important;
+  color: var(--accent-rose, #f472b6) !important;
 }
 
 .cyber-dropdown-menu {
   border-radius: 14px !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 6px !important;
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.45) #0d071a;
+  scrollbar-color: rgba(192, 132, 252, 0.35) #0d0917;
 }
 
 .cyber-dropdown-menu::-webkit-scrollbar {
@@ -117,17 +126,17 @@
 }
 
 .cyber-dropdown-menu::-webkit-scrollbar-track {
-  background: #0d071a;
+  background: #0d0917;
   border-radius: 6px;
 }
 
 .cyber-dropdown-menu::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.45);
+  background: rgba(192, 132, 252, 0.35);
   border-radius: 6px;
 }
 
 .cyber-dropdown-menu::-webkit-scrollbar-thumb:hover {
-  background: var(--thermal-magenta);
+  background: var(--accent-rose, #f472b6);
 }
 
 .cyber-dropdown-item {
@@ -142,11 +151,11 @@
 .cyber-dropdown-item:hover,
 .cyber-dropdown-item.active,
 .cyber-dropdown-item:focus-visible {
-  background: linear-gradient(90deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.20) 100%) !important;
-  border-color: rgba(236, 72, 153, 0.35) !important;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.20) 0%, rgba(244, 114, 182, 0.16) 100%) !important;
+  border-color: rgba(244, 114, 182, 0.32) !important;
   color: #ffffff !important;
   outline: none !important;
-  box-shadow: inset 0 0 10px rgba(236, 72, 153, 0.22) !important;
+  box-shadow: inset 0 0 8px rgba(244, 114, 182, 0.16) !important;
   transform: translateX(2px);
 }
 
@@ -157,18 +166,21 @@
   color: var(--accent-bright) !important;
   padding: 2px 7px;
   border-radius: 6px;
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  border: 1px solid rgba(192, 132, 252, 0.22);
 }
 
 .cyber-dropdown-item:hover .item-count,
 .cyber-dropdown-item.active .item-count {
-  background: rgba(236, 72, 153, 0.25);
+  background: rgba(244, 114, 182, 0.22);
   color: #ffffff !important;
-  border-color: rgba(236, 72, 153, 0.45);
+  border-color: rgba(244, 114, 182, 0.40);
 }
 
 /* ==========================================================================
-   MỤC 3: HỐC LÕM NEUMORPHIC (RECESSED WELLS) CHO TOÀN BỘ INPUT, SEARCH & TEXTAREA
+   MỤC 3: LÀM NHẸ BÓNG ĐỔ (LOW-SHADOW AIRY THEME) CHO TOÀN BỘ Ô INPUT & TEXTAREA
+   Giảm độ đậm hốc lõm đen đặc, viền tím mảnh thanh thoát 1px solid rgba(192, 132, 252, 0.22)
+   và bóng đổ lõm nhẹ nhàng inset 0 1px 3px rgba(0, 0, 0, 0.25).
+   Khi focus đổi sang viền hồng pastel border-color: rgba(244, 114, 182, 0.55) kèm hào quang dịu mắt.
    ========================================================================== */
 
 .form-control,
@@ -177,13 +189,16 @@
 .lms-numeric-input,
 .bg-url-input,
 .numeric-input,
-#lms-batch-answers {
+#lms-batch-answers,
+textarea#import-raw-input,
+#lms-raw-input.lms-textarea {
   background: var(--bg-well) !important;
-  border: 1px solid rgba(168, 85, 247, 0.20) !important;
-  box-shadow: var(--neu-inset) !important;
+  border: 1px solid rgba(192, 132, 252, 0.22) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25) !important;
   color: var(--text-primary) !important;
   transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease !important;
 }
 
 .form-control:focus,
@@ -192,9 +207,11 @@
 .lms-numeric-input:focus,
 .bg-url-input:focus,
 .numeric-input:focus,
-#lms-batch-answers:focus {
-  border-color: var(--thermal-magenta) !important;
-  box-shadow: var(--neu-inset), 0 0 14px rgba(236, 72, 153, 0.30) !important;
+#lms-batch-answers:focus,
+textarea#import-raw-input:focus,
+#lms-raw-input.lms-textarea:focus {
+  border-color: rgba(244, 114, 182, 0.55) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25), 0 0 12px rgba(244, 114, 182, 0.22) !important;
   outline: none !important;
 }
 
@@ -203,19 +220,22 @@
 .lms-question-edit-box::placeholder,
 .lms-numeric-input::placeholder,
 .bg-url-input::placeholder,
-#lms-batch-answers::placeholder {
+#lms-batch-answers::placeholder,
+textarea#import-raw-input::placeholder,
+#lms-raw-input.lms-textarea::placeholder {
   color: var(--text-muted) !important;
   opacity: 0.70;
 }
 
 /* ==========================================================================
-   MỤC 4: BIỂU ĐỒ HEATMAP 365 NGÀY — THANG MÀU CAMERA NHIỆT HỒNG NGOẠI (FLIR)
+   MỤC 4: BIỂU ĐỒ HEATMAP 365 NGÀY — CAMERA NHIỆT HỒNG NGOẠI (FLIR) DỊU MẮT
+   Hiển thị sắc nét, trong trẻo, hòa quyện với theme Tím - Hồng mới.
    ========================================================================== */
 
 .heatmap-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   padding: 24px !important;
   position: relative;
@@ -229,7 +249,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--thermal-spectrum);
+  background: var(--thermal-spectrum, linear-gradient(90deg, #7c3aed 0%, #a855f7 25%, #ec4899 50%, #f472b6 75%, #fde047 100%));
   opacity: 0.85;
 }
 
@@ -248,46 +268,46 @@
   z-index: 30 !important;
 }
 
-/* Thang màu 5 cấp độ Camera Nhiệt */
+/* Thang màu 5 cấp độ Camera Nhiệt Tím - Hồng FLIR mềm mại */
 .heatmap-cell.level-0 {
-  background: #0b0616 !important;
-  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.90) !important;
-  border: 1px solid rgba(168, 85, 247, 0.08) !important;
+  background: #110b22 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(192, 132, 252, 0.08) !important;
 }
 
 .heatmap-cell.level-1 {
-  background: #5b21b6 !important;
-  border: 1px solid rgba(139, 92, 246, 0.30) !important;
-  box-shadow: 0 0 4px rgba(91, 33, 182, 0.40) !important;
+  background: #581c87 !important;
+  border: 1px solid rgba(168, 85, 247, 0.30) !important;
+  box-shadow: 0 0 4px rgba(88, 28, 135, 0.35) !important;
 }
 
 .heatmap-cell.level-2 {
-  background: #a855f7 !important;
-  border: 1px solid rgba(192, 132, 252, 0.50) !important;
-  box-shadow: 0 0 6px rgba(168, 85, 247, 0.50) !important;
+  background: #9333ea !important;
+  border: 1px solid rgba(192, 132, 252, 0.45) !important;
+  box-shadow: 0 0 6px rgba(147, 51, 234, 0.40) !important;
 }
 
 .heatmap-cell.level-3 {
-  background: #ec4899 !important;
-  border: 1px solid rgba(244, 114, 182, 0.60) !important;
-  box-shadow: 0 0 8px rgba(236, 72, 153, 0.60) !important;
+  background: #db2777 !important;
+  border: 1px solid rgba(244, 114, 182, 0.55) !important;
+  box-shadow: 0 0 8px rgba(219, 39, 119, 0.45) !important;
 }
 
 .heatmap-cell.level-4 {
-  background: #ff5e3a !important;
+  background: #ec4899 !important;
   border: 1px solid #fde047 !important;
-  box-shadow: 0 0 12px rgba(255, 94, 58, 0.80), 0 0 4px #fde047 !important;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.60), 0 0 4px #fde047 !important;
 }
 
 .heatmap-cell.today {
-  outline: 2px solid var(--thermal-gold) !important;
+  outline: 2px solid var(--accent-rose, #f472b6) !important;
   outline-offset: 1px !important;
   animation: thermalPulseToday 2.2s infinite ease-in-out;
 }
 
 @keyframes thermalPulseToday {
-  0%, 100% { outline-color: var(--thermal-gold); }
-  50% { outline-color: var(--thermal-magenta); }
+  0%, 100% { outline-color: #fde047; }
+  50% { outline-color: #f472b6; }
 }
 
 .heatmap-legend {
@@ -312,14 +332,15 @@
    ========================================================================== */
 
 #view-bank .bank-header-wrap {
-  border-bottom: 1px solid rgba(168, 85, 247, 0.16);
+  border-bottom: 1px solid rgba(192, 132, 252, 0.16);
   padding-bottom: 18px;
   margin-bottom: 22px;
 }
 
 #view-bank .bank-main-heading {
-  background: linear-gradient(135deg, #f9f6ff 30%, #c084fc 100%);
+  background: linear-gradient(135deg, #f8f6fd 20%, #c084fc 60%, #f472b6 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -340,7 +361,7 @@
   font-size: 0.92rem;
 }
 
-/* Chips lọc chủ đề phong cách Thermal HUD */
+/* Chips lọc chủ đề phong cách Soft Violet HUD */
 .bank-topic-chips {
   display: flex;
   gap: 8px;
@@ -348,52 +369,52 @@
   padding: 4px 2px 12px 2px;
   margin-bottom: 18px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+  scrollbar-color: rgba(192, 132, 252, 0.3) transparent;
 }
 
 .bank-topic-chip {
   padding: 6px 14px;
   border-radius: var(--radius-full, 9999px);
-  background: linear-gradient(145deg, #180d2c 0%, #0d061a 100%);
-  border: 1px solid rgba(168, 85, 247, 0.22);
+  background: rgba(24, 18, 42, 0.78);
+  border: 1px solid rgba(192, 132, 252, 0.18);
   color: var(--text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: var(--neu-raised-sm);
+  box-shadow: var(--shadow-xs);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bank-topic-chip:hover {
-  border-color: rgba(236, 72, 153, 0.5);
+  border-color: rgba(244, 114, 182, 0.45);
   color: #ffffff;
   transform: translateY(-1px);
 }
 
 .bank-topic-chip.active {
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%) !important;
+  background: var(--brand-gradient, linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%)) !important;
   color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25) !important;
 }
 
-/* Thẻ câu hỏi trong Ngân hàng (Dark Neumorphic Card) */
+/* Thẻ câu hỏi trong Ngân hàng (Low-Shadow Airy Card) */
 .bank-card-item {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
-  border-radius: 18px !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-card, 20px) !important;
   padding: 22px !important;
   margin-bottom: 18px !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   content-visibility: auto;
   contain-intrinsic-size: 0 180px;
 }
 
 .bank-card-item:hover {
-  border-color: rgba(236, 72, 153, 0.45) !important;
-  box-shadow: var(--neu-raised), 0 0 20px rgba(168, 85, 247, 0.22) !important;
+  border-color: rgba(244, 114, 182, 0.38) !important;
+  box-shadow: var(--card-hover-glow) !important;
   transform: translateY(-2px);
 }
 
@@ -408,8 +429,8 @@
 .bank-card-options-grid > div {
   padding: 10px 14px;
   border-radius: 12px;
-  background: linear-gradient(145deg, #150c26 0%, #0d061a 100%);
-  border: 1px solid rgba(168, 85, 247, 0.16);
+  background: rgba(20, 14, 38, 0.65);
+  border: 1px solid rgba(192, 132, 252, 0.14);
   font-size: 0.88rem;
   color: var(--text-secondary);
   line-height: 1.45;
@@ -419,9 +440,9 @@
 .bank-card-options-grid > div.bank-option-correct,
 .bank-card-options-grid > div[style*="border-color: var(--success)"],
 .bank-card-options-grid > div[style*="border-color: #10B981"] {
-  background: linear-gradient(145deg, rgba(52, 211, 153, 0.14) 0%, #0d061a 100%) !important;
-  border: 1px solid rgba(52, 211, 153, 0.50) !important;
-  box-shadow: 0 0 10px rgba(52, 211, 153, 0.20) !important;
+  background: rgba(52, 211, 153, 0.12) !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.16) !important;
   color: #f0fdf4 !important;
 }
 
@@ -440,15 +461,15 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-well);
-  border: 1px solid rgba(168, 85, 247, 0.22);
+  border: 1px solid rgba(192, 132, 252, 0.20);
   color: var(--text-muted);
-  box-shadow: var(--neu-inset);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.20);
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bank-action-btn:hover {
-  border-color: var(--thermal-magenta);
+  border-color: rgba(244, 114, 182, 0.50);
   color: #ffffff;
   transform: translateY(-1px);
 }
@@ -456,14 +477,14 @@
 .bank-action-btn.active,
 .bank-action-btn.bookmarked {
   color: #fde047 !important;
-  border-color: rgba(253, 224, 71, 0.5) !important;
-  box-shadow: 0 0 10px rgba(253, 224, 71, 0.35), var(--neu-inset) !important;
+  border-color: rgba(253, 224, 71, 0.50) !important;
+  box-shadow: 0 0 8px rgba(253, 224, 71, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.20) !important;
 }
 
 .bank-action-btn.flagged {
-  color: var(--thermal-crimson) !important;
-  border-color: rgba(255, 42, 109, 0.55) !important;
-  box-shadow: 0 0 10px rgba(255, 42, 109, 0.35), var(--neu-inset) !important;
+  color: var(--danger, #f43f5e) !important;
+  border-color: rgba(244, 63, 94, 0.50) !important;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.20) !important;
 }
 
 /* ==========================================================================
@@ -472,8 +493,8 @@
 
 #view-import .hero-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   position: relative;
   overflow: hidden;
@@ -486,13 +507,13 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #7c3aed 0%, #ec4899 50%, #ff5e3a 100%);
+  background: linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #f472b6 100%);
 }
 
 #view-import .quiz-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   padding: 26px !important;
 }
@@ -515,15 +536,15 @@
 }
 
 #import-validation-alert.alert-success {
-  background: rgba(52, 211, 153, 0.14) !important;
-  border: 1px solid rgba(52, 211, 153, 0.40) !important;
+  background: rgba(52, 211, 153, 0.12) !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
   color: #34d399 !important;
 }
 
 #import-validation-alert.alert-danger {
-  background: rgba(255, 42, 109, 0.14) !important;
-  border: 1px solid rgba(255, 42, 109, 0.45) !important;
-  color: #ff2a6d !important;
+  background: rgba(244, 63, 94, 0.12) !important;
+  border: 1px solid rgba(244, 63, 94, 0.35) !important;
+  color: #f43f5e !important;
 }
 
 /* ==========================================================================
@@ -532,16 +553,16 @@
 
 .lms-config-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   padding: 24px !important;
 }
 
 .lms-format-guide-card {
-  background: linear-gradient(145deg, #150c26 0%, #0b0517 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.20) !important;
-  box-shadow: var(--neu-inset) !important;
+  background: rgba(20, 14, 38, 0.70) !important;
+  border: 1px solid rgba(192, 132, 252, 0.16) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.20) !important;
   border-radius: 14px !important;
   padding: 16px !important;
   margin-top: 16px;
@@ -549,8 +570,8 @@
 }
 
 .lms-sample-snippet {
-  background: #090512 !important;
-  border: 1px solid rgba(168, 85, 247, 0.15) !important;
+  background: rgba(13, 9, 23, 0.85) !important;
+  border: 1px solid rgba(192, 132, 252, 0.14) !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
   font-family: var(--font-mono, monospace) !important;
@@ -583,8 +604,8 @@
 /* Khối gán đáp án hàng loạt */
 #lms-batch-panel {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   padding: 20px 24px !important;
 }
@@ -592,25 +613,25 @@
 /* Thẻ xem trước từng câu hỏi LMS (Preview Cards) */
 .lms-preview-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  border: 1px solid var(--glass-border) !important;
   border-radius: 16px !important;
   padding: 20px 22px !important;
   margin-bottom: 16px !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
   content-visibility: auto;
   contain-intrinsic-size: 0 200px;
 }
 
 .lms-preview-card:hover {
-  border-color: rgba(236, 72, 153, 0.40) !important;
-  box-shadow: var(--neu-raised), 0 0 18px rgba(168, 85, 247, 0.20) !important;
+  border-color: rgba(244, 114, 182, 0.38) !important;
+  box-shadow: var(--card-hover-glow) !important;
 }
 
 .lms-preview-card.needs-review {
-  border-color: rgba(255, 42, 109, 0.55) !important;
-  background: linear-gradient(180deg, rgba(255, 42, 109, 0.08) 0%, rgba(20, 11, 36, 0.96) 100%) !important;
-  box-shadow: 0 0 16px rgba(255, 42, 109, 0.20) !important;
+  border-color: rgba(244, 63, 94, 0.45) !important;
+  background: linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, rgba(24, 18, 42, 0.90) 100%) !important;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.16) !important;
 }
 
 .lms-question-edit-box {
@@ -629,16 +650,16 @@
   padding: 8px 12px;
   border-radius: 12px !important;
   background: var(--bg-well) !important;
-  border: 1px solid rgba(168, 85, 247, 0.18) !important;
-  box-shadow: var(--neu-inset) !important;
+  border: 1px solid rgba(192, 132, 252, 0.18) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.20) !important;
   margin-bottom: 8px;
   transition: all 0.15s ease !important;
 }
 
 .lms-option-row.is-correct {
-  border-color: rgba(52, 211, 153, 0.60) !important;
-  background: linear-gradient(145deg, rgba(52, 211, 153, 0.12) 0%, #0a0514 100%) !important;
-  box-shadow: var(--neu-inset), 0 0 10px rgba(52, 211, 153, 0.25) !important;
+  border-color: rgba(52, 211, 153, 0.50) !important;
+  background: rgba(52, 211, 153, 0.10) !important;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.16) !important;
 }
 
 .lms-option-row .lms-option-letter {
@@ -653,10 +674,10 @@
 
 .lms-numeric-row {
   background: var(--bg-well) !important;
-  border: 1px dashed rgba(168, 85, 247, 0.35) !important;
+  border: 1px dashed rgba(192, 132, 252, 0.30) !important;
   border-radius: 12px !important;
   padding: 10px 14px !important;
-  box-shadow: var(--neu-inset) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.20) !important;
 }
 
 /* ==========================================================================
@@ -665,45 +686,45 @@
 
 #view-stats .stat-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+  border: 1px solid var(--glass-border) !important;
   border-radius: 16px !important;
-  box-shadow: var(--neu-raised-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
   padding: 20px !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 #view-stats .stat-card:hover {
-  border-color: rgba(236, 72, 153, 0.45) !important;
-  box-shadow: var(--neu-raised), 0 0 16px rgba(168, 85, 247, 0.20) !important;
+  border-color: rgba(244, 114, 182, 0.38) !important;
+  box-shadow: var(--card-hover-glow) !important;
   transform: translateY(-2px);
 }
 
-/* Thẻ Chuỗi ngày kiên trì (Infrared Thermal Flame Glow) */
+/* Thẻ Chuỗi ngày kiên trì (Soft Orchid Rose Glow) */
 .stat-card-streak {
-  background: linear-gradient(145deg, #220f38 0%, #120722 100%) !important;
-  border: 1px solid rgba(255, 107, 53, 0.40) !important;
-  box-shadow: var(--neu-raised-sm), 0 0 20px rgba(255, 107, 53, 0.20) !important;
+  background: linear-gradient(145deg, rgba(38, 20, 54, 0.82) 0%, rgba(20, 14, 38, 0.88) 100%) !important;
+  border: 1px solid rgba(244, 114, 182, 0.30) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .streak-flame-glow {
-  box-shadow: 0 0 18px rgba(255, 107, 53, 0.60) !important;
-  background: linear-gradient(135deg, #ff2a6d 0%, #ff6b35 100%) !important;
+  box-shadow: 0 0 14px rgba(244, 114, 182, 0.40) !important;
+  background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%) !important;
   color: #ffffff !important;
 }
 
 /* Khối phân bố cấp độ ghi nhớ SM-2 */
 .sm2-distribution-card {
   background: var(--bg-card) !important;
-  border: 1px solid rgba(168, 85, 247, 0.24) !important;
-  box-shadow: var(--neu-raised) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
   border-radius: var(--radius-card, 20px) !important;
   padding: 24px !important;
 }
 
 .sm2-breakdown-grid > div {
   background: var(--bg-well) !important;
-  border: 1px solid rgba(168, 85, 247, 0.18) !important;
-  box-shadow: var(--neu-inset) !important;
+  border: 1px solid rgba(192, 132, 252, 0.16) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18) !important;
   border-radius: 14px !important;
   padding: 16px !important;
   text-align: center;
@@ -711,7 +732,7 @@
 }
 
 .sm2-breakdown-grid > div:hover {
-  border-color: var(--thermal-magenta);
+  border-color: rgba(244, 114, 182, 0.45);
   transform: translateY(-2px);
 }
 
@@ -728,12 +749,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.22);
+  border-bottom: 1px solid rgba(192, 132, 252, 0.16);
 }
 
 #view-stats table td {
   padding: 14px;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
+  border-bottom: 1px solid rgba(192, 132, 252, 0.10);
   color: var(--text-primary);
   font-size: 0.9rem;
 }
@@ -743,11 +764,54 @@
 }
 
 #view-stats table tbody tr:hover {
-  background: rgba(168, 85, 247, 0.08);
+  background: rgba(168, 85, 247, 0.06);
 }
 
 /* ==========================================================================
-   MỤC 9: TỐI ƯU HÓA RESPONSIVE & MOBILE HUD
+   MỤC 9: CÀI ĐẶT & SAO LƯU DỮ LIỆU (#view-settings)
+   ========================================================================== */
+
+#view-settings .quiz-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-radius: var(--radius-card, 20px) !important;
+  padding: 24px !important;
+  margin-bottom: 20px !important;
+}
+
+#view-settings .bg-thumb {
+  border: 2px solid rgba(192, 132, 252, 0.18) !important;
+  box-shadow: var(--shadow-xs) !important;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#view-settings .bg-thumb:hover {
+  border-color: rgba(244, 114, 182, 0.50) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transform: translateY(-2px) !important;
+}
+
+#view-settings .bg-thumb.active {
+  border-color: var(--accent-rose, #f472b6) !important;
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.35) !important;
+}
+
+#view-settings .bg-custom-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#view-settings .bg-custom-bar .bg-url-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* ==========================================================================
+   MỤC 10: TỐI ƯU HÓA RESPONSIVE & MOBILE HUD
    ========================================================================== */
 
 @media (max-width: 640px) {
