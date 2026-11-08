@@ -2737,8 +2737,8 @@ body.quiz-blind-active #study-quiz-area {
   box-sizing: border-box;
 }
 .flashcard-stage {
-  perspective: 1200px;
-  -webkit-perspective: 1200px;
+  perspective: 1600px;
+  -webkit-perspective: 1600px;
   width: 100%;
   height: 320px;
   min-height: 280px;
@@ -2757,7 +2757,7 @@ body.quiz-blind-active #study-quiz-area {
   position: relative;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
   user-select: none;
   border-radius: var(--radius-card, 20px);
@@ -7678,20 +7678,25 @@ body.app-hidden * {
 
 /* 1.1 & 1.2: TOPBAR REMOVAL & 3-ICON COMPACT THEME SWITCHER */
 .app-topbar {
-  position: fixed !important;
-  top: 16px !important;
-  right: 24px !important;
-  left: auto !important;
-  width: auto !important;
-  height: auto !important;
-  padding: 0 !important;
+  position: relative !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 14px 32px 0 32px !important;
+  margin-bottom: -8px !important;
+  z-index: 100 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  z-index: 900 !important;
-  pointer-events: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  height: auto !important;
+  pointer-events: auto !important;
 }
 .topbar-left {
   display: none !important;
@@ -7700,45 +7705,83 @@ body.app-hidden * {
   pointer-events: auto !important;
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  justify-content: flex-end !important;
 }
 
+/* 3.1: TOPBAR HUD CAPSULE (THEME + STREAK IN 1 GLASS PILL) */
+.topbar-hud-capsule {
+  height: 38px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-hud);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular), var(--shadow-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--glass-border);
+  flex-shrink: 0;
+}
 .theme-icon-switcher {
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 6px !important;
-  background: var(--sidebar-item-bg, rgba(255, 255, 255, 0.08)) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid var(--sidebar-item-border, rgba(255, 255, 255, 0.14)) !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18) !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 .theme-icon-btn {
-  width: 34px !important;
-  height: 34px !important;
+  width: 30px !important;
+  height: 30px !important;
   border-radius: 50% !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   background: transparent !important;
   border: 1px solid transparent !important;
-  color: var(--text-secondary, #c4bcdc) !important;
+  color: var(--text-secondary) !important;
   cursor: pointer !important;
   padding: 0 !important;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.28s ease, color 0.28s ease !important;
 }
 .theme-icon-btn:hover {
-  color: var(--text-primary, #ffffff) !important;
-  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary) !important;
+  background: var(--accent-subtle-bg) !important;
   transform: scale(1.08) !important;
 }
 .theme-icon-btn.active {
-  background: var(--nav-active-bg, #ffffff) !important;
-  color: var(--nav-active-text, #000000) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 2px 10px var(--nav-active-glow, rgba(255, 255, 255, 0.25)) !important;
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 8px var(--accent-glow) !important;
+}
+.theme-icon-btn svg {
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.theme-icon-btn.active svg,
+.theme-icon-btn.is-morphing svg {
+  transform: rotate(360deg) scale(1.15) !important;
+}
+.streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0 4px;
+}
+.hud-flame-icon {
+  color: var(--streak-color, #f59e0b);
 }
 
 /* 1.3: SUPPRESS EXTRA TAGS ON QUOTE CARD */
@@ -7831,68 +7874,91 @@ body.app-hidden * {
   .app-main {
     transition: margin-left 260ms cubic-bezier(0.22, 1, 0.36, 1), width 260ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
-  .app-sidebar:not(.collapsed) .nav-item button {
-    height: 44px !important;
-    border-radius: 999px !important;
-    background: var(--sidebar-item-bg, rgba(255, 255, 255, 0.06)) !important;
-    border: 1px solid var(--sidebar-item-border, rgba(255, 255, 255, 0.08)) !important;
-    padding: 0 16px 0 0 !important;
-    display: flex !important;
-    align-items: center !important;
+  .app-sidebar {
+    width: 240px !important;
+    min-width: 240px !important;
+    background: var(--surface-sidebar) !important;
+    backdrop-filter: blur(24px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-specular), 0 16px 40px rgba(0, 0, 0, 0.22) !important;
     overflow: hidden !important;
-    white-space: nowrap !important;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-  }
-  .app-sidebar:not(.collapsed) .nav-item button svg {
-    flex: 0 0 44px !important;
-    width: 44px !important;
-    height: 44px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 12px !important;
-    box-sizing: border-box !important;
-  }
-  .app-sidebar:not(.collapsed) .nav-item.active button {
-    background: var(--nav-active-bg) !important;
-    color: var(--nav-active-text) !important;
-    font-weight: 700 !important;
-    box-shadow: 0 6px 20px var(--nav-active-glow) !important;
+    transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1), min-width 260ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
   .app-sidebar.collapsed {
-    width: 70px !important;
-    min-width: 70px !important;
-    border-radius: 999px !important;
-    padding: 18px 10px !important;
+    width: 68px !important;
+    min-width: 68px !important;
+    padding: 20px 10px !important;
+  }
+  .nav-item button {
+    display: grid !important;
+    grid-template-columns: 44px 1fr !important;
     align-items: center !important;
+    width: 100% !important;
+    height: 44px !important;
+    padding: 0 !important;
+    border-radius: var(--radius-md) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: var(--text-secondary) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+  }
+  .nav-item button:hover {
+    color: var(--text-primary) !important;
+    background: var(--accent-subtle-bg) !important;
+  }
+  .nav-item button svg {
+    grid-column: 1 !important;
+    width: 20px !important;
+    height: 20px !important;
+    justify-self: center !important;
+    align-self: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+  }
+  .nav-item button .nav-label {
+    grid-column: 2 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1), transform 260ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
   .app-sidebar.collapsed .nav-item button {
     width: 44px !important;
-    height: 44px !important;
-    border-radius: 50% !important;
-    background: var(--sidebar-item-bg, rgba(255, 255, 255, 0.06)) !important;
-    border: 1px solid var(--sidebar-item-border, rgba(255, 255, 255, 0.08)) !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 0 !important;
-    position: relative !important;
+    grid-template-columns: 44px !important;
+    margin: 0 auto !important;
   }
-  .app-sidebar.collapsed .nav-item button svg {
-    flex: 0 0 20px !important;
-    width: 20px !important;
-    height: 20px !important;
-    padding: 0 !important;
+  .nav-item.active button {
+    background: linear-gradient(90deg, var(--accent-subtle-bg) 0%, transparent 100%) !important;
+    color: var(--text-primary) !important;
+    border-color: transparent !important;
+    font-weight: 700 !important;
   }
-  .app-sidebar.collapsed .nav-item.active button {
-    background: var(--nav-active-bg) !important;
-    color: var(--nav-active-text) !important;
-    box-shadow: 0 4px 16px var(--nav-active-glow) !important;
+  .nav-item.active button::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 2px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 3.5px !important;
+    height: 22px !important;
+    border-radius: 4px !important;
+    background: var(--accent) !important;
+    box-shadow: 0 0 10px var(--accent-glow) !important;
+  }
+  .app-sidebar.collapsing .nav-label,
+  .app-sidebar.collapsed .nav-label {
+    opacity: 0 !important;
+    transform: translate3d(-8px, 0, 0) !important;
+    pointer-events: none !important;
   }
   .app-sidebar.collapsed .due-count-badge {
     position: absolute !important;
-    top: -3px !important;
-    right: -3px !important;
+    top: -2px !important;
+    right: -2px !important;
     min-width: 18px !important;
     height: 18px !important;
     padding: 0 5px !important;
@@ -8282,4 +8348,14 @@ body.quiz-active .quiz-footer-actions.show {
 [data-theme="monochrome"] .subject-icon,
 [data-theme="monochrome"] .subject-group-icon {
   filter: grayscale(100%);
+}
+
+/* Phase 3: Flashcard 3D Arc Lift Animation */
+.flashcard-card.is-flipping {
+  animation: flashcardArcLift 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes flashcardArcLift {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.035); }
+  100% { transform: scale(1); }
 }

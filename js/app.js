@@ -651,7 +651,12 @@ const App = {
     // Update active state on all theme selector elements
     const themeBtns = document.querySelectorAll('[data-theme-choice]');
     themeBtns.forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === theme);
+      const isActive = btn.getAttribute('data-theme-choice') === theme;
+      btn.classList.toggle('active', isActive);
+      if (isActive) {
+        btn.classList.add('is-morphing');
+        setTimeout(() => btn.classList.remove('is-morphing'), 340);
+      }
     });
 
     // Re-render hero quote to apply responsive styles & weights
@@ -2993,7 +2998,17 @@ const App = {
     this.saveActiveSessionState();
 
     session.currentIndex++;
-    this.renderActiveStudyCard();
+    const cardEl = document.getElementById('active-flashcard');
+    if (cardEl && cardEl.classList.contains('flipped')) {
+      cardEl.classList.add('is-flipping');
+      cardEl.classList.remove('flipped');
+      setTimeout(() => {
+        this.renderActiveStudyCard();
+        cardEl.classList.remove('is-flipping');
+      }, 260);
+    } else {
+      this.renderActiveStudyCard();
+    }
   },
 
   _isCompletingSession: false,
