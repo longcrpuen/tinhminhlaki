@@ -467,13 +467,13 @@
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
               <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()" style="font-size: 0.85rem;" title="Tạo môn học mới">
-                ➕ Môn học mới
+                <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Môn học mới
               </button>
               <button class="btn btn-secondary" onclick="App.openBulkReassignModal()" style="font-size: 0.85rem;" title="Gán lại môn học hàng loạt cho nhiều bộ thẻ">
-                🔀 Gán lại môn
+                <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg> Gán lại môn
               </button>
               <button class="btn btn-secondary" onclick="App.navigateTo('import-lms')" style="font-size: 0.85rem;">
-                📥 Nhập từ LMS
+                <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg> Nhập từ LMS
               </button>
               <button class="btn btn-primary" onclick="App.navigateTo('import')">
                 + Tạo / Dán thẻ mới
@@ -500,13 +500,13 @@
               </div>
               <div class="bank-actions-row">
                 <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.openAddCardModal()">
-                  ➕ Thêm câu hỏi mới
+                  <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Thêm câu hỏi mới
                 </button>
                 <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.copyFlaggedAIPrompt()">
-                  🚩 Sao chép Prompt AI viết lại
+                  <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Sao chép Prompt AI viết lại
                 </button>
                 <button class="btn btn-primary" style="font-size: 0.85rem;" onclick="App.startSessionFromBank()">
-                  ⚡ Luyện tập câu trong danh sách
+                  <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Luyện tập câu trong danh sách
                 </button>
               </div>
             </div>
@@ -518,7 +518,7 @@
               <!-- Custom Cyber Violet Dropdown: Chọn Môn Học (FIRST) -->
               <div class="cyber-dropdown" id="bank-subject-dropdown-wrap">
                 <button type="button" class="cyber-dropdown-trigger" id="bank-subject-dropdown-trigger" onclick="App.toggleBankSubjectDropdown(event)">
-                  <span class="cyber-dropdown-icon" id="bank-subject-dropdown-icon">📚</span>
+                  <span class="cyber-dropdown-icon" id="bank-subject-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                   <span class="cyber-dropdown-label" id="bank-subject-dropdown-label">Chọn Môn Học</span>
                   <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -547,7 +547,7 @@
               <!-- Custom Cyber Violet Dropdown: Mọi độ khó -->
               <div class="cyber-dropdown" id="bank-diff-dropdown-wrap">
                 <button type="button" class="cyber-dropdown-trigger" id="bank-diff-dropdown-trigger" onclick="App.toggleBankDiffDropdown(event)">
-                  <span class="cyber-dropdown-icon">⚡</span>
+                  <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span>
                   <span class="cyber-dropdown-label" id="bank-diff-dropdown-label">Mọi độ khó</span>
                   <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -559,15 +559,15 @@
                     <span class="item-count" id="bank-diff-count-all"></span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankDifficulty('easy')">
-                    <span>🟢 Dễ (Easy)</span>
+                    <span>Dễ (Easy)</span>
                     <span class="item-count" id="bank-diff-count-easy"></span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankDifficulty('medium')">
-                    <span>🟡 Vừa (Medium)</span>
+                    <span>Vừa (Medium)</span>
                     <span class="item-count" id="bank-diff-count-medium"></span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankDifficulty('hard')">
-                    <span>🔴 Khó (Hard)</span>
+                    <span>Khó (Hard)</span>
                     <span class="item-count" id="bank-diff-count-hard"></span>
                   </button>
                 </div>
@@ -588,7 +588,7 @@
               <!-- Custom Cyber Violet Dropdown: Nguồn câu hỏi -->
               <div class="cyber-dropdown" id="bank-source-dropdown-wrap">
                 <button type="button" class="cyber-dropdown-trigger" id="bank-source-dropdown-trigger" onclick="App.toggleBankSourceDropdown(event)">
-                  <span class="cyber-dropdown-icon">🏷️</span>
+                  <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span>
                   <span class="cyber-dropdown-label" id="bank-source-dropdown-label">Tất cả nguồn</span>
                   <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -599,13 +599,13 @@
                     <span>Tất cả nguồn</span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankSource('lms')">
-                    <span>🎓 Nguồn: LMS</span>
+                    <span>Nguồn: LMS</span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankSource('ai')">
-                    <span>✨ Nguồn: AI</span>
+                    <span>Nguồn: AI</span>
                   </button>
                   <button type="button" class="cyber-dropdown-item" onclick="App.selectBankSource('manual')">
-                    <span>✍️ Nguồn: Thủ công</span>
+                    <span>Nguồn: Thủ công</span>
                   </button>
                 </div>
               </div>
@@ -898,7 +898,7 @@
                 <label class="form-label" id="import-subject-label">1. Chọn Môn Học (Bắt buộc):</label>
                 <div class="cyber-dropdown" id="import-subject-dropdown-wrap" style="width: 100%;">
                   <button type="button" class="cyber-dropdown-trigger" id="import-subject-dropdown-trigger" onclick="App.toggleImportSubjectDropdown(event)">
-                    <span class="cyber-dropdown-icon" id="import-subject-dropdown-icon">📚</span>
+                    <span class="cyber-dropdown-icon" id="import-subject-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                     <span class="cyber-dropdown-label" id="import-subject-dropdown-label">Chọn Môn Học...</span>
                     <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1006,7 +1006,7 @@
                   <label class="form-label" id="lms-subject-label">1. Chọn Môn Học (Bắt buộc):</label>
                   <div class="cyber-dropdown" id="lms-subject-dropdown-wrap" style="width: 100%;">
                     <button type="button" class="cyber-dropdown-trigger" id="lms-subject-dropdown-trigger" onclick="App.toggleLmsSubjectDropdown(event)">
-                      <span class="cyber-dropdown-icon" id="lms-subject-dropdown-icon">📚</span>
+                      <span class="cyber-dropdown-icon" id="lms-subject-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                       <span class="cyber-dropdown-label" id="lms-subject-dropdown-label">Chọn Môn Học...</span>
                       <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1732,7 +1732,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px;">
           <div class="pixel-battery-wrapper" id="result-battery-container" style="max-width: 320px;">
             <div class="pixel-battery-header">
-              <span class="pixel-battery-title"><span class="pixel-battery-icon">⚡</span> PIN NĂNG LƯỢNG</span>
+              <span class="pixel-battery-title"><span class="pixel-battery-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span> PIN NĂNG LƯỢNG</span>
               <span id="result-battery-pct" class="pixel-battery-pct">0%</span>
             </div>
             <div class="pixel-battery-row">
@@ -1768,7 +1768,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             Về thư viện thẻ
           </button>
           <button class="btn btn-primary modal-close" onclick="App.navigateTo('stats')">
-            Xem thống kê 📊
+            Xem thống kê <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
           </button>
         </div>
       </div>
@@ -1790,7 +1790,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="edit-card-subject-label">Chọn Môn Học (Bắt buộc):</label>
           <div class="cyber-dropdown" id="edit-card-subject-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="edit-card-subject-dropdown-trigger" onclick="App.toggleEditCardSubjectDropdown(event)">
-              <span class="cyber-dropdown-icon" id="edit-card-subject-dropdown-icon">📚</span>
+              <span class="cyber-dropdown-icon" id="edit-card-subject-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
               <span class="cyber-dropdown-label" id="edit-card-subject-dropdown-label">Chọn Môn Học...</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1958,7 +1958,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <div class="subject-preview-row">
           <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
           <span id="create-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
-            <span class="deck-subject-icon" id="create-subject-preview-icon">📚</span>
+            <span class="deck-subject-icon" id="create-subject-preview-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
             <span class="deck-subject-name" id="create-subject-preview-name">Tên môn học</span>
           </span>
         </div>
@@ -1966,7 +1966,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <!-- 1-Click Educational Emoji Picker (Prompt 1b) -->
         <div class="form-group" style="margin-bottom: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="form-label" for="create-subject-icon" style="margin-bottom: 0;">Biểu tượng (Emoji 1-Click):</label>
+            <label class="form-label" for="create-subject-icon" style="margin-bottom: 0;">Biểu tượng (Icon 1-Click):</label>
             <input type="text" id="create-subject-icon" class="form-control" placeholder="Emoji..." value="📚" style="width: 54px; height: 32px; padding: 2px 6px; text-align: center; font-size: 1.15rem; border-radius: 8px;" oninput="App.updateSubjectModalPreview('create')">
           </div>
           <div id="create-subject-emoji-grid" class="emoji-picker-grid"></div>
@@ -2004,7 +2004,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <div class="subject-preview-row">
           <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
           <span id="manage-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
-            <span class="deck-subject-icon" id="manage-subject-preview-icon">📚</span>
+            <span class="deck-subject-icon" id="manage-subject-preview-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
             <span class="deck-subject-name" id="manage-subject-preview-name">Môn học</span>
           </span>
         </div>
@@ -2038,7 +2038,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center;">
             <div class="cyber-dropdown" id="manage-subject-merge-dropdown-wrap" style="flex: 1; min-width: 0;">
               <button type="button" class="cyber-dropdown-trigger" id="manage-subject-merge-dropdown-trigger" onclick="App.toggleManageSubjectMergeDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-merge-dropdown-menu">
-                <span class="cyber-dropdown-icon" id="manage-subject-merge-dropdown-icon">📚</span>
+                <span class="cyber-dropdown-icon" id="manage-subject-merge-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                 <span class="cyber-dropdown-label" id="manage-subject-merge-dropdown-label">Chọn môn cần gộp vào...</span>
                 <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -2061,7 +2061,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <label class="form-label" style="font-size: 0.8rem; margin-bottom: 6px;">Chuyển các bộ thẻ sang:</label>
             <div class="cyber-dropdown" id="manage-subject-delete-dropdown-wrap" style="width: 100%;">
               <button type="button" class="cyber-dropdown-trigger" id="manage-subject-delete-dropdown-trigger" onclick="App.toggleManageSubjectDeleteDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-delete-dropdown-menu">
-                <span class="cyber-dropdown-icon" id="manage-subject-delete-dropdown-icon">📚</span>
+                <span class="cyber-dropdown-icon" id="manage-subject-delete-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                 <span class="cyber-dropdown-label" id="manage-subject-delete-dropdown-label">Chọn môn chuyển sang...</span>
                 <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -2092,7 +2092,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" style="font-weight: 600; margin-bottom: 8px;">1. Chọn Môn Học Đích:</label>
           <div class="cyber-dropdown" id="bulk-reassign-subject-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="bulk-reassign-subject-dropdown-trigger" onclick="App.toggleBulkReassignSubjectDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="bulk-reassign-subject-dropdown-menu">
-              <span class="cyber-dropdown-icon" id="bulk-reassign-subject-dropdown-icon">📚</span>
+              <span class="cyber-dropdown-icon" id="bulk-reassign-subject-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
               <span class="cyber-dropdown-label" id="bulk-reassign-subject-dropdown-label">Chọn môn học đích...</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />

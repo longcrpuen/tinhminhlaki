@@ -626,3 +626,82 @@ html[data-theme="white-orange"] {
   --battery-label-color: #9a3412;
   --battery-badge-color: #ea580c;
 }
+
+
+/* ==========================================================================
+   PHASE 1F: MONOCHROME ICONS, SUBJECT BADGES & CYBER DROPDOWN SYSTEM
+   ========================================================================== */
+.mono-icon {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.18em;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.subject-badge-pill,
+.deck-subject-badge,
+.subject-filter-pill:not(.active),
+.dashboard-subject-pill:not(.active) {
+  background: var(--subject-pill-bg) !important;
+  color: var(--subject-pill-text) !important;
+  border: 1px solid var(--subject-pill-border) !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}
+
+.subject-filter-pill.active,
+.dashboard-subject-pill.active {
+  background: var(--subject-pill-active-bg) !important;
+  color: var(--subject-pill-active-text) !important;
+  border-color: var(--subject-pill-active-bg) !important;
+}
+
+.subject-badge {
+  background: var(--subject-pill-bg) !important;
+  color: var(--subject-pill-text) !important;
+  border: 1px solid var(--subject-pill-border) !important;
+}
+
+.cyber-dropdown-trigger {
+  background-color: var(--dropdown-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--dropdown-border) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+.cyber-dropdown.open .cyber-dropdown-trigger,
+.cyber-dropdown-trigger:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+.cyber-dropdown-menu {
+  background-color: var(--dropdown-menu-bg) !important;
+  border: 1px solid var(--dropdown-border) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28) !important;
+}
+
+.cyber-dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.cyber-dropdown-item:hover {
+  background-color: var(--dropdown-item-hover-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.cyber-dropdown-item.active {
+  background-color: var(--dropdown-item-active-bg) !important;
+  color: var(--dropdown-item-active-text) !important;
+  font-weight: 600 !important;
+}
+
+.cyber-dropdown-item .item-count,
+.cyber-dropdown-item:hover .item-count {
+  color: inherit !important;
+  opacity: 0.78;
+}

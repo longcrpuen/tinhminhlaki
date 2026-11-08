@@ -51,6 +51,97 @@ const App = {
     }
   },
 
+  getMonoSvg(key, customClass = 'mono-icon') {
+    const k = (key || '').toLowerCase().trim();
+    const svgs = {
+      book: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
+      math: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.17 21.17A2 2 0 0 1 19.76 22H4a2 2 0 0 1-2-2V4.24a2 2 0 0 1 .83-1.63L21.17 21.17z"></path><line x1="2" y1="12" x2="6" y2="12"></line><line x1="2" y1="17" x2="11" y2="17"></line></svg>`,
+      flask: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31L4.65 19.01A2 2 0 0 0 6.38 22h11.24a2 2 0 0 0 1.73-2.99L14 9.31V2"></path><line x1="8.5" y1="2" x2="15.5" y2="2"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>`,
+      dna: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 15 6-6"></path><path d="m9 22 3-3"></path><path d="m2 9 3-3"></path><path d="m15 2 3 3"></path><path d="m15 9 6 6"></path><path d="M7 12a5 5 0 0 1 5-5"></path><path d="M12 17a5 5 0 0 1 5-5"></path></svg>`,
+      code: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+      globe: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+      landmark: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7 12 2"></polygon></svg>`,
+      scale: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"></path><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h18"></path></svg>`,
+      palette: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"></path><circle cx="7.5" cy="11.5" r=".75" fill="currentColor"></circle><circle cx="10.5" cy="7.5" r=".75" fill="currentColor"></circle><circle cx="14.5" cy="7.5" r=".75" fill="currentColor"></circle><circle cx="16.5" cy="11.5" r=".75" fill="currentColor"></circle></svg>`,
+      music: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`,
+      brain: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"></path></svg>`,
+      pulse: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`,
+      chart: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+      rocket: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`,
+      zap: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+      flame: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"></path></svg>`,
+      bulb: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`,
+      target: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`,
+      trophy: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>`,
+      star: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+      folder: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
+      flower: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-8"></path><path d="M9 14c-3 0-5-2-5-5 4 0 5 3 5 5z"></path><path d="M15 11c3 0 5-2 5-5-4 0-5 3-5 5z"></path></svg>`,
+      plus: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+      tag: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>`,
+      settings: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+      trash: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+      edit: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
+      search: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+      cards: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="14" rx="2" ry="2"></rect><path d="M6 3h12a2 2 0 0 1 2 2v12"></path></svg>`,
+      copy: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`,
+      eye: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+      shuffle: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>`,
+      inbox: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>`
+    };
+    return svgs[k] || svgs.book;
+  },
+
+  renderSubjectIcon(iconOrKey, customClass = 'mono-icon') {
+    if (!iconOrKey) return this.getMonoSvg('book', customClass);
+    const str = String(iconOrKey).trim();
+    const knownKeys = ['book', 'math', 'flask', 'dna', 'code', 'globe', 'landmark', 'scale', 'palette', 'music', 'brain', 'pulse', 'chart', 'rocket', 'zap', 'flame', 'bulb', 'target', 'trophy', 'star', 'folder', 'flower', 'plus', 'tag', 'settings', 'trash', 'edit', 'search', 'cards', 'copy', 'eye', 'shuffle', 'inbox'];
+    if (knownKeys.includes(str.toLowerCase())) {
+      return this.getMonoSvg(str, customClass);
+    }
+    const emojiMap = {
+      '📚': 'book', '📖': 'book', '📕': 'book',
+      '📐': 'math', '📏': 'math', '🔢': 'math',
+      '🧪': 'flask', '⚗️': 'flask',
+      '🧬': 'dna', '🔬': 'dna',
+      '💻': 'code', '🖥️': 'code', '⌨️': 'code',
+      '🌐': 'globe', '🌍': 'globe', '🌎': 'globe', '🌏': 'globe',
+      '🏛️': 'landmark', '🏛': 'landmark',
+      '⚖️': 'scale', '⚖': 'scale',
+      '🎨': 'palette',
+      '🎵': 'music', '🎶': 'music',
+      '🧠': 'brain',
+      '🩺': 'pulse', '❤️': 'pulse',
+      '📊': 'chart', '📈': 'chart', '📉': 'chart', '💰': 'chart',
+      '🚀': 'rocket',
+      '⚡': 'zap',
+      '🔥': 'flame',
+      '💡': 'bulb',
+      '🎯': 'target',
+      '🏆': 'trophy', '🥇': 'trophy',
+      '🌟': 'star', '⭐': 'star', '✨': 'star',
+      '📁': 'folder', '📂': 'folder',
+      '🥀': 'flower', '🥀🥀': 'flower', '🌸': 'flower', '🌹': 'flower', '🌱': 'flower', '🌿': 'flower',
+      '➕': 'plus',
+      '🏷️': 'tag', '🏷': 'tag',
+      '⚙️': 'settings', '⚙': 'settings',
+      '🗑️': 'trash', '🗑': 'trash',
+      '✏️': 'edit', '✏': 'edit',
+      '🔍': 'search',
+      '🎴': 'cards',
+      '📋': 'copy',
+      '👁️': 'eye', '👁': 'eye',
+      '🔀': 'shuffle',
+      '📥': 'inbox'
+    };
+    for (const [em, key] of Object.entries(emojiMap)) {
+      if (str.includes(em)) {
+        return this.getMonoSvg(key, customClass);
+      }
+    }
+    return this.getMonoSvg('book', customClass);
+  },
+
+
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
@@ -1540,7 +1631,7 @@ const App = {
       const currentFilter = this.currentDashboardSubjectFilter || 'all';
       let filterHtml = `
         <button type="button" class="dashboard-subject-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="App.filterDashboardDecks('all')">
-          <span>📚 Tất cả môn</span>
+          <span>${this.getMonoSvg('globe')} Tất cả môn</span>
           <span style="opacity: 0.75; font-size: 0.75rem;">(${decks.length})</span>
         </button>
       `;
@@ -1557,8 +1648,8 @@ const App = {
         if (count > 0) {
           const isActive = currentFilter === s.id;
           filterHtml += `
-            <button type="button" class="dashboard-subject-pill ${isActive ? 'active' : ''}" style="--pill-color: ${s.color || '#a855f7'};" onclick="App.filterDashboardDecks('${s.id}')">
-              <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <button type="button" class="dashboard-subject-pill ${isActive ? 'active' : ''}" onclick="App.filterDashboardDecks('${s.id}')">
+              <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
               <span style="opacity: 0.75; font-size: 0.75rem;">(${count})</span>
             </button>
           `;
@@ -1617,7 +1708,7 @@ const App = {
           <div class="deck-header">
             <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
             <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <span class="deck-subject-badge">${this._escapeHtml(subjName)}</span>
+              <span class="deck-subject-badge"><span class="deck-subject-icon">${this.renderSubjectIcon(subject?.icon)}</span> <span class="deck-subject-name">${this._escapeHtml(subjName)}</span></span>
               ${options.showDelete ? `
                 <button class="icon-btn deck-delete-btn" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')" aria-label="Xóa bộ thẻ">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1708,7 +1799,7 @@ const App = {
           const isActive = activeSubj === s.id;
           quickHtml += `
             <button type="button" class="subject-jump-pill ${isActive ? 'active' : ''}" onclick="App.filterDecksBySubject('${s.id}')">
-              <span class="mono-emoji">${s.icon || '📚'}</span>
+              <span class="mono-emoji">${this.renderSubjectIcon(s.icon)}</span>
               <span>${this._escapeHtml(s.name)}</span>
               <span class="jump-pill-badge">${s.decks?.length || 0}</span>
             </button>
@@ -1770,8 +1861,8 @@ const App = {
         <div class="subject-group" data-subject-id="${s.id}">
           <div class="subject-group-header" onclick="App.toggleSubjectCollapse('${s.id}')">
             <div class="subject-group-title">
-              <span class="subject-icon">${s.icon || '📚'}</span>
-              <span class="subject-name" style="color: ${s.color || 'var(--text-primary)'};">${this._escapeHtml(s.name)}</span>
+              <span class="subject-icon">${this.renderSubjectIcon(s.icon)}</span>
+              <span class="subject-name">${this._escapeHtml(s.name)}</span>
               <span class="subject-badge">${s.decksCount} bộ thẻ</span>
               <span class="subject-badge">${s.totalCards} câu</span>
               <span class="subject-badge" style="color: var(--accent); border-color: var(--accent-border);">${s.dueCards} cần ôn</span>
@@ -1779,11 +1870,11 @@ const App = {
             <div class="subject-group-actions" onclick="event.stopPropagation()">
               ${s.totalCards > 0 ? `
                 <button class="btn btn-sm btn-primary" onclick="App.startSubjectSession('${s.id}', 'srs')" title="Ôn tập toàn bộ môn này">
-                  🎯 Ôn cả môn
+                  ${this.getMonoSvg('target')} Ôn cả môn
                 </button>
               ` : ''}
               <button class="btn btn-sm btn-secondary" onclick="App.openManageSubjectModal('${s.id}')" title="Chỉnh sửa hoặc xóa môn">
-                ⚙️ Quản lý
+                ${this.getMonoSvg('settings')} Quản lý
               </button>
               <button class="icon-btn subject-collapse-btn" onclick="App.toggleSubjectCollapse('${s.id}')" title="Thu gọn / Mở rộng" style="width: 28px; height: 28px;">
                 ${isCollapsed ? '▶' : '▼'}
@@ -3375,8 +3466,8 @@ const App = {
         subjectsHtml += `
           <div class="topic-subject-item ${isActive ? 'active' : ''}" onclick="App.filterPickerTopicsBySubject('${s.subject.id}')">
             <div class="topic-subject-meta">
-              <span class="subject-badge" style="background: ${s.subject.color}15; color: ${s.subject.color}; border-color: ${s.subject.color}40;">
-                <span class="subject-badge-icon">${s.subject.icon || '📚'}</span>
+              <span class="subject-badge">
+                <span class="subject-badge-icon">${this.renderSubjectIcon(s.subject.icon)}</span>
                 <span>${this._escapeHtml(s.subject.name)}</span>
               </span>
               <span style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">(${s.totalCards} câu)</span>
@@ -3696,14 +3787,14 @@ const App = {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
-            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
       });
       menuHtml += `
-        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <div style="border-top: 1px solid var(--accent-soft); margin: 4px 0;"></div>
         <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('import')">
-          <span>➕ Tạo môn mới...</span>
+          <span>${this.getMonoSvg('plus')} Tạo môn mới...</span>
         </button>
       `;
       subjMenu.innerHTML = menuHtml;
@@ -3984,14 +4075,14 @@ const App = {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
-            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
       });
       menuHtml += `
-        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <div style="border-top: 1px solid var(--accent-soft); margin: 4px 0;"></div>
         <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('lms')">
-          <span>➕ Tạo môn mới...</span>
+          <span>${this.getMonoSvg('plus')} Tạo môn mới...</span>
         </button>
       `;
       subjMenu.innerHTML = menuHtml;
@@ -4837,14 +4928,14 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         const isActive = s.id === currentSubjectId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
-            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
       });
       menuHtml += `
-        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <div style="border-top: 1px solid var(--accent-soft); margin: 4px 0;"></div>
         <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('edit-card')">
-          <span>➕ Tạo môn mới...</span>
+          <span>${this.getMonoSvg('plus')} Tạo môn mới...</span>
         </button>
       `;
       subjMenu.innerHTML = menuHtml;
@@ -5506,11 +5597,15 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const curSubj = subjects.find(s => s.id === this.currentBankSubjectId);
     const bankSubjLabel = document.getElementById('bank-subject-dropdown-label');
+    const bankSubjIcon = document.getElementById('bank-subject-dropdown-icon');
+    if (bankSubjIcon) {
+      bankSubjIcon.innerHTML = this.currentBankSubjectId === '__all__' ? this.getMonoSvg('globe') : this.renderSubjectIcon(curSubj?.icon);
+    }
     if (bankSubjLabel) {
       if (this.currentBankSubjectId === '__all__') {
-        bankSubjLabel.textContent = '🌐 Tất cả môn';
+        bankSubjLabel.textContent = 'Tất cả môn';
       } else {
-        bankSubjLabel.textContent = curSubj ? `${curSubj.icon || '📚'} ${curSubj.name}` : 'Chọn môn học...';
+        bankSubjLabel.textContent = curSubj ? curSubj.name : 'Chọn môn học...';
       }
     }
 
@@ -5532,17 +5627,17 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         const isActive = s.id === this.currentBankSubjectId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectBankSubject('${s.id}')">
-            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
       });
       menuHtml += `
-        <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 4px 0;"></div>
+        <div style="border-top: 1px solid var(--accent-soft); margin: 4px 0;"></div>
         <button type="button" class="cyber-dropdown-item ${this.currentBankSubjectId === '__all__' ? 'active' : ''}" onclick="App.selectBankSubject('__all__')">
-          <span>🌐 Tất cả môn</span>
+          <span>${this.getMonoSvg('globe')} Tất cả môn</span>
         </button>
         <button type="button" class="cyber-dropdown-item" style="color: var(--accent-primary);" onclick="App.openCreateSubjectModal('bank')">
-          <span>➕ Tạo môn mới...</span>
+          <span>${this.getMonoSvg('plus')} Tạo môn mới...</span>
         </button>
       `;
       bankSubjMenu.innerHTML = menuHtml;
@@ -6327,8 +6422,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       html += `
         <tr style="border-bottom: 1px solid var(--border-color);">
           <td style="padding: 10px 12px; font-weight: 600;">
-            <span style="margin-right: 6px;">${stat.subject.icon || '📚'}</span>
-            <span style="color: ${stat.subject.color || 'var(--text-primary)'};">${this._escapeHtml(stat.subject.name)}</span>
+            <span style="margin-right: 6px;">${this.renderSubjectIcon(stat.subject.icon)}</span>
+            <span>${this._escapeHtml(stat.subject.name)}</span>
           </td>
           <td style="padding: 10px 12px; text-align: center;">${stat.deckCount}</td>
           <td style="padding: 10px 12px; text-align: center;">${stat.totalCards}</td>
@@ -6355,6 +6450,28 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   
   // --- SUBJECT EMOJI & COLOR PRESETS (Prompt 1b) ---
+  SUBJECT_ICON_PRESETS: [
+    { key: 'book', name: 'Sách giáo trình', emojis: ['📚', '📖', '📕'] },
+    { key: 'math', name: 'Toán học & Hình học', emojis: ['📐', '📏', '🔢'] },
+    { key: 'flask', name: 'Hóa học & Thí nghiệm', emojis: ['🧪', '⚗️'] },
+    { key: 'dna', name: 'Sinh học & Y khoa', emojis: ['🧬', '🔬'] },
+    { key: 'code', name: 'Công nghệ & Lập trình', emojis: ['💻', '🖥️', '⌨️'] },
+    { key: 'globe', name: 'Địa lý & Quốc tế', emojis: ['🌐', '🌍', '🌎', '🌏'] },
+    { key: 'landmark', name: 'Lịch sử & Xã hội', emojis: ['🏛️', '🏛'] },
+    { key: 'scale', name: 'Pháp luật & Triết học', emojis: ['⚖️', '⚖'] },
+    { key: 'palette', name: 'Nghệ thuật & Thiết kế', emojis: ['🎨'] },
+    { key: 'music', name: 'Âm nhạc & Nghệ thuật', emojis: ['🎵', '🎶'] },
+    { key: 'brain', name: 'Tư duy & Tâm lý', emojis: ['🧠'] },
+    { key: 'pulse', name: 'Sức khỏe & Y tế', emojis: ['🩺', '❤️'] },
+    { key: 'chart', name: 'Kinh tế & Thống kê', emojis: ['📊', '📈', '📉', '💰'] },
+    { key: 'rocket', name: 'Vũ trụ & Đột phá', emojis: ['🚀'] },
+    { key: 'zap', name: 'Năng lượng & Điện tử', emojis: ['⚡'] },
+    { key: 'flame', name: 'Nhiệt huyết & Động lực', emojis: ['🔥'] },
+    { key: 'bulb', name: 'Ý tưởng & Sáng tạo', emojis: ['💡'] },
+    { key: 'target', name: 'Mục tiêu & Trọng tâm', emojis: ['🎯'] },
+    { key: 'trophy', name: 'Thành tích & Khen thưởng', emojis: ['🏆', '🥇'] },
+    { key: 'star', name: 'Ngôi sao & Xuất sắc', emojis: ['🌟', '⭐', '✨'] }
+  ],
   SUBJECT_EMOJI_PRESETS: [
     '📚', '📐', '💻', '🔬', '🧬', '🧪', '⚛️', '🌍',
     '🏛️', '⚖️', '📈', '💰', '🧠', '🩺', '🎨', '🎵',
@@ -6384,13 +6501,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const colorContainer = document.getElementById(`${mode}-subject-color-grid`);
     const iconInput = document.getElementById(`${mode}-subject-icon`);
     const colorInput = document.getElementById(`${mode}-subject-color`);
-    const currentIcon = iconInput ? (iconInput.value || '📚') : '📚';
+    const currentIcon = iconInput ? (iconInput.value || 'book') : 'book';
     const currentColor = colorInput ? (colorInput.value || '#a855f7') : '#a855f7';
 
     if (emojiContainer) {
-      emojiContainer.innerHTML = this.SUBJECT_EMOJI_PRESETS.map(emoji => {
-        const isActive = emoji === currentIcon;
-        return `<button type="button" class="emoji-preset-btn ${isActive ? 'active' : ''}" onclick="App.selectSubjectEmoji('${mode}', '${emoji}')" title="${emoji}">${emoji}</button>`;
+      emojiContainer.innerHTML = this.SUBJECT_ICON_PRESETS.map(preset => {
+        const isActive = preset.key === currentIcon || preset.emojis.includes(currentIcon);
+        return `<button type="button" class="emoji-preset-btn ${isActive ? 'active' : ''}" data-icon-key="${preset.key}" onclick="App.selectSubjectEmoji('${mode}', '${preset.key}')" title="${preset.name}">${this.getMonoSvg(preset.key)}</button>`;
       }).join('');
     }
 
@@ -6404,13 +6521,14 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.updateSubjectModalPreview(mode);
   },
 
-  selectSubjectEmoji(mode, emoji) {
+  selectSubjectEmoji(mode, iconKey) {
     const iconInput = document.getElementById(`${mode}-subject-icon`);
-    if (iconInput) iconInput.value = emoji;
+    if (iconInput) iconInput.value = iconKey;
     const grid = document.getElementById(`${mode}-subject-emoji-grid`);
     if (grid) {
       grid.querySelectorAll('.emoji-preset-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.trim() === emoji);
+        const k = btn.getAttribute('data-icon-key');
+        btn.classList.toggle('active', k === iconKey);
       });
     }
     this.updateSubjectModalPreview(mode);
@@ -6438,13 +6556,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const previewName = document.getElementById(`${mode}-subject-preview-name`);
 
     const name = nameInput?.value?.trim() || (mode === 'create' ? 'Tên môn học' : 'Môn học');
-    const icon = iconInput?.value?.trim() || '📚';
+    const icon = iconInput?.value?.trim() || 'book';
     const color = colorInput?.value || '#a855f7';
 
     if (previewBadge) {
       previewBadge.style.setProperty('--subj-color', color);
     }
-    if (previewIcon) previewIcon.textContent = icon;
+    if (previewIcon) previewIcon.innerHTML = this.renderSubjectIcon(icon);
     if (previewName) previewName.textContent = name;
   },
 
@@ -6537,7 +6655,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           const isActive = s.id === firstTarget.id;
           return `
             <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectMergeTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
-              <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+              <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
             </button>
           `;
         }).join('');
@@ -6578,7 +6696,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
               const isActive = s.id === firstTarget.id;
               return `
                 <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectDeleteTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
-                  <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+                  <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
                 </button>
               `;
             }).join('');
@@ -6774,7 +6892,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         const isActive = s.id === defaultSubject.id;
         return `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectBulkReassignSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
-            <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
       }).join('');
@@ -6799,7 +6917,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
             <label class="bulk-deck-row" data-deck-id="${d.id}">
               <input type="checkbox" class="bulk-deck-checkbox cyber-checkbox" value="${d.id}" onchange="App.onBulkDeckCheckboxChange(this)" aria-label="${this._escapeHtml(d.name)}">
               <span class="bulk-deck-title">${this._escapeHtml(d.name)}</span>
-              <span class="subject-badge" style="background: ${s.color || '#8b5cf6'}22; color: ${s.color || '#a78bfa'}; border: 1px solid ${s.color || '#8b5cf6'}44; margin-left: auto; flex-shrink: 0;">${s.icon || '📁'} ${this._escapeHtml(s.name)}</span>
+              <span class="subject-badge" style="margin-left: auto; flex-shrink: 0;"><span class="subject-badge-icon">${this.renderSubjectIcon(s.icon)}</span> <span>${this._escapeHtml(s.name)}</span></span>
             </label>
           `;
         });
