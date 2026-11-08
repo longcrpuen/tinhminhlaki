@@ -7992,24 +7992,37 @@ body.app-hidden * {
     min-width: 68px !important;
     padding: 20px 10px !important;
   }
+  .app-sidebar .nav-item::before,
+  .app-sidebar .nav-item::after,
+  .app-sidebar .nav-item button::before,
+  .nav-links li::before,
+  .nav-item.active button::before {
+    display: none !important;
+    content: none !important;
+  }
+
   .nav-item button {
     display: grid !important;
     grid-template-columns: 44px 1fr !important;
     align-items: center !important;
     width: 100% !important;
     height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
     padding: 0 !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: 999px !important;
     background: transparent !important;
     border: 1px solid transparent !important;
     color: var(--text-secondary) !important;
     overflow: hidden !important;
     position: relative !important;
-    transition: background-color 0.2s ease, color 0.2s ease !important;
+    transition: background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
   .nav-item button:hover {
     color: var(--text-primary) !important;
-    background: var(--accent-subtle-bg) !important;
+    background: var(--accent-soft) !important;
   }
   .nav-item button svg {
     grid-column: 1 !important;
@@ -8032,41 +8045,19 @@ body.app-hidden * {
     width: 44px !important;
     grid-template-columns: 44px !important;
     margin: 0 auto !important;
+    justify-content: center !important;
   }
   .nav-item.active button {
-    background: linear-gradient(90deg, var(--accent-subtle-bg) 0%, transparent 100%) !important;
-    color: var(--text-primary) !important;
-    border-color: transparent !important;
-    font-weight: 700 !important;
-  }
-  .nav-item.active button::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 2px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 3.5px !important;
-    height: 22px !important;
-    border-radius: 4px !important;
-    background: var(--accent) !important;
-    box-shadow: 0 0 10px var(--accent-glow) !important;
+    background: var(--btn-primary-bg) !important;
+    color: var(--btn-primary-text) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px var(--accent-glow) !important;
   }
   .app-sidebar.collapsing .nav-label,
   .app-sidebar.collapsed .nav-label {
     opacity: 0 !important;
     transform: translate3d(-8px, 0, 0) !important;
     pointer-events: none !important;
-  }
-  .app-sidebar.collapsed .due-count-badge {
-    position: absolute !important;
-    top: -2px !important;
-    right: -2px !important;
-    min-width: 18px !important;
-    height: 18px !important;
-    padding: 0 5px !important;
-    font-size: 0.65rem !important;
-    border-radius: 999px !important;
-    z-index: 5 !important;
   }
 }
 
