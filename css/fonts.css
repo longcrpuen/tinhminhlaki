@@ -65,5 +65,5 @@
   /* ========================================================================
      F. FONT POSTER HEAVY DISPLAY (--font-poster)
      ======================================================================== */
-  --font-poster: var(--font-body);
+  --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Arial Black', sans-serif;
 }

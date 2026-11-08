@@ -21,7 +21,7 @@
   <!-- Modern Tech, Poster Heavy & Editorial Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@800;900&family=Montserrat:wght@900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Preload Critical Background Wallpaper -->
   <link rel="preload" as="image" href="./backgrounds/bg-pixel-meadow.webp" type="image/webp">
@@ -126,6 +126,18 @@
           <h1 class="topbar-title">Ôn Tập Cá Nhân</h1>
         </div>
         <div class="topbar-right">
+          <!-- Quick 3-Theme Switcher -->
+          <div class="theme-quick-switch topbar-theme-switch" role="group" aria-label="Chọn chủ đề">
+            <button type="button" class="theme-switch-pill" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')" title="Chế độ Tím Hồng">
+              <span class="theme-swatch-dot dot-violet"></span><span class="theme-label-short">Tím Hồng</span>
+            </button>
+            <button type="button" class="theme-switch-pill" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')" title="Chế độ Trắng Đen">
+              <span class="theme-swatch-dot dot-mono"></span><span class="theme-label-short">Trắng Đen</span>
+            </button>
+            <button type="button" class="theme-switch-pill" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam">
+              <span class="theme-swatch-dot dot-orange"></span><span class="theme-label-short">Trắng Cam</span>
+            </button>
+          </div>
           <!-- Streak Chip -->
           <div class="streak-chip" title="Số ngày học liên tiếp">
             <span class="flame-icon">🔥</span>
@@ -139,9 +151,37 @@
         
         <!-- 1. DASHBOARD VIEW -->
         <section id="view-dashboard" class="view-section active">
-          <!-- Hero Card with Progress Ring -->
-          <div class="hero-card">
-            <div class="hero-content">
+          <!-- Editorial Hero Inspirational Stage (First Viewport) -->
+          <div class="hero-card editorial-hero-stage">
+            <!-- Tầng Đỉnh: Editorial Header Bar -->
+            <div class="editorial-stage-top">
+              <div class="editorial-coords">
+                <span class="coord-tag">[ MINDSPARKS ]</span>
+                <span class="coord-sep">•</span>
+                <span class="coord-tag">[ ACTIVE RECALL ]</span>
+                <span class="coord-sep">•</span>
+                <span class="coord-tag">[ SM-2 ]</span>
+              </div>
+              <div class="editorial-top-actions">
+                <button type="button" class="btn-editorial-pill" onclick="App.updateHeroQuote()" title="Đổi câu trích dẫn truyền cảm hứng khác">
+                  <span>↻</span> Đổi cảm hứng
+                </button>
+                <div class="theme-quick-switch" role="group" aria-label="Chọn chủ đề màu sắc">
+                  <button type="button" class="theme-switch-pill" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')" title="Chế độ Tím Hồng">
+                    <span class="theme-swatch-dot dot-violet"></span> Tím Hồng
+                  </button>
+                  <button type="button" class="theme-switch-pill" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')" title="Chế độ Trắng Đen">
+                    <span class="theme-swatch-dot dot-mono"></span> Trắng Đen
+                  </button>
+                  <button type="button" class="theme-switch-pill" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam">
+                    <span class="theme-swatch-dot dot-orange"></span> Trắng Cam
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tầng Giữa: Monumental Quote Canvas -->
+            <div class="hero-content editorial-quote-canvas">
               <div class="hero-heading-scrim">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                   <span class="tech-tag">SYSTEM // SM-2 ACTIVE</span>
@@ -154,7 +194,7 @@
                 </h2>
                 <p class="hero-desc">Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.</p>
                 <div class="hero-actions">
-                  <button class="btn btn-primary" onclick="App.startSession(null, 'srs')">
+                  <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
                     ⚡ Ôn tập hôm nay
                   </button>
                   <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
@@ -255,55 +295,78 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Quick Metrics Cards -->
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon-wrap indigo">📚</div>
-              <div class="stat-info">
-                <span class="stat-num" id="stat-total-cards">0</span>
-                <span class="stat-label">Tổng số câu hỏi</span>
-              </div>
-            </div>
+            <!-- Tầng Đáy: Editorial 4-Column Metrics Footer + Scroll Indicator -->
+            <div class="editorial-stage-footer">
+              <div class="stats-grid editorial-stats-grid">
+                <div class="stat-card">
+                  <div class="stat-col-num">01 //</div>
+                  <div class="stat-info">
+                    <span class="stat-num" id="stat-total-cards">0</span>
+                    <span class="stat-label">TỔNG KHO THẺ</span>
+                  </div>
+                </div>
 
-            <div class="stat-card">
-              <div class="stat-icon-wrap amber">⏰</div>
-              <div class="stat-info">
-                <span class="stat-num" id="stat-due-today">0</span>
-                <span class="stat-label">Cần ôn hôm nay</span>
-              </div>
-            </div>
+                <div class="stat-card">
+                  <div class="stat-col-num">02 //</div>
+                  <div class="stat-info">
+                    <span class="stat-num" id="stat-due-today">0</span>
+                    <span class="stat-label">CẦN ÔN HÔM NAY</span>
+                  </div>
+                </div>
 
-            <div class="stat-card">
-              <div class="stat-icon-wrap green">🏆</div>
-              <div class="stat-info">
-                <span class="stat-num" id="stat-mastered-cards">0</span>
-                <span class="stat-label">Đã thành thạo</span>
-              </div>
-            </div>
+                <div class="stat-card">
+                  <div class="stat-col-num">03 //</div>
+                  <div class="stat-info">
+                    <span class="stat-num" id="stat-mastered-cards">0</span>
+                    <span class="stat-label">ĐÃ THÀNH THẠO</span>
+                  </div>
+                </div>
 
-            <div class="stat-card">
-              <div class="stat-icon-wrap purple">🔥</div>
-              <div class="stat-info">
-                <span class="stat-num" id="stat-streak-days">0 ngày</span>
-                <span class="stat-label">Chuỗi học liên tục</span>
+                <div class="stat-card">
+                  <div class="stat-col-num">04 //</div>
+                  <div class="stat-info">
+                    <span class="stat-num" id="stat-streak-days">0 ngày</span>
+                    <span class="stat-label">CHUỖI BỀN BỈ</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- 7 Study Modes Section (Section 4) -->
-          <div class="section-title-wrap">
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <h3 class="section-title">7 Chế Độ Ôn Tập Thông Minh</h3>
-                <span class="tech-tag subtle">ADAPTIVE</span>
-              </div>
-              <p style="color: var(--text-secondary); font-size: 0.85rem;">Tự động phân bổ và tối ưu hóa dựa trên nguồn câu hỏi của bạn</p>
+              <!-- Scroll Indicator -->
+              <a href="#dashboard-content-below" class="editorial-scroll-cue" onclick="event.preventDefault(); document.getElementById('dashboard-content-below')?.scrollIntoView({ behavior: 'smooth' });">
+                <span>↓ CUỘN XUỐNG BỘ CÂU HỎI & CHẾ ĐỘ LUYỆN TẬP</span>
+              </a>
             </div>
           </div>
 
-          <div class="study-modes-grid">
+          <!-- Below the Fold: Decks by Subject and 7 Study Modes -->
+          <div id="dashboard-content-below" class="dashboard-content-below">
+            <!-- Section 1: Bộ câu hỏi theo Môn học -->
+            <div class="section-title-wrap">
+              <div>
+                <h3 class="section-title">Bộ câu hỏi của bạn</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Phân loại theo từng Môn học và tiến độ ôn tập</p>
+              </div>
+              <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.navigateTo('decks')">
+                Xem tất cả
+              </button>
+            </div>
+
+            <div id="dashboard-subject-filters" class="dashboard-subject-filters"></div>
+            <div id="dashboard-decks-grid" class="decks-grid"></div>
+
+            <!-- Section 2: 7 Chế Độ Ôn Tập Thông Minh -->
+            <div class="section-title-wrap" style="margin-top: 36px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <h3 class="section-title">7 Chế Độ Ôn Tập Thông Minh</h3>
+                  <span class="tech-tag subtle">ADAPTIVE</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">Tự động phân bổ và tối ưu hóa dựa trên nguồn câu hỏi của bạn</p>
+              </div>
+            </div>
+
+            <div class="study-modes-grid">
             <!-- Mode 1: Luyện tập tự do -->
             <div class="study-mode-card" onclick="App.startSession(null, 'free')">
               <div>
@@ -409,17 +472,7 @@
               </div>
             </div>
           </div>
-
-          <!-- Decks Section Header -->
-          <div class="section-title-wrap">
-            <h3 class="section-title">Bộ câu hỏi của bạn</h3>
-            <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.navigateTo('decks')">
-              Xem tất cả
-            </button>
           </div>
-
-          <div id="dashboard-subject-filters" class="dashboard-subject-filters"></div>
-          <div id="dashboard-decks-grid" class="decks-grid"></div>
         </section>
 
         <!-- 2. DECKS VIEW -->
@@ -1274,6 +1327,45 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <div class="quiz-card">
               <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;">🎨 Giao Diện & Hình Nền</h3>
               
+              <!-- 3-Theme Mode Selector Cards (Prompt 1c) -->
+              <div style="margin-bottom: 22px;">
+                <div style="font-weight: 600; margin-bottom: 10px;">Chế độ Giao diện (Theme Modes)</div>
+                <div class="theme-cards-grid">
+                  <div class="theme-mode-card" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')">
+                    <div class="theme-card-preview theme-preview-violet">
+                      <span class="preview-dot dot-violet"></span>
+                      <span class="preview-bar"></span>
+                    </div>
+                    <div class="theme-card-info">
+                      <span class="theme-card-title">◐ Tím Hồng (Violet Rose)</span>
+                      <span class="theme-card-desc">Dịu nhẹ mộng mơ, nút pastel, không chói gắt</span>
+                    </div>
+                  </div>
+
+                  <div class="theme-mode-card" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')">
+                    <div class="theme-card-preview theme-preview-mono">
+                      <span class="preview-dot dot-mono"></span>
+                      <span class="preview-bar"></span>
+                    </div>
+                    <div class="theme-card-info">
+                      <span class="theme-card-title">◑ Trắng Đen (Monochrome)</span>
+                      <span class="theme-card-desc">100% Noir B&W, tương phản cao, sắc lạnh</span>
+                    </div>
+                  </div>
+
+                  <div class="theme-mode-card" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')">
+                    <div class="theme-card-preview theme-preview-orange">
+                      <span class="preview-dot dot-orange"></span>
+                      <span class="preview-bar"></span>
+                    </div>
+                    <div class="theme-card-info">
+                      <span class="theme-card-title">◒ Trắng Cam (White Orange)</span>
+                      <span class="theme-card-desc">Kính sáng kem ấm, chữ than, nút cam tươi</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               <div>
                 <div style="font-weight: 600; margin-bottom: 10px;">Hình nền (Backgrounds)</div>
                 <div class="bg-picker-grid" id="bg-picker-grid">
@@ -1304,6 +1396,14 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                   <div class="bg-thumb" data-bg="./backgrounds/bg-2.webp" onclick="App.setBackground('./backgrounds/bg-2.webp')">
                     <img src="./backgrounds/bg-2.webp" alt="Background 2" loading="lazy">
                     <span class="bg-thumb-label">Background 2</span>
+                  </div>
+                  <div class="bg-thumb" data-bg="./backgrounds/bg-white-orange.webp" onclick="App.setBackground('./backgrounds/bg-white-orange.webp')">
+                    <img src="./backgrounds/bg-white-orange.webp" alt="Trắng Cam Kính Ấm" loading="lazy">
+                    <span class="bg-thumb-label">Trắng Cam Kính Ấm</span>
+                  </div>
+                  <div class="bg-thumb" data-bg="./backgrounds/bg-noir-mono.webp" onclick="App.setBackground('./backgrounds/bg-noir-mono.webp')">
+                    <img src="./backgrounds/bg-noir-mono.webp" alt="Noir Trắng Đen" loading="lazy">
+                    <span class="bg-thumb-label">Noir Trắng Đen</span>
                   </div>
                   <div class="bg-thumb bg-thumb-none" data-bg="none" onclick="App.setBackground('none')">
                     <span class="bg-thumb-none-icon">🚫</span>

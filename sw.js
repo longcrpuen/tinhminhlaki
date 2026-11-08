@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.11.0';
+const CACHE_NAME = 'mindsparks-v4.12.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -31,7 +31,9 @@ const STATIC_ASSETS = [
   './backgrounds/bg-cyberpunk-teal.webp',
   './backgrounds/bg-sunset.webp',
   './backgrounds/bg-alol.webp',
-  './backgrounds/bg-2.webp'
+  './backgrounds/bg-2.webp',
+  './backgrounds/bg-noir-mono.webp',
+  './backgrounds/bg-white-orange.webp'
 ];
 
 // Install: Cache all static assets

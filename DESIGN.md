@@ -1,30 +1,39 @@
 ---
 name: MindSparks / TinhMinhLaKey Design System
-description: 100% Offline-First PWA Study App - Cosmic Amethyst & Deep Obsidian Violet System (Phase 1b)
-colors:
-  primary: "#b388ff"
-  secondary: "#f472b6"
-  accent-primary: "#a855f7"
-  accent-glow: "rgba(179, 136, 255, 0.24)"
-  pink-accent: "#f472b6"
-  dropdown-bg: "#151226"
-  neutral-bg: "#0b0816"
-  surface: "rgba(20, 15, 36, 0.86)"
-  surface-elevated: "rgba(30, 22, 52, 0.92)"
-  text-primary: "#f8f6fd"
-  text-secondary: "#c4bcdc"
-  text-muted: "#9d92b5"
-  success: "#6fcf97"
-  danger: "#e27d8b"
-  warning: "#e0b45c"
-  info: "#7bb8e0"
+description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Editorial Inspirational Stage & 3-Theme Architecture (Phase 1c)
+themes:
+  violet-rose:
+    label: "Tím Hồng (Violet Rose - Default)"
+    base: "#0e0b18"
+    accent: "#b388ff"
+    accentSecondary: "#f472b6"
+    btnPrimaryBg: "#d8b4fe"
+    btnPrimaryText: "#140e24"
+    wallpaper: "./backgrounds/bg-pixel-meadow.webp"
+  monochrome:
+    label: "Trắng Đen (Monochrome - Pure Noir B&W)"
+    base: "#050505"
+    accent: "#ffffff"
+    accentSecondary: "#e5e5e5"
+    btnPrimaryBg: "#ffffff"
+    btnPrimaryText: "#000000"
+    wallpaper: "./backgrounds/bg-noir-mono.webp"
+  white-orange:
+    label: "Trắng Cam (White Orange - Warm Daylight Orange)"
+    base: "#faf7f2"
+    accent: "#f97316"
+    accentSecondary: "#ea580c"
+    btnPrimaryBg: "#f97316"
+    btnPrimaryText: "#ffffff"
+    wallpaper: "./backgrounds/bg-white-orange.webp"
 typography:
-  display:
-    fontFamily: "'Montserrat', 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, sans-serif"
-    fontSize: "clamp(2.1rem, 4.8vw, 3.5rem)"
+  posterDisplay:
+    fontFamily: "'Montserrat', 'Be Vietnam Pro', 'Arial Black', sans-serif"
+    fontSize: "clamp(2.6rem, 6.2vw, 4.8rem)"
     fontWeight: 900
-    lineHeight: 1.15
-    letterSpacing: "-0.03em"
+    lineHeight: 1.08
+    letterSpacing: "-0.035em"
+    strokeWidth: "1.1px"
   headline:
     fontFamily: "'Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, sans-serif"
     fontSize: "clamp(1.4rem, 2.2vw + 0.8rem, 2rem)"
@@ -49,170 +58,78 @@ rounded:
   md: "14px"
   lg: "20px"
   card: "24px"
+  sidebar: "28px"
+  bottomNav: "32px"
   full: "9999px"
-spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-  xxl: "48px"
-components:
-  hero-card:
-    borderWidth: "2px"
-    borderColor: "rgba(192, 132, 252, 0.48)"
-    borderRadius: "24px"
-    padding: "36px 38px"
-    strokeWidth: "0.75px"
-  deck-card:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-primary}"
-    rounded: "{rounded.card}"
-    padding: "24px"
-    minWidth: "340px"
-  flashcard:
-    backgroundColor: "{colors.surface-elevated}"
-    textColor: "{colors.text-primary}"
-    rounded: "{rounded.lg}"
-    padding: "24px 32px"
-    height: "380px"
-    maxWidth: "820px"
-  dropdown-menu:
-    backgroundColor: "#151226"
-    textColor: "{colors.text-primary}"
-    rounded: "{rounded.sm}"
-    padding: "6px"
 ---
 
-# MindSparks / TinhMinhLaKey Design System (Đợt 1b)
+# MindSparks / TinhMinhLaKey Design System (Đợt 1c)
 
-## Overview
+## 1. Tổng Quan & Triết Lý Thiết Kế (Overview & Philosophy)
 
-MindSparks (TinhMinhLaKey) là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Ngôn ngữ thiết kế đợt 1b dựa trên phong cách **Cosmic Amethyst & Deep Obsidian Violet**: nền tối sâu huyền bí, chuyển sắc mượt mà giữa Tím Amethyst sáng dịu và Hồng Orchid Rose cân bằng, bề mặt kính tĩnh lag-free, typography đậm nét Ultra-Bold cho tiêu đề truyền cảm hứng, và khả năng nhận diện môn học trực quan tức thì.
-
-### Kiến Trúc File Thiết Kế (Design System Architecture)
-
-Hệ thống thiết kế của ứng dụng được tổ chức thành 4 tầng rõ ràng, trong đó `css/theme.css` là **Single Source of Truth** điều phối toàn bộ biến:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. DESIGN.md                                                │
-│ Quy chuẩn thiết kế, nguyên tắc giao diện, token schema      │
-│ dành cho Developer & AI Agent                               │
-└──────────────────────────────┬──────────────────────────────┘
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. css/theme.css (Master Token Orchestrator)                │
-│ Nguồn phát biến CSS (:root) duy nhất: màu sắc, khoảng cách, │
-│ bo góc, đổ bóng, z-index, kích thước component              │
-└──────────────┬──────────────────────────────┬───────────────┘
-               │                              │
-               ▼                              ▼
-┌──────────────────────────────┐ ┌────────────────────────────┐
-│ 3. css/fonts.css             │ │ 4. css/style.css           │
-│ Khai báo @font-face offline  │ │ Stylesheet thực thi:       │
-│ và ánh xạ biến typography    │ │ Tiêu thụ token từ theme    │
-└──────────────────────────────┘ └────────────────────────────┘
-```
-
-1. **`DESIGN.md`**: Tài liệu quy chuẩn thiết kế trung tâm dành cho Developer & AI Agent.
-2. **`css/theme.css`**: Trung tâm điều phối biến CSS (Master Design System Tokens) duy nhất.
-3. **`css/fonts.css`**: Quản lý font offline-first và trỏ biến font về sans-serif chuẩn.
-4. **`css/style.css`**: Stylesheet thực thi của toàn bộ ứng dụng, tham chiếu trực tiếp từ token trong `theme.css`.
+MindSparks (TinhMinhLaKey) là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1c**, toàn bộ ngôn ngữ thiết kế được nâng cấp toàn diện theo chuẩn mực:
+- **Google Material 3 Expressive (Tonal Surfaces & Solid Pill Controls)**: Chuyển dịch 100% các nút bấm từ chuyển sắc Gradient sang màu Đơn Sắc (Solid Tonal Fill), loại bỏ hiệu ứng phát sáng lòe loẹt và các nhãn terminal giả lập, xóa bỏ hoàn toàn cảm giác "AI Slop".
+- **Editorial Inspirational Stage**: Màn hình đầu tiên khi truy cập trang chủ là một bức Poster nghệ thuật truyền cảm hứng thuần túy (Monumental Random Quote từ `quotes.js` kết hợp 4 cột chỉ số tối giản), cuộn xuống mới tiến vào khu vực Bộ câu hỏi theo môn học và 7 Chế độ luyện tập.
+- **Floating Capsule Sidebar (Desktop) & Liquid Notch Bubble (Mobile)**: Thiết kế thanh điều hướng nổi tách khỏi mép màn hình với trạng thái active là hình tròn đặc tương phản cao trên Desktop và viên bi nổi có vành khuyết lõm mượt mà trên Mobile.
+- **Hệ Thống 3 Chế Độ Theme Hoàn Chỉnh**: Tùy biến toàn diện giữa `violet-rose` (Tím hồng mộng mơ), `monochrome` (100% Trắng & Đen tuyệt đối), và `white-orange` (Sáng ấm hiện đại phối cam năng lượng).
 
 ---
 
-## Colors (Cosmic Amethyst & Deep Obsidian Violet)
+## 2. Kiến Trúc 3 Chế Độ Theme (3-Theme Token Architecture)
 
-Hệ màu tuân thủ độ tương phản WCAG AA (\(\ge 4.5:1\) trên mọi nền bề mặt tối):
+Điều phối tập trung 100% tại `css/theme.css` thông qua thuộc tính `data-theme` trên thẻ `<html>` và `<body>`:
 
-- **Nền chính (Base Background)**: `#0b0816` (Deep Obsidian Violet) kết hợp fallback `#090A0F`.
-- **Bề mặt kính (Surfaces)**:
-  - Card tiêu chuẩn: `rgba(20, 15, 36, 0.86)` (`--bg-surface`, `--bg-card`)
-  - Bề mặt nổi (Elevated): `rgba(30, 22, 52, 0.92)` (`--bg-surface-elevated`)
-  - Dropdown Menu: `#151226` đặc, chống xuyên thấu nội dung bên dưới.
-- **Màu điểm nhấn (Accents)**:
-  - Primary Accent: `#b388ff` (Tím Amethyst sáng dịu)
-  - Secondary Accent: `#f472b6` (Hồng Orchid cân bằng)
-  - Accent Primary: `#a855f7` (Tím Lavender chuẩn)
-  - Accent Glow: `rgba(179, 136, 255, 0.24)`
-  - Accent Border: `rgba(192, 132, 252, 0.32)`
-- **Màu chữ (Typography)**:
-  - Primary Text: `#f8f6fd` (Trắng tím sáng, tương phản 16.5:1)
-  - Secondary Text: `#c4bcdc` (Tím xám dịu, tương phản 10.1:1)
-  - Muted Text: `#9d92b5` (Caption/Meta, tương phản 4.6:1)
-- **Trạng thái (Semantic Feedback)**:
-  - Thành công / Đúng: `#6fcf97` (Xanh ngọc dịu)
-  - Cảnh báo / Sai: `#e27d8b` (Hồng san hô)
-  - Cần chú ý / Ôn tập: `#e0b45c` (Vàng hổ phách)
-  - Thông tin: `#7bb8e0` (Xanh lơ)
+| Đặc tính / Thành phần | 1. Tím Hồng (`violet-rose` - Mặc định) | 2. Trắng Đen (`monochrome` - Pure Noir B&W) | 3. Trắng Cam (`white-orange` - Daylight Orange) |
+| :--- | :--- | :--- | :--- |
+| **Phong cách chủ đạo** | Tím Lavender & Hồng Phấn dịu nhẹ, mộng mơ | 100% Trắng & Đen tuyệt đối, sắc lạnh | Nền sáng kem ấm Alabaster phối Cam Tươi |
+| **Hình nền mặc định** | `./backgrounds/bg-pixel-meadow.webp` | `./backgrounds/bg-noir-mono.webp` | `./backgrounds/bg-white-orange.webp` |
+| **Lớp phủ nền (`#bg-layer::before/after`)** | Tím khói dịu `rgba(14, 11, 24, 0.68)` | Đen mờ `rgba(5, 5, 5, 0.52)` | Trắng kem mờ `rgba(255, 250, 245, 0.38)` |
+| **Nền chính (`--bg-base`)** | `#0e0b18` | `#050505` (OLED Pure Black) | `#faf7f2` (Alabaster Cream) |
+| **Chữ chính (`--text-primary`)** | `#f5f3ff` | `#ffffff` | `#18181b` (Charcoal Black) |
+| **Chữ phụ (`--text-secondary`)** | `#cbc3e3` | `#a3a3a3` | `#52525b` |
+| **Nút chính (`--btn-primary-bg` / `text`)** | Nền `#d8b4fe`, chữ `#140e24` (hover `#f472b6`) | Nền `#ffffff`, chữ `#000000` (hover `#e5e5e5`) | Nền `#f97316`, chữ `#ffffff` (hover `#ea580c`) |
+| **Nút phụ (`--btn-secondary-bg` / `text`)** | Nền `rgba(38, 30, 62, 0.85)`, chữ `#f5f3ff` | Nền `#171717`, viền trắng mờ, chữ `#ffffff` | Nền `rgba(255, 255, 255, 0.92)`, viền cam mờ, chữ `#18181b` |
+| **Từ khóa Quote (`.hero-title-accent`)** | Chữ Hồng Pastel `#f472b6` | Nền Trắng `#ffffff`, chữ Đen `#000000` | Chữ Cam Đậm `#ea580c` |
+| **Bôi đen văn bản (`::selection`)** | Nền `rgba(244, 114, 182, 0.35)`, chữ `#ffffff` | Nền `#ffffff`, chữ `#000000` | Nền `#f97316`, chữ `#ffffff` |
+| **Dropdown Menu (`.cyber-dropdown-menu`)** | Nền `#17132a`, viền tím mờ | Nền `#0f0f0f`, viền trắng mờ | Nền `#ffffff`, viền cam mờ, chữ than |
 
 ---
 
-## Typography
+## 3. Typography & Quote Poster Khổng Lồ
 
-Đồng nhất 100% giao diện về hệ thống phông chữ Sans-serif hiện đại, sắc nét:
-
-- **Font chữ chính (`--font-body`, `--font-heading`, `--font-pixel`)**:
-  `'Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
-  - Áp dụng cho toàn bộ tiêu đề trang, tên thương hiệu, thẻ chế độ học, số liệu thống kê, và nội dung câu hỏi.
-  - Không sử dụng font Pixel (Pixelify Sans, VT323) trên giao diện thực tế. Các biến `--font-pixel` và `--font-heading` được trỏ thẳng về `var(--font-body)` để bảo toàn khả năng tương thích ngược với các bộ test hiện hành.
-- **Font Display Quote (`--font-poster`)**:
-  `'Montserrat', 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, sans-serif`
-  - Dành riêng cho câu trích dẫn truyền cảm hứng trên khung Hero Card (`font-weight: 900`, kết hợp `-webkit-text-stroke: 0.75px`).
-- **Font chữ Monospace (`--font-mono`)**:
-  `'JetBrains Mono', 'Fira Code', 'Courier New', monospace`
-  - Dành riêng cho khối mã code, JSON, công thức kỹ thuật và đồng hồ đếm ngược.
-- **Khoảng cách chữ (Letter-spacing / Tracking)**:
-  - Tiêu đề Hero: `-0.03em` cho sự cô đọng, dứt khoát.
-  - Tiêu đề & con số lớn: `-0.025em`.
-  - Thân bài: `-0.015em` cho độ đọc lướt mượt mà.
+- **Font Poster Display (`--font-poster`)**:
+  `'Montserrat', 'Be Vietnam Pro', 'Arial Black', sans-serif;`
+  - Nạp đầy đủ trọng số `800` & `900` hỗ trợ 100% tiếng Việt có dấu.
+  - Áp dụng kỹ thuật viền kép đầm chắc: `-webkit-text-stroke: 1.1px` kết hợp `paint-order: stroke fill;`.
+  - Cỡ chữ thích ứng tự động trong `App.updateHeroQuote()`:
+    - Câu \(\le 32\) ký tự: `clamp(3.0rem, 7.0vw, 5.4rem)`
+    - Câu \(\le 60\) ký tự: `clamp(2.6rem, 6.0vw, 4.6rem)`
+    - Câu \(\le 90\) ký tự: `clamp(2.2rem, 4.8vw, 3.8rem)`
+    - Câu \(> 90\) ký tự: `clamp(1.85rem, 3.8vw, 3.0rem)`
+- **Loại bỏ viền đóng hộp cũ**: Loại bỏ hoàn toàn viền hồng mỏng đóng hộp xung quanh Hero Title.
 
 ---
 
-## Layout
+## 4. Kiến Trúc Trang Chủ Mới: Editorial Inspirational Stage
 
-Ứng dụng chia rõ 2 kiến trúc layout riêng biệt bằng breakpoint:
-
-- **Desktop Layout (`@media (min-width: 769px)`)**:
-  - Khung bao chính (`.content-wrapper`): `max-width: 1380px` (mở rộng lên `1560px` trên màn hình 1080p, chốt chặn `1680px` trên Ultrawide).
-  - Lưới bộ thẻ (`.decks-grid`): `grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;`.
-  - Khung lật thẻ Flashcard (`.flashcard-player-container`): Rộng `820px` (lên `860px` trên màn \(\ge 1440\text{px}\)), chiều cao thẻ `380px`, nằm gọn trong viewport desktop không sinh cuộn dọc.
-- **Mobile Layout (`@media (max-width: 768px)`)**:
-  - Cuộn toàn trang tự nhiên (single-scroll container), tuyệt đối không lồng cuộn (nested scroll traps).
-  - Đảm bảo vùng chạm tối thiểu \(44 \times 44\text{px}\) cho mọi nút tương tác.
-  - An toàn với Safe Area Insets (`env(safe-area-inset-bottom)`).
+Màn hình đầu tiên (`#view-dashboard`) đạt độ cao `min-height: calc(100dvh - 108px)` trên Desktop và `min-height: calc(100dvh - 150px)` trên Mobile:
+1. **Tầng Đỉnh (Header Bar)**: Nhãn tọa độ tối giản `[ MINDSPARKS ] • [ ACTIVE RECALL ] • [ SM-2 ]` cùng nút `↻ Đổi cảm hứng` và cụm chuyển nhanh 3 Theme (`◐ Tím Hồng` | `◑ Trắng Đen` | `◒ Trắng Cam`).
+2. **Tầng Giữa (Monumental Quote Canvas)**: Câu quote lớn nổi bật, mô tả ngắn gọn và 3 nút hành động đơn sắc: Nút chính `⚡ Ôn tập hôm nay` (`#dashboard-study-btn`), 2 nút phụ `🎯 Ôn câu hay sai` và `✨ Dán câu hỏi AI`.
+3. **Tầng Đáy (Editorial Metrics Footer)**: Đường kẻ chỉ mảnh chia 4 cột thông số (`01 // TỔNG KHO THẺ`, `02 // CẦN ÔN HÔM NAY`, `03 // ĐÃ THÀNH THẠO`, `04 // CHUỖI BỀN BỈ`) kèm nút chỉ dẫn cuộn xuống `↓ CUỘN XUỐNG BỘ CÂU HỎI & CHẾ ĐỘ LUYỆN TẬP`.
+4. **Khu vực Below the Fold (`#dashboard-content-below`)**:
+   - Khu vực 1: Bộ câu hỏi theo Môn học (`#dashboard-decks-grid` + `#dashboard-subject-filters`).
+   - Khu vực 2: 7 Chế độ ôn tập thông minh (`.study-modes-grid`).
 
 ---
 
-## Components
+## 5. Thanh Điều Hướng Desktop & Mobile
 
-### 1. Khung Hero Card Đơn Lớp (`.hero-card`)
-- **Gộp 1 khung duy nhất**: Loại bỏ hoàn toàn nền, viền, bóng đổ và padding của lớp lồng `.hero-heading-scrim` thứ 2 bên trong. Giữ lại class và thuộc tính phần cứng GPU (`transform: translateZ(0)`) để đảm bảo pass 100% test suite.
-- **Viền Bold & Chữ Đầm**:
-  - Viền ngoài `2px solid rgba(192, 132, 252, 0.48)` (token: `--hero-border-width: 2px`), khi hover đổi sang viền hồng tím `rgba(244, 114, 182, 0.72)`.
-  - Chữ Quote (`#hero-title`): `font-weight: 900 !important;` kết hợp `-webkit-text-stroke: 0.75px #ffffff` (và `0.75px #f0abfc` cho từ nhấn mạnh).
-
-### 2. Bộ Chọn Emoji 1-Click & Bảng Màu Vibe Trong Modal Môn Học
-- **24 Emoji Giáo Dục Chuẩn**: Lưới 8 cột \(\times\) 3 hàng (`.emoji-picker-grid`), các nút `.emoji-preset-btn` (38px, bo góc 10px, hiệu ứng active tím hồng). Bấm chuột 1-click chọn ngay mà không cần bàn phím.
-- **12 Viên Màu Tròn (Color Swatches)**: Lưới 6 cột \(\times\) 2 hàng (`.color-swatch-grid`), các viên màu tròn `.color-swatch-btn` (32px, tròn 50%, hiệu ứng vòng nhẫn trắng-tím khi active). Thay thế hoàn toàn hộp thoại Windows RGB xám trắng mặc định.
-- **Thanh Xem Trước Nhãn Trực Quan (Live Badge Preview)**: Tự động cập nhật tức thời khi gõ tên môn, click emoji hoặc chọn màu nhận diện.
-
-### 3. Thẻ Bộ Câu Hỏi & Nhận Diện Môn Học (`.deck-card`)
-- Thay thế hoàn toàn nhãn `DECK` chung chung bằng **Badge Tên Môn Học Nổi Bật** (`.deck-subject-badge`) mang Icon + Tên + Màu nhận diện của môn học đó.
-- Bổ sung thanh **Lọc Nhanh Theo Môn Học (Subject Filter Pills)** ngay trên danh sách bộ thẻ tại Dashboard.
-- Nút bấm `.deck-actions` giữ vững cấu trúc 2 tầng chuẩn mực: "Ôn tập" trải rộng 100% ở tầng 1, 4 nút phụ cân xứng ở tầng 2.
-
-### 4. Cyber Dropdown Chuẩn Hóa (`.cyber-dropdown`)
-- Cơ chế **Single-Open duy nhất**: Mở dropdown này tự động đóng tất cả dropdown khác qua `App._toggleCyberDropdownById(wrapId, e)`.
-- Phân tầng Stacking Context an toàn với `--z-dropdown-menu: 10000` và class `.has-open-dropdown`.
-
----
-
-## Performance Guarantees (Kiểm Toán Hiệu Năng Đợt 1b)
-
-1. **Parallel IndexedDB Loading**: `renderDashboard()` nạp song song qua `Promise.all`, gom dữ liệu streak và dueCards truyền trực tiếp vào `updateGlobalStats()`, cắt giảm 60% thời gian chờ cơ sở dữ liệu.
-2. **Single-Pass Log Aggregation**: Vòng lặp tính lượt ôn theo ngày chuyển từ \(O(7 \times N)\) xuống \(O(N)\) với một `Map` duy nhất.
-3. **Zero Layout Thrashing (Spotlight Hover)**: `initSpotlightHover()` lưu cache `cachedRect` khi trỏ chuột vào phần tử và giải phóng khi có sự kiện cuộn/resize, loại bỏ hoàn toàn lệnh gọi `getBoundingClientRect()` trong luồng `pointermove` 120Hz.
-4. **Direct Bookmark & Flag Counter Updates**: Cập nhật trực tiếp số đếm DOM trên thanh công cụ mà không quét lại toàn bộ cơ sở dữ liệu `db.getAllCards()`.
-5. **Dọn dẹp Asset Rác**: Đã xóa bỏ các file CSS/JS dư thừa (`thermal-dashboard.css`, `neumorph-study.css`, `thermal-tools.css`, `js/thermal-effects.js`).
+- **Desktop Sidebar (`.app-sidebar`)**:
+  - Tách rời mép màn hình: `top: 16px; bottom: 16px; left: 16px; width: 248px; border-radius: 28px; background: var(--sidebar-bg); backdrop-filter: blur(20px);`.
+  - Khi thu gọn (`.app-sidebar.collapsed`): `width: 68px; border-radius: 999px;`.
+  - Mục active là một hình tròn đặc tương phản cao `46px × 46px` (`background: var(--nav-active-bg); color: var(--nav-active-text);`).
+  - Bảo toàn 7 mục điều hướng và thuộc tính `data-tooltip` phục vụ kiểm thử.
+- **Mobile Bottom Nav (`.bottom-nav`)**:
+  - Dạng thanh viên nang nổi: `bottom: 12px; left: 16px; right: 16px; height: 64px; border-radius: 32px; background: var(--bottom-nav-bg);`.
+  - Mục active: Icon SVG được nâng cao thành viên bi tròn nổi `44px` với vành khuyết đồng màu nền trang (`box-shadow: 0 0 0 6px var(--bg-base), 0 8px 18px rgba(0,0,0,0.35)`), tạo hiệu ứng hốc lõm Liquid Notch mượt mà.
+  - Hiển thị đúng 5 tab chính trên Mobile, ẩn 2 nút `import` và `import-lms`.

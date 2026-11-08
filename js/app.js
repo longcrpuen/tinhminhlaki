@@ -71,7 +71,15 @@ const App = {
       this.lastUsedSubjectId = localStorage.getItem('last_used_subject_id') || null;
     } catch (e) {}
 
-    // 2. Load User Preferences (Single Dark Purple Theme is directly active on :root)
+    // 2. Load User Preferences & Theme (Prompt 1c: 3 Themes violet-rose, monochrome, white-orange)
+    try {
+      const savedTheme = (await db.getMeta('appTheme', null)) || (function() {
+        try { return localStorage.getItem('mindsparks_theme'); } catch(e) { return null; }
+      })() || 'violet-rose';
+      await this.setTheme(savedTheme, { syncDefaultBg: false });
+    } catch (themeErr) {
+      console.error('[App.init] Lỗi khi nạp theme:', themeErr);
+    }
     // Load saved background with robust error handling (Stream 1)
     try {
       let savedBg = await db.getMeta('backgroundSrc', 'none');
@@ -611,6 +619,43 @@ const App = {
       console.error('Lỗi tải ảnh nền:', err);
       this.showToast('Không thể lưu hình nền: ' + (err.message || 'Lỗi không xác định'), 'danger');
     }
+  },
+
+  // --- 3-THEME SYSTEM (violet-rose, monochrome, white-orange) ---
+  async setTheme(themeId, options = { syncDefaultBg: true }) {
+    const validThemes = ['violet-rose', 'monochrome', 'white-orange'];
+    const theme = validThemes.includes(themeId) ? themeId : 'violet-rose';
+
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.dataset.theme = theme;
+
+    try {
+      localStorage.setItem('mindsparks_theme', theme);
+    } catch (e) {}
+
+    try {
+      await db.setMeta('appTheme', theme);
+    } catch (e) {}
+
+    // Auto-sync default background for theme if requested
+    if (options && options.syncDefaultBg) {
+      if (theme === 'monochrome') {
+        await this.setBackground('./backgrounds/bg-noir-mono.webp');
+      } else if (theme === 'white-orange') {
+        await this.setBackground('./backgrounds/bg-white-orange.webp');
+      } else {
+        await this.setBackground('./backgrounds/bg-pixel-meadow.webp');
+      }
+    }
+
+    // Update active state on all theme selector elements
+    const themeBtns = document.querySelectorAll('[data-theme-choice]');
+    themeBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === theme);
+    });
+
+    // Re-render hero quote to apply responsive styles & weights
+    this.updateHeroQuote();
   },
 
   // --- SIDEBAR DOM DETACH / RE-ATTACH LIFECYCLE ---
@@ -1309,15 +1354,15 @@ const App = {
 
     // Dynamic responsive font size clamp based on quote length
     const cleanLength = String(selectedQuote).replace(/\*\*/g, '').trim().length;
-    let responsiveFontSize = 'clamp(2.0rem, 4.8vw, 3.4rem)';
-    if (cleanLength <= 30) {
-      responsiveFontSize = 'clamp(2.5rem, 6.2vw, 4.4rem)';
-    } else if (cleanLength <= 55) {
-      responsiveFontSize = 'clamp(2.1rem, 5.0vw, 3.5rem)';
-    } else if (cleanLength <= 85) {
-      responsiveFontSize = 'clamp(1.75rem, 4.0vw, 2.75rem)';
+    let responsiveFontSize = 'clamp(2.5rem, 5.8vw, 4.4rem)';
+    if (cleanLength <= 32) {
+      responsiveFontSize = 'clamp(3.0rem, 7.0vw, 5.4rem)';
+    } else if (cleanLength <= 60) {
+      responsiveFontSize = 'clamp(2.6rem, 6.0vw, 4.6rem)';
+    } else if (cleanLength <= 90) {
+      responsiveFontSize = 'clamp(2.2rem, 4.8vw, 3.8rem)';
     } else {
-      responsiveFontSize = 'clamp(1.45rem, 3.2vw, 2.2rem)';
+      responsiveFontSize = 'clamp(1.85rem, 3.8vw, 3.0rem)';
     }
     heroTitle.style.fontSize = responsiveFontSize;
 
