@@ -1836,6 +1836,8 @@ const App = {
   },
 
   async startSubjectSession(subjectId, mode = 'srs') {
+    const pickerModal = document.getElementById('modal-topic-picker');
+    if (pickerModal) this._closeModal(pickerModal);
     const subject = await db.getSubject(subjectId);
     if (!subject) return;
     const cards = await db.getDueCards(null, subjectId);
@@ -1928,10 +1930,10 @@ const App = {
         title = '3. Lặp Lại Ngắt Quãng (SM-2)';
       }
     } else if (mode === 'topic') {
-      // 5. Ôn theo chủ đề / tag cụ thể
+      // 5. Ôn theo Môn & Chương
       const topics = options.topics || [];
-      cards = await db.getCardsByTopics(topics, deckId);
-      title = `5. Ôn Theo Chủ Đề: ${topics.join(', ')}`;
+      cards = await db.getCardsByTopics(topics, deckId, options.subjectId);
+      title = `5. Ôn Theo Chương: ${topics.join(', ')}`;
     } else if (mode === 'blind') {
       // 6. Đoán trước khi xem đáp án: Ẩn các lựa chọn trước
       cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
@@ -3341,27 +3343,104 @@ const App = {
     this.renderExamQuestion();
   },
 
-  // --- TOPIC PICKER MODAL (MODE 5) ---
-  async openTopicPickerModal(deckId = null) {
+  // --- TOPIC PICKER MODAL (MODE 5: ÔN THEO MÔN & CHƯƠNG) ---
+  async openTopicPickerModal(deckId = null, subjectId = null) {
     this.currentDeckIdForTopic = deckId;
+    this.currentSubjectIdForTopic = subjectId || null;
     this.selectedTopicsForReview.clear();
-    const topics = await db.getAllTopics(deckId);
+
+    const subjContainer = document.getElementById('topic-picker-subjects');
+    if (subjContainer) {
+      const summaries = await db.getSubjectSummaries();
+      const allCards = await db.getAllCards();
+      const totalAll = allCards.length;
+
+      let subjectsHtml = `
+        <div class="topic-subject-item ${!this.currentSubjectIdForTopic ? 'active' : ''}" onclick="App.filterPickerTopicsBySubject(null)">
+          <div class="topic-subject-meta">
+            <span class="subject-badge" style="background: var(--surface-code); color: var(--text-primary); border-color: var(--border-color);">
+              <span class="subject-badge-icon">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </span>
+              <span>Tất cả môn</span>
+            </span>
+            <span style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">(${totalAll} câu)</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Hiện toàn bộ chương</span>
+        </div>
+      `;
+
+      summaries.forEach(s => {
+        const isActive = this.currentSubjectIdForTopic === s.subject.id;
+        subjectsHtml += `
+          <div class="topic-subject-item ${isActive ? 'active' : ''}" onclick="App.filterPickerTopicsBySubject('${s.subject.id}')">
+            <div class="topic-subject-meta">
+              <span class="subject-badge" style="background: ${s.subject.color}15; color: ${s.subject.color}; border-color: ${s.subject.color}40;">
+                <span class="subject-badge-icon">${s.subject.icon || '📚'}</span>
+                <span>${this._escapeHtml(s.subject.name)}</span>
+              </span>
+              <span style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">(${s.totalCards} câu)</span>
+            </div>
+            <div class="topic-subject-actions" onclick="event.stopPropagation()">
+              ${s.totalCards > 0 ? `
+                <button type="button" class="btn btn-xs btn-primary" onclick="App.startSubjectSession('${s.subject.id}', 'free')" style="font-size: 0.75rem; padding: 3px 10px;">
+                  Ôn cả môn
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      });
+      subjContainer.innerHTML = subjectsHtml;
+    }
+
+    await this.filterPickerTopicsBySubject(this.currentSubjectIdForTopic);
+
+    const modal = document.getElementById('modal-topic-picker');
+    if (modal) this._showModal(modal);
+  },
+
+  async filterPickerTopicsBySubject(subjectId) {
+    this.currentSubjectIdForTopic = subjectId;
+    this.selectedTopicsForReview.clear();
+
+    const items = document.querySelectorAll('.topic-subject-item');
+    items.forEach(it => it.classList.remove('active'));
+
+    const label = document.getElementById('topic-picker-selected-subject-label');
+    if (label) {
+      if (!subjectId) {
+        label.textContent = '(Tất cả môn)';
+        if (items[0]) items[0].classList.add('active');
+      } else {
+        const subj = await db.getSubject(subjectId);
+        label.textContent = subj ? `(${subj.name})` : '(Môn đã chọn)';
+        items.forEach(it => {
+          if (it.getAttribute('onclick')?.includes(subjectId)) {
+            it.classList.add('active');
+          }
+        });
+      }
+    }
+
+    const topics = await db.getAllTopics(this.currentDeckIdForTopic, subjectId);
     const container = document.getElementById('topic-picker-chips');
     if (!container) return;
 
     if (topics.length === 0) {
-      container.innerHTML = '<p style="color: var(--text-muted); padding: 12px 0;">Chưa có chủ đề nào trong kho thẻ.</p>';
+      container.innerHTML = '<p style="color: var(--text-muted); padding: 12px 0;">Không có chương nào trong môn học này.</p>';
     } else {
       container.innerHTML = topics.map(t => `
         <div class="topic-chip" data-topic="${this._escapeHtml(t.topic)}" onclick="App.toggleTopicSelection(this, '${this._escapeHtml(t.topic)}')">
-          <span>🏷️ ${this._escapeHtml(t.topic)}</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            ${this._escapeHtml(t.topic)}
+          </span>
           <span class="topic-chip-count">${t.count} câu</span>
         </div>
       `).join('');
     }
-
-    const modal = document.getElementById('modal-topic-picker');
-    if (modal) this._showModal(modal);
+    this._updateTopicPickerCount();
   },
 
   toggleTopicSelection(el, topic) {
@@ -3372,17 +3451,43 @@ const App = {
       this.selectedTopicsForReview.add(topic);
       el.classList.add('selected');
     }
+    this._updateTopicPickerCount();
+  },
+
+  selectAllPickerTopics(select = true) {
+    const chips = document.querySelectorAll('#topic-picker-chips .topic-chip');
+    chips.forEach(chip => {
+      const topic = chip.getAttribute('data-topic');
+      if (select) {
+        this.selectedTopicsForReview.add(topic);
+        chip.classList.add('selected');
+      } else {
+        this.selectedTopicsForReview.delete(topic);
+        chip.classList.remove('selected');
+      }
+    });
+    this._updateTopicPickerCount();
+  },
+
+  _updateTopicPickerCount() {
+    const countEl = document.getElementById('topic-picker-selected-count');
+    const count = this.selectedTopicsForReview.size;
+    if (countEl) countEl.textContent = `Đã chọn: ${count} chương`;
+    const btn = document.getElementById('btn-start-topic-review');
+    if (btn) {
+      btn.textContent = count > 0 ? `Bắt đầu ôn (${count} chương đã chọn)` : 'Bắt đầu ôn các chương đã chọn';
+    }
   },
 
   startTopicReview() {
     const topics = Array.from(this.selectedTopicsForReview);
     if (topics.length === 0) {
-      this.showToast('Vui lòng chọn ít nhất 1 chủ đề!', 'warning');
+      this.showToast('Vui lòng chọn ít nhất 1 chương / chủ đề!', 'warning');
       return;
     }
     const modal = document.getElementById('modal-topic-picker');
     if (modal) this._closeModal(modal);
-    this.startSession(this.currentDeckIdForTopic, 'topic', { topics });
+    this.startSession(this.currentDeckIdForTopic, 'topic', { topics, subjectId: this.currentSubjectIdForTopic });
   },
 
   // --- SPRINT CRAM MODAL (MODE 7) ---
@@ -4512,10 +4617,38 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       accPct = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
     }
 
-    document.getElementById('stat-breakdown-new').textContent = states.new;
-    document.getElementById('stat-breakdown-learning').textContent = states.learning;
-    document.getElementById('stat-breakdown-review').textContent = states.review;
-    document.getElementById('stat-breakdown-mastered').textContent = states.mastered;
+    const totalBreakdown = (states.new || 0) + (states.learning || 0) + (states.review || 0) + (states.mastered || 0);
+    const pctNew = totalBreakdown > 0 ? Math.round(((states.new || 0) / totalBreakdown) * 100) : 0;
+    const pctLearning = totalBreakdown > 0 ? Math.round(((states.learning || 0) / totalBreakdown) * 100) : 0;
+    const pctReview = totalBreakdown > 0 ? Math.round(((states.review || 0) / totalBreakdown) * 100) : 0;
+    const pctMastered = totalBreakdown > 0 ? Math.max(0, 100 - pctNew - pctLearning - pctReview) : 0;
+
+    const elNew = document.getElementById('stat-breakdown-new');
+    const elLearning = document.getElementById('stat-breakdown-learning');
+    const elReview = document.getElementById('stat-breakdown-review');
+    const elMastered = document.getElementById('stat-breakdown-mastered');
+    if (elNew) elNew.textContent = states.new;
+    if (elLearning) elLearning.textContent = states.learning;
+    if (elReview) elReview.textContent = states.review;
+    if (elMastered) elMastered.textContent = states.mastered;
+
+    const badgeNew = document.getElementById('stat-pct-new');
+    const badgeLearning = document.getElementById('stat-pct-learning');
+    const badgeReview = document.getElementById('stat-pct-review');
+    const badgeMastered = document.getElementById('stat-pct-mastered');
+    if (badgeNew) badgeNew.textContent = `${pctNew}%`;
+    if (badgeLearning) badgeLearning.textContent = `${pctLearning}%`;
+    if (badgeReview) badgeReview.textContent = `${pctReview}%`;
+    if (badgeMastered) badgeMastered.textContent = `${pctMastered}%`;
+
+    const barNew = document.getElementById('sm2-bar-new');
+    const barLearning = document.getElementById('sm2-bar-learning');
+    const barReview = document.getElementById('sm2-bar-review');
+    const barMastered = document.getElementById('sm2-bar-mastered');
+    if (barNew) barNew.style.width = `${pctNew}%`;
+    if (barLearning) barLearning.style.width = `${pctLearning}%`;
+    if (barReview) barReview.style.width = `${pctReview}%`;
+    if (barMastered) barMastered.style.width = `${pctMastered}%`;
 
     document.getElementById('stat-acc-pct').textContent = `${accPct}%`;
     document.getElementById('stat-total-reviews').textContent = totalReviews;

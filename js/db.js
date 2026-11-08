@@ -789,8 +789,15 @@ class QuizDatabase {
   /**
    * Mode 5: Lọc các câu theo danh sách topic cụ thể
    */
-  async getCardsByTopics(topics = [], deckId = null) {
-    const all = deckId ? await this.getCardsByDeck(deckId) : await this.getAllCards();
+  async getCardsByTopics(topics = [], deckId = null, subjectId = null) {
+    let all;
+    if (deckId) {
+      all = await this.getCardsByDeck(deckId);
+    } else if (subjectId) {
+      all = await this.getCardsBySubject(subjectId);
+    } else {
+      all = await this.getAllCards();
+    }
     const selectedSet = new Set(topics.map(t => t.trim().toLowerCase()));
     return all.filter(c => {
       const cardTopic = (c.topic || c.tag || 'Chung').trim().toLowerCase();

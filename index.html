@@ -1201,22 +1201,45 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <!-- Mastery distribution card -->
             <div class="hero-card sm2-distribution-card" style="margin-bottom: 28px;">
               <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Phân bố cấp độ ghi nhớ (SM-2)</h3>
+              <!-- SM-2 Stacked Mastery Spectrum Bar -->
+              <div id="sm2-mastery-spectrum-bar" class="sm2-mastery-bar" style="margin-bottom: 20px; height: 14px; border-radius: 999px; overflow: hidden; display: flex; background: var(--progress-track-bg); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);">
+                <div id="sm2-bar-new" class="sm2-bar-seg" style="width: 0%; background: #94a3b8; transition: width 0.4s ease;" title="Thẻ Mới"></div>
+                <div id="sm2-bar-learning" class="sm2-bar-seg" style="width: 0%; background: #f59e0b; transition: width 0.4s ease;" title="Đang học"></div>
+                <div id="sm2-bar-review" class="sm2-bar-seg" style="width: 0%; background: #6366f1; transition: width 0.4s ease;" title="Đang ôn tập"></div>
+                <div id="sm2-bar-mastered" class="sm2-bar-seg" style="width: 0%; background: #10b981; transition: width 0.4s ease;" title="Đã thành thạo"></div>
+              </div>
               <div class="sm2-breakdown-grid">
-                <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                  <div id="stat-breakdown-new" style="font-size: 1.5rem; font-weight: 800; color: var(--text-muted);">0</div>
-                  <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Thẻ Mới</div>
+                <div class="sm2-stage-card sm2-stage-new">
+                  <div class="sm2-stage-header">
+                    <span class="sm2-stage-name">Thẻ Mới</span>
+                    <span id="stat-pct-new" class="sm2-pct-badge">0%</span>
+                  </div>
+                  <div id="stat-breakdown-new" class="sm2-stage-num">0</div>
+                  <div class="sm2-stage-sub">Chưa học lần nào</div>
                 </div>
-                <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                  <div id="stat-breakdown-learning" style="font-size: 1.5rem; font-weight: 800; color: #F59E0B;">0</div>
-                  <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Đang học</div>
+                <div class="sm2-stage-card sm2-stage-learning">
+                  <div class="sm2-stage-header">
+                    <span class="sm2-stage-name">Đang học</span>
+                    <span id="stat-pct-learning" class="sm2-pct-badge">0%</span>
+                  </div>
+                  <div id="stat-breakdown-learning" class="sm2-stage-num">0</div>
+                  <div class="sm2-stage-sub">Chu kỳ ngắn &lt; 3 ngày</div>
                 </div>
-                <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                  <div id="stat-breakdown-review" style="font-size: 1.5rem; font-weight: 800; color: #6366F1;">0</div>
-                  <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Đang ôn tập</div>
+                <div class="sm2-stage-card sm2-stage-review">
+                  <div class="sm2-stage-header">
+                    <span class="sm2-stage-name">Đang ôn tập</span>
+                    <span id="stat-pct-review" class="sm2-pct-badge">0%</span>
+                  </div>
+                  <div id="stat-breakdown-review" class="sm2-stage-num">0</div>
+                  <div class="sm2-stage-sub">Chu kỳ củng cố 3–21 ngày</div>
                 </div>
-                <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                  <div id="stat-breakdown-mastered" style="font-size: 1.5rem; font-weight: 800; color: #10B981;">0</div>
-                  <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Đã thành thạo</div>
+                <div class="sm2-stage-card sm2-stage-mastered">
+                  <div class="sm2-stage-header">
+                    <span class="sm2-stage-name">Đã thành thạo</span>
+                    <span id="stat-pct-mastered" class="sm2-pct-badge">0%</span>
+                  </div>
+                  <div id="stat-breakdown-mastered" class="sm2-stage-num">0</div>
+                  <div class="sm2-stage-sub">Trí nhớ dài hạn &gt; 21 ngày</div>
                 </div>
               </div>
             </div>
@@ -1603,22 +1626,49 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
     </div>
   </div>
 
-  <!-- MODAL: Topic Picker for Mode 5 -->
+  <!-- MODAL: Subject & Chapter Dual Picker for Mode 5 -->
   <div id="modal-topic-picker" class="modal-overlay">
-    <div class="modal-box" style="max-width: 560px;">
+    <div class="modal-box" style="max-width: 640px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header">
-        <h3 class="modal-title">Chọn Chủ Đề Ôn Tập (Mode 5)</h3>
+        <h3 class="modal-title">Ôn theo Môn & Chương (Mode 5)</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
-      <div class="modal-body">
-        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">
-          Nhấp để chọn một hoặc nhiều chủ đề bạn muốn rèn luyện:
-        </p>
-        <div id="topic-picker-chips" class="topic-chips-container"></div>
+      <div class="modal-body" style="overflow-y: auto; padding-right: 4px;">
+        <!-- Phần 1: Chọn Môn Học -->
+        <div class="topic-picker-section" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <span>1. Chọn Môn Học</span>
+            </h4>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Bấm môn để lọc chương hoặc ôn cả môn</span>
+          </div>
+          <div id="topic-picker-subjects" class="topic-subject-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- Phần 2: Chọn Chương -->
+        <div class="topic-picker-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <span>2. Chọn Chương</span>
+              <span id="topic-picker-selected-subject-label" style="font-size: 0.82rem; font-weight: 600; color: var(--accent); padding: 2px 8px; border-radius: 999px; background: var(--accent-subtle-bg);">(Tất cả môn)</span>
+            </h4>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-ghost btn-xs" onclick="App.selectAllPickerTopics(true)" style="font-size: 0.78rem; padding: 2px 8px;">Chọn tất cả</button>
+              <button type="button" class="btn btn-ghost btn-xs" onclick="App.selectAllPickerTopics(false)" style="font-size: 0.78rem; padding: 2px 8px;">Bỏ chọn</button>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
+            Nhấp để chọn một hoặc nhiều chương bạn muốn rèn luyện:
+          </p>
+          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 220px; overflow-y: auto;"></div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary modal-close">Hủy</button>
-        <button class="btn btn-primary" onclick="App.startTopicReview()">Bắt đầu ôn chủ đề</button>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="topic-picker-selected-count" style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">Đã chọn: 0 chương</span>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary modal-close">Hủy</button>
+          <button id="btn-start-topic-review" class="btn btn-primary" onclick="App.startTopicReview()">Bắt đầu ôn các chương đã chọn</button>
+        </div>
       </div>
     </div>
   </div>
