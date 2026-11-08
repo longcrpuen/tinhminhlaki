@@ -3570,6 +3570,10 @@ const App = {
     }
   },
 
+  startTopicSession() {
+    this.startTopicReview();
+  },
+
   startTopicReview() {
     const topics = Array.from(this.selectedTopicsForReview);
     if (topics.length === 0) {
