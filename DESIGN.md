@@ -1,29 +1,29 @@
 ---
 name: TinhMinhLaKey Design System
-description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, 6 Standard Token Groups, HUD Capsule, 360° 3D Card Flip, Dual Mode 5 & SM-2 Mastery Spectrum (Phase 1e)
+description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, 6 Standard Token Groups, HUD Capsule, 360° 3D Card Flip, Dual Mode 5 & SM-2 Mastery Spectrum, Universal Monochrome SVG Icons & Zero Hardcoded Purple (Phase 1f)
 themes:
   violet-rose:
     label: "Tím Hồng (Violet Rose - Default)"
     base: "#0c0916"
-    accent: "#b388ff"
+    accent: "#c084fc"
     accentSecondary: "#f472b6"
-    btnPrimaryBg: "#d8b4fe"
-    btnPrimaryText: "#140e24"
+    btnPrimaryBg: "#c084fc"
+    btnPrimaryText: "#0d0b14"
     wallpaper: "./backgrounds/bg-2.webp"
   monochrome:
     label: "Trắng Đen (Monochrome - Pure Noir B&W)"
-    base: "#050505"
+    base: "#09090b"
     accent: "#ffffff"
-    accentSecondary: "#d4d4d4"
+    accentSecondary: "#e4e4e7"
     btnPrimaryBg: "#ffffff"
-    btnPrimaryText: "#000000"
+    btnPrimaryText: "#09090b"
     wallpaper: "./backgrounds/bg-noir-mono.webp"
   white-orange:
     label: "Trắng Cam Liquid Glass (White Orange Claude UI)"
-    base: "#f8f4ef"
+    base: "#fff7ed"
     accent: "#ea580c"
-    accentSecondary: "#f97316"
-    btnPrimaryBg: "#f97316"
+    accentSecondary: "#c2410c"
+    btnPrimaryBg: "#ea580c"
     btnPrimaryText: "#ffffff"
     wallpaper: "./backgrounds/bg-white-orange.webp"
 typography:
@@ -34,6 +34,15 @@ typography:
     lineHeight: 1.08
     letterSpacing: "-0.035em"
     strokeWidth: "1.1px"
+  quoteSerifWhiteOrange:
+    fontFamily: "'Playfair Display', 'Newsreader', Georgia, serif"
+    fontWeight: 700
+    letterSpacing: "-0.035em"
+  quoteAccentWhiteOrange:
+    fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif"
+    fontStyle: "italic"
+    fontWeight: 400
+    letterSpacing: "-0.02em"
   quoteAccentClaude:
     fontFamily: "'Instrument Serif', 'Playfair Display', 'Caveat', Georgia, serif"
     fontStyle: "italic"
@@ -69,40 +78,38 @@ rounded:
   full: "9999px"
 ---
 
-# TinhMinhLaKey Design System (Đợt 1e)
+# TinhMinhLaKey Design System (Đợt 1f)
 
 ## 1. Tổng Quan & Triết Lý Thiết Kế (Overview & Philosophy)
 
-**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1e**, toàn bộ hệ thống giao diện, hiệu năng và tương tác được quy hoạch bài bản theo 5 Phase chuẩn công nghiệp:
-- **Quy Hoạch 6 Nhóm Token Tập Trung**: Gom 100% biến màu, bề mặt kính, viền khúc xạ và tương tác về 6 nhóm biến chuẩn tại `css/theme.css` cho cả 3 chế độ (`violet-rose`, `monochrome`, `white-orange`). Xóa sạch 100% mã màu tím/đen gắn cứng trong CSS và inline HTML.
-- **19 Quy Tắc Chống AI Slop & Hệ Thống SVG Đơn Sắc**: Xóa toàn bộ các badge terminal rườm rà (`MODE // 01`, `REF//MS-...`, `ADAPTIVE`), thay thế toàn bộ emoji màu bằng Inline SVG đường nét thanh mảnh (`stroke="currentColor"`), kích hoạt `tabular-nums` cho mọi con số và hỗ trợ cú pháp in đậm markdown `**bold**` trong công thức LaTeX.
-- **Hợp Nhất Component `.deck-card`**: Dùng chung một hàm dựng HTML chuẩn (`_createDeckCardHtml`) cho cả Trang chủ và Thư viện thẻ, nút bấm đơn sắc đầm chắc không icon thừa.
-- **Topbar HUD Capsule & Icon Morph Animation**: Gộp bộ chọn 3 theme và chuỗi ngày học thành một viên nang kính mờ (`.topbar-hud-capsule`) ở thanh Top Utility Row không bao giờ che khuất nội dung trang; nút chuyển theme có hiệu ứng trượt trơn chu kèm hoạt ảnh Morphing icon xoay co giãn tâm.
-- **Liquid Glass Sidebar (Ảnh 8/9)**: Cấu trúc kính khúc xạ viền specular sáng; cột icon 44px đứng yên tuyệt đối; nhãn chuyển động trượt mờ không tràn viền; thanh active phát sáng sát mép trái 3.5px.
-- **360° 3D Card Flip**: Lật thẻ không gian 3 chiều với `perspective: 1600px`, nhấc thẻ trục Z mượt mà (`flashcardArcLift`) và chuyển tiếp vòng xoay thẻ tức thì.
-- **Chế Độ 5: Ôn theo Môn & Chương (Dual Picker)**: Modal chọn kép thông minh với Phần 1 (Chọn môn học / Ôn cả môn) và Phần 2 (Lọc & chọn nhiều chương). AI Prompt bắt buộc phân loại trường `topic` theo cấp độ Chương (`Chương 1: ...`, `Chương 2: ...`).
-- **Khối Phân Bố Cấp Độ Ghi Nhớ SM-2**: Thanh Phổ Trí Nhớ Tổng Thể (Mastery Spectrum Bar) 14px chia 4 đoạn tỷ lệ % trực quan và 4 thẻ cấp độ lớn đẳng cấp (`clamp(2.0rem, 3.2vw, 2.75rem)`).
-- **144+ FPS Jank-Free Deck Library**: Loại bỏ `backdrop-filter` lặp trên từng card con; dùng Optical Liquid Glass Surface; áp dụng `content-visibility: auto` cho danh sách môn và ngân hàng câu hỏi.
-- **Chuẩn Hóa Tương Phản Mode Trắng Cam**: Chữ Nâu Đen Espresso `#1c1410`, Cam Đậm `#c2410c`, Xanh Rừng Đậm `#064e3b`, Đỏ Đậm `#7f1d1d` sắc nét tuyệt đối trên nền kính sáng.
+**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1f**, toàn bộ hệ thống giao diện, hiệu năng và tương tác được hoàn thiện sâu:
+- **Zero Hardcoded Purple Tokens**: Quét sạch 100% mã màu tím viết cứng (`#8b5cf6`, `#7c3aed`, `#a78bfa`, `#131122`, `#12101e`, `rgba(36, 29, 58, ...)`, `rgba(124, 58, 237, ...)`) trong `css/style.css` và `js/app.js`, quy tụ toàn bộ về hệ biến trung tâm trong `css/theme.css`.
+- **Hệ Thống SVG Đơn Sắc Toàn Diện (`App.getMonoSvg` & `App.renderSubjectIcon`)**: Xóa bỏ hoàn toàn emoji màu ra khỏi DOM. Tất cả icon môn học (kể cả icon lưu trong DB như `📚`, `🥀`, `📁`), bộ lọc Ngân hàng câu hỏi, Modal tạo môn học và Modal hoàn tất buổi học đều chuyển sang Inline SVG đơn sắc (`stroke="currentColor"`).
+- **Đồng Bộ Nút Sidebar & 44px Uniform Pill Animation**: Xóa bỏ badge thông báo gây giãn nút "Tổng quan", loại bỏ xung đột pseudo-element `::before`, chuyển toàn bộ 7 nút Sidebar sang hiệu ứng 1 pill bo tròn mượt mà 44px.
+- **Thanh Pin Năng Lượng Đa Theme (`--battery-*`)**: Hiển thị trắng/xám matte ở Trắng Đen, nền kem sáng ấm + vạch pin cam `#ea580c` ở Trắng Cam; xóa sạch hộp đen viền xanh neon `#00f5d4` và chữ hồng `#e879f9`.
+- **Thứ Tự Bố Cục Dashboard & Khôi Phục Chế Độ 5**: Đẩy khối 7 Chế Độ Ôn Tập Thông Minh lên ngay dưới màn hình Hero Quote, trước khối Bộ câu hỏi; sửa dứt điểm hàm `openTopicPickerModal()` và `startTopicSession()` cho Chế độ 5 ("5. Ôn theo môn học & chương").
+- **Liquid Glass Popups & Topbar HUD**: Toàn bộ `.modal-box` sử dụng `var(--bg-glass-liquid)` kèm `backdrop-filter: blur(28px) saturate(160%)`; `.topbar-hud-capsule` áp dụng `var(--bg-glass-hud)` kèm `backdrop-filter: blur(20px)`; nút chuyển câu trên Mobile đơn sắc theo theme.
+- **Tương Phản Nghỉ & Typography Serif Cho Mode Trắng Cam**: Thẻ `.deck-card`, `.mode-card`, `.study-mode-card` có viền cam nhạt `1.5px solid rgba(234, 88, 12, 0.28)` và bóng đổ ấm ngay ở trạng thái nghỉ; Quote Hero dùng Serif dày (`Playfair Display`, `font-weight: 700; letter-spacing: -0.035em`) cho chữ thường và bỏ in đậm (`font-weight: 400; font-style: italic`) cho chữ nghiêng điểm nhấn.
 
 ---
 
-## 2. Kiến Trúc 6 Nhóm Token Trong `css/theme.css`
+## 2. Kiến Trúc Token Trung Tâm Trong `css/theme.css`
 
-Mỗi Theme được phân vùng chính xác theo 6 nhóm thuộc tính:
-1. **Nhóm 1 — Bề Mặt Kính Khúc Xạ (Surfaces & Glass)**: `--bg-base`, `--surface-card`, `--surface-card-hover`, `--surface-elevated`, `--surface-header`, `--surface-dropdown`, `--surface-dropdown-menu`, `--surface-sidebar`, `--surface-hud`, `--glass-border`, `--glass-border-strong`, `--glass-highlight`, `--glass-specular`.
-2. **Nhóm 2 — Màu Chữ & Phân Cấp Nội Dung (Typography & Contrast)**: `--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-accent`.
-3. **Nhóm 3 — Điểm Nhấn Nhận Diện & Nút Bấm Đơn Sắc (Accents & Solid Tonal Buttons)**: `--accent`, `--accent-strong`, `--accent-primary`, `--accent-secondary`, `--accent-glow`, `--accent-subtle-bg`, `--accent-border`, `--brand-gradient`, `--btn-primary-bg`, `--btn-primary-text`, `--btn-primary-hover`, `--btn-secondary-bg`, `--btn-secondary-text`, `--btn-secondary-border`, `--progress-track-bg`, `--progress-fill-bg`.
-4. **Nhóm 4 — Đèn Rọi & Đổ Bóng Tương Tác (Spotlights & Shadows)**: `--spotlight-primary`, `--spotlight-secondary`, `--card-hover-border`, `--card-hover-shadow`.
-5. **Nhóm 5 — Trạng Thái Lựa Chọn Quiz & Flashcard (Options & Feedback States)**: `--option-bg`, `--option-border`, `--option-text`, `--option-letter`, `--option-correct-bg`, `--option-correct-border`, `--option-correct-text`, `--option-wrong-bg`, `--option-wrong-border`, `--option-wrong-text`.
-6. **Nhóm 6 — Chuỗi Ngày Học & Đoạn Phổ SM-2 (Streak & SRS Palette)**: Đồng bộ màu sắc các trạng thái Thẻ Mới, Đang học, Đang ôn tập, Đã thành thạo.
+Mỗi Theme được quản lý đầy đủ các nhóm token:
+1. **Surfaces & Glass**: `--bg-base`, `--bg-surface-1`, `--bg-surface-2`, `--bg-elevated`, `--bg-glass-liquid`, `--bg-glass-hud`.
+2. **Typography**: `--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-accent`.
+3. **Accents & Buttons**: `--accent`, `--accent-strong`, `--accent-soft`, `--accent-border`, `--accent-glow`, `--btn-primary-bg`, `--btn-primary-text`, `--btn-primary-hover-bg`, `--btn-secondary-bg`, `--btn-secondary-text`, `--btn-secondary-border`, `--btn-secondary-hover-bg`.
+4. **Cards & Spotlight**: `--card-border`, `--card-hover-border`, `--card-hover-bg`, `--card-spotlight`, `--card-shadow`.
+5. **Dropdown System**: `--dropdown-bg`, `--dropdown-menu-bg`, `--dropdown-border`, `--dropdown-item-hover-bg`, `--dropdown-item-active-bg`, `--dropdown-item-active-text`.
+6. **Subject Badges & Pills**: `--subject-pill-bg`, `--subject-pill-text`, `--subject-pill-border`, `--subject-pill-active-bg`, `--subject-pill-active-text`.
+7. **Energy Charge Battery**: `--battery-box-bg`, `--battery-box-border`, `--battery-box-glow`, `--battery-segment-bg`, `--battery-segment-active-bg`, `--battery-segment-active-glow`, `--battery-label-color`, `--battery-badge-color`.
 
 ---
 
 ## 3. Quy Chuẩn Kỹ Thuật Nghiệm Thu (Quality Floor)
 
-- **Backdrop-Filter Budget**: Chỉ duy trì hiệu ứng blur trên tối đa 3 phần tử cố định (`.app-sidebar`, `.topbar-hud-capsule` / `.bottom-nav`, `.hero-card` / `.modal-box`). Mọi card lặp (`.deck-card`, `.subject-group`, `.bank-card-item`) dùng Optical Liquid Glass Surface không tốn GPU.
-- **Layout Stability**: 0px Layout Shift khi chuyển câu hỏi, mở dropdown hoặc lật thẻ 360°.
+- **Backdrop-Filter Budget**: Chỉ duy trì blur trên các thành phần cố định (`.app-sidebar`, `.topbar-hud-capsule`, `.modal-box`).
+- **Layout Stability**: 0px Layout Shift khi chuyển câu hỏi, mở dropdown hoặc lật thẻ.
 - **Hiệu năng chuyển động**: 100% animation chạy trên compositor (`transform`, `opacity`), đạt chuẩn 144Hz mượt mà.
 - **Bảo toàn dữ liệu**: Database `MindSparksQuizDB` và sao lưu JSON toàn vẹn 100%.
-- **Tương thích toàn diện**: Vượt qua 100% bài test tự động (`npm test`: 283/283 passed) và build production (`npm run build`: 100% success).
+- **Tương thích toàn diện**: Vượt qua 100% bài test tự động (`npm test`: 283/283 passed, round 37/39/40 passed) và build production (`npm run build`: 100% success).

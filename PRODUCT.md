@@ -12,7 +12,7 @@ Học sinh, sinh viên, người tự học cần ôn tập kiến thức chuyê
 
 ## Product Purpose
 
-Ứng dụng ôn tập và thi thử cá nhân hóa 100% Offline-First PWA (TinhMinhLaKey). Cho phép tạo/nhập bộ câu hỏi, ôn tập theo chu kỳ tối ưu trí nhớ dài hạn (SM-2), hiển thị công thức toán/lý/hóa LaTeX mượt mà, phân loại theo Môn học và Chương, theo dõi tiến độ học tập chi tiết với giao diện Google Material 3 Expressive, 6 nhóm Token tập trung và 3-Theme Liquid Glass.
+Ứng dụng ôn tập và thi thử cá nhân hóa 100% Offline-First PWA (TinhMinhLaKey). Cho phép tạo/nhập bộ câu hỏi, ôn tập theo chu kỳ tối ưu trí nhớ dài hạn (SM-2), hiển thị công thức toán/lý/hóa LaTeX mượt mà, phân loại theo Môn học và Chương, theo dõi tiến độ học tập chi tiết với giao diện Google Material 3 Expressive, Token Architecture tập trung và 3-Theme Liquid Glass.
 
 ## Positioning
 
@@ -27,18 +27,14 @@ App học tập offline-first hoàn toàn không cần server hay tài khoản b
 ## Capabilities and Constraints
 
 - **Bảo toàn dữ liệu tuyệt đối:** Dữ liệu người dùng trong IndexedDB (`MindSparksQuizDB`) không được phép mất mát.
-- **Phong cách thị giác & Cấu trúc (Phase 1e):**
-  - Hệ thống 3 Theme điều phối bởi 6 nhóm Token chuẩn: `violet-rose` (Tím hồng mộng mơ), `monochrome` (Trắng đen 100% tương phản cao), `white-orange` (3D Liquid Glass xuyên thấu kèm chữ nhấn Quote kiểu Claude UI bằng font Instrument Serif / Playfair Display Italic).
-  - Khung Hero Quote tối giản, tập trung truyền cảm hứng, loại bỏ toàn bộ tag rườm rà.
-  - Tổ hợp Icon & Emoji Đơn Sắc (Monochrome SVG System) dạng vector thanh mảnh (`stroke="currentColor"`).
-  - Toàn bộ Heading, Tiêu đề và UI/Thân bài: Đồng nhất sử dụng hệ thống font Sans-serif hiện đại, sắc nét, dễ đọc ('Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, sans-serif); Tiêu đề Quote sử dụng 'Montserrat' 900 Black.
-  - Viên nang kính đồng nhất Topbar HUD (`.topbar-hud-capsule`) tích hợp Theme Switcher và Chuỗi ngày học, chuyển theme có hiệu ứng Morph icon xoay co giãn tâm.
-  - Sidebar chuẩn Liquid Glass (Ảnh 8/9): Cột icon 44px cố định, nhãn trượt mờ mượt mà, viền specular phản quang sáng.
-  - Chế độ Lật thẻ (Flashcard) 360° 3D Card Flip (`perspective: 1600px`, nhấc thẻ trục Z và lật tròn không đứt đoạn).
-  - Chế độ 5: Ôn theo Môn & Chương (Dual Picker) với danh sách môn tương tác (kèm nút "Ôn cả môn") và danh sách chương đa chọn.
-  - Khối Phân bố cấp độ ghi nhớ SM-2: Thanh Phổ Trí Nhớ Tổng Thể 14px và 4 thẻ cấp độ lớn đẳng cấp với font cỡ lớn và badge tỷ lệ %.
-  - Loại bỏ hoàn toàn `backdrop-filter` trên thẻ lặp, chuyển sang Optical Liquid Glass Surface đạt 144+ FPS mượt mà.
-  - Mode Trắng Cam chuẩn hóa tương phản tuyệt đối (Chữ Nâu Đen Espresso `#1c1410`, Cam Đậm `#c2410c`, Xanh Rừng Đậm `#064e3b`, Đỏ Đậm `#7f1d1d`).
+- **Phong cách thị giác & Cấu trúc (Phase 1f):**
+  - **Zero Hardcoded Purple Tokens:** Quét sạch 100% màu tím viết cứng trong CSS và JS; điều phối hoàn toàn qua biến trung tâm trong `css/theme.css`.
+  - **Universal Monochrome SVG System (`App.getMonoSvg` & `App.renderSubjectIcon`):** Loại bỏ hoàn toàn emoji màu khỏi DOM; 100% biểu tượng môn học và bộ lọc là inline SVG nét mảnh `stroke="currentColor"`.
+  - **Sidebar Pill Animation Chuẩn 44px:** Xóa notification badge khỏi nút "Tổng quan", loại bỏ vạch dọc `::before`, chuyển toàn bộ 7 nút sang hoạt ảnh pill đơn sắc đồng nhất.
+  - **Thanh Pin Năng Lượng Đa Theme (`--battery-*`):** Khắc phục triệt để hộp đen xanh neon; hiển thị trắng/xám matte ở Trắng Đen và kem ấm + cam `#ea580c` ở Trắng Cam.
+  - **Khôi Phục Chế Độ 5 & Đẩy 7 Chế Độ Lên Đầu Dashboard:** Khối 7 Chế Độ Ôn Tập xuất hiện ngay dưới Hero Quote, trước Bộ câu hỏi; Chế độ 5 mở popup chọn môn & chương mượt mà.
+  - **Liquid Glass Popups & Topbar HUD Capsule:** Toàn bộ `.modal-box` áp dụng `var(--bg-glass-liquid)` kèm `backdrop-filter: blur(28px)`; `.topbar-hud-capsule` mờ kính 20px; nút Tiếp theo trên Mobile phẳng đơn sắc.
+  - **Tương Phản Nghỉ & Typography Serif Cho Mode Trắng Cam:** Thẻ có viền cam nhạt và bóng đổ ấm ngay ở trạng thái nghỉ; Quote Hero dùng font Serif dày (`Playfair Display`, `font-weight: 700`) cho chữ thường và bỏ in đậm cho chữ nghiêng điểm nhấn.
 - **Ràng buộc hiệu năng cứng:**
   - Chỉ animate `transform` và `opacity`.
   - Không animate trực tiếp `box-shadow` hay `filter`.
