@@ -355,7 +355,7 @@ const App = {
     return parts.map(p => {
       if (p.type === 'text') {
         // Plain text: safely escape HTML (&, <, >, ") without corrupting _ or normal chars
-        return escapeHtml(p.content);
+        return escapeHtml(p.content).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
       } else {
         const { code, isBlock } = cleanMath(p.raw);
         if (!hasKatex || !katexEngine) {
@@ -1603,44 +1603,46 @@ const App = {
     }
   },
 
-  _createDeckCardHtml(deck, totalCards, dueCards, subject) {
-    const subj = subject || { name: 'Chưa phân loại', icon: '📚', color: '#a855f7' };
-    const descContent = (deck.description && deck.description.trim())
-      ? this._escapeHtml(deck.description)
-      : `<span style="opacity: 0.8; font-style: italic;">Môn học: ${this._escapeHtml(subj.name)}</span>`;
-
+  _createDeckCardHtml(deck, totalCards, dueCards, subject = null, options = {}) {
+    const subjName = subject?.name || 'Chưa phân loại';
+    const hasDesc = deck.description && deck.description.trim() && deck.description.trim() !== 'Không có mô tả';
     return `
-      <div class="deck-card">
+      <div class="deck-card" data-deck-id="${deck.id}">
         <div>
           <div class="deck-header">
             <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
-            <span class="deck-subject-badge" style="--subj-color: ${subj.color || '#a855f7'};" title="Môn học: ${this._escapeHtml(subj.name)}">
-              <span class="deck-subject-icon">${subj.icon || '📚'}</span>
-              <span class="deck-subject-name">${this._escapeHtml(subj.name)}</span>
-            </span>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <span class="deck-subject-badge">${this._escapeHtml(subjName)}</span>
+              ${options.showDelete ? `
+                <button class="icon-btn deck-delete-btn" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')" aria-label="Xóa bộ thẻ">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              ` : ''}
+            </div>
           </div>
-          <p class="deck-desc">${descContent}</p>
+          ${hasDesc ? `<p class="deck-desc">${this._escapeHtml(deck.description)}</p>` : ''}
         </div>
         <div>
           <div class="deck-meta">
-            <span>📚 ${totalCards} câu hỏi</span>
-            <span>⏰ ${dueCards} đến hạn</span>
+            <span><strong>${totalCards}</strong> câu hỏi</span>
+            <span class="deck-meta-dot">•</span>
+            <span class="${dueCards > 0 ? 'due-highlight' : ''}"><strong>${dueCards}</strong> cần ôn</span>
           </div>
-          <div class="deck-actions" style="flex-wrap: wrap;">
-            <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">
+          <div class="deck-actions">
+            <button class="btn btn-primary btn-deck-study" onclick="App.startSession('${deck.id}', 'srs')">
               Ôn tập
             </button>
-            <button class="btn btn-secondary" title="Thêm câu hỏi mới vào bộ thẻ này" onclick="App.openAddCardModal('${deck.id}')">
-              ➕ Thêm
+            <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">
+              Lật thẻ
             </button>
-            <button class="btn btn-secondary" title="Lật thẻ ghi nhớ" onclick="App.startSession('${deck.id}', 'flashcard')">
-              🎴 Thẻ
+            <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">
+              Thi thử
             </button>
-            <button class="btn btn-secondary" title="Thi thử tính giờ" onclick="App.openExamModal('${deck.id}')">
-              ⏱️ Thi
+            <button class="btn btn-secondary" onclick="App.openAddCardModal('${deck.id}')">
+              Thêm câu
             </button>
             <button class="btn btn-secondary" title="Đặt lại tiến trình học về ban đầu" onclick="App.confirmResetDeckProgress('${deck.id}')">
-              🔄 Reset
+              Đặt lại
             </button>
           </div>
         </div>
@@ -1766,8 +1768,8 @@ const App = {
               <span class="subject-icon">${s.icon || '📚'}</span>
               <span class="subject-name" style="color: ${s.color || 'var(--text-primary)'};">${this._escapeHtml(s.name)}</span>
               <span class="subject-badge">${s.decksCount} bộ thẻ</span>
-              <span class="subject-badge">📚 ${s.totalCards} câu</span>
-              <span class="subject-badge" style="color: var(--accent-primary); border-color: rgba(167, 139, 250, 0.4);">⏰ ${s.dueCards} cần ôn</span>
+              <span class="subject-badge">${s.totalCards} câu</span>
+              <span class="subject-badge" style="color: var(--accent); border-color: var(--accent-border);">${s.dueCards} cần ôn</span>
             </div>
             <div class="subject-group-actions" onclick="event.stopPropagation()">
               ${s.totalCards > 0 ? `
@@ -1798,35 +1800,7 @@ const App = {
       } else {
         html += '<div class="decks-grid">';
         for (const item of s.decks) {
-          const deck = item.deck;
-          const cardCount = item.count;
-          const dueCount = item.due;
-          html += `
-            <div class="deck-card">
-              <div>
-                <div class="deck-header">
-                  <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
-                  <button class="icon-btn" style="width: 30px; height: 30px; color: var(--danger);" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')">
-                    🗑️
-                  </button>
-                </div>
-                <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
-              </div>
-              <div>
-                <div class="deck-meta">
-                  <span>📚 ${cardCount} câu</span>
-                  <span>⏰ ${dueCount} cần ôn</span>
-                </div>
-                <div class="deck-actions" style="flex-wrap: wrap;">
-                  <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">Ôn tập</button>
-                  <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">Lật thẻ</button>
-                  <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">Thi thử</button>
-                  <button class="btn btn-secondary" onclick="App.navigateTo('import', { deckId: '${deck.id}', subjectId: '${s.id}' })">+ Thêm câu</button>
-                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu">🔄 Reset</button>
-                </div>
-              </div>
-            </div>
-          `;
+          html += this._createDeckCardHtml(item.deck, item.count, item.due, s, { showDelete: true });
         }
         html += '</div>';
       }
@@ -2094,9 +2068,8 @@ const App = {
     const cardRefCode = card.id ? `REF//MS-${card.id.toString().slice(-4).toUpperCase()}` : 'REF//MS-8X4';
     if (tagEl) {
       tagEl.innerHTML = `
-        <span class="topic-badge">🏷️ ${this._escapeHtml(card.topic || card.tag || 'Chung')}</span>
+        <span class="topic-badge">${this._escapeHtml(card.topic || card.tag || 'Chung')}</span>
         <span class="difficulty-badge difficulty-${diff}">● ${diffLabel}</span>
-        <span class="card-ref-badge">${cardRefCode}</span>
       `;
     }
 
