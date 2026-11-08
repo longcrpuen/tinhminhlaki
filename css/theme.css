@@ -705,3 +705,129 @@ html[data-theme="white-orange"] {
   color: inherit !important;
   opacity: 0.78;
 }
+
+
+/* ==========================================================================
+   MODE 3 (WHITE-ORANGE): RESTING CONTRAST & SERIF QUOTE TYPOGRAPHY (TASK 7)
+   ========================================================================== */
+html[data-theme="white-orange"] .deck-card,
+html[data-theme="white-orange"] .mode-card,
+html[data-theme="white-orange"] .stat-card,
+html[data-theme="white-orange"] .study-mode-card,
+html[data-theme="white-orange"] .question-bank-item {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(234, 88, 12, 0.28) !important;
+  box-shadow: 0 6px 20px -4px rgba(154, 52, 18, 0.10),
+              0 2px 6px -1px rgba(154, 52, 18, 0.06) !important;
+  color: #1c1917 !important;
+}
+
+html[data-theme="white-orange"] .deck-card .deck-title,
+html[data-theme="white-orange"] .deck-card .deck-name,
+html[data-theme="white-orange"] .mode-card h3,
+html[data-theme="white-orange"] .mode-card .study-mode-title,
+html[data-theme="white-orange"] .study-mode-card .study-mode-title {
+  color: #1c1917 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="white-orange"] .mode-card .mode-badge,
+html[data-theme="white-orange"] .study-mode-card .study-mode-pill-btn {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+  border: 1px solid rgba(234, 88, 12, 0.35) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="white-orange"] .mode-card .mode-icon-box,
+html[data-theme="white-orange"] .study-mode-card .study-mode-icon {
+  background: #fff7ed !important;
+  color: #ea580c !important;
+  border: 1px solid rgba(234, 88, 12, 0.30) !important;
+}
+
+html[data-theme="white-orange"] .deck-card:hover,
+html[data-theme="white-orange"] .mode-card:hover,
+html[data-theme="white-orange"] .study-mode-card:hover {
+  border-color: #ea580c !important;
+  background: #fffaf5 !important;
+  box-shadow: 0 12px 28px -6px rgba(234, 88, 12, 0.22) !important;
+  transform: translateY(-2px);
+}
+
+/* Quote typography in White-Orange (Prompt 1f Item 2.6) */
+html[data-theme="white-orange"] .hero-quote-line .hero-title-main,
+html[data-theme="white-orange"] .hero-quote-line .hero-title-sub,
+html[data-theme="white-orange"] .hero-title .hero-title-main,
+html[data-theme="white-orange"] .hero-title .hero-title-sub {
+  font-family: 'Playfair Display', 'Newsreader', 'Noto Serif Display', Georgia, serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  letter-spacing: -0.035em !important;
+  color: #1c1917 !important;
+}
+
+html[data-theme="white-orange"] .hero-quote-line .hero-title-accent,
+html[data-theme="white-orange"] .hero-title .hero-title-accent {
+  font-family: 'Playfair Display', 'Instrument Serif', Georgia, serif !important;
+  font-weight: 400 !important;
+  font-style: italic !important;
+  letter-spacing: -0.02em !important;
+  color: #ea580c !important;
+}
+
+/* ==========================================================================
+   LIQUID GLASS MODALS, TOPBAR HUD CAPSULE & MOBILE FAST NEXT (TASK 8)
+   ========================================================================== */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+html[data-theme="white-orange"] .modal-overlay {
+  background: rgba(28, 25, 23, 0.35) !important;
+}
+
+.modal-box {
+  background: var(--bg-glass-liquid) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--card-shadow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  color: var(--text-primary) !important;
+  border-radius: 24px !important;
+}
+
+.topbar-hud-capsule,
+.floating-top-right-hud {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  padding: 4px 8px !important;
+  border-radius: 999px !important;
+  background: var(--bg-glass-hud) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14),
+              inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+.btn-quiz-fast-next,
+.btn-quiz-card-next,
+#btn-quiz-card-next,
+#btn-quiz-fast-next {
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border: 1px solid var(--accent-border) !important;
+  box-shadow: 0 4px 12px var(--accent-glow) !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}
+.btn-quiz-fast-next:hover,
+.btn-quiz-card-next:hover {
+  background: var(--btn-primary-hover-bg) !important;
+  color: var(--btn-primary-text) !important;
+}
