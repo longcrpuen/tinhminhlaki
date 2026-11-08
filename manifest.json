@@ -1,7 +1,7 @@
 {
   "name": "TinhMinhLaKey",
   "short_name": "TinhMinhLaKey",
-  "description": "App Quiz & Ôn tập Spaced Repetition cá nhân, 100% Offline-First PWA",
+  "description": "TinhMinhLaKey - Ứng dụng ôn tập và thi thử cá nhân hóa 100% Offline-First PWA",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

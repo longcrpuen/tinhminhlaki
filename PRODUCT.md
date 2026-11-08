@@ -12,11 +12,11 @@ Học sinh, sinh viên, người tự học cần ôn tập kiến thức chuyê
 
 ## Product Purpose
 
-Ứng dụng ôn tập và thi thử cá nhân hóa 100% Offline-First PWA (MindSparks / TinhMinhLaKey). Cho phép tạo/nhập bộ câu hỏi, ôn tập theo chu kỳ tối ưu trí nhớ dài hạn (SM-2), hiển thị công thức toán/lý/hóa LaTeX mượt mà, phân loại theo Môn học, và theo dõi tiến độ học tập chi tiết.
+Ứng dụng ôn tập và thi thử cá nhân hóa 100% Offline-First PWA (TinhMinhLaKey). Cho phép tạo/nhập bộ câu hỏi, ôn tập theo chu kỳ tối ưu trí nhớ dài hạn (SM-2), hiển thị công thức toán/lý/hóa LaTeX mượt mà, phân loại theo Môn học và Chương, theo dõi tiến độ học tập chi tiết với giao diện Google Material 3 Expressive & 3-Theme Liquid Glass.
 
 ## Positioning
 
-App học tập offline-first hoàn toàn không cần server hay tài khoản bên ngoài; dữ liệu lưu trữ 100% trên máy người dùng (IndexedDB), giao diện Dark Mode tông tím dịu dreamy liquid glass, tốc độ phản hồi tức thì và hỗ trợ công thức KaTeX không bao giờ bị tràn ngang.
+App học tập offline-first hoàn toàn không cần server hay tài khoản bên ngoài; dữ liệu lưu trữ 100% trên máy người dùng (IndexedDB), giao diện chuyển đổi linh hoạt giữa 3 chế độ (Tím Hồng mộng mơ, Trắng Đen Noir, và Trắng Cam 3D Liquid Glass kiểu Claude UI), tốc độ phản hồi tức thì và hỗ trợ công thức KaTeX không bao giờ bị tràn ngang.
 
 ## Operating Context
 
@@ -26,30 +26,30 @@ App học tập offline-first hoàn toàn không cần server hay tài khoản b
 
 ## Capabilities and Constraints
 
-- **Bảo toàn dữ liệu tuyệt đối:** Dữ liệu người dùng trong IndexedDB không được phép mất mát.
-- **Phong cách thị giác (Bắt buộc theo DESIGN-RULES.md):**
-  - Dark mode duy nhất; tông tím dịu mộng mơ (soft dark violet liquid glass).
-  - Toàn bộ Heading, Tiêu đề và UI/Thân bài: Đồng nhất sử dụng hệ thống font Sans-serif hiện đại, sắc nét, dễ đọc ('Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, sans-serif); chỉ dùng font Monospace ('JetBrains Mono') cho mã code/JSON hoặc đồng hồ bấm giờ. Không sử dụng font Pixel.
-  - Bo góc mềm mại / pill shape, card dạng lưới, chuyển động tinh tế.
-  - Công thức KaTeX: không bao giờ có thanh cuộn ngang (zero scrollbar).
+- **Bảo toàn dữ liệu tuyệt đối:** Dữ liệu người dùng trong IndexedDB (`MindSparksQuizDB`) không được phép mất mát.
+- **Phong cách thị giác (Phase 1d):**
+  - Hệ thống 3 Theme hoàn chỉnh: `violet-rose` (Tím hồng mộng mơ), `monochrome` (Trắng đen 100% tương phản cao), `white-orange` (3D Liquid Glass xuyên thấu kèm chữ nhấn Quote kiểu Claude UI bằng font Instrument Serif / Playfair Display Italic).
+  - Khung Hero Quote tối giản, tập trung truyền cảm hứng, loại bỏ toàn bộ tag rườm rà.
+  - Tổ hợp Icon & Emoji Đơn Sắc (Monochrome Icon System) tự động áp bộ lọc màu theo từng Theme.
+  - Toàn bộ Heading, Tiêu đề và UI/Thân bài: Đồng nhất sử dụng hệ thống font Sans-serif hiện đại, sắc nét, dễ đọc ('Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, sans-serif); Tiêu đề Quote sử dụng 'Montserrat' 900 Black.
+  - Thanh Quick-Jump Subject Bar ở tab Thư viện thẻ phục vụ chuyển nhanh đến Folder Môn học.
+  - Nút câu hỏi tiếp theo trong Quiz không bị đóng khung hộp cồng kềnh.
+  - Chế độ Lật thẻ (Flashcard) đạt chuẩn 120FPS mượt mà cả khi lật tại chỗ lẫn khi chuyển câu (0px layout shift, lưu DB nền không chặn UI).
 - **Ràng buộc hiệu năng cứng:**
   - Chỉ animate `transform` và `opacity`.
   - Không animate trực tiếp `box-shadow` hay `filter`.
-  - Hạn chế `backdrop-filter` ở danh sách card, chỉ dùng ở vài bề mặt lớn (topbar, sidebar, modal).
-  - Không thêm `will-change` vĩnh viễn; tôn trọng `prefers-reduced-motion`.
   - Đảm bảo FPS $\ge 80-90$ (120Hz), PageSpeed mobile $\ge 90$.
 - **Cấu trúc & Layout:**
-  - Desktop và Mobile là 2 layout tách biệt, khoanh bằng breakpoint.
-  - Mobile cuộn theo cả trang, không scroll lồng nhau, 0px tràn ngang. Dùng `dvh` và safe-area insets.
-  - Modal nằm trên thanh tab dưới.
-  - Dropdown/Select dùng component Cyber Violet Themed chung.
+  - Topbar không còn dải băng nền tối, chỉ giữ cụm 3-Icon chọn Theme nổi gọn góc phải.
+  - Sidebar dạng Floating Capsule tách rời mép màn hình, bấm vào icon chú mèo mascot để đóng/mở mượt mà 2 chiều.
+  - Mobile Bottom Nav dạng thanh viên nang nổi với icon active hạ thấp độ nhô vừa vặn, không che khuất thao tác.
 - **Không động vào `quotes.js`**.
 
 ## Brand Commitments
 
-- Tên ứng dụng: MindSparks / TinhMinhLaKey.
+- Tên ứng dụng: TinhMinhLaKey.
 - Mascot: `meo.png`.
-- Tông màu: Dark violet dreamy theme (#0c0915, #161324, #a78bfa, #c084fc, #ec4899).
+- Tông màu: 3 Theme (`violet-rose`, `monochrome`, `white-orange`).
 
 ## Product Principles
 
@@ -62,5 +62,5 @@ App học tập offline-first hoàn toàn không cần server hay tài khoản b
 
 - Tương phản màu chữ/nền đạt chuẩn WCAG AA ($\ge 4.5:1$).
 - Vùng chạm tối thiểu $44 \times 44\text{px}$ trên mobile.
-- Focus ring rõ ràng và điều hướng bàn phím hoàn chỉnh (Tab, Enter, Escape, Arrow keys).
+- Focus ring rõ ràng và điều hướng bàn phím hoàn chỉnh (Tab, Enter, Escape, Spacebar, 1-4).
 - Hỗ trợ `prefers-reduced-motion` cho người dùng nhạy cảm với chuyển động.

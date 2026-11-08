@@ -21,10 +21,10 @@
   <!-- Modern Tech, Poster Heavy & Editorial Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Preload Critical Background Wallpaper -->
-  <link rel="preload" as="image" href="./backgrounds/bg-pixel-meadow.webp" type="image/webp">
+  <link rel="preload" as="image" href="./backgrounds/bg-2.webp" type="image/webp">
 
   <!-- Modular Theme & Typography Stylesheets (100% Offline) -->
   <link rel="stylesheet" href="./css/theme.css">
@@ -52,12 +52,14 @@
   <div class="app-container">
     <!-- Desktop Sidebar Navigation -->
     <aside class="app-sidebar" id="app-sidebar">
-      <div class="brand-header">
+      <div class="brand-header" onclick="App.toggleSidebar()" style="cursor: pointer;" title="Bấm để mở rộng / thu gọn thanh điều hướng">
         <div class="brand-info">
-          <img src="./meo.png" alt="TinhMinhLaKey Mascot" class="brand-icon">
+          <div class="brand-mascot-wrap">
+            <img src="./meo.png" alt="TinhMinhLaKey Mascot" class="brand-icon">
+          </div>
           <span class="brand-title">TinhMinhLaKey</span>
         </div>
-        <button id="btn-sidebar-toggle" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng Sidebar" aria-label="Thu gọn Sidebar" onclick="App.toggleSidebar()">
+        <button id="btn-sidebar-toggle" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng Sidebar" aria-label="Thu gọn Sidebar" onclick="event.stopPropagation(); App.toggleSidebar()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
         </button>
       </div>
@@ -127,15 +129,15 @@
         </div>
         <div class="topbar-right">
           <!-- Quick 3-Theme Switcher -->
-          <div class="theme-quick-switch topbar-theme-switch" role="group" aria-label="Chọn chủ đề">
-            <button type="button" class="theme-switch-pill" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')" title="Chế độ Tím Hồng">
-              <span class="theme-swatch-dot dot-violet"></span><span class="theme-label-short">Tím Hồng</span>
+          <div class="theme-quick-switch theme-icon-switcher" role="group" aria-label="Chọn chủ đề màu sắc">
+            <button type="button" class="theme-icon-btn active" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')" title="Chế độ Tím Hồng" aria-label="Chế độ Tím Hồng">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M19 3v4"/><path d="M21 5h-4"/></svg>
             </button>
-            <button type="button" class="theme-switch-pill" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')" title="Chế độ Trắng Đen">
-              <span class="theme-swatch-dot dot-mono"></span><span class="theme-label-short">Trắng Đen</span>
+            <button type="button" class="theme-icon-btn" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')" title="Chế độ Trắng Đen" aria-label="Chế độ Trắng Đen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
             </button>
-            <button type="button" class="theme-switch-pill" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam">
-              <span class="theme-swatch-dot dot-orange"></span><span class="theme-label-short">Trắng Cam</span>
+            <button type="button" class="theme-icon-btn" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam Liquid Glass" aria-label="Chế độ Trắng Cam Liquid Glass">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
             </button>
           </div>
           <!-- Streak Chip -->
@@ -153,40 +155,10 @@
         <section id="view-dashboard" class="view-section active">
           <!-- Editorial Hero Inspirational Stage (First Viewport) -->
           <div class="hero-card editorial-hero-stage">
-            <!-- Tầng Đỉnh: Editorial Header Bar -->
-            <div class="editorial-stage-top">
-              <div class="editorial-coords">
-                <span class="coord-tag">[ MINDSPARKS ]</span>
-                <span class="coord-sep">•</span>
-                <span class="coord-tag">[ ACTIVE RECALL ]</span>
-                <span class="coord-sep">•</span>
-                <span class="coord-tag">[ SM-2 ]</span>
-              </div>
-              <div class="editorial-top-actions">
-                <button type="button" class="btn-editorial-pill" onclick="App.updateHeroQuote()" title="Đổi câu trích dẫn truyền cảm hứng khác">
-                  <span>↻</span> Đổi cảm hứng
-                </button>
-                <div class="theme-quick-switch" role="group" aria-label="Chọn chủ đề màu sắc">
-                  <button type="button" class="theme-switch-pill" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')" title="Chế độ Tím Hồng">
-                    <span class="theme-swatch-dot dot-violet"></span> Tím Hồng
-                  </button>
-                  <button type="button" class="theme-switch-pill" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')" title="Chế độ Trắng Đen">
-                    <span class="theme-swatch-dot dot-mono"></span> Trắng Đen
-                  </button>
-                  <button type="button" class="theme-switch-pill" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam">
-                    <span class="theme-swatch-dot dot-orange"></span> Trắng Cam
-                  </button>
-                </div>
-              </div>
-            </div>
-
             <!-- Tầng Giữa: Monumental Quote Canvas -->
             <div class="hero-content editorial-quote-canvas">
               <div class="hero-heading-scrim">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-                  <span class="tech-tag">SYSTEM // SM-2 ACTIVE</span>
-                  <span class="tech-tag subtle">OFFLINE PWA</span>
-                </div>
+                
                 <h2 class="hero-title" id="hero-title">
                   <span class="hero-title-main">TÔI</span>
                   <span class="hero-title-accent">NGU</span>
@@ -195,13 +167,16 @@
                 <p class="hero-desc">Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.</p>
                 <div class="hero-actions">
                   <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
-                    ⚡ Ôn tập hôm nay
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>Ôn tập hôm nay</span>
                   </button>
                   <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
-                    🎯 Ôn câu hay sai
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Ôn câu hay sai</span>
                   </button>
                   <button class="btn btn-secondary" onclick="App.navigateTo('import')">
-                    ✨ Dán câu hỏi AI
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+                    <span>Dán câu hỏi AI</span>
                   </button>
                 </div>
               </div>
@@ -498,6 +473,7 @@
             </div>
           </div>
 
+          <div id="decks-subject-quickbar" class="decks-subject-quickbar"></div>
           <div id="decks-list-container"></div>
         </section>
 
@@ -819,7 +795,7 @@
                 </button>
 
                 <!-- SRS Rating Bar (Visible when flipped, 2x2 grid) -->
-                <div id="flashcard-srs-bar" class="srs-ratings-bar" style="display: none;">
+                <div id="flashcard-srs-bar" class="srs-ratings-bar">
                   <button type="button" class="srs-btn srs-btn-again" onclick="App.rateFlashcard(1)">
                     <span class="srs-label">Chưa thuộc (1)</span>
                     <span id="srs-preview-again" class="srs-interval">&lt; 10p</span>

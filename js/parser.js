@@ -334,20 +334,23 @@ const AIParser = {
    * Generates standard AI Prompt template adhering 100% to section 3 specifications
    */
   generateAIPromptTemplate({ topic = '', count = 10, difficulty = 'medium' } = {}) {
-    return `Hãy đóng vai một chuyên gia giáo dục và biên soạn ${count} câu hỏi trắc nghiệm ôn tập về chủ đề: "${topic || '[DÁN NỘI DUNG / CHỦ ĐỀ / TÀI LIỆU TẠI ĐÂY]'}".
+    return `Hãy đóng vai một chuyên gia giáo dục và biên soạn ${count} câu hỏi trắc nghiệm ôn tập từ tài liệu/nội dung: "${topic || '[DÁN NỘI DUNG / TÀI LIỆU HỌC TẬP TẠI ĐÂY]'}".
 
 Yêu cầu định dạng:
 1. Trả về DUY NHẤT một khối mã JSON hợp lệ (không kèm bất kỳ lời chào hay giải thích ngoài khối mã JSON).
-2. Hỗ trợ công thức Toán/Lý/Hóa LaTeX trong mọi trường text: dùng $...$ cho inline math và $$...$$ cho block math (ví dụ: $f(x) = x^2$, $\\frac{d}{dx}x^n = nx^{n-1}$).
-3. Tuân thủ chính xác 100% cấu trúc JSON bên dưới:
+2. Hỗ trợ công thức Toán/Lý/Hóa LaTeX trong mọi trường text: dùng $...$ cho inline math và $...$ cho block math (ví dụ: $f(x) = x^2$, $\\frac{d}{dx}x^n = nx^{n-1}$).
+3. QUY TẮC PHÂN LOẠI CHƯƠNG (BẮT BUỘC CHO TRƯỜNG "topic"):
+   - Trường "topic" của mỗi câu hỏi BẮT BUỘC phải ghi tên CHƯƠNG LỚN mà câu hỏi đó trực thuộc (ví dụ: "Chương 1: Tổng quan", "Chương 2: Đạo hàm và Vi phân").
+   - TUYỆT ĐỐI KHÔNG tự đặt một chủ đề vụn vặt riêng cho từng câu hỏi! Các câu hỏi trong cùng một chương phải dùng CHÍNH XÁC CÙNG MỘT TÊN CHƯƠNG thống nhất để phục vụ gom nhóm và lọc câu hỏi theo chương.
+4. Tuân thủ chính xác 100% cấu trúc JSON chuẩn TinhMinhLaKey bên dưới:
 
 \`\`\`json
 {
-  "quiz_title": "${topic || 'Chương 3: Đạo hàm'}",
+  "quiz_title": "${topic || 'Chương 1: Đạo hàm và Ứng dụng'}",
   "questions": [
     {
       "id": "q1",
-      "topic": "${topic || 'Đạo hàm'}",
+      "topic": "${topic || 'Chương 1: Đạo hàm và Ứng dụng'}",
       "difficulty": "${difficulty}",
       "question": "Đạo hàm của $f(x) = x^2$ là gì?",
       "options": [
@@ -364,6 +367,7 @@ Yêu cầu định dạng:
 \`\`\`
 
 Quy tắc bắt buộc:
+- "topic" chỉ ghi theo cấp độ Chương (VD: "Chương 1: ...", "Chương 2: ..."), đồng nhất giữa các câu cùng chương.
 - "options" phải có ít nhất 2 lựa chọn (khuyến nghị 4 lựa chọn có id từ "a" đến "d").
 - "correct_option_id" BẮT BUỘC phải khớp với một trong các "id" trong "options".
 - "difficulty" nhận một trong ba giá trị: "easy", "medium", hoặc "hard".`;

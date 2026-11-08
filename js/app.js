@@ -644,7 +644,7 @@ const App = {
       } else if (theme === 'white-orange') {
         await this.setBackground('./backgrounds/bg-white-orange.webp');
       } else {
-        await this.setBackground('./backgrounds/bg-pixel-meadow.webp');
+        await this.setBackground('./backgrounds/bg-2.webp');
       }
     }
 
@@ -754,7 +754,7 @@ const App = {
         this._detachSidebarLabels();
         sidebar.classList.remove('collapsing');
         this._sidebarTransitionTimer = null;
-      }, 280);
+      }, 260);
 
       db.setMeta('sidebarCollapsed', true);
     } else {
@@ -1648,11 +1648,90 @@ const App = {
     `;
   },
 
+  _selectedDecksSubjectId: 'all',
+  _decksSearchQuery: '',
+
+  filterDecksBySubject(subjId) {
+    if (this._selectedDecksSubjectId === subjId) {
+      this._selectedDecksSubjectId = 'all';
+    } else {
+      this._selectedDecksSubjectId = subjId;
+      if (subjId !== 'all') {
+        this.collapsedSubjectIds.delete(subjId);
+      }
+    }
+    this.renderDecks();
+    if (subjId !== 'all') {
+      setTimeout(() => {
+        const groupEl = document.querySelector(`.subject-group[data-subject-id="${subjId}"]`);
+        if (groupEl) groupEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  },
+
+  onDecksSearchInput(query) {
+    this._decksSearchQuery = (query || '').trim().toLowerCase();
+    this.renderDecks();
+  },
+
   // --- DECKS VIEW (GROUPED BY SUBJECT) ---
   async renderDecks() {
-    const summaries = await db.getSubjectSummaries();
+    let summaries = await db.getSubjectSummaries();
     const container = document.getElementById('decks-list-container');
     if (!container) return;
+
+    const quickbar = document.getElementById('decks-subject-quickbar');
+    if (quickbar) {
+      if (summaries.length <= 1) {
+        quickbar.innerHTML = '';
+        quickbar.style.display = 'none';
+      } else {
+        quickbar.style.display = 'flex';
+        const activeSubj = this._selectedDecksSubjectId || 'all';
+        const totalAll = summaries.reduce((a, s) => a + (s.decks?.length || 0), 0);
+        let quickHtml = `
+          <div class="quickbar-scroll">
+            <button type="button" class="subject-jump-pill ${activeSubj === 'all' ? 'active' : ''}" onclick="App.filterDecksBySubject('all')">
+              <span>Tất cả môn</span>
+              <span class="jump-pill-badge">${totalAll}</span>
+            </button>
+        `;
+        for (const s of summaries) {
+          if (s.id === 'subj_unassigned' && (!s.decks || s.decks.length === 0)) continue;
+          const isActive = activeSubj === s.id;
+          quickHtml += `
+            <button type="button" class="subject-jump-pill ${isActive ? 'active' : ''}" onclick="App.filterDecksBySubject('${s.id}')">
+              <span class="mono-emoji">${s.icon || '📚'}</span>
+              <span>${this._escapeHtml(s.name)}</span>
+              <span class="jump-pill-badge">${s.decks?.length || 0}</span>
+            </button>
+          `;
+        }
+        quickHtml += `
+          </div>
+          <div class="quickbar-search-wrap">
+            <input type="text" id="decks-search-quick" class="quickbar-search-input" placeholder="🔍 Lọc nhanh môn / bộ thẻ..." value="${this._escapeHtml(this._decksSearchQuery || '')}" oninput="App.onDecksSearchInput(this.value)">
+          </div>
+        `;
+        quickbar.innerHTML = quickHtml;
+      }
+    }
+
+    // Apply quickbar filter
+    if (this._selectedDecksSubjectId && this._selectedDecksSubjectId !== 'all') {
+      summaries = summaries.filter(s => s.id === this._selectedDecksSubjectId);
+    }
+    if (this._decksSearchQuery) {
+      const q = this._decksSearchQuery;
+      summaries = summaries.filter(s => {
+        const matchSubject = (s.name || '').toLowerCase().includes(q);
+        const matchDecks = (s.decks || []).some(d => (d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+        return matchSubject || matchDecks;
+      }).map(s => {
+        const filteredDecks = (s.decks || []).filter(d => (s.name || '').toLowerCase().includes(q) || (d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+        return { ...s, decks: filteredDecks, decksCount: filteredDecks.length };
+      });
+    }
 
     const totalDecksCount = summaries.reduce((acc, s) => acc + (s.decks?.length || 0), 0);
 
@@ -2772,7 +2851,12 @@ const App = {
     }
 
     const flashcard = document.getElementById('active-flashcard');
-    if (flashcard) flashcard.classList.remove('flipped');
+    if (flashcard) {
+      flashcard.style.transition = 'none';
+      flashcard.classList.remove('flipped');
+      void flashcard.offsetWidth; // flush layout
+      flashcard.style.transition = '';
+    }
     const flashcardArea = document.getElementById('study-flashcard-area');
     if (flashcardArea) flashcardArea.classList.remove('card-flipped');
     const bottomActions = document.querySelector('.flashcard-bottom-actions');
@@ -2787,8 +2871,8 @@ const App = {
 
     const srsBar = document.getElementById('flashcard-srs-bar');
     if (srsBar) {
-      srsBar.style.display = 'none';
-      srsBar.style.setProperty('display', 'none', 'important');
+      srsBar.style.removeProperty('display');
+      srsBar.style.display = '';
     }
 
     const tagFront = document.getElementById('flashcard-tag-front');
@@ -2870,10 +2954,6 @@ const App = {
   },
 
   flipFlashcard() {
-    const now = Date.now();
-    if (this._lastFlip && now - this._lastFlip < 250) return;
-    this._lastFlip = now;
-
     const flashcard = document.getElementById('active-flashcard');
     if (!flashcard) return;
 
@@ -2888,8 +2968,6 @@ const App = {
     flashcard.addEventListener('transitionend', onFlipEnd, { once: true });
 
     const isFlipped = flashcard.classList.contains('flipped');
-    const revealBtn = document.getElementById('btn-flashcard-reveal');
-    const srsBar = document.getElementById('flashcard-srs-bar');
     const flashcardArea = document.getElementById('study-flashcard-area');
     const bottomActions = document.querySelector('.flashcard-bottom-actions');
 
@@ -2899,19 +2977,9 @@ const App = {
     if (bottomActions) {
       bottomActions.classList.toggle('show', isFlipped);
     }
-
-    if (revealBtn) {
-      revealBtn.style.setProperty('display', isFlipped ? 'none' : 'flex', 'important');
-      revealBtn.style.setProperty('display', 'none', 'important');
-    }
-    if (srsBar) {
-      const disp = isFlipped ? 'grid' : 'none';
-      srsBar.style.display = disp;
-      srsBar.style.setProperty('display', disp, 'important');
-    }
   },
 
-  async rateFlashcard(rating) {
+  rateFlashcard(rating) {
     this.clearPerQuestionTimer();
     const session = this.activeSession;
     if (!session) return;
@@ -2936,14 +3004,17 @@ const App = {
     }
     card.stats.lastReviewed = Date.now();
 
-    await db.saveCard(card);
-    await db.logReview({
-      deckId: card.deckId,
-      cardId: card.id,
-      rating: rating,
-      isCorrect: isCorrect,
-      mode: 'flashcard'
-    });
+    // Background asynchronous write without blocking UI (< 16ms transition)
+    Promise.all([
+      db.saveCard(card),
+      db.logReview({
+        deckId: card.deckId,
+        cardId: card.id,
+        rating: rating,
+        isCorrect: isCorrect,
+        mode: 'flashcard'
+      })
+    ]).catch(err => console.error('[SRS Save Error]', err));
 
     // Auto-save session progress (Section 5)
     this.saveActiveSessionState();
@@ -5946,7 +6017,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const payload = {
       role_instruction: "Bạn là chuyên gia giáo dục. Các câu hỏi trắc nghiệm sau đây do người học đánh dấu vì 'diễn đạt chưa rõ ràng, tối nghĩa hoặc gây hiểu nhầm'. Hãy viết lại câu hỏi, các phương án lựa chọn và lời giải thích cho thật mạch lạc, chính xác sư phạm, giữ nguyên công thức LaTeX trong dấu $...$ hoặc $$...$$.",
-      output_format: "Trả về JSON chuẩn MindSparks có cấu trúc { quiz_title, questions: [...] } để dán trực tiếp vào app.",
+      output_format: "Trả về JSON chuẩn TinhMinhLaKey có cấu trúc { quiz_title, questions: [...] } để dán trực tiếp vào app. Trường 'topic' bắt buộc phân loại theo Chương ('Chương 1: ...', 'Chương 2: ...') đồng nhất.",
       questions_to_improve: flagged.map(c => ({
         id: c.id,
         topic: c.topic || c.tag,
@@ -6007,7 +6078,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const a = document.createElement('a');
       const dateStr = new Date().toISOString().slice(0, 10);
       a.href = url;
-      a.download = `mindsparks-backup-${dateStr}.json`;
+      a.download = `tinhminhlakey-backup-${dateStr}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

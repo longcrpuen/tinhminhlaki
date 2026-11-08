@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MINDSARKS - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
+   TINHMINHLAKEY - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
    - File này quản lý tất cả các biến màu sắc, khoảng cách, bo góc và typography.
@@ -381,7 +381,19 @@ body[data-theme="monochrome"] {
   --btn-secondary-text: #ffffff;
   --btn-secondary-border: rgba(255, 255, 255, 0.24);
   --btn-secondary-hover: #262626;
-  --hero-stage-bg: rgba(16, 16, 16, 0.78);
+    --hero-bg: rgba(10, 10, 10, 0.42);
+  --hero-stage-bg: rgba(10, 10, 10, 0.42);
+  --bg-card: rgba(14, 14, 14, 0.56);
+  --bg-overlay-tint: rgba(0, 0, 0, 0.32);
+  --sidebar-glass-bg: rgba(12, 12, 12, 0.40);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.14);
+  --sidebar-glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+  --sidebar-item-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-item-border: rgba(255, 255, 255, 0.12);
+  --spotlight-primary: rgba(255, 255, 255, 0.14);
+  --spotlight-secondary: rgba(255, 255, 255, 0.04);
+  --card-hover-border: rgba(255, 255, 255, 0.55);
+  --card-hover-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 28px rgba(0, 0, 0, 0.65);
   --hero-title-color: #ffffff;
   --hero-title-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
   --hero-accent-color: #000000;
@@ -411,13 +423,30 @@ body[data-theme="monochrome"] {
 [data-theme="white-orange"],
 body[data-theme="white-orange"] {
   color-scheme: light;
-  --bg-base: #faf7f2;
-  --bg-overlay-tint: rgba(255, 250, 245, 0.38);
-  --bg-surface: rgba(255, 255, 255, 0.88);
-  --bg-surface-elevated: rgba(255, 255, 255, 0.96);
-  --bg-card: rgba(255, 255, 255, 0.82);
-  --bg-card-hover: rgba(255, 255, 255, 0.94);
-  --bg-card-active: #ffffff;
+    --bg-base: #f7f3ee;
+  --bg-overlay-tint: rgba(255, 245, 235, 0.18);
+  --bg-surface: rgba(255, 255, 255, 0.38);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.52);
+  --bg-card: rgba(255, 255, 255, 0.36);
+  --bg-card-hover: rgba(255, 255, 255, 0.48);
+  --bg-card-active: rgba(255, 255, 255, 0.65);
+  --glass-tint: linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 246, 238, 0.26) 100%);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --text-primary: #181512;
+  --text-secondary: #4a433c;
+  --text-muted: #786e65;
+  --accent: #ea580c;
+  --accent-secondary: #f97316;
+  --spotlight-primary: rgba(251, 146, 60, 0.22);
+  --spotlight-secondary: rgba(254, 215, 170, 0.08);
+  --card-hover-border: rgba(249, 115, 22, 0.55);
+  --card-hover-shadow: 0 16px 36px rgba(154, 52, 18, 0.10), inset 0 1.5px 1px rgba(255, 255, 255, 0.95);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.46);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.75);
+  --sidebar-glass-shadow: 0 12px 32px rgba(124, 45, 18, 0.07);
+  --sidebar-item-bg: rgba(255, 255, 255, 0.45);
+  --sidebar-item-border: rgba(255, 255, 255, 0.65);
   --bg-overlay: rgba(24, 24, 27, 0.45);
   --glass-tint: rgba(255, 255, 255, 0.82);
   --glass-border: rgba(234, 88, 12, 0.18);

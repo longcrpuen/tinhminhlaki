@@ -1,7 +1,7 @@
 {
-  "name": "mindsparks",
+  "name": "tinhminhlakey",
   "version": "1.0.0",
-  "description": "MindSparks - App Quizz Học Tập Cá Nhân (100% Offline-First PWA)",
+  "description": "TinhMinhLaKey - App Quizz Học Tập Cá Nhân (100% Offline-First PWA)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

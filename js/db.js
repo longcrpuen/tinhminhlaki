@@ -1350,7 +1350,7 @@ class QuizDatabase {
       version: '2.0',
       schemaVersion: 2,
       exportedAt: new Date().toISOString(),
-      appName: 'MindSparks',
+      appName: 'TinhMinhLaKey',
       subjects,
       decks,
       cards,
@@ -1361,7 +1361,7 @@ class QuizDatabase {
 
   async importAll(data, mode = 'merge') {
     if (!data || !Array.isArray(data.decks) || !Array.isArray(data.cards)) {
-      throw new Error('File JSON không đúng cấu trúc backup của MindSparks.');
+      throw new Error('File JSON không đúng cấu trúc backup của TinhMinhLaKey.');
     }
 
     if (mode === 'replace') {

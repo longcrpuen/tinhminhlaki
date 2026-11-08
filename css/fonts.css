@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MINDSARKS - CẤU HÌNH PHÔNG CHỮ (FONTS CONFIG)
+   TINHMINHLAKEY - CẤU HÌNH PHÔNG CHỮ (FONTS CONFIG)
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
    - File này quản lý tất cả các kiểu chữ được sử dụng trong toàn bộ ứng dụng.
@@ -66,4 +66,5 @@
      F. FONT POSTER HEAVY DISPLAY (--font-poster)
      ======================================================================== */
   --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Arial Black', sans-serif;
+  --font-serif-italic: 'Instrument Serif', 'Playfair Display', 'Caveat', Georgia, serif;
 }

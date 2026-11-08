@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.12.0';
+const CACHE_NAME = 'mindsparks-v4.13.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
