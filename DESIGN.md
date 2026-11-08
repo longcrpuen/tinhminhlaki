@@ -1,10 +1,10 @@
 ---
 name: TinhMinhLaKey Design System
-description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, Claude UI Italic Serif, Monochrome Icon System & 3-Theme Architecture (Phase 1d)
+description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, 6 Standard Token Groups, HUD Capsule, 360° 3D Card Flip, Dual Mode 5 & SM-2 Mastery Spectrum (Phase 1e)
 themes:
   violet-rose:
     label: "Tím Hồng (Violet Rose - Default)"
-    base: "#0b0816"
+    base: "#0c0916"
     accent: "#b388ff"
     accentSecondary: "#f472b6"
     btnPrimaryBg: "#d8b4fe"
@@ -14,16 +14,16 @@ themes:
     label: "Trắng Đen (Monochrome - Pure Noir B&W)"
     base: "#050505"
     accent: "#ffffff"
-    accentSecondary: "#e5e5e5"
+    accentSecondary: "#d4d4d4"
     btnPrimaryBg: "#ffffff"
     btnPrimaryText: "#000000"
     wallpaper: "./backgrounds/bg-noir-mono.webp"
   white-orange:
     label: "Trắng Cam Liquid Glass (White Orange Claude UI)"
-    base: "#f7f3ee"
+    base: "#f8f4ef"
     accent: "#ea580c"
     accentSecondary: "#f97316"
-    btnPrimaryBg: "rgba(249, 115, 22, 0.92)"
+    btnPrimaryBg: "#f97316"
     btnPrimaryText: "#ffffff"
     wallpaper: "./backgrounds/bg-white-orange.webp"
 typography:
@@ -64,54 +64,45 @@ rounded:
   lg: "20px"
   card: "24px"
   sidebar: "28px"
+  hud: "999px"
   bottomNav: "32px"
   full: "9999px"
 ---
 
-# TinhMinhLaKey Design System (Đợt 1d)
+# TinhMinhLaKey Design System (Đợt 1e)
 
 ## 1. Tổng Quan & Triết Lý Thiết Kế (Overview & Philosophy)
 
-**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1d**, toàn bộ ngôn ngữ thiết kế và trải nghiệm tương tác đạt đến độ hoàn thiện sâu:
-- **Topbar Tối Giản Nổi Gọn**: Bỏ dải băng nền tối choán đỉnh màn hình, ẩn `.topbar-left`, chuyển bộ chọn 3 theme góc phải thành viên nang 3 Nút Icon tinh tế (`34px × 34px`).
-- **Khung Quote Hero Thanh Thoát**: Xóa bỏ hoàn toàn các tag kỹ thuật dư thừa (`SYSTEM // SM-2 ACTIVE`, `OFFLINE PWA`), xóa nút đổi cảm hứng lặp lại, biến Quote thành một tác phẩm nghệ thuật truyền cảm hứng thuần khiết.
-- **Tổ Hợp Icon & Emoji Đơn Sắc (Monochrome Icon System)**: Áp bộ lọc CSS thông minh (`filter: grayscale(...)`) thích ứng 100% theo từng Theme, triệt tiêu hiện tượng lệch màu của emoji hệ điều hành.
-- **Sidebar Kính Mờ Chuẩn Mẫu**: Đóng/mở 2 chiều mượt mà 260ms bằng cách click trực tiếp vào icon chú mèo mascot (`meo.png`), ẩn nút mũi tên ngang thừa, cấu trúc vòng tròn và viên nang kính mờ chuẩn mực.
-- **Quick-Jump Subject Bar & Căn Chỉnh Hàng Nút**: Bổ sung thanh nhảy nhanh môn học ở Thư viện thẻ và căn chỉnh thẳng hàng cụm nút hành động tại Ngân hàng câu hỏi.
-- **Flashcard 120FPS Jank-Free Engine**: Giữ chỗ cố định 0px layout shift cho thanh đánh giá SRS, chuyển câu tức thì < 16ms nhờ ghi dữ liệu nền không chặn UI.
-- **Chế Độ Trắng Cam 3D Liquid Glass & Claude UI**: Bề mặt kính lỏng trong suốt, đổ bóng 3D tinh tế, từ khóa Quote viết nghiêng nghệ thuật phong cách Claude UI (`Instrument Serif`), độ tương phản chữ đạt chuẩn tối đa.
-- **Tối Ưu Mobile Ergonomics**: Hạ thấp độ nhô của icon active trên thanh Bottom Nav, chống cản trở thao tác chạm.
+**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1e**, toàn bộ hệ thống giao diện, hiệu năng và tương tác được quy hoạch bài bản theo 5 Phase chuẩn công nghiệp:
+- **Quy Hoạch 6 Nhóm Token Tập Trung**: Gom 100% biến màu, bề mặt kính, viền khúc xạ và tương tác về 6 nhóm biến chuẩn tại `css/theme.css` cho cả 3 chế độ (`violet-rose`, `monochrome`, `white-orange`). Xóa sạch 100% mã màu tím/đen gắn cứng trong CSS và inline HTML.
+- **19 Quy Tắc Chống AI Slop & Hệ Thống SVG Đơn Sắc**: Xóa toàn bộ các badge terminal rườm rà (`MODE // 01`, `REF//MS-...`, `ADAPTIVE`), thay thế toàn bộ emoji màu bằng Inline SVG đường nét thanh mảnh (`stroke="currentColor"`), kích hoạt `tabular-nums` cho mọi con số và hỗ trợ cú pháp in đậm markdown `**bold**` trong công thức LaTeX.
+- **Hợp Nhất Component `.deck-card`**: Dùng chung một hàm dựng HTML chuẩn (`_createDeckCardHtml`) cho cả Trang chủ và Thư viện thẻ, nút bấm đơn sắc đầm chắc không icon thừa.
+- **Topbar HUD Capsule & Icon Morph Animation**: Gộp bộ chọn 3 theme và chuỗi ngày học thành một viên nang kính mờ (`.topbar-hud-capsule`) ở thanh Top Utility Row không bao giờ che khuất nội dung trang; nút chuyển theme có hiệu ứng trượt trơn chu kèm hoạt ảnh Morphing icon xoay co giãn tâm.
+- **Liquid Glass Sidebar (Ảnh 8/9)**: Cấu trúc kính khúc xạ viền specular sáng; cột icon 44px đứng yên tuyệt đối; nhãn chuyển động trượt mờ không tràn viền; thanh active phát sáng sát mép trái 3.5px.
+- **360° 3D Card Flip**: Lật thẻ không gian 3 chiều với `perspective: 1600px`, nhấc thẻ trục Z mượt mà (`flashcardArcLift`) và chuyển tiếp vòng xoay thẻ tức thì.
+- **Chế Độ 5: Ôn theo Môn & Chương (Dual Picker)**: Modal chọn kép thông minh với Phần 1 (Chọn môn học / Ôn cả môn) và Phần 2 (Lọc & chọn nhiều chương). AI Prompt bắt buộc phân loại trường `topic` theo cấp độ Chương (`Chương 1: ...`, `Chương 2: ...`).
+- **Khối Phân Bố Cấp Độ Ghi Nhớ SM-2**: Thanh Phổ Trí Nhớ Tổng Thể (Mastery Spectrum Bar) 14px chia 4 đoạn tỷ lệ % trực quan và 4 thẻ cấp độ lớn đẳng cấp (`clamp(2.0rem, 3.2vw, 2.75rem)`).
+- **144+ FPS Jank-Free Deck Library**: Loại bỏ `backdrop-filter` lặp trên từng card con; dùng Optical Liquid Glass Surface; áp dụng `content-visibility: auto` cho danh sách môn và ngân hàng câu hỏi.
+- **Chuẩn Hóa Tương Phản Mode Trắng Cam**: Chữ Nâu Đen Espresso `#1c1410`, Cam Đậm `#c2410c`, Xanh Rừng Đậm `#064e3b`, Đỏ Đậm `#7f1d1d` sắc nét tuyệt đối trên nền kính sáng.
 
 ---
 
-## 2. Kiến Trúc 3 Chế Độ Theme (3-Theme Token Architecture)
+## 2. Kiến Trúc 6 Nhóm Token Trong `css/theme.css`
 
-Điều phối tập trung 100% tại `css/theme.css` thông qua thuộc tính `data-theme` trên thẻ `<html>` và `<body>`:
-
-### 2.1. Theme Tím Hồng (`violet-rose` — Mặc Định)
-- **Tông màu**: Tím Amethyst `#b388ff`, Hồng Orchid `#f472b6`, Nền sâu `#0b0816`.
-- **Khung Quote**: Nền kính trong suốt `rgba(20, 15, 36, 0.44)` kết hợp `backdrop-filter: blur(16px)` làm hiện rõ hình nền.
-- **Hình nền mặc định**: `./backgrounds/bg-2.webp`.
-- **Nút bấm**: Solid Tonal Pill tím pastel `#d8b4fe` chữ đen đậm `#140e24`.
-
-### 2.2. Theme Trắng Đen (`monochrome` — Noir B&W)
-- **Tông màu**: Trắng `#ffffff`, Đen Noir `#050505`, Xám khói `#171717`.
-- **Sidebar & Card**: Kính mờ trong suốt `rgba(12, 12, 12, 0.40)` thấy rõ hình nền `bg-noir-mono.webp`.
-- **Triệt tiêu ánh tím**: Không còn bất kỳ mã màu tím nào; spotlight và hover dùng biến theme sáng bạc `rgba(255, 255, 255, 0.14)`.
-- **Nút bấm**: Nút chính trắng sáng `#ffffff` chữ đen than `#000000`, nút phụ đen nhám viền xám mờ.
-
-### 2.3. Theme Trắng Cam (`white-orange` — 3D Liquid Glass)
-- **Tông màu**: Nền kem ấm `#f7f3ee`, Cam tươi `#f97316`, Cam đậm `#ea580c`, Chữ đen nâu `#181512`.
-- **Bề mặt 3D Liquid Glass**: Kính lỏng xuyên thấu `linear-gradient(135deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 248, 240, 0.28) 100%)` kết hợp `backdrop-filter: blur(22px) saturate(160%)`.
-- **Từ khóa Quote (.hero-title-accent)**: Font nghệ thuật nghiêng kiểu Claude UI (`Instrument Serif`, `Playfair Display Italic`).
-- **Tương phản rõ nét**: Toàn bộ chữ trong Quiz, 4 nút SRS Lật thẻ, Flashcard front/back và Dropdown đều dùng tông tương phản cao trên nền sáng, không còn chữ chìm.
-- **Hình nền mặc định**: `./backgrounds/bg-white-orange.webp`.
+Mỗi Theme được phân vùng chính xác theo 6 nhóm thuộc tính:
+1. **Nhóm 1 — Bề Mặt Kính Khúc Xạ (Surfaces & Glass)**: `--bg-base`, `--surface-card`, `--surface-card-hover`, `--surface-elevated`, `--surface-header`, `--surface-dropdown`, `--surface-dropdown-menu`, `--surface-sidebar`, `--surface-hud`, `--glass-border`, `--glass-border-strong`, `--glass-highlight`, `--glass-specular`.
+2. **Nhóm 2 — Màu Chữ & Phân Cấp Nội Dung (Typography & Contrast)**: `--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-accent`.
+3. **Nhóm 3 — Điểm Nhấn Nhận Diện & Nút Bấm Đơn Sắc (Accents & Solid Tonal Buttons)**: `--accent`, `--accent-strong`, `--accent-primary`, `--accent-secondary`, `--accent-glow`, `--accent-subtle-bg`, `--accent-border`, `--brand-gradient`, `--btn-primary-bg`, `--btn-primary-text`, `--btn-primary-hover`, `--btn-secondary-bg`, `--btn-secondary-text`, `--btn-secondary-border`, `--progress-track-bg`, `--progress-fill-bg`.
+4. **Nhóm 4 — Đèn Rọi & Đổ Bóng Tương Tác (Spotlights & Shadows)**: `--spotlight-primary`, `--spotlight-secondary`, `--card-hover-border`, `--card-hover-shadow`.
+5. **Nhóm 5 — Trạng Thái Lựa Chọn Quiz & Flashcard (Options & Feedback States)**: `--option-bg`, `--option-border`, `--option-text`, `--option-letter`, `--option-correct-bg`, `--option-correct-border`, `--option-correct-text`, `--option-wrong-bg`, `--option-wrong-border`, `--option-wrong-text`.
+6. **Nhóm 6 — Chuỗi Ngày Học & Đoạn Phổ SM-2 (Streak & SRS Palette)**: Đồng bộ màu sắc các trạng thái Thẻ Mới, Đang học, Đang ôn tập, Đã thành thạo.
 
 ---
 
 ## 3. Quy Chuẩn Kỹ Thuật Nghiệm Thu (Quality Floor)
 
-- **Layout Stability**: 0px Layout Shift khi lật thẻ hoặc tương tác Dropdown.
-- **Hiệu năng chuyển động**: 100% animation chạy trên compositor (`transform`, `opacity`), đạt chuẩn 120Hz mượt mà.
-- **Bảo toàn dữ liệu**: Kết nối IndexedDB `MindSparksQuizDB` và cơ chế sao lưu `tinhminhlakey-backup-*.json` hoạt động bền vững.
-- **Tương thích toàn diện**: Vượt qua 100% bài test tự động (`npm test`) và build production (`npm run build`).
+- **Backdrop-Filter Budget**: Chỉ duy trì hiệu ứng blur trên tối đa 3 phần tử cố định (`.app-sidebar`, `.topbar-hud-capsule` / `.bottom-nav`, `.hero-card` / `.modal-box`). Mọi card lặp (`.deck-card`, `.subject-group`, `.bank-card-item`) dùng Optical Liquid Glass Surface không tốn GPU.
+- **Layout Stability**: 0px Layout Shift khi chuyển câu hỏi, mở dropdown hoặc lật thẻ 360°.
+- **Hiệu năng chuyển động**: 100% animation chạy trên compositor (`transform`, `opacity`), đạt chuẩn 144Hz mượt mà.
+- **Bảo toàn dữ liệu**: Database `MindSparksQuizDB` và sao lưu JSON toàn vẹn 100%.
+- **Tương thích toàn diện**: Vượt qua 100% bài test tự động (`npm test`: 283/283 passed) và build production (`npm run build`: 100% success).
