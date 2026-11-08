@@ -1,135 +1,104 @@
 /* ==========================================================================
-   MINDSPARKS / TINHMINHLAKEY — SOFT VIOLET-ROSE & AIRY DARK THEME (PHASE 3)
+   MINDSARKS - NGUỒN TOKEN THIẾT KẾ TRUNG TÂM (SINGLE SOURCE OF TRUTH)
    
    HƯỚNG DẪN TỰ TÙY BIẾN CHO BẠN:
    - File này quản lý tất cả các biến màu sắc, khoảng cách, bo góc và typography.
-   - Bảng màu: Soft Violet-Rose & Airy Dark Theme.
+   - Bạn có thể trực tiếp đổi các mã màu bên dưới (dạng #HEX hoặc rgba).
+   - Muốn đổi màu Tím chủ đạo sang màu khác (VD: Xanh ngọc, Hồng, Vàng cam),
+     chỉ cần sửa mã màu tại mục 2 (MÀU ĐIỂM NHẤN CHÍNH --accent).
+   - Tuân thủ nghiêm ngặt DESIGN-RULES.md & WCAG AA:
+     * Dark mode dịu mộng mơ (Liquid Glass Violet)
+     * Thang chữ clamp() thích ứng Desktop & Mobile
+     * Focus ring rõ ràng cho điều hướng bàn phím
+     * Giới hạn hiệu năng: GPU-friendly, không box-shadow/filter animation
    ========================================================================== */
+
 :root {
+  /* ==========================================
+     0. THIẾT LẬP MÀU HỆ THỐNG
+     ========================================== */
   color-scheme: dark;
+
+  /* ==========================================
+     1. HIỆU NĂNG KÍNH & CẤU HÌNH BLUR (PERFORMANCE CONTROLS)
+     - ENABLE_GLASS_BLUR: 0 = Tắt blur toàn bộ card danh sách để giữ 90-120 FPS
+     - Blur chỉ dùng ở tối đa vài bề mặt lớn cố định (topbar, sidebar, modal)
+     ========================================== */
   --ENABLE_GLASS_BLUR: 0;
   --glass-blur-radius: 8px;
   --glass-backdrop-filter: none;
 
-  /* 1. BẢNG MÀU TÍM - HỒNG PASTEL NHẸ NHÀNG, HIỆN ĐẠI */
-  --accent: #a855f7;                         /* Tím Lavender chủ đạo */
-  --accent-primary: #a855f7;
-  --accent-secondary: #ec4899;               /* Hồng Orchid dịu */
-  --accent-bright: #c084fc;                  /* Tím sáng */
-  --accent-rose: #f472b6;                    /* Hồng phấn điểm nhấn */
-  --accent-hover: #9333ea;
-  --accent-active: #7e22ce;
-  --thermal-magenta: #ec4899;
-  --thermal-crimson: #f43f5e;
-  --thermal-orange: #ff6b35;
-  --thermal-gold: #fde047;
+  /* ==========================================
+     2. MÀU ĐIỂM NHẤN (ACCENT COLORS - COSMIC AMETHYST & ORCHID)
+     ========================================== */
+  --accent: #b388ff;                     /* Tím Amethyst sáng dịu */
+  --accent-secondary: #f472b6;           /* Hồng Orchid cân bằng */
+  --accent-primary: #a855f7;             /* Tím Lavender chuẩn */
+  --accent-glow: rgba(179, 136, 255, 0.24); /* Vầng sáng hào quang tím nhẹ */
+  --accent-subtle-bg: rgba(179, 136, 255, 0.12); /* Nền mờ tím siêu nhẹ */
+  --accent-border: rgba(192, 132, 252, 0.32);    /* Viền ánh tím nhẹ */
+  
+  /* Gradient thương hiệu mượt mà, hiện đại */
+  --brand-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #8b5cf6 0%, #c084fc 50%, #f472b6 100%);
+  --brand-gradient-subtle: linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(236, 72, 153, 0.08) 100%);
+  --glow-color: rgba(179, 136, 255, 0.20);
 
-  --accent-glow: rgba(168, 85, 247, 0.20);
-  --rose-glow: rgba(244, 114, 182, 0.18);
-  --thermal-glow: rgba(236, 72, 153, 0.22);
-  --accent-subtle-bg: rgba(168, 85, 247, 0.12);
-  --accent-border: rgba(192, 132, 252, 0.22);
-  --accent-surface: rgba(168, 85, 247, 0.12);
+  /* ==========================================
+     3. MÀU NỀN & BỀ MẶT KÍNH TĨNH (SURFACES & ALPHA - DEEP OBSIDIAN VIOLET)
+     Dùng màu có sẵn alpha channel để triệt tiêu sụt giảm FPS khi cuộn
+     Fallback/Legacy: #090A0F, rgba(18, 19, 26, 0.85)
+     ========================================== */
+  --bg-base: #0b0816;                    /* Nền đen sâu Obsidian Violet (#0b0816 / #090A0F) */
+  --bg-surface: rgba(20, 15, 36, 0.86);  /* Nền panel tĩnh có alpha */
+  --bg-surface-elevated: rgba(30, 22, 52, 0.92); /* Nền panel nổi cao hơn */
+  --bg-card: rgba(21, 16, 38, 0.84);     /* Nền card câu hỏi & thẻ học */
+  --bg-card-hover: rgba(31, 23, 54, 0.90); /* Nền card khi hover */
+  --bg-card-active: rgba(38, 28, 66, 0.95); /* Nền card khi nhấn */
+  --bg-overlay: rgba(8, 5, 18, 0.86);   /* Nền backdrop modal */
+  
+  --glass-tint: rgba(21, 16, 38, 0.84);  /* Lớp nền thẻ học và panel */
+  --glass-border: rgba(192, 132, 252, 0.22); /* Viền sáng kính */
+  --glass-border-subtle: rgba(192, 132, 252, 0.12); /* Viền kính siêu mờ */
+  --glass-highlight: rgba(255, 255, 255, 0.12); /* Điểm sáng phản chiếu */
+  
+  --border-color: rgba(192, 132, 252, 0.18); /* Đường kẻ viền mờ */
+  --border-focus: rgba(192, 132, 252, 0.70); /* Viền sáng khi active/focus */ /* Viền sáng khi active/focus */
 
-  /* Chuyển màu nút bấm nhẹ nhàng, mượt mà (Không dùng cam/đỏ gắt) */
-  --brand-gradient: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%);
-  --brand-gradient-hover: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #ec4899 100%);
-  --brand-gradient-subtle: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(236, 72, 153, 0.08) 100%);
-  --quote-accent-gradient: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
-  --thermal-spectrum: linear-gradient(90deg, #7c3aed 0%, #a855f7 25%, #ec4899 50%, #f472b6 75%, #fde047 100%);
-  --glow-color: rgba(168, 85, 247, 0.18);
+  /* ==========================================
+     4. MÀU CHỮ & VĂN BẢN (TYPOGRAPHY COLORS - WCAG AA)
+     Độ tương phản tối thiểu 4.5:1 trên mọi nền tối
+     ========================================== */
+  --text-primary: #f8f6fd;                /* Chữ chính: Trắng tím sáng (16.5:1) */
+  --text-secondary: #c4bcdc;              /* Chữ phụ: Tím xám dịu mắt (10.1:1) */
+  --text-muted: #9d92b5;                  /* Chữ mờ / caption: Đạt chuẩn 4.6:1 */
+  --text-accent: #c084fc;                 /* Chữ điểm nhấn */
 
-  /* 2. BỀ MẶT THOÁNG ĐÃNG, BÓNG ĐỔ NHẸ NHÀNG (LOW-SHADOW AIRY SURFACES) */
-  --bg-base: #0d0917;                        /* Nền tím đêm dịu mắt, không đen đặc */
-  --bg-canvas: #0d0917;
-  --bg-surface: rgba(24, 18, 42, 0.78);      /* Bề mặt thẻ thanh thoát */
-  --bg-surface-elevated: rgba(33, 25, 56, 0.85);
-  --bg-well: rgba(15, 11, 28, 0.75);         /* Nền input nhẹ nhàng */
-  --bg-card: rgba(24, 18, 42, 0.78);
-  --bg-card-hover: rgba(32, 24, 54, 0.88);
-  --bg-card-active: rgba(40, 30, 68, 0.92);
-  --bg-overlay: rgba(10, 7, 20, 0.82);
+  /* ==========================================
+     5. MÀU PHẢN HỒI KẾT QUẢ & TRẠNG THÁI (FEEDBACK & STATUS)
+     ========================================== */
+  --success: #6fcf97;                     /* Xanh ngọc: Đúng, hoàn thành */
+  --success-bg: rgba(111, 207, 151, 0.12);
+  --success-border: rgba(111, 207, 151, 0.30);
+  --success-glow: rgba(111, 207, 151, 0.25);
+  
+  --danger: #e27d8b;                      /* Hồng san hô: Sai, cảnh báo */
+  --danger-bg: rgba(226, 125, 139, 0.12);
+  --danger-border: rgba(226, 125, 139, 0.30);
+  --danger-glow: rgba(226, 125, 139, 0.25);
+  
+  --warning: #e0b45c;                     /* Vàng ấm: Chú ý, cần ôn tập */
+  --warning-bg: rgba(224, 180, 92, 0.12);
+  --warning-border: rgba(224, 180, 92, 0.30);
+  
+  --info: #7bb8e0;                        /* Xanh lơ: Hướng dẫn, gợi ý */
+  --info-bg: rgba(123, 184, 224, 0.12);
+  --info-border: rgba(123, 184, 224, 0.30);
+  --streak-color: #f59e0b;                /* Vàng cam: Biểu tượng streak */
 
-  --glass-tint: rgba(24, 18, 42, 0.78);
-  --glass-border: rgba(192, 132, 252, 0.16);
-  --glass-border-subtle: rgba(192, 132, 252, 0.10);
-  --glass-highlight: rgba(255, 255, 255, 0.07);
-
-  --border-color: rgba(192, 132, 252, 0.15);
-  --border-subtle: rgba(192, 132, 252, 0.10);
-  --border-focus: rgba(244, 114, 182, 0.55);
-  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-  /* 3. HỆ THỐNG SHADOW ĐƯỢC TIẾT CHẾ TỐI ĐA (NHẸ NHÀNG, KHÔNG TỐI NẶNG) */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.14);
-  --shadow-sm: 0 4px 12px rgba(6, 3, 15, 0.20);
-  --shadow-md: 0 6px 20px rgba(6, 3, 15, 0.24);
-  --shadow-lg: 0 12px 28px rgba(6, 3, 15, 0.30);
-  --shadow-glow: 0 4px 14px rgba(168, 85, 247, 0.22);
-  --card-hover-glow: 0 6px 20px rgba(168, 85, 247, 0.14), 0 0 12px rgba(244, 114, 182, 0.10);
-  --neon-glow-primary: 0 0 10px rgba(168, 85, 247, 0.25);
-  --neon-glow-hover: 0 4px 14px rgba(244, 114, 182, 0.30);
-  --border-focus-glow: 0 0 0 2px rgba(244, 114, 182, 0.35);
-
-  /* 4. MÀU CHỮ & TRẠNG THÁI (WCAG AA) */
-  --text-primary: #f8f6fd;
-  --text-secondary: #cdc3e6;
-  --text-muted: #9e91bd;
-  --text-accent: #f472b6;
-
-  --success: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.12);
-  --success-border: rgba(52, 211, 153, 0.32);
-  --success-glow: rgba(52, 211, 153, 0.20);
-
-  --danger: #f43f5e;
-  --danger-bg: rgba(244, 63, 94, 0.12);
-  --danger-border: rgba(244, 63, 94, 0.32);
-  --danger-glow: rgba(244, 63, 94, 0.20);
-
-  --warning: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.12);
-  --warning-border: rgba(251, 191, 36, 0.32);
-
-  --info: #38bdf8;
-  --info-bg: rgba(56, 189, 248, 0.12);
-  --info-border: rgba(56, 189, 248, 0.32);
-  --streak-color: #f472b6;
-
-  /* Focus rings & accessibility */
-  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
-  --focus-ring-inset: inset 0 0 0 2px var(--accent);
-
-  /* 5. TYPOGRAPHY & KÍCH THƯỚC KHUNG */
-  --font-heading: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, sans-serif;
-  --font-pixel: 'Pixelify Sans', 'VT323', monospace;
-  --font-body: 'Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, sans-serif;
-  --font-family: var(--font-body);
-  --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, monospace;
-
-  /* Font scales with clamp */
-  --text-display: clamp(1.85rem, 3.5vw + 1rem, 2.75rem);
-  --text-h1: clamp(1.4rem, 2.2vw + 0.8rem, 2rem);
-  --text-h2: clamp(1.15rem, 1.5vw + 0.7rem, 1.5rem);
-  --text-h3: clamp(1.02rem, 1vw + 0.65rem, 1.25rem);
-  --text-body: clamp(0.92rem, 0.4vw + 0.8rem, 1rem);
-  --text-sm: clamp(0.82rem, 0.25vw + 0.75rem, 0.88rem);
-  --text-xs: clamp(0.72rem, 0.15vw + 0.68rem, 0.78rem);
-
-  --leading-tight: 1.15;
-  --leading-snug: 1.35;
-  --leading-normal: 1.55;
-  --leading-relaxed: 1.7;
-
-  --tracking-tighter: -0.035em;
-  --tracking-tight: -0.025em;
-  --tracking-normal: 0em;
-  --tracking-wide: 0.04em;
-  --tracking-wider: 0.08em;
-  --tracking-pixel: 0.04em;
-
-  /* Spacing */
+  /* ==========================================
+     6. THANG KHOẢNG CÁCH (SPACING SCALE)
+     ========================================== */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -140,36 +109,138 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* Radii */
+  /* ==========================================
+     7. THANG TYPOGRAPHY (TYPOGRAPHY SCALE VIA CLAMP)
+     Toàn bộ Heading, Tiêu đề và UI: đồng nhất Sans-serif dễ đọc.
+     ========================================== */
+  --font-body: 'Plus Jakarta Sans', 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: var(--font-body);
+  --font-heading: var(--font-body);
+  --font-pixel: var(--font-body);
+  --font-script: var(--font-body);
+  --font-editorial: var(--font-body);
+  --font-poster: 'Montserrat', 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Cỡ chữ co giãn mượt mà theo viewport (Mobile -> Desktop) */
+  --text-display: clamp(1.85rem, 3.5vw + 1rem, 2.75rem);
+  --text-h1: clamp(1.4rem, 2.2vw + 0.8rem, 2rem);
+  --text-h2: clamp(1.15rem, 1.5vw + 0.7rem, 1.5rem);
+  --text-h3: clamp(1.02rem, 1vw + 0.65rem, 1.25rem);
+  --text-body: clamp(0.92rem, 0.4vw + 0.8rem, 1rem);
+  --text-sm: clamp(0.82rem, 0.25vw + 0.75rem, 0.88rem);
+  --text-xs: clamp(0.72rem, 0.15vw + 0.68rem, 0.78rem);
+
+  /* Chiều cao dòng (Line-heights) */
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  /* Khoảng cách chữ (Letter-spacing / Tracking) */
+  --tracking-tighter: -0.035em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
+  --tracking-pixel: 0.04em;
+
+  /* ==========================================
+     8. BO GÓC (BORDER RADII)
+     ========================================== */
   --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-card: 20px;
-  --radius-card-sm: 16px;
-  --radius-card-lg: 24px;
+  --radius-lg: 20px;
+  --radius-card: 24px;
+  --radius-card-sm: 18px;
+  --radius-card-lg: 28px;
   --radius-full: 9999px;
 
-  /* Motion physics (Emil Kowalski) */
-  --dur-instant: 80ms;
-  --dur-fast: 160ms;
-  --dur-norm: 240ms;
-  --dur-slow: 360ms;
+  /* ==========================================
+     9. HIỆU ỨNG ĐỔ BÓNG & GLOW NEON
+     Bán kính <= 14px để giữ GPU fill-rate siêu tốc và 90-120 FPS
+     ========================================== */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 12px var(--accent-glow);
+  --neon-glow-primary: 0 0 10px rgba(167, 139, 250, 0.30);
+  --neon-glow-hover: 0 4px 14px rgba(167, 139, 250, 0.40);
+  --card-hover-glow: 0 4px 12px rgba(0, 0, 0, 0.30), 0 0 8px rgba(167, 139, 250, 0.15);
+  --border-focus-glow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+
+  /* ==========================================
+     10. ACCESSIBLE FOCUS RING (TRUY CẬP BÀN PHÍM)
+     ========================================== */
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+  --focus-ring-inset: inset 0 0 0 2px var(--accent);
+
+  /* ==========================================
+     11. TỐC ĐỘ & EASING CHUYỂN ĐỘNG (ANIMATION EASING)
+     Deceleration mượt mà, không overshoot gây giật
+     ========================================== */
+  --dur-instant: 100ms;
+  --dur-fast: 200ms;
+  --dur-norm: 300ms;
+  --dur-slow: 400ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 
-  /* Layout dimensions */
-  --sidebar-width: 260px;
+  /* ==========================================
+     12. KÍCH THƯỚC BỐ CỤC KHUNG CHUẨN (LAYOUT CONSTANTS)
+     ========================================== */
+  --sidebar-width: 280px;
   --sidebar-collapsed-width: 72px;
   --header-height: 64px;
-  --bottom-nav-height: 64px;
-  --content-max-width: 1320px;
+  --bottom-nav-height: 68px;
+  --content-max-width: 1380px;
 
-  /* Legacy compatibility aliases */
-  --neu-raised: 0 6px 20px rgba(6, 3, 15, 0.24);
-  --neu-raised-sm: 0 4px 12px rgba(6, 3, 15, 0.20);
-  --neu-inset: inset 0 1px 3px rgba(0, 0, 0, 0.25);
-  --neu-btn-primary: 0 4px 12px rgba(168, 85, 247, 0.22);
+  /* ==========================================
+     13. COMPONENT & Z-INDEX ORCHESTRATION TOKENS (PROMPT 1A)
+     Chỉnh sửa tại đây để điều phối toàn bộ kích thước thẻ,
+     flashcard, dropdown và phân tầng nổi trên toàn ứng dụng.
+     ========================================== */
+  /* Hệ thống phân tầng Z-Index chuẩn */
+  --z-sidebar: 100;
+  --z-topbar: 90;
+  --z-dropdown-card: 500;
+  --z-dropdown-parent: 9990;
+  --z-dropdown-open: 9999;
+  --z-dropdown-menu: 10000;
+  --z-modal: 11000;
+  --z-toast: 12000;
+  
+  /* Dropdown Tokens */
+  --dropdown-trigger-bg: #131122;
+  --dropdown-trigger-border: rgba(167, 139, 250, 0.24);
+  --dropdown-trigger-radius: 12px;
+  --dropdown-menu-bg: #151226;
+  --dropdown-menu-border: rgba(167, 139, 250, 0.38);
+  --dropdown-menu-shadow: 0 20px 44px rgba(0, 0, 0, 0.85), 0 0 16px rgba(139, 92, 246, 0.20);
+  
+  /* Deck Card (Ô Ôn Tập) Tokens */
+  --deck-card-min-width: 340px;
+  --deck-card-padding: 24px;
+  --deck-card-gap: 20px;
+  
+  /* Flashcard (Giao diện Lật Thẻ) Tokens */
+  --flashcard-max-width: 820px;
+  --flashcard-max-width-xl: 860px;
+  --flashcard-height: 380px;
+  --flashcard-min-height: 340px;
+  --flashcard-max-height: 420px;
+  --flashcard-face-padding: 24px 32px;
+  --flashcard-question-size: clamp(1.22rem, 2.1vw, 1.5rem);
+  --flashcard-answer-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  --flashcard-explanation-size: 0.95rem;
+  /* Hero Card Tokens (Prompt 1b) */
+  --hero-border-width: 2px;
+  --hero-border-color: rgba(192, 132, 252, 0.48);
+  --hero-border-hover: rgba(244, 114, 182, 0.72);
+  --hero-bg: linear-gradient(145deg, rgba(22, 16, 42, 0.90) 0%, rgba(13, 9, 26, 0.94) 100%);
+  --hero-shadow: 0 16px 40px rgba(4, 2, 12, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }

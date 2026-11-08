@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.12.0';
+const CACHE_NAME = 'mindsparks-v4.11.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -9,9 +9,6 @@ const STATIC_ASSETS = [
   './css/theme.css',
   './css/fonts.css',
   './css/style.css',
-  './css/thermal-dashboard.css',
-  './css/neumorph-study.css',
-  './css/thermal-tools.css',
   './lib/fonts/vt323.ttf',
   './lib/fonts/caveat.ttf',
   './lib/fonts/pixelify-sans-bold.ttf',
@@ -27,7 +24,6 @@ const STATIC_ASSETS = [
   './js/audio.js',
   './js/confetti.js',
   './js/app.js',
-  './js/thermal-effects.js',
   './data/sample-deck.json',
   './backgrounds/bg-pixel-meadow.webp',
   './backgrounds/bg-starry-garden.webp',

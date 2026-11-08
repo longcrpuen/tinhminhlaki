@@ -120,13 +120,3 @@ const SRS = {
     return `Sau ${days} ngày`;
   }
 };
-
-if (typeof self !== 'undefined') {
-  self.SRS = SRS;
-}
-if (typeof window !== 'undefined') {
-  window.SRS = SRS;
-}
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = SRS;
-}

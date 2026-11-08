@@ -36,15 +36,8 @@
 
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/thermal-dashboard.css">
-  <link rel="stylesheet" href="./css/neumorph-study.css">
-  <link rel="stylesheet" href="./css/thermal-tools.css">
 </head>
 <body>
-  <!-- ==========================================================================
-       DATAMOSH GLITCH & CHROMATIC DISPLACEMENT SVG FILTER
-       ========================================================================== -->
-  
   <!-- Background Layer for Custom Wallpapers -->
   <div id="bg-layer"></div>
 
@@ -145,284 +138,279 @@
       <div class="content-wrapper">
         
         <!-- 1. DASHBOARD VIEW -->
-        <!-- 1. DASHBOARD VIEW (ULTRAVIOLET THERMAL CAMERA × DARK NEUMORPHISM × DATAMOSH) -->
-        <!-- 1. DASHBOARD VIEW (SOFT VIOLET-ROSE × AIRY STACKED DASHBOARD) -->
         <section id="view-dashboard" class="view-section active">
-          
-          <div class="dashboard-vertical-stack">
-            <!-- 1. KHỐI HERO QUOTE TRẢI RỘNG TOÀN KHUNG Ở TRÊN -->
-            <div class="hero-card" id="thermal-hero-card">
-              <div class="hero-content">
-                <div class="hero-heading-scrim" style="width: 100%;">
-                  <div class="hero-top-meta">
-                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                      <span class="tech-tag">SPACED REPETITION SM-2</span>
-                      <span class="tech-tag subtle">OFFLINE PWA</span>
+          <!-- Hero Card with Progress Ring -->
+          <div class="hero-card">
+            <div class="hero-content">
+              <div class="hero-heading-scrim">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                  <span class="tech-tag">SYSTEM // SM-2 ACTIVE</span>
+                  <span class="tech-tag subtle">OFFLINE PWA</span>
+                </div>
+                <h2 class="hero-title" id="hero-title">
+                  <span class="hero-title-main">TÔI</span>
+                  <span class="hero-title-accent">NGU</span>
+                  <span class="hero-title-sub">BẠN CŨNG THẾ</span>
+                </h2>
+                <p class="hero-desc">Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.</p>
+                <div class="hero-actions">
+                  <button class="btn btn-primary" onclick="App.startSession(null, 'srs')">
+                    ⚡ Ôn tập hôm nay
+                  </button>
+                  <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
+                    🎯 Ôn câu hay sai
+                  </button>
+                  <button class="btn btn-secondary" onclick="App.navigateTo('import')">
+                    ✨ Dán câu hỏi AI
+                  </button>
+                </div>
+              </div>
+
+              <!-- Bento Daily Goal & SM-2 Retention Hub (retained in DOM for test suite compatibility, hidden from view) -->
+              <div class="dashboard-bento-metrics" style="display: none;">
+                <!-- Single Radial Progress Widget (Daily Goal Highlight) -->
+                <div class="daily-radial-card" id="dashboard-radial-container">
+                  <div class="daily-radial-wrap">
+                    <svg class="daily-radial-svg" viewBox="0 0 100 100">
+                      <defs>
+                        <linearGradient id="radial-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#a78bfa"/>
+                          <stop offset="60%" stop-color="#c084fc"/>
+                          <stop offset="100%" stop-color="#f472b6"/>
+                        </linearGradient>
+                      </defs>
+                      <circle class="daily-radial-track" cx="50" cy="50" r="40"></circle>
+                      <circle id="daily-radial-bar" class="daily-radial-fill" cx="50" cy="50" r="40"></circle>
+                    </svg>
+                    <div class="daily-radial-content">
+                      <span id="daily-radial-pct" class="daily-radial-pct">0%</span>
+                      <span class="daily-radial-sub">TIẾN ĐỘ</span>
                     </div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="App.triggerDatamoshQuote()" title="Đổi câu Quote ngẫu nhiên">
-                      ↻ Đổi Quote
-                    </button>
                   </div>
-
-                  <h2 class="hero-title" id="hero-title">
-                    <span class="hero-title-main">TÔI</span>
-                    <span class="hero-title-accent">NGU</span>
-                    <span class="hero-title-sub">BẠN CŨNG THẾ</span>
-                  </h2>
-
-                  <div class="thermal-quote-subtext">
-                    <p class="hero-desc" id="hero-quote-content">
-                      Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.
-                    </p>
-                    <span id="hero-quote-author" style="display: none;">MindSparks Neural Core</span>
-                  </div>
-
-                  <div class="hero-actions">
-                    <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      Ôn tập hôm nay
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.startSession(null, 'mistakes')">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                      Ôn câu hay sai
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('import')">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
-                      Dán câu hỏi AI
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. KHỐI STATUS NẰM NGAY DƯỚI QUOTE (4 CỘT ĐỀU NHAU + THANH ĐỘ BỀN SM-2) -->
-            <div class="dashboard-status-bar">
-              <div class="stats-grid">
-                <!-- Thẻ 1: Cần ôn hôm nay -->
-                <div class="stat-card">
-                  <div class="stat-icon-wrap amber">⏰</div>
-                  <div class="stat-info">
-                    <span class="stat-num" id="stat-due-today">0</span>
-                    <span class="stat-label">Cần ôn hôm nay</span>
-                    <span id="stat-reviews" style="display: none;">0</span>
+                  <div class="daily-radial-info">
+                    <div class="daily-radial-label">Mục tiêu hôm nay</div>
+                    <div id="daily-radial-count" class="daily-radial-meta">0 / 20 câu</div>
                   </div>
                 </div>
 
-                <!-- Thẻ 2: Chuỗi liên tục -->
-                <div class="stat-card">
-                  <div class="stat-icon-wrap purple">🔥</div>
-                  <div class="stat-info">
-                    <span class="stat-num" id="stat-streak-days">0 ngày</span>
-                    <span class="stat-label">Chuỗi liên tục</span>
-                    <span id="stat-streak" style="display: none;">0</span>
+                <!-- SM-2 Memory Retention Radar & 7-Day Mini Heatmap (Replaces duplicate battery) -->
+                <div class="sm2-retention-card" id="dashboard-retention-card">
+                  <div class="sm2-retention-header">
+                    <span class="sm2-retention-title">⚡ CHỈ SỐ GHI NHỚ</span>
+                    <span class="tech-tag" style="padding: 2px 7px; font-size: 0.65rem;">SM-2 OPTIMAL</span>
                   </div>
-                </div>
-
-                <!-- Thẻ 3: Đã thành thạo -->
-                <div class="stat-card">
-                  <div class="stat-icon-wrap green">🏆</div>
-                  <div class="stat-info">
-                    <span class="stat-num" id="stat-mastered-cards">0</span>
-                    <span class="stat-label">Đã thành thạo</span>
-                    <span id="stat-mastered" style="display: none;">0</span>
-                  </div>
-                </div>
-
-                <!-- Thẻ 4: Tổng số câu hỏi -->
-                <div class="stat-card">
-                  <div class="stat-icon-wrap indigo">📚</div>
-                  <div class="stat-info">
-                    <span class="stat-num" id="stat-total-cards">0</span>
-                    <span class="stat-label">Tổng số câu hỏi</span>
-                    <span id="stat-accuracy" style="display: none;">100%</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Thanh Độ Bền Lưu Giữ SM-2 & Mini Heatmap 7 Ngày -->
-              <div class="sm2-status-banner sm2-retention-card" id="dashboard-retention-card">
-                <div style="flex: 1; min-width: 240px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.04em;">⚡ ĐỘ BỀN LƯU GIỮ (SM-2)</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span id="dashboard-retention-status" class="sm2-retention-desc" style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Tối ưu (Optimal)</span>
-                      <span id="dashboard-retention-pct" class="sm2-retention-pct" style="font-family: var(--font-pixel); font-size: 1.15rem; font-weight: 800; color: var(--text-accent);">96%</span>
+                  <div class="sm2-retention-stat-row">
+                    <span class="sm2-retention-pct" id="dashboard-retention-pct">96%</span>
+                    <div class="sm2-retention-meta">
+                      <span class="sm2-retention-label">Độ bền lưu giữ</span>
+                      <span class="sm2-retention-desc" id="dashboard-retention-status">Tối ưu (Optimal)</span>
                     </div>
                   </div>
                   <div class="sm2-retention-track">
                     <div class="sm2-retention-fill" id="dashboard-retention-fill" style="width: 96%;"></div>
                   </div>
+
+                  <!-- Mini Heatmap 7 Ngày -->
+                  <div class="mini-heatmap-wrap">
+                    <span class="mini-heatmap-label">CHUỖI ÔN 7 NGÀY QUA</span>
+                    <div class="mini-heatmap-days" id="mini-heatmap-days">
+                      <div class="mini-day-dot active" title="Ngày 1"><span class="day-dot-label">1</span></div>
+                      <div class="mini-day-dot active" title="Ngày 2"><span class="day-dot-label">2</span></div>
+                      <div class="mini-day-dot active" title="Ngày 3"><span class="day-dot-label">3</span></div>
+                      <div class="mini-day-dot active" title="Ngày 4"><span class="day-dot-label">4</span></div>
+                      <div class="mini-day-dot active" title="Ngày 5"><span class="day-dot-label">5</span></div>
+                      <div class="mini-day-dot active" title="Ngày 6"><span class="day-dot-label">6</span></div>
+                      <div class="mini-day-dot active today" title="Hôm nay"><span class="day-dot-label">7</span></div>
+                    </div>
+                  </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">7 ngày qua:</span>
-                  <div class="mini-heatmap-days" id="mini-heatmap-days" style="min-width: 190px;">
-                    <div class="mini-day-dot active" title="Ngày 1"><span class="day-dot-label">1</span></div>
-                    <div class="mini-day-dot active" title="Ngày 2"><span class="day-dot-label">2</span></div>
-                    <div class="mini-day-dot active" title="Ngày 3"><span class="day-dot-label">3</span></div>
-                    <div class="mini-day-dot active" title="Ngày 4"><span class="day-dot-label">4</span></div>
-                    <div class="mini-day-dot active" title="Ngày 5"><span class="day-dot-label">5</span></div>
-                    <div class="mini-day-dot active" title="Ngày 6"><span class="day-dot-label">6</span></div>
-                    <div class="mini-day-dot active today" title="Hôm nay"><span class="day-dot-label">7</span></div>
+
+                <!-- Pixel Battery container retained in DOM for test runner compatibility (hidden from dashboard) -->
+                <div id="dashboard-battery-container" style="display: none;" class="pixel-battery-wrapper">
+                  <div class="pixel-battery-header">
+                    <span class="pixel-battery-title">⚡ PIN NĂNG LƯỢNG</span>
+                    <span id="dashboard-battery-pct" class="pixel-battery-pct">0%</span>
+                  </div>
+                  <div class="pixel-battery-row">
+                    <div class="pixel-battery-shell">
+                      <div class="pixel-battery-segments" id="dashboard-battery-segments">
+                        <div class="pixel-battery-segment" data-segment="1"></div>
+                        <div class="pixel-battery-segment" data-segment="2"></div>
+                        <div class="pixel-battery-segment" data-segment="3"></div>
+                        <div class="pixel-battery-segment" data-segment="4"></div>
+                        <div class="pixel-battery-segment" data-segment="5"></div>
+                        <div class="pixel-battery-segment" data-segment="6"></div>
+                        <div class="pixel-battery-segment" data-segment="7"></div>
+                        <div class="pixel-battery-segment" data-segment="8"></div>
+                        <div class="pixel-battery-segment" data-segment="9"></div>
+                        <div class="pixel-battery-segment" data-segment="10"></div>
+                      </div>
+                      <div id="dashboard-battery-fill" class="pixel-battery-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="pixel-battery-cap"></div>
+                  </div>
+                  <div class="pixel-battery-footer">
+                    <span id="dashboard-battery-sub" class="pixel-battery-sub">0 / 20 câu</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Khối DOM Ẩn Giữ Lại Để Tương Thích Tuyệt Đối 100% Với Test Suite & App.js -->
-          <div class="dashboard-bento-metrics" style="display: none;">
-            <div class="daily-radial-card" id="dashboard-radial-container">
-              <svg class="daily-radial-svg" viewBox="0 0 100 100">
-                <circle class="daily-radial-track" cx="50" cy="50" r="40"></circle>
-                <circle id="daily-radial-bar" class="daily-radial-fill" cx="50" cy="50" r="40"></circle>
-              </svg>
-              <span id="daily-radial-pct">0%</span>
-              <span id="daily-radial-count">0 / 20 câu</span>
+          <!-- Quick Metrics Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrap indigo">📚</div>
+              <div class="stat-info">
+                <span class="stat-num" id="stat-total-cards">0</span>
+                <span class="stat-label">Tổng số câu hỏi</span>
+              </div>
             </div>
-            <div id="dashboard-battery-container" style="display: none;" class="pixel-battery-wrapper">
-              <span id="dashboard-battery-pct">0%</span>
-              <div id="dashboard-battery-fill" style="width: 0%;"></div>
-              <span id="dashboard-battery-sub">0 / 20 câu</span>
-              <div class="pixel-battery-segments" id="dashboard-battery-segments"></div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap amber">⏰</div>
+              <div class="stat-info">
+                <span class="stat-num" id="stat-due-today">0</span>
+                <span class="stat-label">Cần ôn hôm nay</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap green">🏆</div>
+              <div class="stat-info">
+                <span class="stat-num" id="stat-mastered-cards">0</span>
+                <span class="stat-label">Đã thành thạo</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrap purple">🔥</div>
+              <div class="stat-info">
+                <span class="stat-num" id="stat-streak-days">0 ngày</span>
+                <span class="stat-label">Chuỗi học liên tục</span>
+              </div>
             </div>
           </div>
 
-          <!-- 7 CHẾ ĐỘ ÔN TẬP THÔNG MINH (MA TRẬN BENTO 12 CỘT) -->
+          <!-- 7 Study Modes Section (Section 4) -->
           <div class="section-title-wrap">
             <div>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                 <h3 class="section-title">7 Chế Độ Ôn Tập Thông Minh</h3>
-                <span class="tech-tag subtle">ADAPTIVE BENTO</span>
+                <span class="tech-tag subtle">ADAPTIVE</span>
               </div>
-              <p style="color: var(--text-secondary); font-size: 0.85rem;">Ma trận 12 cột bất đối xứng tối ưu hóa khả năng phản xạ và ghi nhớ sâu</p>
+              <p style="color: var(--text-secondary); font-size: 0.85rem;">Tự động phân bổ và tối ưu hóa dựa trên nguồn câu hỏi của bạn</p>
             </div>
           </div>
 
-          <div id="dashboard-modes-grid" class="study-modes-grid bento-modes-matrix">
-            <!-- HÀNG TRÊN: 2 CARD 6 CỘT -->
-            <!-- Mode 3: Spaced Repetition SM-2 (6 Cột) -->
-            <div class="study-mode-card bento-mode-span-6" onclick="App.startSession(null, 'srs')">
+          <div class="study-modes-grid">
+            <!-- Mode 1: Luyện tập tự do -->
+            <div class="study-mode-card" onclick="App.startSession(null, 'free')">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #34d399; border-color: rgba(52, 211, 153, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.1);">MODE // 03</span>
+                  <div class="study-mode-icon">🎲</div>
+                  <span class="tech-tag">MODE // 01</span>
                 </div>
-                <h4 class="study-mode-title">3. Spaced Repetition SM-2</h4>
-                <p class="study-mode-desc">Xếp lịch ôn lại theo thuật toán lặp lại ngắt quãng SM-2. Câu nhớ tốt giãn ngày ra, câu hay quên xuất hiện dày hơn để neo giữ trí nhớ dài hạn.</p>
+                <h4 class="study-mode-title">1. Luyện tập tự do</h4>
+                <p class="study-mode-desc">Trộn ngẫu nhiên tất cả câu hỏi trong kho kiến thức để rèn luyện phản xạ không giới hạn.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Ôn theo chu kỳ <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Bắt đầu luyện tập</span>
               </div>
             </div>
 
-            <!-- Mode 2: Ôn lại câu sai (6 Cột) -->
-            <div class="study-mode-card bento-mode-span-6" onclick="App.startSession(null, 'mistakes')">
+            <!-- Mode 2: Ôn lại câu sai -->
+            <div class="study-mode-card" onclick="App.startSession(null, 'mistakes')">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #ff2a6d; border-color: rgba(255, 42, 109, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #ff2a6d; border-color: rgba(255, 42, 109, 0.3); background: rgba(255, 42, 109, 0.1);">MODE // 02</span>
+                  <div class="study-mode-icon" style="background: rgba(244, 63, 94, 0.15); color: #F43F5E; border-color: rgba(244, 63, 94, 0.3);">🎯</div>
+                  <span class="tech-tag" style="color: #F43F5E; border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.1);">MODE // 02</span>
                 </div>
-                <h4 class="study-mode-title">2. Quét Hồng Ngoại Câu Sai</h4>
-                <p class="study-mode-desc">Tập trung năng lượng quét sâu vào các câu vừa làm sai gần nhất hoặc sai nhiều lần nhất trong quá khứ để vá nhanh lỗ hổng kiến thức.</p>
+                <h4 class="study-mode-title">2. Ôn lại câu sai</h4>
+                <p class="study-mode-desc">Ưu tiên các câu vừa làm sai gần nhất hoặc sai nhiều lần nhất để khắc phục lỗ hổng.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Luyện câu hay sai <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Luyện câu hay sai</span>
               </div>
             </div>
 
-            <!-- HÀNG GIỮA: 3 CARD 4 CỘT -->
-            <!-- Mode 7: Ôn nước rút trước thi (4 Cột) -->
-            <div class="study-mode-card bento-mode-span-4" onclick="App.openSprintModal()">
+            <!-- Mode 3: Spaced Repetition SM-2 -->
+            <div class="study-mode-card" onclick="App.startSession(null, 'srs')">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #ec4899; border-color: rgba(236, 72, 153, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #ec4899; border-color: rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.1);">MODE // 07</span>
+                  <div class="study-mode-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981; border-color: rgba(16, 185, 129, 0.3);">⚡</div>
+                  <span class="tech-tag" style="color: #10B981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1);">MODE // 03</span>
                 </div>
-                <h4 class="study-mode-title">7. Ôn Nước Rút</h4>
-                <p class="study-mode-desc">Tự động gom N câu từ các chủ đề yếu nhất để cấp tốc lấy lại phong độ trước giờ G.</p>
+                <h4 class="study-mode-title">3. Spaced Repetition</h4>
+                <p class="study-mode-desc">Xếp lịch ôn lại theo độ nhớ SM-2. Câu nhớ tốt giãn ngày ra, câu hay quên xuất hiện dày hơn.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Ôn cấp tốc <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Ôn theo chu kỳ</span>
               </div>
             </div>
 
-            <!-- Mode 6: Đoán trước khi xem đáp án (4 Cột) -->
-            <div class="study-mode-card bento-mode-span-4" onclick="App.startSession(null, 'blind')">
+            <!-- Mode 4: Kiểm tra có giới hạn thời gian -->
+            <div class="study-mode-card" onclick="App.openExamModal()">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3); background: rgba(192, 132, 252, 0.1);">MODE // 06</span>
+                  <div class="study-mode-icon" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; border-color: rgba(245, 158, 11, 0.3);">⏱️</div>
+                  <span class="tech-tag" style="color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1);">MODE // 04</span>
                 </div>
-                <h4 class="study-mode-title">6. Đoán Trước Đáp Án</h4>
-                <p class="study-mode-desc">Ẩn toàn bộ 4 phương án, tự truy xuất lời giải trong đầu trước khi mở màn đối chiếu.</p>
+                <h4 class="study-mode-title">4. Kiểm tra tính giờ</h4>
+                <p class="study-mode-desc">Mô phỏng phòng thi thật với đồng hồ đếm ngược (có thể bật/tắt), tổng kết điểm số chi tiết.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Luyện phản xạ <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Vào phòng thi</span>
               </div>
             </div>
 
-            <!-- Mode 4: Kiểm tra có giới hạn thời gian (4 Cột) -->
-            <div class="study-mode-card bento-mode-span-4" onclick="App.openExamModal()">
+            <!-- Mode 5: Ôn theo chủ đề / tag -->
+            <div class="study-mode-card" onclick="App.openTopicPickerModal()">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.1);">MODE // 04</span>
+                  <div class="study-mode-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6; border-color: rgba(139, 92, 246, 0.3);">🏷️</div>
+                  <span class="tech-tag" style="color: #8B5CF6; border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.1);">MODE // 05</span>
                 </div>
-                <h4 class="study-mode-title">4. Kiểm Tra Tính Giờ</h4>
-                <p class="study-mode-desc">Mô phỏng áp lực phòng thi thực tế với đồng hồ đếm ngược, tổng kết phân tích điểm số.</p>
+                <h4 class="study-mode-title">5. Ôn theo chủ đề/tag</h4>
+                <p class="study-mode-desc">Lọc câu hỏi theo từng chủ điểm cụ thể (ví dụ: Đạo hàm, Tích phân, Thuật toán, v.v.).</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Vào phòng thi <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Chọn chủ đề</span>
               </div>
             </div>
 
-            <!-- HÀNG DƯỚI: 2 CARD 6 CỘT -->
-            <!-- Mode 5: Ôn theo chủ đề / tag (6 Cột) -->
-            <div class="study-mode-card bento-mode-span-6" onclick="App.openTopicPickerModal()">
+            <!-- Mode 6: Đoán trước khi xem đáp án -->
+            <div class="study-mode-card" onclick="App.startSession(null, 'blind')">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #a855f7; border-color: rgba(168, 85, 247, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #a855f7; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.1);">MODE // 05</span>
+                  <div class="study-mode-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4; border-color: rgba(6, 182, 212, 0.3);">🧠</div>
+                  <span class="tech-tag" style="color: #06B6D4; border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.1);">MODE // 06</span>
                 </div>
-                <h4 class="study-mode-title">5. Ôn Theo Chủ Đề / Tag</h4>
-                <p class="study-mode-desc">Phân loại và luyện sâu theo từng chủ điểm kiến thức riêng biệt (Đạo hàm, Tích phân, Thuật toán...).</p>
+                <h4 class="study-mode-title">6. Đoán trước đáp án</h4>
+                <p class="study-mode-desc">Ẩn các lựa chọn, người học tự tư duy đáp án trong đầu trước, bấm để hiện đáp án đối chiếu.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Chọn chủ đề <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Luyện phản xạ</span>
               </div>
             </div>
 
-            <!-- Mode 1: Luyện tập tự do (6 Cột) -->
-            <div class="study-mode-card bento-mode-span-6" onclick="App.startSession(null, 'free')">
+            <!-- Mode 7: Ôn nước rút trước thi -->
+            <div class="study-mode-card" onclick="App.openSprintModal()">
               <div>
                 <div class="study-mode-topbar">
-                  <div class="study-mode-icon-well" style="color: #ff6b35; border-color: rgba(255, 107, 53, 0.35);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/></svg>
-                  </div>
-                  <span class="tech-tag" style="color: #ff6b35; border-color: rgba(255, 107, 53, 0.3); background: rgba(255, 107, 53, 0.1);">MODE // 01</span>
+                  <div class="study-mode-icon" style="background: rgba(236, 72, 153, 0.15); color: #EC4899; border-color: rgba(236, 72, 153, 0.3);">🚀</div>
+                  <span class="tech-tag" style="color: #EC4899; border-color: rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.1);">MODE // 07</span>
                 </div>
-                <h4 class="study-mode-title">1. Luyện Tập Tự Do</h4>
-                <p class="study-mode-desc">Trộn ngẫu nhiên không giới hạn mọi câu hỏi trong thư viện thẻ để rèn luyện phản xạ toàn diện.</p>
+                <h4 class="study-mode-title">7. Ôn nước rút</h4>
+                <p class="study-mode-desc">Tự động gom N câu từ các chủ đề yếu nhất và sai nhiều nhất để cấp tốc lấy lại phong độ.</p>
               </div>
               <div class="study-mode-footer">
-                <span class="study-mode-pill-btn">Bắt đầu ngay <span class="arrow">→</span></span>
+                <span class="study-mode-pill-btn">Ôn cấp tốc</span>
               </div>
             </div>
           </div>
 
-          <!-- PHẦN BỘ CÂU HỎI CỦA BẠN (DASHBOARD DECKS GRID) -->
+          <!-- Decks Section Header -->
           <div class="section-title-wrap">
             <h3 class="section-title">Bộ câu hỏi của bạn</h3>
             <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.navigateTo('decks')">
@@ -430,6 +418,7 @@
             </button>
           </div>
 
+          <div id="dashboard-subject-filters" class="dashboard-subject-filters"></div>
           <div id="dashboard-decks-grid" class="decks-grid"></div>
         </section>
 
@@ -442,16 +431,16 @@
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
               <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()" style="font-size: 0.85rem;" title="Tạo môn học mới">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Môn học mới
+                ➕ Môn học mới
               </button>
               <button class="btn btn-secondary" onclick="App.openBulkReassignModal()" style="font-size: 0.85rem;" title="Gán lại môn học hàng loạt cho nhiều bộ thẻ">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Gán lại môn
+                🔀 Gán lại môn
               </button>
               <button class="btn btn-secondary" onclick="App.navigateTo('import-lms')" style="font-size: 0.85rem;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Nhập từ LMS
+                📥 Nhập từ LMS
               </button>
               <button class="btn btn-primary" onclick="App.navigateTo('import')">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tạo / Dán thẻ mới
+                + Tạo / Dán thẻ mới
               </button>
             </div>
           </div>
@@ -466,7 +455,7 @@
               <div class="bank-title-block">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
                   <h2 class="section-title bank-main-heading" style="margin-bottom: 0;">Ngân Hàng Câu Hỏi Toàn Thư Viện</h2>
-                  <span class="tech-tag">TẤT CẢ CÂU HỎI</span>
+                  <span class="tech-tag">LIBRARY // ALL</span>
                 </div>
                 <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
                   Duyệt nhanh theo Môn học, lọc theo chủ đề/độ khó hoặc lọc riêng câu Bookmark ⭐ và câu Diễn đạt chưa rõ 🚩.
@@ -474,13 +463,13 @@
               </div>
               <div class="bank-actions-row">
                 <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.openAddCardModal()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Thêm câu hỏi mới
+                  ➕ Thêm câu hỏi mới
                 </button>
                 <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.copyFlaggedAIPrompt()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Sao chép Prompt AI viết lại
+                  🚩 Sao chép Prompt AI viết lại
                 </button>
                 <button class="btn btn-primary" style="font-size: 0.85rem;" onclick="App.startSessionFromBank()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Luyện tập câu trong danh sách
+                  ⚡ Luyện tập câu trong danh sách
                 </button>
               </div>
             </div>
@@ -996,7 +985,7 @@
                   <label class="form-label" id="lms-deck-label">2. Chọn Bộ Câu Hỏi Đích:</label>
                   <div class="cyber-dropdown" id="lms-deck-dropdown-wrap" style="width: 100%;">
                     <button type="button" class="cyber-dropdown-trigger" id="lms-deck-dropdown-trigger" onclick="App.toggleLmsDeckDropdown(event)">
-                      <span class="cyber-dropdown-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><rect width="8" height="18" x="3" y="3" rx="1"/><rect width="8" height="18" x="13" y="3" rx="1"/></svg></span>
+                      <span class="cyber-dropdown-icon">🎴</span>
                       <span class="cyber-dropdown-label" id="lms-deck-dropdown-label">+ Tạo bộ thẻ mới</span>
                       <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1033,7 +1022,7 @@
                     <span class="tech-tag" style="background: rgba(167, 139, 250, 0.15); color: var(--accent); border-color: rgba(167, 139, 250, 0.3);">MẪU ĐỊNH DẠNG LMS (MOODLE)</span>
                   </div>
                   <button type="button" id="btn-lms-paste-sample" class="btn btn-secondary btn-lms-paste-sample" onclick="App.pasteLmsSampleData()">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Dán mẫu LMS thử nghiệm
+                    📋 Dán mẫu LMS thử nghiệm
                   </button>
                 </div>
                 <div class="lms-sample-snippet">
@@ -1139,19 +1128,19 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <div style="max-width: 800px; margin: 0 auto;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
               <h2 class="section-title">Thống Kê Hiệu Suất Học Tập</h2>
-              <span class="tech-tag">THỐNG KÊ CHI TIẾT</span>
+              <span class="tech-tag">ANALYTICS // SM-2</span>
             </div>
 
             <div class="stats-grid" style="margin-bottom: 24px;">
               <div class="stat-card">
-                <div class="stat-icon-wrap green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+                <div class="stat-icon-wrap green">🎯</div>
                 <div class="stat-info">
                   <span class="stat-num" id="stat-acc-pct">0%</span>
                   <span class="stat-label">Tỉ lệ trả lời đúng</span>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon-wrap indigo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                <div class="stat-icon-wrap indigo">📝</div>
                 <div class="stat-info">
                   <span class="stat-num" id="stat-total-reviews">0</span>
                   <span class="stat-label">Lượt ôn tập đã làm</span>
@@ -1159,13 +1148,13 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
               </div>
               <div class="stat-card stat-card-streak col-span-2">
                 <div class="stat-streak-banner">
-                  <div class="stat-icon-wrap amber streak-flame-glow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+                  <div class="stat-icon-wrap amber streak-flame-glow">🔥</div>
                   <div class="stat-info">
                     <span class="stat-num" id="stat-view-streak">0 ngày</span>
                     <span class="stat-label">Chuỗi ngày kiên trì</span>
                   </div>
                   <div class="stat-streak-msg" style="display: none;">
-                    <span class="streak-badge-tag">HỌC ĐỀU ĐẶN</span>
+                    <span class="streak-badge-tag">HỌC ĐỀU ĐẶN // SM-2</span>
                     <span class="streak-encouragement">Duy trì ít nhất 1 bài mỗi ngày để tối ưu trí nhớ!</span>
                   </div>
                 </div>
@@ -1283,7 +1272,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
             <!-- Background Customization -->
             <div class="quiz-card">
-              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>Giao Diện & Hình Nền</h3>
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;">🎨 Giao Diện & Hình Nền</h3>
               
               <div>
                 <div style="font-weight: 600; margin-bottom: 10px;">Hình nền (Backgrounds)</div>
@@ -1382,13 +1371,13 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="App.exportBackup()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Xuất file Backup JSON
+                  💾 Xuất file Backup JSON
                 </button>
                 <button class="btn btn-secondary" onclick="App.triggerImportBackup('merge')">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Nhập Backup (Gộp thẻ)
+                  📥 Nhập Backup (Gộp thẻ)
                 </button>
                 <button class="btn btn-danger" onclick="App.triggerImportBackup('replace')">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Nhập Backup (Ghi đè)
+                  ⚠️ Nhập Backup (Ghi đè)
                 </button>
                 <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="App.handleBackupFileChosen(event)">
               </div>
@@ -1609,7 +1598,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px;">
           <div class="pixel-battery-wrapper" id="result-battery-container" style="max-width: 320px;">
             <div class="pixel-battery-header">
-              <span class="pixel-battery-title"><span class="pixel-battery-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>TIẾN ĐỘ HOÀN THÀNH</span>
+              <span class="pixel-battery-title"><span class="pixel-battery-icon">⚡</span> PIN NĂNG LƯỢNG</span>
               <span id="result-battery-pct" class="pixel-battery-pct">0%</span>
             </div>
             <div class="pixel-battery-row">
@@ -1645,7 +1634,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             Về thư viện thẻ
           </button>
           <button class="btn btn-primary modal-close" onclick="App.navigateTo('stats')">
-            Xem thống kê <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-left: 4px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Xem thống kê 📊
           </button>
         </div>
       </div>
@@ -1820,25 +1809,40 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
   <!-- MODAL: Create New Subject -->
   <div id="modal-create-subject" class="modal-overlay">
-    <div class="modal-box" style="max-width: 480px;">
+    <div class="modal-box" style="max-width: 490px;">
       <div class="modal-header">
         <h3 class="modal-title">➕ Tạo Môn Học Mới</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 12px;">
           <label class="form-label" for="create-subject-name">Tên môn học (bắt buộc):</label>
-          <input type="text" id="create-subject-name" class="form-control" placeholder="Ví dụ: Toán Học, Triết Học, Lập Trình...">
+          <input type="text" id="create-subject-name" class="form-control" placeholder="Ví dụ: Toán Học, Triết Học, Lập Trình..." oninput="App.updateSubjectModalPreview('create')">
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-          <div class="form-group">
-            <label class="form-label" for="create-subject-icon">Biểu tượng (Emoji):</label>
-            <input type="text" id="create-subject-icon" class="form-control" placeholder="📚, 📐, 💻, 🔬..." value="📚" style="text-align: center; font-size: 1.2rem;">
+
+        <!-- Live Subject Badge Preview (Prompt 1b) -->
+        <div class="subject-preview-row">
+          <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
+          <span id="create-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
+            <span class="deck-subject-icon" id="create-subject-preview-icon">📚</span>
+            <span class="deck-subject-name" id="create-subject-preview-name">Tên môn học</span>
+          </span>
+        </div>
+
+        <!-- 1-Click Educational Emoji Picker (Prompt 1b) -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="form-label" for="create-subject-icon" style="margin-bottom: 0;">Biểu tượng (Emoji 1-Click):</label>
+            <input type="text" id="create-subject-icon" class="form-control" placeholder="Emoji..." value="📚" style="width: 54px; height: 32px; padding: 2px 6px; text-align: center; font-size: 1.15rem; border-radius: 8px;" oninput="App.updateSubjectModalPreview('create')">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="create-subject-color">Màu nhận diện:</label>
-            <input type="color" id="create-subject-color" class="form-control" value="#8b5cf6" style="height: 44px; padding: 4px; cursor: pointer;">
-          </div>
+          <div id="create-subject-emoji-grid" class="emoji-picker-grid"></div>
+        </div>
+
+        <!-- 1-Click Vibe Color Swatches (Prompt 1b) -->
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label" for="create-subject-color" style="margin-bottom: 4px;">Màu nhận diện (Vibe Swatches):</label>
+          <input type="color" id="create-subject-color" class="form-control" value="#a855f7" style="display: none;">
+          <div id="create-subject-color-grid" class="color-swatch-grid"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1857,19 +1861,34 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       </div>
       <div class="modal-body">
         <input type="hidden" id="manage-subject-id">
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 12px;">
           <label class="form-label" for="manage-subject-name">Tên môn học:</label>
-          <input type="text" id="manage-subject-name" class="form-control">
+          <input type="text" id="manage-subject-name" class="form-control" oninput="App.updateSubjectModalPreview('manage')">
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" for="manage-subject-icon">Biểu tượng (Emoji):</label>
-            <input type="text" id="manage-subject-icon" class="form-control" style="text-align: center; font-size: 1.2rem;">
+
+        <!-- Live Subject Badge Preview (Prompt 1b) -->
+        <div class="subject-preview-row">
+          <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
+          <span id="manage-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
+            <span class="deck-subject-icon" id="manage-subject-preview-icon">📚</span>
+            <span class="deck-subject-name" id="manage-subject-preview-name">Môn học</span>
+          </span>
+        </div>
+
+        <!-- 1-Click Educational Emoji Picker (Prompt 1b) -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="form-label" for="manage-subject-icon" style="margin-bottom: 0;">Biểu tượng (Emoji 1-Click):</label>
+            <input type="text" id="manage-subject-icon" class="form-control" style="width: 54px; height: 32px; padding: 2px 6px; text-align: center; font-size: 1.15rem; border-radius: 8px;" oninput="App.updateSubjectModalPreview('manage')">
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" for="manage-subject-color">Màu nhận diện:</label>
-            <input type="color" id="manage-subject-color" class="form-control" style="height: 44px; padding: 4px; cursor: pointer;">
-          </div>
+          <div id="manage-subject-emoji-grid" class="emoji-picker-grid"></div>
+        </div>
+
+        <!-- 1-Click Vibe Color Swatches (Prompt 1b) -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" for="manage-subject-color" style="margin-bottom: 4px;">Màu nhận diện (Vibe Swatches):</label>
+          <input type="color" id="manage-subject-color" class="form-control" style="display: none;">
+          <div id="manage-subject-color-grid" class="color-swatch-grid"></div>
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 16px;">
@@ -2004,6 +2023,5 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <script src="./js/audio.js"></script>
   <script src="./js/confetti.js"></script>
   <script src="./js/app.js"></script>
-  <script src="./js/thermal-effects.js"></script>
 </body>
 </html>

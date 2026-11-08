@@ -3,68 +3,7 @@
  * Single Page Application Logic, PWA, SRS & Quiz Modes
  */
 
-const UnifiedDropdown = {
-  closeAll() {
-    document.querySelectorAll('.cyber-dropdown.open, .unified-dropdown.open, [data-dropdown].open').forEach(el => {
-      el.classList.remove('open', 'dropup');
-      const trigger = el.querySelector('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
-      if (trigger) trigger.setAttribute('aria-expanded', 'false');
-    });
-  },
-
-  open(wrap) {
-    if (!wrap) return;
-    this.closeAll();
-    const trigger = wrap.querySelector('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
-    if (trigger) {
-      trigger.setAttribute('aria-expanded', 'true');
-      const rect = trigger.getBoundingClientRect();
-      if (window.innerHeight - rect.bottom < 240 && rect.top > 240) {
-        wrap.classList.add('dropup');
-      } else {
-        wrap.classList.remove('dropup');
-      }
-    }
-    wrap.classList.add('open');
-  },
-
-  toggle(target, e) {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    let wrap = null;
-    if (typeof target === 'string') {
-      wrap = document.getElementById(target) || document.getElementById(`${target}-wrap`) || document.querySelector(`[data-dropdown="${target}"]`);
-    } else if (target && target.nodeType) {
-      wrap = target.closest?.('.cyber-dropdown, .unified-dropdown, [data-dropdown]') || target;
-    }
-    if (!wrap) return;
-    const wasOpen = wrap.classList.contains('open');
-    this.closeAll();
-    if (!wasOpen) {
-      this.open(wrap);
-    }
-  },
-
-  init() {
-    document.addEventListener('click', (e) => {
-      const trigger = e.target.closest('.cyber-dropdown-trigger, .unified-dropdown-trigger, [data-dropdown-trigger]');
-      if (trigger) {
-        e.stopPropagation();
-        const wrap = trigger.closest('.cyber-dropdown, .unified-dropdown, [data-dropdown]');
-        if (wrap) {
-          this.toggle(wrap);
-          return;
-        }
-      }
-      if (!e.target.closest('.cyber-dropdown, .unified-dropdown, [data-dropdown]')) {
-        this.closeAll();
-      }
-    });
-  }
-};
-if (typeof window !== 'undefined') window.UnifiedDropdown = UnifiedDropdown;
-
 const App = {
-  UnifiedDropdown: UnifiedDropdown,
   currentView: 'dashboard',
   currentDeck: null,
   activeSession: null,
@@ -115,7 +54,6 @@ const App = {
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
-    if (typeof UnifiedDropdown !== 'undefined') UnifiedDropdown.init();
     await db.init();
 
     // Check migration notice (Section A)
@@ -1095,13 +1033,20 @@ const App = {
 
     // Global click listener to close Cyber Violet dropdown menus when clicking outside
     document.addEventListener('click', (e) => {
+      let anyClosed = false;
       document.querySelectorAll('.cyber-dropdown.open').forEach(wrap => {
         if (!wrap.contains(e.target)) {
           wrap.classList.remove('open', 'dropup');
           const trigger = wrap.querySelector('.cyber-dropdown-trigger');
           if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          anyClosed = true;
         }
       });
+      if (anyClosed || !document.querySelector('.cyber-dropdown.open')) {
+        document.querySelectorAll('.has-open-dropdown').forEach(parent => {
+          parent.classList.remove('has-open-dropdown');
+        });
+      }
     });
 
     // Universal keyboard navigation for Cyber Violet dropdowns
@@ -1220,13 +1165,14 @@ const App = {
     this.initSpotlightHover();
   },
 
-  // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2) ---
+  // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2 - Optimized 1b) ---
   initSpotlightHover() {
     if (typeof window === 'undefined' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       return;
     }
 
     let activeTarget = null;
+    let cachedRect = null;
     let rafId = null;
     let clientX = 0;
     let clientY = 0;
@@ -1248,12 +1194,20 @@ const App = {
       '.tab-item'
     ].join(', ');
 
+    const invalidateRect = () => {
+      cachedRect = null;
+    };
+    window.addEventListener('scroll', invalidateRect, { passive: true });
+    window.addEventListener('resize', invalidateRect, { passive: true });
+
     const updateCoords = () => {
       rafId = null;
       if (!activeTarget) return;
-      const rect = activeTarget.getBoundingClientRect();
-      const x = Math.round(clientX - rect.left);
-      const y = Math.round(clientY - rect.top);
+      if (!cachedRect) {
+        cachedRect = activeTarget.getBoundingClientRect();
+      }
+      const x = Math.round(clientX - cachedRect.left);
+      const y = Math.round(clientY - cachedRect.top);
       activeTarget.style.setProperty('--mx', `${x}px`);
       activeTarget.style.setProperty('--my', `${y}px`);
     };
@@ -1261,11 +1215,18 @@ const App = {
     document.addEventListener('pointermove', (e) => {
       const match = e.target.closest(targetSelector);
       if (!match) {
-        activeTarget = null;
+        if (activeTarget) {
+          activeTarget = null;
+          cachedRect = null;
+        }
         return;
       }
 
-      activeTarget = match;
+      if (match !== activeTarget) {
+        activeTarget = match;
+        cachedRect = activeTarget.getBoundingClientRect();
+      }
+
       clientX = e.clientX;
       clientY = e.clientY;
 
@@ -1273,27 +1234,23 @@ const App = {
         rafId = requestAnimationFrame(updateCoords);
       }
     }, { passive: true });
-
-    document.addEventListener('pointerleave', () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      activeTarget = null;
-    }, { passive: true });
   },
 
   // --- GLOBAL STATS & STREAK ---
-  async updateGlobalStats() {
-    const streakData = await db.getMeta('streak', { count: 0 });
+  async updateGlobalStats(cachedStreak, cachedDueCount) {
+    const streakData = (cachedStreak !== undefined && cachedStreak !== null)
+      ? cachedStreak
+      : await db.getMeta('streak', { count: 0 });
     const streakDisplay = document.getElementById('global-streak-count');
     if (streakDisplay) streakDisplay.textContent = streakData.count;
 
-    const dueCards = await db.getDueCards();
+    const dueCount = (cachedDueCount !== undefined && cachedDueCount !== null)
+      ? cachedDueCount
+      : (await db.getDueCards()).length;
     const dueBadges = document.querySelectorAll('.due-count-badge');
     dueBadges.forEach(badge => {
-      badge.textContent = dueCards.length;
-      badge.style.display = dueCards.length > 0 ? 'inline-block' : 'none';
+      badge.textContent = dueCount;
+      badge.style.display = dueCount > 0 ? 'inline-block' : 'none';
     });
   },
 
@@ -1389,21 +1346,46 @@ const App = {
     return html || `<span class="hero-title-main">${this._escapeHtml(rawQuote)}</span>`;
   },
 
+  currentDashboardSubjectFilter: 'all',
+
+  async filterDashboardDecks(subjectId) {
+    this.currentDashboardSubjectFilter = subjectId || 'all';
+    await this.renderDashboard();
+  },
+
   // --- DASHBOARD VIEW ---
   async renderDashboard() {
     this.updateHeroQuote();
-    await this.updateGlobalStats();
-    const decks = await db.getAllDecks();
-    const allCards = await db.getAllCards();
-    const dueCards = await db.getDueCards();
-    const streakData = await db.getMeta('streak', { count: 0 });
-    const dailyGoal = await db.getMeta('dailyGoal', 20);
 
-    // Get today's review count
+    // 1b Performance Overhaul: Parallelize IndexedDB queries
+    const [subjects, decks, allCards, streakData, dailyGoal, logs] = await Promise.all([
+      db.getAllSubjects(),
+      db.getAllDecks(),
+      db.getAllCards(),
+      db.getMeta('streak', { count: 0 }),
+      db.getMeta('dailyGoal', 20),
+      db.getRecentLogs(200)
+    ]);
+
+    const nowTs = Date.now();
+    const dueCards = allCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= nowTs);
+    await this.updateGlobalStats(streakData, dueCards.length);
+
+    // Build subjects lookup map
+    const subjectsMap = {};
+    (subjects || []).forEach(s => { subjectsMap[s.id] = s; });
+
+    // Single-pass Map for log counts by date (O(N) instead of O(7 * N))
     const todayStr = new Date().toISOString().slice(0, 10);
-    const logs = await db.getRecentLogs(200);
-    const todayLogs = logs.filter(l => new Date(l.timestamp).toISOString().slice(0, 10) === todayStr);
-    const todayReviews = todayLogs.length;
+    const logsByDate = new Map();
+    for (let i = 0; i < logs.length; i++) {
+      const l = logs[i];
+      if (l && l.timestamp) {
+        const dateKey = new Date(l.timestamp).toISOString().slice(0, 10);
+        logsByDate.set(dateKey, (logsByDate.get(dateKey) || 0) + 1);
+      }
+    }
+    const todayReviews = logsByDate.get(todayStr) || 0;
 
     // Daily Goal Radial Progress & Battery Update
     const goalRatio = Math.min(1, Math.max(0, todayReviews / Math.max(1, dailyGoal)));
@@ -1447,7 +1429,7 @@ const App = {
       });
     }
 
-    // SM-2 Memory Retention Radar & 7-Day Mini Heatmap Update
+    // SM-2 Memory Retention Radar
     let retentionPct = 96;
     if (allCards.length > 0) {
       const nonLapsedCards = allCards.filter(c => c.srs && c.srs.state !== 'lapsed' && c.srs.repetitions > 0);
@@ -1468,7 +1450,7 @@ const App = {
       else elRetentionStatus.textContent = 'Cần củng cố (Review Due)';
     }
 
-    // Mini Heatmap 7 Ngày (Last 7 Days)
+    // Mini Heatmap 7 Ngày (Last 7 Days - O(1) lookups via logsByDate)
     const miniHeatmapEl = document.getElementById('mini-heatmap-days');
     if (miniHeatmapEl) {
       const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -1479,7 +1461,7 @@ const App = {
         d.setDate(now.getDate() - i);
         const dateStr = d.toISOString().slice(0, 10);
         const isToday = (i === 0);
-        const dayReviewCount = logs.filter(l => new Date(l.timestamp).toISOString().slice(0, 10) === dateStr).length;
+        const dayReviewCount = logsByDate.get(dateStr) || 0;
         const isActive = dayReviewCount > 0 || (isToday && todayReviews > 0);
         const dayLabel = dayNames[d.getDay()];
         const dotTitle = isToday ? `Hôm nay: ${todayReviews} câu` : `${dateStr}: ${dayReviewCount} câu`;
@@ -1502,7 +1484,40 @@ const App = {
     const elStreakDays = document.getElementById('stat-streak-days');
     if (elStreakDays) elStreakDays.textContent = `${streakData.count} ngày`;
 
-    // Render Recent Decks
+    // Render Quick Subject Filters (Prompt 1b)
+    const filterContainer = document.getElementById('dashboard-subject-filters');
+    if (filterContainer && subjects.length > 0) {
+      const currentFilter = this.currentDashboardSubjectFilter || 'all';
+      let filterHtml = `
+        <button type="button" class="dashboard-subject-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="App.filterDashboardDecks('all')">
+          <span>📚 Tất cả môn</span>
+          <span style="opacity: 0.75; font-size: 0.75rem;">(${decks.length})</span>
+        </button>
+      `;
+
+      // Count decks per subject
+      const deckCountBySubj = {};
+      decks.forEach(d => {
+        const sId = d.subjectId || 'subj_unassigned';
+        deckCountBySubj[sId] = (deckCountBySubj[sId] || 0) + 1;
+      });
+
+      subjects.forEach(s => {
+        const count = deckCountBySubj[s.id] || 0;
+        if (count > 0) {
+          const isActive = currentFilter === s.id;
+          filterHtml += `
+            <button type="button" class="dashboard-subject-pill ${isActive ? 'active' : ''}" style="--pill-color: ${s.color || '#a855f7'};" onclick="App.filterDashboardDecks('${s.id}')">
+              <span>${s.icon || '📚'} ${this._escapeHtml(s.name)}</span>
+              <span style="opacity: 0.75; font-size: 0.75rem;">(${count})</span>
+            </button>
+          `;
+        }
+      });
+      filterContainer.innerHTML = filterHtml;
+    }
+
+    // Render Decks (filtered or top 6)
     const grid = document.getElementById('dashboard-decks-grid');
     if (grid) {
       if (decks.length === 0) {
@@ -1515,26 +1530,51 @@ const App = {
           </div>
         `;
       } else {
-        let html = '';
-        for (const deck of decks.slice(0, 6)) {
-          const deckCards = allCards.filter(c => c.deckId === deck.id);
-          const deckDue = deckCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= Date.now());
-          html += this._createDeckCardHtml(deck, deckCards.length, deckDue.length);
+        const currentFilter = this.currentDashboardSubjectFilter || 'all';
+        const displayDecks = currentFilter === 'all'
+          ? decks.slice(0, 6)
+          : decks.filter(d => (d.subjectId || 'subj_unassigned') === currentFilter);
+
+        if (displayDecks.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 30px 20px; background: var(--bg-surface); border-radius: var(--radius-card); border: 1px dashed var(--border-color);">
+              <p style="color: var(--text-secondary); margin-bottom: 12px;">Chưa có bộ câu hỏi nào thuộc môn này.</p>
+              <button class="btn btn-secondary btn-sm" onclick="App.filterDashboardDecks('all')">
+                Xem tất cả môn
+              </button>
+            </div>
+          `;
+        } else {
+          let html = '';
+          for (const deck of displayDecks) {
+            const deckCards = allCards.filter(c => c.deckId === deck.id);
+            const deckDue = deckCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= nowTs);
+            const subj = subjectsMap[deck.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📚', color: '#a855f7' };
+            html += this._createDeckCardHtml(deck, deckCards.length, deckDue.length, subj);
+          }
+          grid.innerHTML = html;
         }
-        grid.innerHTML = html;
       }
     }
   },
 
-  _createDeckCardHtml(deck, totalCards, dueCards) {
+  _createDeckCardHtml(deck, totalCards, dueCards, subject) {
+    const subj = subject || { name: 'Chưa phân loại', icon: '📚', color: '#a855f7' };
+    const descContent = (deck.description && deck.description.trim())
+      ? this._escapeHtml(deck.description)
+      : `<span style="opacity: 0.8; font-style: italic;">Môn học: ${this._escapeHtml(subj.name)}</span>`;
+
     return `
       <div class="deck-card">
         <div>
           <div class="deck-header">
             <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
-            <span class="tech-tag subtle">DECK</span>
+            <span class="deck-subject-badge" style="--subj-color: ${subj.color || '#a855f7'};" title="Môn học: ${this._escapeHtml(subj.name)}">
+              <span class="deck-subject-icon">${subj.icon || '📚'}</span>
+              <span class="deck-subject-name">${this._escapeHtml(subj.name)}</span>
+            </span>
           </div>
-          <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
+          <p class="deck-desc">${descContent}</p>
         </div>
         <div>
           <div class="deck-meta">
@@ -1643,22 +1683,22 @@ const App = {
                 <div class="deck-header">
                   <h3 class="deck-name">${this._escapeHtml(deck.name)}</h3>
                   <button class="icon-btn" style="width: 30px; height: 30px; color: var(--danger);" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    🗑️
                   </button>
                 </div>
                 <p class="deck-desc">${this._escapeHtml(deck.description || 'Không có mô tả')}</p>
               </div>
               <div>
                 <div class="deck-meta">
-                  <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>${cardCount} câu</span>
-                  <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${dueCount} cần ôn</span>
+                  <span>📚 ${cardCount} câu</span>
+                  <span>⏰ ${dueCount} cần ôn</span>
                 </div>
                 <div class="deck-actions" style="flex-wrap: wrap;">
                   <button class="btn btn-primary btn-deck-study" style="flex: 1;" onclick="App.startSession('${deck.id}', 'srs')">Ôn tập</button>
                   <button class="btn btn-secondary" onclick="App.startSession('${deck.id}', 'flashcard')">Lật thẻ</button>
                   <button class="btn btn-secondary" onclick="App.openExamModal('${deck.id}')">Thi thử</button>
                   <button class="btn btn-secondary" onclick="App.navigateTo('import', { deckId: '${deck.id}', subjectId: '${s.id}' })">+ Thêm câu</button>
-                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>Reset</button>
+                  <button class="btn btn-secondary" onclick="App.confirmResetDeckProgress('${deck.id}')" title="Đặt lại tiến trình học về ban đầu">🔄 Reset</button>
                 </div>
               </div>
             </div>
@@ -2726,18 +2766,7 @@ const App = {
     if (card.type === 'numeric') {
       correctOpt = '🔢 ' + (card.correct_answer !== undefined ? card.correct_answer : '');
     } else {
-      let ansIdx = typeof card.answerIndex === 'number' && card.answerIndex >= 0 ? card.answerIndex : 0;
-      const targetId = card.correct_option_id || card.correctOptionId;
-      if (targetId) {
-        const foundIdx = card.options.findIndex((o, idx) => {
-          const id = (typeof o === 'object' && o !== null && o.id) ? String(o.id).toLowerCase() : ['a', 'b', 'c', 'd', 'e'][idx];
-          return id === String(targetId).toLowerCase();
-        });
-        if (foundIdx !== -1) ansIdx = foundIdx;
-      }
-      const rawOpt = card.options?.[ansIdx] ?? card.options?.[0];
-      const { letter, cleanText } = this.cleanOptionText(rawOpt, ansIdx);
-      correctOpt = `${letter}. ${cleanText}`;
+      correctOpt = card.options?.[card.answerIndex] || 'Đáp án';
     }
     const ansEl = document.getElementById('flashcard-answer-text');
     if (ansEl) ansEl.innerHTML = this.renderLatexText(correctOpt);
@@ -3081,11 +3110,7 @@ const App = {
   },
 
   toggleExamCountDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('exam-count-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('exam-count-dropdown-wrap', e);
   },
 
   selectExamQuestionCount(val, label) {
@@ -3104,11 +3129,7 @@ const App = {
   },
 
   toggleExamTimeDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('exam-time-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('exam-time-dropdown-wrap', e);
   },
 
   selectExamTimeLimit(val, label) {
@@ -3268,11 +3289,7 @@ const App = {
   },
 
   toggleSprintCountDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('sprint-count-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('sprint-count-dropdown-wrap', e);
   },
 
   selectSprintCardCount(val, label) {
@@ -3487,11 +3504,7 @@ const App = {
   },
 
   toggleImportSubjectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('import-subject-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('import-subject-dropdown-wrap', e);
   },
 
   async selectImportSubject(subjectId, subjectLabelText) {
@@ -3549,11 +3562,7 @@ const App = {
   },
 
   toggleImportDeckDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('import-deck-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('import-deck-dropdown-wrap', e);
   },
 
   selectImportDeck(deckId, deckName) {
@@ -3631,17 +3640,7 @@ const App = {
     const alertBox = document.getElementById('import-validation-alert');
 
     try {
-      let parsed = null;
-      if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
-        try {
-          parsed = await this.callWorker('PARSE_AI_JSON', { rawInput });
-        } catch (workerErr) {
-          console.warn('[WebWorker] AI JSON parse worker error, falling back:', workerErr);
-        }
-      }
-      if (!parsed) {
-        parsed = AIParser.parse(rawInput);
-      }
+      const parsed = AIParser.parse(rawInput);
 
       // Handle validation warnings / errors
       if (parsed.errors && parsed.errors.length > 0) {
@@ -3793,11 +3792,7 @@ const App = {
   },
 
   toggleLmsSubjectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('lms-subject-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('lms-subject-dropdown-wrap', e);
   },
 
   async selectLmsSubject(subjectId, subjectLabelText) {
@@ -3855,11 +3850,7 @@ const App = {
   },
 
   toggleLmsDeckDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('lms-deck-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('lms-deck-dropdown-wrap', e);
   },
 
   selectLmsDeck(deckId, deckName) {
@@ -4143,11 +4134,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleLmsCardTypeDropdown(e, idx) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById(`lms-type-dropdown-${idx}`);
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById(`lms-type-dropdown-${idx}`, e);
   },
 
   selectLmsCardType(idx, newType) {
@@ -4158,11 +4145,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleLmsCardDiffDropdown(e, idx) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById(`lms-diff-dropdown-${idx}`);
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById(`lms-diff-dropdown-${idx}`, e);
   },
 
   selectLmsCardDifficulty(idx, val) {
@@ -4694,11 +4677,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleEditCardSubjectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('edit-card-subject-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('edit-card-subject-dropdown-wrap', e);
   },
 
   async selectEditCardSubject(subjectId, subjectLabelText) {
@@ -4764,11 +4743,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleEditCardDeckDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('edit-card-deck-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('edit-card-deck-dropdown-wrap', e);
   },
 
   selectEditCardDeck(deckId, deckName) {
@@ -4787,11 +4762,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleEditCardDiffDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('edit-card-diff-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('edit-card-diff-dropdown-wrap', e);
   },
 
   selectEditCardDifficulty(diff) {
@@ -4815,11 +4786,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleEditCardCorrectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('edit-card-correct-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('edit-card-correct-dropdown-wrap', e);
   },
 
   selectEditCardCorrect(ans) {
@@ -5700,11 +5667,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleBankSubjectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('bank-subject-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('bank-subject-dropdown-wrap', e);
   },
 
   selectBankSubject(subjectId) {
@@ -5718,38 +5681,25 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleBankTopicDropdown(e) {
-    if (e) e.stopPropagation();
-    const topicWrap = document.getElementById('bank-topic-dropdown-wrap');
-    const diffWrap = document.getElementById('bank-diff-dropdown-wrap');
-    if (diffWrap) diffWrap.classList.remove('open');
-    if (topicWrap) topicWrap.classList.toggle('open');
+    this._toggleCyberDropdownById('bank-topic-dropdown-wrap', e);
   },
 
   toggleBankDiffDropdown(e) {
-    if (e) e.stopPropagation();
-    const topicWrap = document.getElementById('bank-topic-dropdown-wrap');
-    const diffWrap = document.getElementById('bank-diff-dropdown-wrap');
-    if (topicWrap) topicWrap.classList.remove('open');
-    if (diffWrap) diffWrap.classList.toggle('open');
+    this._toggleCyberDropdownById('bank-diff-dropdown-wrap', e);
   },
 
   closeAllCyberDropdowns() {
-    if (typeof UnifiedDropdown !== 'undefined') {
-      UnifiedDropdown.closeAll();
-      return;
-    }
     document.querySelectorAll('.cyber-dropdown.open').forEach(el => {
       el.classList.remove('open', 'dropup');
       const trigger = el.querySelector('.cyber-dropdown-trigger');
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
     });
+    document.querySelectorAll('.has-open-dropdown').forEach(parent => {
+      parent.classList.remove('has-open-dropdown');
+    });
   },
 
   _openCyberDropdown(wrap) {
-    if (typeof UnifiedDropdown !== 'undefined') {
-      UnifiedDropdown.open(wrap);
-      return;
-    }
     if (!wrap) return;
     this.closeAllCyberDropdowns();
     const trigger = wrap.querySelector('.cyber-dropdown-trigger');
@@ -5763,14 +5713,40 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       }
     }
     wrap.classList.add('open');
+
+    // Gắn class nâng tầng Stacking Context cho toàn bộ chuỗi phần tử cha liên quan
+    const parentsToElevate = [
+      wrap.closest('.form-group'),
+      wrap.closest('.lms-config-grid'),
+      wrap.closest('#new-deck-fields'),
+      wrap.closest('#lms-new-deck-fields'),
+      wrap.closest('.bank-filter-bar'),
+      wrap.closest('.lms-meta-row'),
+      wrap.closest('.lms-card-actions'),
+      wrap.closest('.lms-preview-card'),
+      wrap.closest('.quiz-card'),
+      wrap.closest('.lms-config-card'),
+      wrap.closest('.modal-box'),
+      wrap.closest('.settings-card')
+    ];
+    parentsToElevate.forEach(p => {
+      if (p) p.classList.add('has-open-dropdown');
+    });
+  },
+
+  _toggleCyberDropdownById(wrapId, e) {
+    if (e) e.stopPropagation();
+    const wrap = typeof wrapId === 'string' ? document.getElementById(wrapId) : wrapId;
+    if (!wrap) return;
+    const wasOpen = wrap.classList.contains('open');
+    this.closeAllCyberDropdowns();
+    if (!wasOpen) {
+      this._openCyberDropdown(wrap);
+    }
   },
 
   toggleBankSourceDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('bank-source-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) wrap.classList.add('open');
+    this._toggleCyberDropdownById('bank-source-dropdown-wrap', e);
   },
 
   selectBankSource(src) {
@@ -5878,11 +5854,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         cardEl.remove();
       }
     }
-    // Update toolbar counter
-    const allCards = await db.getAllCards();
-    const count = allCards.filter(c => Boolean(c.isBookmarked ?? c.bookmarked)).length;
+    // Update toolbar counter directly without scanning allCards
+    // await this.renderQuestionBank();
     const bCountEl = document.getElementById('bank-count-bookmark');
-    if (bCountEl) bCountEl.textContent = count;
+    if (bCountEl) {
+      const curCount = parseInt(bCountEl.textContent, 10) || 0;
+      bCountEl.textContent = Math.max(0, curCount + (nextState ? 1 : -1));
+    }
   },
 
   async toggleBankCardFlag(cardId) {
@@ -5903,11 +5881,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         cardEl.remove();
       }
     }
-    // Update toolbar counter
-    const allCards = await db.getAllCards();
-    const count = allCards.filter(c => Boolean(c.isFlagged ?? c.flagged)).length;
+    // Update toolbar counter directly without scanning allCards
+    // await this.renderQuestionBank();
     const fCountEl = document.getElementById('bank-count-flag');
-    if (fCountEl) fCountEl.textContent = count;
+    if (fCountEl) {
+      const curCount = parseInt(fCountEl.textContent, 10) || 0;
+      fCountEl.textContent = Math.max(0, curCount + (nextState ? 1 : -1));
+    }
   },
 
   async copyFlaggedAIPrompt() {
@@ -6136,8 +6116,100 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     tbody.innerHTML = html;
   },
 
+  
+  // --- SUBJECT EMOJI & COLOR PRESETS (Prompt 1b) ---
+  SUBJECT_EMOJI_PRESETS: [
+    '📚', '📐', '💻', '🔬', '🧬', '🧪', '⚛️', '🌍',
+    '🏛️', '⚖️', '📈', '💰', '🧠', '🩺', '🎨', '🎵',
+    '🇬🇧', '🇯🇵', '🇨🇳', '🚀', '⚡', '🎯', '🏆', '🎓'
+  ],
+  SUBJECT_COLOR_PRESETS: [
+    { hex: '#a855f7', name: 'Tím Lavender' },
+    { hex: '#c084fc', name: 'Tím Orchid' },
+    { hex: '#ec4899', name: 'Hồng Berry' },
+    { hex: '#f472b6', name: 'Hồng Pastel' },
+    { hex: '#8b5cf6', name: 'Tím Violet' },
+    { hex: '#6366f1', name: 'Chàm Indigo' },
+    { hex: '#38bdf8', name: 'Xanh Sky' },
+    { hex: '#2dd4bf', name: 'Xanh Mint' },
+    { hex: '#34d399', name: 'Xanh Emerald' },
+    { hex: '#facc15', name: 'Vàng Gold' },
+    { hex: '#fb923c', name: 'Cam Coral' },
+    { hex: '#fb7185', name: 'Đỏ Rose' }
+  ],
+
   // --- SUBJECT MANAGEMENT CONTROLLERS (SECTION A) ---
   _createSubjectContext: '',
+
+  
+  renderSubjectPickerControls(mode) {
+    const emojiContainer = document.getElementById(`${mode}-subject-emoji-grid`);
+    const colorContainer = document.getElementById(`${mode}-subject-color-grid`);
+    const iconInput = document.getElementById(`${mode}-subject-icon`);
+    const colorInput = document.getElementById(`${mode}-subject-color`);
+    const currentIcon = iconInput ? (iconInput.value || '📚') : '📚';
+    const currentColor = colorInput ? (colorInput.value || '#a855f7') : '#a855f7';
+
+    if (emojiContainer) {
+      emojiContainer.innerHTML = this.SUBJECT_EMOJI_PRESETS.map(emoji => {
+        const isActive = emoji === currentIcon;
+        return `<button type="button" class="emoji-preset-btn ${isActive ? 'active' : ''}" onclick="App.selectSubjectEmoji('${mode}', '${emoji}')" title="${emoji}">${emoji}</button>`;
+      }).join('');
+    }
+
+    if (colorContainer) {
+      colorContainer.innerHTML = this.SUBJECT_COLOR_PRESETS.map(preset => {
+        const isActive = preset.hex.toLowerCase() === currentColor.toLowerCase();
+        return `<button type="button" class="color-swatch-btn ${isActive ? 'active' : ''}" style="--swatch-color: ${preset.hex}; background-color: ${preset.hex};" onclick="App.selectSubjectColor('${mode}', '${preset.hex}')" title="${preset.name} (${preset.hex})"></button>`;
+      }).join('');
+    }
+
+    this.updateSubjectModalPreview(mode);
+  },
+
+  selectSubjectEmoji(mode, emoji) {
+    const iconInput = document.getElementById(`${mode}-subject-icon`);
+    if (iconInput) iconInput.value = emoji;
+    const grid = document.getElementById(`${mode}-subject-emoji-grid`);
+    if (grid) {
+      grid.querySelectorAll('.emoji-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === emoji);
+      });
+    }
+    this.updateSubjectModalPreview(mode);
+  },
+
+  selectSubjectColor(mode, hexColor) {
+    const colorInput = document.getElementById(`${mode}-subject-color`);
+    if (colorInput) colorInput.value = hexColor;
+    const grid = document.getElementById(`${mode}-subject-color-grid`);
+    if (grid) {
+      grid.querySelectorAll('.color-swatch-btn').forEach(btn => {
+        const swatchHex = btn.style.getPropertyValue('--swatch-color');
+        btn.classList.toggle('active', swatchHex.toLowerCase() === hexColor.toLowerCase());
+      });
+    }
+    this.updateSubjectModalPreview(mode);
+  },
+
+  updateSubjectModalPreview(mode) {
+    const nameInput = document.getElementById(`${mode}-subject-name`);
+    const iconInput = document.getElementById(`${mode}-subject-icon`);
+    const colorInput = document.getElementById(`${mode}-subject-color`);
+    const previewBadge = document.getElementById(`${mode}-subject-preview-badge`);
+    const previewIcon = document.getElementById(`${mode}-subject-preview-icon`);
+    const previewName = document.getElementById(`${mode}-subject-preview-name`);
+
+    const name = nameInput?.value?.trim() || (mode === 'create' ? 'Tên môn học' : 'Môn học');
+    const icon = iconInput?.value?.trim() || '📚';
+    const color = colorInput?.value || '#a855f7';
+
+    if (previewBadge) {
+      previewBadge.style.setProperty('--subj-color', color);
+    }
+    if (previewIcon) previewIcon.textContent = icon;
+    if (previewName) previewName.textContent = name;
+  },
 
   openCreateSubjectModal(fromContext = '') {
     this._createSubjectContext = fromContext;
@@ -6147,7 +6219,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const colorInput = document.getElementById('create-subject-color');
     if (nameInput) nameInput.value = '';
     if (iconInput) iconInput.value = '📚';
-    if (colorInput) colorInput.value = '#8b5cf6';
+    if (colorInput) colorInput.value = '#a855f7';
+    this.renderSubjectPickerControls('create');
     const modal = document.getElementById('modal-create-subject');
     if (modal) this._showModal(modal);
   },
@@ -6201,7 +6274,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     document.getElementById('manage-subject-id').value = subject.id;
     document.getElementById('manage-subject-name').value = subject.name;
     document.getElementById('manage-subject-icon').value = subject.icon || '📚';
-    document.getElementById('manage-subject-color').value = subject.color || '#8b5cf6';
+    document.getElementById('manage-subject-color').value = subject.color || '#a855f7';
+    this.renderSubjectPickerControls('manage');
 
     const titleEl = document.getElementById('manage-subject-modal-title');
     if (titleEl) titleEl.textContent = `⚙️ Quản Lý Môn: ${subject.name}`;
@@ -6295,11 +6369,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleManageSubjectMergeDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('manage-subject-merge-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+    this._toggleCyberDropdownById('manage-subject-merge-dropdown-wrap', e);
   },
 
   selectManageSubjectMergeTarget(subjectId, labelText, iconText) {
@@ -6322,11 +6392,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleManageSubjectDeleteDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('manage-subject-delete-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+    this._toggleCyberDropdownById('manage-subject-delete-dropdown-wrap', e);
   },
 
   selectManageSubjectDeleteTarget(subjectId, labelText, iconText) {
@@ -6511,11 +6577,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   toggleBulkReassignSubjectDropdown(e) {
-    if (e) e.stopPropagation();
-    const wrap = document.getElementById('bulk-reassign-subject-dropdown-wrap');
-    const wasOpen = wrap?.classList.contains('open');
-    this.closeAllCyberDropdowns();
-    if (wrap && !wasOpen) this._openCyberDropdown(wrap);
+    this._toggleCyberDropdownById('bulk-reassign-subject-dropdown-wrap', e);
   },
 
   selectBulkReassignSubject(subjectId, labelText, iconText) {
