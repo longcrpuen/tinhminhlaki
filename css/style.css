@@ -1502,22 +1502,44 @@ body.tab-hidden *::after {
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
 }
 
-/* Multi-stop Smooth Continuous Violet Gradient trải dài liên tục từ trái qua phải:
-   * Gốc trái (sẫm đầm): #4c1d95 (Violet 900)
-   * Thân giữa (tím sáng/neon): var(--accent-strong) (Violet 600) -> #9333ea (Purple 600)
-   * Đầu ngọn/Mức nạp cao (phát sáng nhẹ): #c084fc (Purple 400) -> #e879f9 (Fuchsia 400) */
-.pixel-battery-segment[data-segment="1"].active { background: linear-gradient(135deg, #4c1d95, #5520a4); }
-.pixel-battery-segment[data-segment="2"].active { background: linear-gradient(135deg, #5722a7, #662bb9); }
-.pixel-battery-segment[data-segment="3"].active { background: linear-gradient(135deg, #682cb9, #7534d0); }
-.pixel-battery-segment[data-segment="4"].active { background: var(--battery-segment-active-bg); }
-.pixel-battery-segment[data-segment="5"].active { background: var(--battery-segment-active-bg); }
-.pixel-battery-segment[data-segment="6"].active { background: linear-gradient(135deg, #8835e5, #9333ea); }
-.pixel-battery-segment[data-segment="7"].active { background: linear-gradient(135deg, #9333ea, #a850ee); }
-.pixel-battery-segment[data-segment="8"].active { background: linear-gradient(135deg, #a850ee, #b868f4); }
-.pixel-battery-segment[data-segment="9"].active { background: linear-gradient(135deg, #b868f4, #c084fc); }
-.pixel-battery-segment[data-segment="10"].active {
-  background: linear-gradient(135deg, #c084fc, #e879f9);
-  box-shadow: 0 0 12px rgba(232, 121, 249, 0.45);
+.pixel-battery-wrapper {
+  background: var(--battery-box-bg) !important;
+  border: 1.5px solid var(--battery-box-border) !important;
+  box-shadow: 0 8px 24px var(--battery-box-glow) !important;
+  border-radius: 18px !important;
+  padding: 16px 20px !important;
+}
+
+.pixel-battery-title,
+.pixel-battery-percent,
+.pixel-battery-pct {
+  color: var(--battery-label-color) !important;
+  text-shadow: none !important;
+}
+
+.pixel-battery-body,
+.pixel-battery-shell {
+  background: var(--bg-base) !important;
+  border: 1.5px solid var(--battery-box-border) !important;
+  border-radius: 10px !important;
+}
+
+.pixel-battery-body::after,
+.pixel-battery-cap {
+  background: var(--battery-box-border) !important;
+}
+
+.pixel-battery-segment,
+.pixel-battery-segment[data-segment] {
+  background: var(--battery-segment-bg) !important;
+  box-shadow: none !important;
+}
+
+.pixel-battery-segment.active,
+.pixel-battery-segment[data-segment].active {
+  background: var(--battery-segment-active-bg) !important;
+  box-shadow: 0 0 8px var(--battery-segment-active-glow) !important;
+  opacity: 1 !important;
 }
 
 .pixel-battery-segment.active.high {
@@ -1546,9 +1568,10 @@ body.tab-hidden *::after {
   font-family: var(--font-pixel);
   font-size: 0.82rem;
   font-weight: 700;
-  color: #e879f9;
+  color: var(--battery-badge-color) !important;
   letter-spacing: 0.02em;
-  filter: drop-shadow(0 0 4px #e879f9);
+  filter: none !important;
+  text-shadow: none !important;
 }
 .pixel-sparkle-badge:hover,
 .stat-card:hover .pixel-sparkle-badge {
