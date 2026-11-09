@@ -1283,6 +1283,68 @@ console.log('\n=== TEST SUITE 18: Phase 1l Unified Liquid Glass, 3D Meniscus Bev
   assert(appJs.includes('initSpotlightHover() {\n    return;'), 'initSpotlightHover returns immediately to guarantee 0% CPU');
 }
 
+console.log('\n=== TEST SUITE 19: Phase 1m 14 UI/UX Refinements, Liquid Glass, Focus Preservation & Modal Fixes ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // 1. Subject Group Header (Mục 1)
+  assert(themeCss.includes('.subject-group-header') && themeCss.includes('border-radius: 18px !important;'), 'theme.css enforces 18px radius on .subject-group-header');
+  assert(themeCss.includes('data-color-mode="purple-pink"') && themeCss.includes('rgba(64, 32, 108, 0.72)'), 'Purple-pink subject group header uses deep frosted glass');
+  assert(themeCss.includes('data-color-mode="bw-dark"') && themeCss.includes('rgba(46, 46, 52, 0.76)'), 'Monochrome subject group header uses silver-slate glass');
+  assert(themeCss.includes('data-color-mode="white-orange"') && themeCss.includes('rgba(255, 255, 254, 0.74)'), 'White-orange subject group header uses milky glass');
+
+  // 2. Light Neon Purple Quote Hover Glow (Mục 2)
+  assert(themeCss.includes('rgba(232, 121, 249, 0.68)') && themeCss.includes('rgba(192, 132, 252, 0.52)'), 'Purple-pink quote hover casts light neon purple glow');
+
+  // 3. Purple-pink Refractive Liquid Glass Popup Frame (Mục 3)
+  assert(themeCss.includes('rgba(216, 180, 254, 0.42)') && themeCss.includes('rgba(168, 85, 247, 0.24)'), 'Purple-pink modal-box has 3D refractive liquid glass frame');
+
+  // 4. Fluted / Ribbed Glass Blur Accent (Mục 4)
+  assert(themeCss.includes('.modal-header::after') && themeCss.includes('repeating-linear-gradient'), 'theme.css defines Fluted Ribbed Glass on .modal-header::after');
+  assert(themeCss.includes('--fluted-glow: rgba(216, 180, 254, 0.42);'), 'Fluted glow defined for purple-pink');
+  assert(themeCss.includes('--fluted-glow: rgba(251, 146, 60, 0.40);'), 'Fluted glow defined for white-orange');
+
+  // 5. Static Spotlight Disabled (Mục 5)
+  assert(styleCss.includes('.deck-card::before') && styleCss.includes('display: none !important;'), 'style.css permanently disables static spotlight ::before');
+  assert(themeCss.includes('.bank-card-item::before') && themeCss.includes('background: none !important;'), 'theme.css disables static center spotlight pseudo-element');
+
+  // 6. Left Sidebar Overlay Spill Removal (Mục 6)
+  assert(themeCss.includes('.app-sidebar::before') && themeCss.includes('content: none !important;'), 'Sidebar pseudo-elements removed');
+  assert(themeCss.includes('overflow-x: clip !important;'), 'Layout prevents horizontal spill with overflow-x: clip');
+
+  // 7. Quick Filter Focus Preservation (Mục 7)
+  assert(appJs.includes('isSearchFocused') && appJs.includes('setSelectionRange'), 'renderDecks preserves search input focus and cursor range');
+  assert(appJs.includes('existingInput && scrollArea'), 'renderDecks preserves existing quickbar input in DOM');
+
+  // 8. White-Orange Focus Mode Exit Button (Mục 8)
+  assert(themeCss.includes('data-color-mode="white-orange"') && themeCss.includes('rgba(255, 250, 244, 0.88)'), 'White-orange focus exit button uses cream glass');
+  assert(themeCss.includes('rgba(251, 146, 60, 0.55)'), 'White-orange focus exit button has orange border');
+  assert(indexHtml.includes('focus-exit-floating-btn'), 'index.html adds focus-exit-floating-btn class');
+
+  // 9. Study Exit Button vs ESC Key (Mục 9)
+  assert(indexHtml.includes('id="btn-exit-study"') && indexHtml.includes("App.exitStudySession('decks')"), 'Study exit button targets decks library');
+  assert(appJs.includes('exitStudySession(targetView'), 'app.js implements exitStudySession');
+  assert(appJs.includes("this.exitStudySession('dashboard')"), 'Escape key on study view exits to dashboard');
+
+  // 10. Quiz Explanation Font & LaTeX Scaling (Mục 10)
+  assert(themeCss.includes('font-size: 1.08rem !important;') && themeCss.includes('line-height: 1.72 !important;'), 'Quiz explanation font size increased to 1.08rem');
+  assert(themeCss.includes('font-size: 1.26em !important;'), 'LaTeX katex formulas scaled to 1.26em');
+
+  // 11. Flashcard Explanation Auto-Expansion (Mục 11)
+  assert(themeCss.includes('min-height: 360px !important;'), 'Flashcard card has 360px min-height');
+  assert(themeCss.includes('.flashcard-explanation-box .flashcard-explanation-text') && themeCss.includes('max-height: none !important;'), 'Flashcard explanation removes small vertical scrollbar');
+
+  // 12 & 13. Modal Session Complete Navigation (Mục 12 & 13)
+  assert(appJs.includes("inlineOnClick.includes(\"navigateTo('decks')\")"), 'Capture phase listener allows decks navigation');
+  assert(appJs.includes("inlineOnClick.includes(\"navigateTo('stats')\")"), 'Capture phase listener allows stats navigation');
+
+  // 14. Quote Stat Card 10px Radius (Mục 14)
+  assert(themeCss.includes('.editorial-stage-footer .stat-card') && themeCss.includes('border-radius: 10px !important;'), 'Quote stat cards have 10px modern border radius');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

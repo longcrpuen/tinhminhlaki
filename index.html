@@ -45,7 +45,7 @@
   <div id="tab-wave-curtain" class="tab-wave-curtain" aria-hidden="true"><div class="wave-sweep-layer"></div></div>
 
   <!-- Focus Mode Floating Exit Button -->
-  <button id="btn-focus-exit" class="btn btn-secondary focus-exit-btn" onclick="App.toggleFocusMode()">
+  <button id="btn-focus-exit" class="btn btn-secondary focus-exit-btn focus-exit-floating-btn" onclick="App.toggleFocusMode()">
     ✕ Thoát Chế Độ Tập Trung (Focus Mode)
   </button>
 
@@ -668,7 +668,7 @@
           <div class="quiz-container">
             <!-- Study Header -->
             <div class="quiz-header-bar">
-              <button class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="App.navigateTo('dashboard')">
+              <button id="btn-exit-study" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="App.exitStudySession('decks')">
                 ← Thoát
               </button>
               <div class="quiz-progress-track">

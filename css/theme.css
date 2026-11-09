@@ -2194,4 +2194,328 @@ html[data-theme="white-orange"] {
   /* Disabled in Phase 1l: cards maintain 100% stable liquid glass volume */
 }
 
+/* ==========================================================================
+   PHASE 1M: 14 UI/UX REFINEMENTS, 3D MENISCUS, FLUTED GLASS, EXIT BEHAVIORS
+   ========================================================================== */
+
+/* 1. THANH TIÊU ĐỀ NHÓM MÔN HỌC (.subject-group-header) */
+.subject-group-block .subject-group-header,
+.subject-group .subject-group-header,
+.subject-group-header {
+  border-radius: 18px !important;
+  margin: 4px 4px 18px 4px !important;
+  padding: 14px 20px !important;
+  border-bottom: none !important;
+}
+
+/* Mode Tím Hồng */
+html[data-color-mode="purple-pink"] .subject-group-block .subject-group-header,
+html[data-color-mode="purple-pink"] .subject-group .subject-group-header,
+html[data-theme="purple-pink"] .subject-group-block .subject-group-header,
+html[data-theme="purple-pink"] .subject-group .subject-group-header,
+html[data-theme="violet-rose"] .subject-group-block .subject-group-header,
+html[data-theme="violet-rose"] .subject-group .subject-group-header {
+  background: linear-gradient(135deg, rgba(64, 32, 108, 0.72) 0%, rgba(42, 20, 74, 0.62) 100%) !important;
+  backdrop-filter: blur(24px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+  border: 1px solid rgba(216, 180, 254, 0.28) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 8px 24px rgba(10, 4, 24, 0.28),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Mode Trắng Đen */
+html[data-color-mode="bw-dark"] .subject-group-block .subject-group-header,
+html[data-color-mode="bw-dark"] .subject-group .subject-group-header,
+html[data-theme="monochrome"] .subject-group-block .subject-group-header,
+html[data-theme="monochrome"] .subject-group .subject-group-header,
+html[data-theme="bw-dark"] .subject-group-block .subject-group-header,
+html[data-theme="bw-dark"] .subject-group .subject-group-header {
+  background: linear-gradient(135deg, rgba(46, 46, 52, 0.76) 0%, rgba(30, 30, 35, 0.66) 100%) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.32),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.24) !important;
+}
+
+/* Mode Trắng Cam */
+html[data-color-mode="white-orange"] .subject-group-block .subject-group-header,
+html[data-color-mode="white-orange"] .subject-group .subject-group-header,
+html[data-theme="white-orange"] .subject-group-block .subject-group-header,
+html[data-theme="white-orange"] .subject-group .subject-group-header {
+  background: linear-gradient(135deg, rgba(255, 255, 254, 0.74) 0%, rgba(255, 244, 232, 0.64) 100%) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.92) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 8px 22px rgba(234, 88, 12, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.98) !important;
+}
+
+/* 2. HIỆU ỨNG ĐỔ BÓNG LIGHT NEON TÍM KHI HOVER KHUNG QUOTE Ở MODE TÍM HỒNG */
+html[data-color-mode="purple-pink"] .dashboard-hero-banner:hover,
+html[data-theme="purple-pink"] .dashboard-hero-banner:hover,
+html[data-theme="violet-rose"] .dashboard-hero-banner:hover,
+html[data-color-mode="purple-pink"] .hero-card:hover,
+html[data-theme="purple-pink"] .hero-card:hover,
+html[data-theme="violet-rose"] .hero-card:hover,
+html[data-color-mode="purple-pink"] .editorial-hero-stage:hover,
+html[data-theme="purple-pink"] .editorial-hero-stage:hover,
+html[data-theme="violet-rose"] .editorial-hero-stage:hover,
+html[data-color-mode="purple-pink"] .hero-inspiration-stage:hover,
+html[data-theme="purple-pink"] .hero-inspiration-stage:hover,
+html[data-theme="violet-rose"] .hero-inspiration-stage:hover {
+  border-color: rgba(232, 121, 249, 0.68) !important;
+  box-shadow:
+    0 22px 58px -8px rgba(192, 132, 252, 0.52),
+    0 10px 32px rgba(236, 72, 153, 0.34),
+    0 0 28px rgba(216, 180, 254, 0.32),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.42),
+    inset 0 -1px 2px rgba(192, 132, 252, 0.28) !important;
+}
+
+/* 3. KHÔI PHỤC KHUNG VIỀN KHÚC XẠ LIQUID GLASS CHO POPUP BLUR Ở THEME TÍM HỒNG */
+html[data-color-mode="purple-pink"] .modal-overlay .modal-box,
+html[data-theme="purple-pink"] .modal-overlay .modal-box,
+html[data-theme="violet-rose"] .modal-overlay .modal-box,
+html[data-color-mode="purple-pink"] .modal-overlay .modal-content,
+html[data-theme="purple-pink"] .modal-overlay .modal-content,
+html[data-theme="violet-rose"] .modal-overlay .modal-content,
+html[data-color-mode="purple-pink"] .modal-box,
+html[data-theme="purple-pink"] .modal-box,
+html[data-theme="violet-rose"] .modal-box,
+html[data-color-mode="purple-pink"] .confirm-dialog-box,
+html[data-theme="purple-pink"] .confirm-dialog-box,
+html[data-theme="violet-rose"] .confirm-dialog-box {
+  background: linear-gradient(155deg, rgba(38, 18, 68, 0.78) 0%, rgba(22, 10, 42, 0.86) 100%) !important;
+  backdrop-filter: blur(36px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(180%) !important;
+  border: 1.5px solid rgba(216, 180, 254, 0.42) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 28px 72px rgba(6, 2, 16, 0.78),
+    0 0 36px rgba(168, 85, 247, 0.24),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.36),
+    inset 0 -1.5px 2px rgba(192, 132, 252, 0.22) !important;
+}
+
+/* 4. ĐIỂM NHẤN FLUTED / RIBBED GLASS BLUR (SỌC KÍNH KHÚC XẠ 1 PHẦN GÓC TRÊN POPUP) */
+.modal-overlay .modal-box .modal-header,
+.modal-overlay .modal-content .modal-header,
+.modal-overlay .modal-header,
+.modal-header {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.modal-overlay .modal-box .modal-header::after,
+.modal-overlay .modal-content .modal-header::after,
+.modal-overlay .modal-header::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 52% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background-image:
+    radial-gradient(circle at 78% 50%, var(--fluted-glow, rgba(192, 132, 252, 0.38)) 0%, transparent 68%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.14) 0px,
+      rgba(255, 255, 255, 0.02) 6px,
+      rgba(0, 0, 0, 0.12) 12px,
+      rgba(255, 255, 255, 0.10) 14px
+    ) !important;
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.9) 15%, rgba(0, 0, 0, 0.35) 60%, transparent 100%) !important;
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.9) 15%, rgba(0, 0, 0, 0.35) 60%, transparent 100%) !important;
+}
+
+html[data-color-mode="purple-pink"] .modal-overlay .modal-header::after,
+html[data-theme="purple-pink"] .modal-overlay .modal-header::after,
+html[data-theme="violet-rose"] .modal-overlay .modal-header::after {
+  --fluted-glow: rgba(216, 180, 254, 0.42);
+}
+
+html[data-color-mode="bw-dark"] .modal-overlay .modal-header::after,
+html[data-theme="monochrome"] .modal-overlay .modal-header::after,
+html[data-theme="bw-dark"] .modal-overlay .modal-header::after {
+  --fluted-glow: rgba(255, 255, 255, 0.26);
+}
+
+html[data-color-mode="white-orange"] .modal-overlay .modal-header::after,
+html[data-theme="white-orange"] .modal-overlay .modal-header::after {
+  --fluted-glow: rgba(251, 146, 60, 0.40);
+}
+
+.modal-overlay .modal-header > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* 5. TẮT HOÀN TOÀN VẦNG SÁNG CON TRỎ KẸT Ở TÂM THẺ */
+.deck-card::before,
+.mode-card::before,
+.stat-card::before,
+.bank-card-item::before,
+.chart-card::before,
+.subject-group-block::before,
+.subject-group::before,
+.hero-stat-pill::before,
+.quiz-card::before,
+.glass-card::before,
+.study-mode-card::before {
+  background: none !important;
+  opacity: 0 !important;
+  display: none !important;
+  content: none !important;
+}
+
+/* 6. XÓA BỎ MẢNG OVERLAY TRẮNG TRÀN RA NGOÀI RÌA TRÁI QUA SIDEBAR */
+.app-sidebar::before,
+.app-sidebar::after {
+  display: none !important;
+  content: none !important;
+}
+
+.app-sidebar,
+.app-sidebar:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.22) !important;
+  overflow: hidden !important;
+}
+
+body,
+.app-layout,
+.app-container {
+  overflow-x: clip !important;
+}
+
+/* 8. ĐỒNG BỘ NÚT "✕ THOÁT CHẾ ĐỘ TẬP TRUNG (FOCUS MODE)" Ở MODE TRẮNG CAM */
+html[data-color-mode="white-orange"] .focus-exit-floating-btn,
+html[data-color-mode="white-orange"] .focus-exit-btn,
+html[data-color-mode="white-orange"] #btn-focus-exit,
+html[data-color-mode="white-orange"] #btn-exit-focus,
+html[data-color-mode="white-orange"] [class*="focus-exit"],
+html[data-theme="white-orange"] .focus-exit-floating-btn,
+html[data-theme="white-orange"] .focus-exit-btn,
+html[data-theme="white-orange"] #btn-focus-exit,
+html[data-theme="white-orange"] #btn-exit-focus,
+html[data-theme="white-orange"] [class*="focus-exit"] {
+  background: rgba(255, 250, 244, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  color: #1c1917 !important;
+  border: 1.5px solid rgba(251, 146, 60, 0.55) !important;
+  box-shadow:
+    0 8px 24px rgba(234, 88, 12, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+  font-weight: 600 !important;
+}
+
+html[data-color-mode="white-orange"] .focus-exit-floating-btn:hover,
+html[data-color-mode="white-orange"] .focus-exit-btn:hover,
+html[data-color-mode="white-orange"] #btn-focus-exit:hover,
+html[data-color-mode="white-orange"] #btn-exit-focus:hover,
+html[data-theme="white-orange"] .focus-exit-floating-btn:hover,
+html[data-theme="white-orange"] .focus-exit-btn:hover,
+html[data-theme="white-orange"] #btn-focus-exit:hover,
+html[data-theme="white-orange"] #btn-exit-focus:hover {
+  background: rgba(255, 237, 213, 0.96) !important;
+  color: #ea580c !important;
+  border-color: rgba(249, 115, 22, 0.85) !important;
+}
+
+/* 10. TĂNG KÍCH THƯỚC FONT CHỮ & LATEX TRONG HỘP GIẢI THÍCH QUIZ */
+.quiz-explanation-box,
+#quiz-explanation-box {
+  padding: 20px 24px !important;
+  border-radius: 16px !important;
+  margin-top: 18px !important;
+}
+
+.quiz-explanation-box .explanation-title,
+.quiz-explanation-title {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 10px !important;
+}
+
+#quiz-explanation-text,
+.quiz-explanation-box .explanation-content,
+.quiz-explanation-box p {
+  font-size: 1.08rem !important;
+  line-height: 1.72 !important;
+}
+
+#quiz-explanation-text .katex,
+.quiz-explanation-box .katex,
+.flashcard-explanation-box .katex {
+  font-size: 1.26em !important;
+}
+
+/* 11. MỞ RỘNG CHIỀU CAO THẺ FLASHCARD THEO NỘI DUNG GIẢI THÍCH (BỎ THANH CUỘN DỌC CON) */
+.flashcard-container,
+.flashcard-inner,
+.flashcard-card,
+body.flashcard-active .flashcard-container,
+body.flashcard-active .flashcard-card {
+  min-height: 360px !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.flashcard-face.flashcard-back,
+body.flashcard-active .flashcard-back {
+  position: relative !important;
+  height: auto !important;
+  min-height: 360px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 28px 32px !important;
+}
+
+.flashcard-explanation-box,
+body.flashcard-active .flashcard-explanation-box {
+  width: 100% !important;
+  margin-top: 18px !important;
+  padding: 18px 22px !important;
+  border-radius: 16px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.flashcard-explanation-box .flashcard-explanation-text,
+.flashcard-explanation-box.is-expanded .flashcard-explanation-text,
+body.flashcard-active .flashcard-explanation-box.is-collapsible.is-expanded,
+body.flashcard-active .flashcard-explanation-box.is-collapsible.is-expanded .flashcard-explanation-text,
+body.flashcard-active .flashcard-explanation-text {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  max-height: none !important;
+  overflow: visible !important;
+  font-size: 1.06rem !important;
+  line-height: 1.7 !important;
+}
+
+/* 14. TINH CHỈNH GÓC BO CỦA 4 Ô TRẠNG THÁI TẠI KHUNG QUOTE (border-radius: 10px !important) */
+.editorial-stage-footer .stat-card,
+.editorial-stats-grid .stat-card,
+.stats-grid > div,
+.stat-card,
+.hero-stat-bento-card,
+.hero-stat-card,
+.quote-stat-box,
+.hero-stats-row .hero-stat-pill,
+.dashboard-hero-banner .hero-stat-pill,
+.quote-stats-grid .quote-stat-item {
+  border-radius: 10px !important;
+}
+
 

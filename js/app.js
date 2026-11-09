@@ -907,6 +907,16 @@ const App = {
 
     document.documentElement.setAttribute('data-theme', theme);
     document.body.dataset.theme = theme;
+    const colorModeMap = {
+      'violet-rose': 'purple-pink',
+      'purple-pink': 'purple-pink',
+      'monochrome': 'bw-dark',
+      'bw-dark': 'bw-dark',
+      'white-orange': 'white-orange'
+    };
+    const colorMode = colorModeMap[theme] || theme;
+    document.documentElement.setAttribute('data-color-mode', colorMode);
+    document.body.dataset.colorMode = colorMode;
 
     try {
       localStorage.setItem('mindsparks_theme', theme);
@@ -1061,17 +1071,42 @@ const App = {
     }
   },
 
+  // --- STUDY SESSION EXIT (Prompt 1m Mục 9: 'decks' on button click, 'dashboard' on ESC) ---
+  exitStudySession(targetView = 'decks') {
+    if (this._perQTimerInterval) {
+      clearInterval(this._perQTimerInterval);
+      this._perQTimerInterval = null;
+    }
+    if (typeof this.clearPerQuestionTimer === 'function') {
+      this.clearPerQuestionTimer();
+    }
+    if (document.body.classList.contains('focus-mode-active') || document.body.classList.contains('focus-mode')) {
+      document.body.classList.remove('focus-mode-active', 'focus-mode');
+      const focusBtn = document.getElementById('btn-focus-exit') || document.getElementById('btn-exit-focus');
+      if (focusBtn) focusBtn.style.display = 'none';
+    }
+    this.closeAllModals();
+    this.navigateTo(targetView || 'decks');
+  },
+
   // --- NAVIGATION ---
   navigateTo(viewName, params = {}) {
     const isSameView = this.currentView === viewName;
     if (this.currentView === 'study' && viewName !== 'study') {
       this.clearPerQuestionTimer();
+      this.closeAllModals();
+      if (document.body.classList.contains('focus-mode-active') || document.body.classList.contains('focus-mode')) {
+        document.body.classList.remove('focus-mode-active', 'focus-mode');
+        const focusBtn = document.getElementById('btn-focus-exit') || document.getElementById('btn-exit-focus');
+        if (focusBtn) focusBtn.style.display = 'none';
+      }
     }
     if (this.currentView === 'exam' && viewName !== 'exam') {
       if (this.examTimerInterval) {
         clearInterval(this.examTimerInterval);
         this.examTimerInterval = null;
       }
+      this.closeAllModals();
     }
 
     this.currentView = viewName;
@@ -1379,19 +1414,44 @@ const App = {
       });
     });
 
-    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1k Mục 6)
+    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1m Mục 12 & 13)
     document.addEventListener('click', (e) => {
-      const closeBtn = e.target.closest('.modal-close');
+      const closeBtn = e.target.closest('.modal-close, [data-dismiss="modal"], .btn-cancel-modal');
       if (closeBtn) {
-        e.preventDefault();
-        e.stopPropagation();
         const parentModal = closeBtn.closest('.modal-overlay');
-        if (parentModal) this._closeModal(parentModal);
-        else this.closeAllModals();
+        if (parentModal) {
+          this._closeModal(parentModal);
+        } else {
+          this.closeAllModals();
+        }
+
+        const inlineOnClick = closeBtn.getAttribute('onclick') || '';
+        if (inlineOnClick.includes("navigateTo('decks')") || inlineOnClick.includes('navigateTo("decks")')) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.navigateTo('decks');
+          return;
+        }
+        if (inlineOnClick.includes("navigateTo('stats')") || inlineOnClick.includes('navigateTo("stats")')) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.navigateTo('stats');
+          return;
+        }
+
+        // For regular modal close buttons without navigation onclick:
+        if (!inlineOnClick) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         return;
       }
       if (e.target.classList && e.target.classList.contains('modal-overlay') && e.target.classList.contains('show')) {
+        const isCompletionModal = e.target.id === 'modal-session-complete';
         this._closeModal(e.target);
+        if (isCompletionModal) {
+          this.navigateTo('decks');
+        }
       }
     }, true);
 
@@ -1480,16 +1540,26 @@ const App = {
     }
 
     window.addEventListener('keydown', (e) => {
-      // Exit completion modal or Focus mode on ESC
+      // Exit completion modal, Focus mode, or Study screen on ESC (Prompt 1m Mục 9)
       if (e.key === 'Escape') {
         const completeModal = document.getElementById('modal-session-complete');
-        if (completeModal && completeModal.classList.contains('show')) {
+        if (completeModal && (completeModal.classList.contains('show') || completeModal.classList.contains('active'))) {
           closeModal();
           this.navigateTo('decks');
           return;
         }
-        if (document.body.classList.contains('focus-mode-active')) {
+        const openModal = document.querySelector('.modal-overlay.show, .modal-overlay.active');
+        if (openModal) {
+          this._closeModal(openModal);
+          return;
+        }
+        if (document.body.classList.contains('focus-mode-active') || document.body.classList.contains('focus-mode')) {
           this.toggleFocusMode();
+          return;
+        }
+        if (this.currentView === 'study') {
+          e.preventDefault();
+          this.exitStudySession('dashboard');
           return;
         }
       }
@@ -2033,6 +2103,21 @@ const App = {
 
   // --- DECKS VIEW (GROUPED BY SUBJECT) ---
   async renderDecks() {
+    // Prompt 1m Mục 7: Preserve search input focus & cursor range
+    const activeEl = document.activeElement;
+    const isSearchFocused = activeEl && (
+      activeEl.id === 'deck-search-input' ||
+      activeEl.id === 'decks-search-quick' ||
+      activeEl.id === 'decks-filter-input' ||
+      activeEl.classList.contains('quickbar-search-input') ||
+      activeEl.classList.contains('deck-filter-input') ||
+      (activeEl.tagName === 'INPUT' && activeEl.closest('#view-decks'))
+    );
+    const cursorStart = isSearchFocused ? activeEl.selectionStart : null;
+    const cursorEnd = isSearchFocused ? activeEl.selectionEnd : null;
+    const activeId = isSearchFocused ? activeEl.id : null;
+    const activeVal = isSearchFocused ? activeEl.value : null;
+
     let summaries = await db.getSubjectSummaries();
     const container = document.getElementById('decks-list-container');
     if (!container) return;
@@ -2046,17 +2131,16 @@ const App = {
         quickbar.style.display = 'flex';
         const activeSubj = this._selectedDecksSubjectId || 'all';
         const totalAll = summaries.reduce((a, s) => a + (s.decks?.length || 0), 0);
-        let quickHtml = `
-          <div class="quickbar-scroll">
-            <button type="button" class="subject-jump-pill ${activeSubj === 'all' ? 'active' : ''}" onclick="App.filterDecksBySubject('all')">
-              <span>Tất cả môn</span>
-              <span class="jump-pill-badge">${totalAll}</span>
-            </button>
+        let pillsHtml = `
+          <button type="button" class="subject-jump-pill ${activeSubj === 'all' ? 'active' : ''}" onclick="App.filterDecksBySubject('all')">
+            <span>Tất cả môn</span>
+            <span class="jump-pill-badge">${totalAll}</span>
+          </button>
         `;
         for (const s of summaries) {
           if (s.id === 'subj_unassigned' && (!s.decks || s.decks.length === 0)) continue;
           const isActive = activeSubj === s.id;
-          quickHtml += `
+          pillsHtml += `
             <button type="button" class="subject-jump-pill ${isActive ? 'active' : ''}" onclick="App.filterDecksBySubject('${s.id}')">
               <span class="mono-emoji">${this.renderSubjectIcon(s.icon)}</span>
               <span>${this._escapeHtml(s.name)}</span>
@@ -2064,13 +2148,27 @@ const App = {
             </button>
           `;
         }
-        quickHtml += `
-          </div>
-          <div class="quickbar-search-wrap">
-            <input type="text" id="decks-search-quick" class="quickbar-search-input" placeholder="Lọc nhanh môn / bộ thẻ..." value="${this._escapeHtml(this._decksSearchQuery || '')}" oninput="App.onDecksSearchInput(this.value)">
-          </div>
-        `;
-        quickbar.innerHTML = quickHtml;
+
+        const existingInput = quickbar.querySelector('#decks-search-quick');
+        const scrollArea = quickbar.querySelector('.quickbar-scroll');
+
+        if (existingInput && scrollArea) {
+          // Input is already in DOM: preserve it to never drop focus/keystrokes
+          scrollArea.innerHTML = pillsHtml;
+          if (document.activeElement !== existingInput && existingInput.value !== (this._decksSearchQuery || '')) {
+            existingInput.value = this._decksSearchQuery || '';
+          }
+        } else {
+          // Initial build of quickbar DOM
+          quickbar.innerHTML = `
+            <div class="quickbar-scroll">
+              ${pillsHtml}
+            </div>
+            <div class="quickbar-search-wrap">
+              <input type="text" id="decks-search-quick" class="quickbar-search-input" placeholder="Lọc nhanh môn / bộ thẻ..." value="${this._escapeHtml(this._decksSearchQuery || '')}" oninput="App.onDecksSearchInput(this.value)">
+            </div>
+          `;
+        }
       }
     }
 
@@ -2168,6 +2266,22 @@ const App = {
 
     container.innerHTML = html;
     this.observeUnrevealedItems();
+
+    // Prompt 1m Mục 7: Restore focus and selection range if search was focused
+    if (isSearchFocused) {
+      const newInput = (activeId && document.getElementById(activeId))
+        || document.querySelector('#view-decks input[type="text"], #view-decks input[type="search"]');
+      if (newInput) {
+        if (activeVal !== null && newInput.value !== activeVal) {
+          newInput.value = activeVal;
+        }
+        newInput.focus({ preventScroll: true });
+        try {
+          const len = newInput.value.length;
+          newInput.setSelectionRange(cursorStart ?? len, cursorEnd ?? len);
+        } catch (_) {}
+      }
+    }
   },
 
   toggleSubjectCollapse(subjectId) {
