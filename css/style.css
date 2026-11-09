@@ -7138,27 +7138,15 @@ body.app-hidden * {
   .btn-primary::before,
   .btn-secondary::before,
   .btn-brand::before,
-  .quiz-option-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      150px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 255, 255, 0.24) 0%,
-      transparent 80%
-    );
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.18s ease;
-    z-index: 1;
-  }
-
+  .quiz-option-btn::before,
   .btn-primary:hover::before,
   .btn-secondary:hover::before,
   .btn-brand:hover::before,
   .quiz-option-btn:hover::before {
-    opacity: 1;
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
   }
 
   .btn-primary:hover {
@@ -8846,4 +8834,653 @@ textarea::placeholder,
 .app-sidebar.collapsed .sidebar-install-btn .nav-label {
   display: none !important;
 }
+
+/* ==========================================================================
+   PHASE 1N: 15 UI/UX REFINEMENTS, 135DEG LIQUID GLASS, MOBILE PERFECTION,
+   KATEX WRAPPING, AUTOPLAY LOFI & THEME ENERGY WAVE CHAMBER
+   ========================================================================== */
+
+/* 7. TRIỆT TIÊU TOÀN DIỆN VẦNG SÁNG VÀ ĐỐM SÁNG TRẮNG Ở GIỮA ĐÁP ÁN QUIZ & CÁC NÚT */
+.quiz-option-btn::before,
+.quiz-option-btn:hover::before,
+.btn::before,
+.btn-primary::before,
+.btn-secondary::before,
+.btn-brand::before,
+.quiz-card::before,
+.glass-card::before,
+.study-mode-card::before,
+.deck-card::before,
+.stat-card::before,
+.bank-card-item::before,
+.subject-group::before,
+.neu-stat-well::before {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* 8. THIẾT KẾ LẠI THANH ĐIỀU HƯỚNG DƯỚI CÙNG TRÊN MOBILE (.bottom-nav) CHUẨN LIQUID GLASS */
+@media (max-width: 768px) {
+  .bottom-nav,
+  #mobile-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: calc(100% - 24px) !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    height: 62px !important;
+    padding: 6px 8px !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(26px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(26px) saturate(190%) !important;
+    border-top: 1px solid var(--lg-directional-border-top, rgba(255, 255, 255, 0.38)) !important;
+    border-left: 1px solid var(--lg-directional-border-left, rgba(255, 255, 255, 0.28)) !important;
+    border-right: 1px solid var(--lg-directional-border-right, rgba(255, 255, 255, 0.08)) !important;
+    border-bottom: 1px solid var(--lg-directional-border-bottom, rgba(216, 180, 254, 0.18)) !important;
+    box-shadow:
+      var(--lg-directional-bevel),
+      0 14px 34px -6px rgba(0, 0, 0, 0.28) !important;
+    z-index: 1000 !important;
+  }
+
+  :root .bottom-nav,
+  html[data-theme="dark"] .bottom-nav,
+  html[data-theme="purple-pink"] .bottom-nav,
+  body[data-theme="purple-pink"] .bottom-nav,
+  html[data-color-mode="purple-pink"] .bottom-nav,
+  html[data-theme="violet-rose"] .bottom-nav {
+    background: linear-gradient(145deg, rgba(34, 22, 58, 0.74) 0%, rgba(18, 12, 34, 0.66) 100%) !important;
+  }
+  html[data-theme="monochrome"] .bottom-nav,
+  body[data-theme="monochrome"] .bottom-nav,
+  html[data-color-mode="bw-dark"] .bottom-nav,
+  html[data-theme="bw-dark"] .bottom-nav {
+    background: linear-gradient(145deg, rgba(32, 32, 38, 0.76) 0%, rgba(18, 18, 22, 0.68) 100%) !important;
+  }
+  html[data-theme="white-orange"] .bottom-nav,
+  body[data-theme="white-orange"] .bottom-nav,
+  html[data-color-mode="white-orange"] .bottom-nav {
+    background: linear-gradient(145deg, rgba(255, 252, 248, 0.72) 0%, rgba(255, 242, 228, 0.62) 100%) !important;
+    box-shadow:
+      var(--lg-directional-bevel),
+      0 12px 30px -6px rgba(154, 52, 18, 0.16) !important;
+  }
+
+  .bottom-nav .bottom-nav-item,
+  #mobile-bottom-nav .bottom-nav-item {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    min-height: 48px !important;
+    height: 50px !important;
+    padding: 4px 2px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+  }
+
+  .bottom-nav .bottom-nav-item svg,
+  .bottom-nav .bottom-nav-item.active svg,
+  .bottom-nav .bottom-nav-item svg *,
+  .bottom-nav .bottom-nav-item.active svg * {
+    width: 20px !important;
+    height: 20px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.9 !important;
+    background: transparent !important;
+    filter: none !important;
+  }
+
+  .bottom-nav .bottom-nav-item span {
+    font-size: 0.68rem !important;
+    font-weight: 500 !important;
+    line-height: 1.1 !important;
+    color: inherit !important;
+  }
+  .bottom-nav .bottom-nav-item.active span {
+    font-weight: 700 !important;
+  }
+
+  :root .bottom-nav .bottom-nav-item,
+  html[data-theme="dark"] .bottom-nav .bottom-nav-item,
+  html[data-theme="purple-pink"] .bottom-nav .bottom-nav-item,
+  body[data-theme="purple-pink"] .bottom-nav .bottom-nav-item,
+  html[data-color-mode="purple-pink"] .bottom-nav .bottom-nav-item,
+  html[data-theme="violet-rose"] .bottom-nav .bottom-nav-item {
+    color: rgba(233, 213, 255, 0.68) !important;
+  }
+  :root .bottom-nav .bottom-nav-item.active,
+  html[data-theme="dark"] .bottom-nav .bottom-nav-item.active,
+  html[data-theme="purple-pink"] .bottom-nav .bottom-nav-item.active,
+  body[data-theme="purple-pink"] .bottom-nav .bottom-nav-item.active,
+  html[data-color-mode="purple-pink"] .bottom-nav .bottom-nav-item.active,
+  html[data-theme="violet-rose"] .bottom-nav .bottom-nav-item.active {
+    background: rgba(192, 132, 252, 0.22) !important;
+    border-top-color: rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+  }
+
+  html[data-theme="monochrome"] .bottom-nav .bottom-nav-item,
+  body[data-theme="monochrome"] .bottom-nav .bottom-nav-item,
+  html[data-color-mode="bw-dark"] .bottom-nav .bottom-nav-item,
+  html[data-theme="bw-dark"] .bottom-nav .bottom-nav-item {
+    color: rgba(255, 255, 255, 0.62) !important;
+  }
+  html[data-theme="monochrome"] .bottom-nav .bottom-nav-item.active,
+  body[data-theme="monochrome"] .bottom-nav .bottom-nav-item.active,
+  html[data-color-mode="bw-dark"] .bottom-nav .bottom-nav-item.active,
+  html[data-theme="bw-dark"] .bottom-nav .bottom-nav-item.active {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-top-color: rgba(255, 255, 255, 0.45) !important;
+    color: #ffffff !important;
+  }
+
+  html[data-theme="white-orange"] .bottom-nav .bottom-nav-item,
+  body[data-theme="white-orange"] .bottom-nav .bottom-nav-item,
+  html[data-color-mode="white-orange"] .bottom-nav .bottom-nav-item {
+    color: #57534e !important;
+  }
+  html[data-theme="white-orange"] .bottom-nav .bottom-nav-item.active,
+  body[data-theme="white-orange"] .bottom-nav .bottom-nav-item.active,
+  html[data-color-mode="white-orange"] .bottom-nav .bottom-nav-item.active {
+    background: rgba(255, 148, 77, 0.22) !important;
+    border-top-color: rgba(255, 255, 255, 0.85) !important;
+    color: #ea580c !important; /* Icon & chữ màu Cam Đậm sắc nét tuyệt đối trên nền sáng */
+  }
+}
+
+/* 9. SỬA TRIỆT ĐỂ LỖI MOBILE BỊ LỆCH KHUNG SANG PHẢI & TRÀN CHỮ NÚT BẤM */
+@media (max-width: 840px) {
+  html,
+  body,
+  .app-layout,
+  .app-main,
+  .app-main.sidebar-collapsed {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 64px 12px 96px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .view-section,
+  #view-dashboard,
+  #view-decks,
+  #view-bank,
+  #view-stats,
+  #view-settings {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #decks-list-container,
+  #view-decks .subject-group,
+  #view-decks .subject-group-block,
+  .subject-group,
+  .subject-group-block {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  #dashboard-decks-grid,
+  #view-decks .decks-grid,
+  .subject-group .decks-grid,
+  .decks-grid,
+  .study-modes-grid,
+  .study-mode-cards-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .deck-card,
+  .study-mode-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .bank-header-wrap,
+  .section-title-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .bank-actions-row,
+  #view-decks .section-title-wrap > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .bank-actions-row > .btn,
+  #view-decks .section-title-wrap > div:last-child > .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 10px 8px !important;
+    font-size: 0.78rem !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    justify-content: center !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
+  }
+
+  .bank-actions-row > .btn:nth-child(3) {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* 10. TRIỆT TIÊU LỖI 2 THANH CUỘN LỒNG NHAU (DOUBLE SCROLLBAR) TRÊN TOÀN APP & MOBILE */
+html {
+  overflow-x: clip !important;
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+body,
+.app-layout,
+.app-main,
+.content-wrapper,
+.view-section,
+#view-bank,
+#view-bank > div,
+#bank-cards-list {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+@media (max-width: 840px) {
+  body::-webkit-scrollbar,
+  .app-main::-webkit-scrollbar,
+  .view-section::-webkit-scrollbar,
+  #view-bank::-webkit-scrollbar,
+  #bank-cards-list::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+/* 11 & 12. FLASHCARD AUTO-HEIGHT 3D STAGE & KATEX SMART LINE-WRAPPING */
+.flashcard-player-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.flashcard-stage {
+  height: auto !important;
+  min-height: 300px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin-bottom: 4px !important;
+}
+
+.flashcard-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  height: auto !important;
+  min-height: 300px !important;
+  max-height: none !important;
+  position: relative !important;
+}
+
+.flashcard-face {
+  grid-area: 1 / 1 !important;
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.flashcard-card:not(.flipped) .flashcard-front {
+  height: auto !important;
+  min-height: 300px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.flashcard-card:not(.flipped) .flashcard-back {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.flashcard-card.flipped .flashcard-front {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+.flashcard-card.flipped .flashcard-back {
+  height: auto !important;
+  min-height: 300px !important;
+  max-height: none !important;
+  padding: 24px 28px !important;
+  overflow: visible !important;
+}
+
+.flashcard-content-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+}
+
+.flashcard-explanation-box,
+.flashcard-explanation-box.is-collapsible,
+.flashcard-explanation-box.is-expanded {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 14px !important;
+  padding: 16px 20px !important;
+  border-radius: 14px !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+}
+
+#btn-flashcard-exp-toggle,
+.flashcard-exp-toggle-btn {
+  display: none !important;
+}
+
+#flashcard-explanation-text,
+.flashcard-explanation-box .flashcard-explanation-text,
+.flashcard-explanation-box.is-collapsible:not(.is-expanded) .flashcard-explanation-text,
+.flashcard-explanation-box.is-expanded .flashcard-explanation-text {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  max-height: none !important;
+  overflow: visible !important;
+  font-size: 0.96rem !important;
+  line-height: 1.68 !important;
+  text-align: left !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  box-sizing: border-box !important;
+}
+
+.flashcard-explanation-text .katex,
+.quiz-explanation-box .katex,
+.flashcard-question-text .katex,
+.flashcard-answer-text .katex,
+.quiz-question-text .katex,
+.quiz-option-content .katex {
+  font-size: 1.12em !important;
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+.flashcard-explanation-text .katex-html,
+.quiz-explanation-box .katex-html,
+.flashcard-question-text .katex-html,
+.flashcard-answer-text .katex-html,
+.quiz-question-text .katex-html,
+.quiz-option-content .katex-html {
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+.flashcard-explanation-text .katex-html > .base,
+.quiz-explanation-box .katex-html > .base {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+  vertical-align: middle !important;
+  margin: 2px 0 !important;
+}
+
+.flashcard-explanation-text .katex-html > .base::after,
+.quiz-explanation-box .katex-html > .base::after {
+  content: "\200B";
+  white-space: normal !important;
+}
+
+.flashcard-bottom-actions {
+  position: relative !important;
+  z-index: 5 !important;
+  margin-top: 8px !important;
+  width: 100% !important;
+}
+
+/* 15. BUỒNG SÓNG NĂNG LƯỢNG QUANG PHỔ TƯƠNG TÁC (THEME ENERGY WAVE CHAMBER) */
+.theme-energy-wave-chamber {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--card-frosted-bg, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border-top: 1px solid var(--lg-directional-border-top, rgba(255, 255, 255, 0.38));
+  border-left: 1px solid var(--lg-directional-border-left, rgba(255, 255, 255, 0.28));
+  border-right: 1px solid var(--lg-directional-border-right, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--lg-directional-border-bottom, rgba(216, 180, 254, 0.18));
+  box-shadow: var(--lg-directional-bevel), 0 16px 40px -12px rgba(0, 0, 0, 0.35);
+  margin-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.energy-wave-stage {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.energy-wave-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 16px rgba(168, 85, 247, 0.35));
+  transition: filter 0.3s ease;
+}
+
+.energy-wave-hud {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.energy-wave-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.energy-wave-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.energy-slider-control-wrap {
+  padding: 16px 20px 18px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.theme-energy-slider {
+  width: 100%;
+  height: 10px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 999px;
+  background: var(--range-track-bg, rgba(255, 255, 255, 0.14)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  outline: none;
+  cursor: pointer;
+}
+
+.theme-energy-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--range-thumb-bg, #f472b6) !important;
+  border: 3px solid var(--range-thumb-border, #ffffff) !important;
+  box-shadow: 0 0 18px var(--range-thumb-glow, rgba(232, 121, 249, 0.65)), 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+
+.theme-energy-slider::-webkit-slider-thumb:hover,
+.theme-energy-slider:active::-webkit-slider-thumb {
+  transform: scale(1.18);
+  cursor: grabbing;
+}
+
+.energy-nodes-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.energy-node-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.energy-node-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+}
+
+.energy-node-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 4px 14px -4px var(--accent);
+}
+
+.energy-node-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.energy-node-dot.dot-purple {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.7);
+}
+
+.energy-node-dot.dot-mono {
+  background: linear-gradient(135deg, #a1a1aa, #ffffff);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.energy-node-dot.dot-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.7);
+}
+
 

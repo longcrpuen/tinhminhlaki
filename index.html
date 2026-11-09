@@ -802,7 +802,7 @@
                       <div id="flashcard-explanation-wrap" class="flashcard-explanation-box" style="display: none;">
                         <div class="flashcard-explanation-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Giải thích chi tiết:</div>
                         <p id="flashcard-explanation-text" class="flashcard-explanation-text">Giải thích</p>
-                        <button type="button" id="btn-flashcard-exp-toggle" class="flashcard-exp-toggle-btn" onclick="event.stopPropagation(); App.toggleFlashcardExplanation();" style="display: none;">
+                        <button type="button" id="btn-flashcard-exp-toggle" class="flashcard-exp-toggle-btn" onclick="event.stopPropagation(); App.toggleFlashcardExplanation();" style="display: none !important;">
                           Xem giải thích đầy đủ ▾
                         </button>
                       </div>
@@ -1370,40 +1370,66 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <div class="quiz-card">
               <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;">Giao Diện & Hình Nền</h3>
               
-              <!-- 3-Theme Mode Selector Cards (Prompt 1c) -->
+              <!-- Interactive Resonance Energy Wave Tuner (Prompt 1n Item 15) -->
               <div style="margin-bottom: 22px;">
-                <div style="font-weight: 600; margin-bottom: 10px;">Chế độ Giao diện (Theme Modes)</div>
-                <div class="theme-cards-grid">
-                  <div class="theme-mode-card" data-theme-choice="violet-rose" onclick="App.setTheme('violet-rose')">
-                    <div class="theme-card-preview theme-preview-violet">
-                      <span class="preview-dot dot-violet"></span>
-                      <span class="preview-bar"></span>
-                    </div>
-                    <div class="theme-card-info">
-                      <span class="theme-card-title">◐ Tím Hồng (Violet Rose)</span>
-                      <span class="theme-card-desc">Dịu nhẹ mộng mơ, nút pastel, không chói gắt</span>
+                <div style="font-weight: 600; margin-bottom: 10px;">Chế độ Giao diện (Theme Modes & Energy Resonance)</div>
+                <div class="theme-energy-wave-chamber" id="theme-energy-chamber">
+                  <!-- Màn hình Sóng Năng Lượng SVG (100% GPU Transform, 0% lag) -->
+                  <div class="energy-wave-stage" id="energy-wave-stage">
+                    <svg class="energy-wave-svg" id="energy-wave-svg" viewBox="0 0 900 130" preserveAspectRatio="none" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="energy-wave-grad-primary" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop id="ew-stop-1" offset="0%" stop-color="#a855f7" />
+                          <stop id="ew-stop-2" offset="50%" stop-color="#ec4899" />
+                          <stop id="ew-stop-3" offset="100%" stop-color="#f472b6" />
+                        </linearGradient>
+                        <linearGradient id="energy-wave-area-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop id="ew-area-top" offset="0%" stop-color="#c084fc" stop-opacity="0.38" />
+                          <stop id="ew-area-bot" offset="100%" stop-color="#c084fc" stop-opacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <!-- Lớp sóng nền hài bậc 2 -->
+                      <path id="energy-wave-bg-path" class="energy-wave-path-secondary"
+                            d="M 0 70 Q 112 20, 225 70 T 450 70 T 675 70 T 900 70 L 900 130 L 0 130 Z"
+                            fill="url(#energy-wave-area-fill)" />
+                      <!-- Dải sóng năng lượng được thắp sáng theo vị trí kéo (--energy-clip-pct) -->
+                      <g id="energy-wave-active-group">
+                        <path id="energy-wave-main-path" class="energy-wave-path-main"
+                              d="M 0 68 C 90 12, 180 124, 270 68 C 360 12, 450 124, 540 68 C 630 12, 720 124, 810 68 C 855 40, 880 55, 900 68"
+                              fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="3.5" stroke-linecap="round" />
+                        <path id="energy-wave-harmonic-path" class="energy-wave-path-harmonic"
+                              d="M 0 68 C 110 115, 200 20, 310 68 C 420 115, 510 20, 620 68 C 730 115, 820 20, 900 68"
+                              fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="1.6" stroke-dasharray="6 6" opacity="0.7" />
+                      </g>
+                    </svg>
+
+                    <!-- Thông tin Tần số Theme hiện tại nổi trên mặt kính -->
+                    <div class="energy-wave-hud">
+                      <span class="energy-wave-badge" id="energy-wave-mode-badge">RESONANCE // VIOLET ROSE</span>
+                      <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng (Dreamy Liquid Glass)</strong>
                     </div>
                   </div>
 
-                  <div class="theme-mode-card" data-theme-choice="monochrome" onclick="App.setTheme('monochrome')">
-                    <div class="theme-card-preview theme-preview-mono">
-                      <span class="preview-dot dot-mono"></span>
-                      <span class="preview-bar"></span>
-                    </div>
-                    <div class="theme-card-info">
-                      <span class="theme-card-title">◑ Trắng Đen (Monochrome)</span>
-                      <span class="theme-card-desc">100% Noir B&W, tương phản cao, sắc lạnh</span>
-                    </div>
-                  </div>
-
-                  <div class="theme-mode-card" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')">
-                    <div class="theme-card-preview theme-preview-orange">
-                      <span class="preview-dot dot-orange"></span>
-                      <span class="preview-bar"></span>
-                    </div>
-                    <div class="theme-card-info">
-                      <span class="theme-card-title">◒ Trắng Cam (White Orange)</span>
-                      <span class="theme-card-desc">Kính sáng kem ấm, chữ than, nút cam tươi</span>
+                  <!-- Thanh kéo Năng lượng liên tục (Kéo đến đâu sóng lan & đổi màu Theme đến đấy!) -->
+                  <div class="energy-slider-control-wrap">
+                    <input type="range" id="theme-energy-slider" class="theme-energy-slider"
+                           min="0" max="100" value="12" step="1"
+                           aria-label="Kéo để chuyển đổi sóng năng lượng giao diện"
+                           oninput="App.onThemeEnergySliderInput(this.value)"
+                           onchange="App.onThemeEnergySliderCommit(this.value)">
+                    <div class="energy-nodes-row">
+                      <button type="button" class="energy-node-btn" data-theme-opt="purple-pink" data-theme-choice="violet-rose" onclick="App.selectThemeViaEnergyWave('purple-pink')">
+                        <span class="energy-node-dot dot-purple"></span>
+                        <span class="energy-node-label">Tím Hồng</span>
+                      </button>
+                      <button type="button" class="energy-node-btn" data-theme-opt="monochrome" data-theme-choice="monochrome" onclick="App.selectThemeViaEnergyWave('monochrome')">
+                        <span class="energy-node-dot dot-mono"></span>
+                        <span class="energy-node-label">Trắng Đen</span>
+                      </button>
+                      <button type="button" class="energy-node-btn" data-theme-opt="white-orange" data-theme-choice="white-orange" onclick="App.selectThemeViaEnergyWave('white-orange')">
+                        <span class="energy-node-dot dot-orange"></span>
+                        <span class="energy-node-label">Trắng Cam</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1518,7 +1544,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                   <div style="font-size: 0.85rem; color: var(--text-secondary);">Mức khuyến nghị 10% - 20% để không át suy nghĩ</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <input type="range" id="setting-lofi-volume" min="0" max="100" value="14" style="width: 140px; cursor: pointer; accent-color: var(--accent);" oninput="if(window.LofiPlayer){LofiPlayer.setVolume(this.value / 100); const l=document.getElementById('lofi-volume-label'); if(l) l.textContent=this.value+'%';}">
+                  <input type="range" id="setting-lofi-volume" class="lofi-volume-slider" min="0" max="100" value="14" style="width: 140px; cursor: pointer;" oninput="if(window.LofiPlayer){LofiPlayer.setVolume(this.value / 100); const l=document.getElementById('lofi-volume-label'); if(l) l.textContent=this.value+'%';}">
                 </div>
               </div>
 
@@ -1527,8 +1553,16 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                   <div style="font-weight: 600;">Chọn bài hát</div>
                   <div style="font-size: 0.85rem; color: var(--text-secondary);">4 bài hòa âm thủ công hoặc file nhạc cá nhân đã tải lên</div>
                 </div>
-                <select id="setting-lofi-track" class="form-control" style="width: auto; min-width: 240px;" onchange="if(window.LofiPlayer) LofiPlayer.selectTrack(parseInt(this.value))">
-                </select>
+                <div class="cyber-dropdown" id="lofi-track-dropdown-wrap" style="min-width: 260px;">
+                  <button type="button" class="cyber-dropdown-trigger" id="lofi-track-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="cyber-dropdown-label" id="lofi-track-current-label">Đang tải...</span>
+                    <svg class="cyber-dropdown-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  <div class="cyber-dropdown-menu" id="lofi-track-dropdown-menu" role="listbox">
+                  </div>
+                  <select id="setting-lofi-track" class="form-control" style="display: none;" onchange="if(window.LofiPlayer) LofiPlayer.selectTrack(parseInt(this.value))">
+                  </select>
+                </div>
               </div>
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">

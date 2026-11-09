@@ -1345,6 +1345,74 @@ console.log('\n=== TEST SUITE 19: Phase 1m 14 UI/UX Refinements, Liquid Glass, F
   assert(themeCss.includes('.editorial-stage-footer .stat-card') && themeCss.includes('border-radius: 10px !important;'), 'Quote stat cards have 10px modern border radius');
 }
 
+console.log('\n=== TEST SUITE 20: Phase 1n 15 UI/UX Refinements, 135deg Directional Liquid Glass, Mobile, Lofi & Energy Wave ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const lofiJs = fs.readFileSync(path.join(__dirname, '../js/lofi-music.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // Item 1: Fluted glass removal & Purple-pink popup separation
+  assert(themeCss.includes('.modal-header::before,') && themeCss.includes('display: none !important;') && themeCss.includes('content: none !important;'), 'Phase 1n removes fluted glass from modal-header');
+  assert(themeCss.includes('--popup-glass-volume-bg: linear-gradient(145deg, rgba(64, 48, 98, 0.56) 0%, rgba(32, 22, 54, 0.46) 55%, rgba(44, 30, 74, 0.52) 100%);'), 'Purple-pink popup defines separating volume background');
+  assert(themeCss.includes('--popup-glass-rim-border: rgba(233, 213, 255, 0.34);'), 'Purple-pink popup defines separating rim border');
+
+  // Item 2: 135deg Directional Light Physics
+  assert(themeCss.includes('--lg-directional-bevel:'), 'theme.css defines 135deg directional bevel');
+  assert(themeCss.includes('--lg-directional-border-top: rgba(255, 255, 255, 0.38);'), 'Purple theme defines bright top border');
+  assert(themeCss.includes('--lg-directional-border-bottom: rgba(216, 180, 254, 0.18);'), 'Purple theme defines soft bottom border');
+  assert(themeCss.includes('--lg-directional-border-top: rgba(255, 255, 255, 0.95);'), 'White-orange defines luminous top border');
+  assert(themeCss.includes('border-top: 1px solid var(--lg-directional-border-top) !important;'), 'Directional borders applied to cards and modal');
+
+  // Item 3: Quote hover glow tightened
+  assert(themeCss.includes('0 14px 22px -12px rgba(192, 132, 252, 0.32)'), 'Quote hover glow tightened to bottom edge in purple-pink');
+  assert(themeCss.includes('0 14px 22px -12px rgba(255, 255, 255, 0.22)'), 'Quote hover glow tightened to bottom edge in monochrome');
+  assert(themeCss.includes('0 14px 22px -12px rgba(255, 126, 54, 0.26)'), 'Quote hover glow tightened to bottom edge in white-orange');
+
+  // Items 4, 5, 6: 4 Stat Boxes (border-radius: 4px and solid hover colors)
+  assert(themeCss.includes('border-radius: 4px !important;'), 'Stat boxes enforce sharp 4px rectangular radius');
+  assert(themeCss.includes('background: rgba(192, 132, 252, 0.28) !important;'), 'Purple-pink stat hover uses solid light neon purple');
+  assert(themeCss.includes('background: rgba(255, 158, 88, 0.28) !important;'), 'White-orange stat hover uses solid light neon orange');
+
+  // Item 7: Quiz Option Center Spotlight Removal
+  assert(styleCss.includes('.quiz-option-btn::before') && styleCss.includes('display: none !important;'), 'Quiz option center spotlight disabled');
+
+  // Item 8: Mobile Bottom Nav
+  assert(styleCss.includes('.bottom-nav,') && styleCss.includes('border-radius: 20px !important;') && styleCss.includes('backdrop-filter: blur(26px) saturate(190%) !important;'), 'Mobile bottom nav is squircle floating liquid glass');
+  assert(styleCss.includes('html[data-theme="white-orange"] .bottom-nav .bottom-nav-item.active') && styleCss.includes('color: #ea580c !important;'), 'White-orange mobile bottom nav active item has vivid deep orange text & icon');
+
+  // Item 9: Mobile centering & 2-column action buttons
+  assert(styleCss.includes('padding: 64px 12px 96px 12px !important;'), 'Content wrapper properly padded for mobile HUD and bottom nav');
+  assert(styleCss.includes('.bank-actions-row,') && styleCss.includes('grid-template-columns: repeat(2, minmax(0, 1fr)) !important;'), 'Bank actions row uses 2-column grid on mobile');
+
+  // Item 10: Single native document scroller (No double scrollbar)
+  assert(styleCss.includes('overflow-x: clip !important;') && styleCss.includes('overflow-y: auto !important;') && styleCss.includes('html {'), 'html element is single native scroller');
+  assert(styleCss.includes('#view-bank') && styleCss.includes('overflow-y: visible !important;'), 'View containers delegate scrolling to root document');
+
+  // Item 11: LaTeX smart line-wrapping
+  assert(styleCss.includes('.katex-html > .base::after') && styleCss.includes('content: "\\200B";'), 'KaTeX formulas have soft line-break opportunities');
+
+  // Item 12: Flashcard auto-height grid 1x1 & 0.96rem font
+  assert(styleCss.includes('.flashcard-card') && styleCss.includes('grid-template-columns: minmax(0, 1fr) !important;'), 'Flashcard uses CSS Grid 1x1 auto-height');
+  assert(styleCss.includes('font-size: 0.96rem !important;'), 'Flashcard explanation uses standard 0.96rem font size');
+
+  // Item 13: Lofi First-Interaction AutoPlay
+  assert(lofiJs.includes('setupFirstInteractionAutoPlay'), 'LofiPlayer implements setupFirstInteractionAutoPlay');
+  assert(lofiJs.includes('pointerdown') && lofiJs.includes('touchstart'), 'setupFirstInteractionAutoPlay binds user touch/pointer gestures');
+
+  // Item 14: Lofi settings CyberDropdown & range slider theming
+  assert(indexHtml.includes('id="lofi-track-dropdown-wrap"') && indexHtml.includes('id="lofi-track-dropdown-trigger"'), 'Settings includes CyberDropdown for track selection');
+  assert(lofiJs.includes('lofi-track-dropdown-menu'), 'LofiPlayer synchronizes CyberDropdown menu items');
+  assert(themeCss.includes('--range-track-bg:') && themeCss.includes('--range-thumb-glow:'), 'theme.css defines unified range slider tokens');
+
+  // Item 15: Theme Energy Wave Chamber
+  assert(indexHtml.includes('theme-energy-wave-chamber') && indexHtml.includes('id="theme-energy-slider"'), 'index.html embeds Theme Energy Wave Chamber');
+  assert(indexHtml.includes('energy-wave-svg'), 'index.html includes SVG resonance wave');
+  assert(appJs.includes('syncThemeEnergyChamber') && appJs.includes('onThemeEnergySliderInput'), 'app.js implements Theme Energy Wave Chamber controls');
+  assert(appJs.includes('selectThemeViaEnergyWave'), 'app.js supports direct wave node selection');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

@@ -106,8 +106,63 @@ class LofiMusicPlayer {
       }
     ];
 
-    this.initAudioElement();
+    this.init();
     this.loadCustomTracksFromDB();
+  }
+
+  init() {
+    this.initAudioElement();
+    this.setupFirstInteractionAutoPlay();
+    this.initCyberDropdown();
+    this.updateUI();
+  }
+
+  // Tự động kích hoạt phát nhạc Lofi ngay ở thao tác chạm / click / phím bấm đầu tiên khi vào App
+  setupFirstInteractionAutoPlay() {
+    if (this._firstInteractionBound) return;
+    this._firstInteractionBound = true;
+
+    const onFirstUserGesture = (e) => {
+      ['pointerdown', 'touchstart', 'mousedown', 'keydown'].forEach((evtName) => {
+        window.removeEventListener(evtName, onFirstUserGesture, true);
+      });
+
+      // Nếu thao tác đầu tiên của người dùng là bấm thẳng vào nút #btn-lofi-toggle
+      // thì để sự kiện onclick của nút đó tự xử lý để không bị bật-tắt chồng nhau
+      if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#btn-lofi-toggle')) {
+        return;
+      }
+
+      if (!this.isPlaying) {
+        this.play();
+      }
+    };
+
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown'].forEach((evtName) => {
+      window.addEventListener(evtName, onFirstUserGesture, { capture: true, passive: true });
+    });
+  }
+
+  initCyberDropdown() {
+    if (typeof document === 'undefined') return;
+    if (this._cyberDropdownBound) return;
+    this._cyberDropdownBound = true;
+
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('lofi-track-dropdown-wrap');
+      const trigger = document.getElementById('lofi-track-dropdown-trigger');
+      if (!wrap || !trigger) return;
+
+      if (trigger.contains(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isOpen = wrap.classList.toggle('open');
+        trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      } else if (!wrap.contains(e.target)) {
+        wrap.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   initAudioElement() {
@@ -513,14 +568,38 @@ class LofiMusicPlayer {
     const setVol = document.getElementById('setting-lofi-volume');
     if (setVol) {
       setVol.value = Math.round(this.volume * 100);
+      if (!setVol.classList.contains('lofi-volume-slider')) {
+        setVol.classList.add('lofi-volume-slider');
+      }
     }
+    const tracks = this.getAllTracks();
     const setTrack = document.getElementById('setting-lofi-track');
     if (setTrack) {
-      const tracks = this.getAllTracks();
       setTrack.innerHTML = tracks.map((t, idx) => `
         <option value="${idx}" ${idx === this.currentTrackIndex ? 'selected' : ''}>
           ${idx + 1}. ${t.title}
         </option>
+      `).join('');
+    }
+
+    // Sync CyberDropdown in Settings
+    const ddLabel = document.getElementById('lofi-track-current-label');
+    const curTrack = this.getCurrentTrack();
+    if (ddLabel && curTrack) {
+      ddLabel.textContent = `${this.currentTrackIndex + 1}. ${curTrack.title}`;
+    }
+    const ddMenu = document.getElementById('lofi-track-dropdown-menu');
+    if (ddMenu) {
+      ddMenu.innerHTML = tracks.map((t, idx) => `
+        <button type="button" class="cyber-dropdown-item ${idx === this.currentTrackIndex ? 'active' : ''}"
+                data-track-index="${idx}"
+                role="option"
+                aria-selected="${idx === this.currentTrackIndex ? 'true' : 'false'}"
+                onclick="if(window.LofiPlayer){window.LofiPlayer.selectTrack(${idx}); const w=document.getElementById('lofi-track-dropdown-wrap'); if(w) w.classList.remove('open');}">
+          <span style="font-weight: 700; opacity: 0.6; margin-right: 6px;">${idx + 1}.</span>
+          <span style="flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</span>
+          ${idx === this.currentTrackIndex ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+        </button>
       `).join('');
     }
   }

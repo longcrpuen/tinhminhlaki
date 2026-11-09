@@ -2518,4 +2518,329 @@ body.flashcard-active .flashcard-explanation-text {
   border-radius: 10px !important;
 }
 
+/* ==========================================================================
+   PHASE 1N: 15 UI/UX ENHANCEMENTS, 135DEG DIRECTIONAL LIQUID GLASS, MOBILE
+   AUTOPLAY LOFI, CYBER DROPDOWN, ENERGY WAVE CHAMBER & ARCHITECTURE GRAPH
+   ========================================================================== */
+
+/* 1. XÓA BỎ HOÀN TOÀN HIỆU ỨNG KÍNH CHIA SỌC (FLUTED GLASS) Ở HEADER POPUP */
+.modal-header::before,
+.modal-header::after,
+.modal-box .modal-header::after,
+.modal-content .modal-header::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+/* Khôi phục Popup chuẩn chỉ trên cả 3 mode, sửa dứt điểm khung & độ tách nền của Mode Tím Hồng */
+:root,
+html,
+body,
+html[data-theme="dark"],
+html[data-theme="purple-pink"],
+body[data-theme="purple-pink"],
+html[data-color-mode="purple-pink"],
+html[data-theme="violet-rose"] {
+  /* Học theo độ trong & độ sáng tách nền của Monochrome nhưng mang sắc tím khói lavender */
+  --popup-glass-volume-bg: linear-gradient(145deg, rgba(64, 48, 98, 0.56) 0%, rgba(32, 22, 54, 0.46) 55%, rgba(44, 30, 74, 0.52) 100%);
+  --popup-glass-rim-border: rgba(233, 213, 255, 0.34);
+  --popup-glass-volume-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.68),
+    inset -1px -1.5px 2px rgba(216, 180, 254, 0.28),
+    inset 0 18px 36px -12px rgba(255, 255, 255, 0.14),
+    0 32px 72px -12px rgba(4, 2, 10, 0.78);
+}
+
+/* 2. GỜ KHÚC XẠ ÁNH SÁNG ĐỊNH HƯỚNG 135DEG THEO ĐÚNG QUY LUẬT VẬT LÝ ẢNH 3 */
+:root,
+html[data-theme="dark"],
+html[data-theme="purple-pink"],
+body[data-theme="purple-pink"],
+html[data-color-mode="purple-pink"],
+html[data-theme="violet-rose"] {
+  --lg-directional-bevel:
+    inset 1.5px 1.5px 1.5px rgba(255, 255, 255, 0.58),
+    inset -1px -1.5px 2px rgba(216, 180, 254, 0.24),
+    inset 0 12px 24px -10px rgba(255, 255, 255, 0.10);
+  --lg-directional-border-top: rgba(255, 255, 255, 0.38);
+  --lg-directional-border-left: rgba(255, 255, 255, 0.28);
+  --lg-directional-border-right: rgba(255, 255, 255, 0.08);
+  --lg-directional-border-bottom: rgba(216, 180, 254, 0.18);
+}
+
+html[data-theme="monochrome"],
+body[data-theme="monochrome"],
+html[data-color-mode="bw-dark"],
+html[data-theme="bw-dark"] {
+  --lg-directional-bevel:
+    inset 1.5px 1.5px 1.5px rgba(255, 255, 255, 0.64),
+    inset -1px -1.5px 2px rgba(255, 255, 255, 0.20),
+    inset 0 12px 24px -10px rgba(255, 255, 255, 0.10);
+  --lg-directional-border-top: rgba(255, 255, 255, 0.42);
+  --lg-directional-border-left: rgba(255, 255, 255, 0.30);
+  --lg-directional-border-right: rgba(255, 255, 255, 0.08);
+  --lg-directional-border-bottom: rgba(255, 255, 255, 0.18);
+}
+
+html[data-theme="white-orange"],
+body[data-theme="white-orange"],
+html[data-color-mode="white-orange"] {
+  --lg-directional-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.98),
+    inset -1px -1.5px 2px rgba(255, 140, 66, 0.20),
+    inset 0 12px 24px -10px rgba(255, 255, 255, 0.45);
+  --lg-directional-border-top: rgba(255, 255, 255, 0.95);
+  --lg-directional-border-left: rgba(255, 255, 255, 0.82);
+  --lg-directional-border-right: rgba(255, 255, 255, 0.32);
+  --lg-directional-border-bottom: rgba(255, 255, 255, 0.55);
+}
+
+/* Áp dụng viền bất đối xứng theo hướng ánh sáng cho thẻ & popup */
+.modal-box,
+.hero-card,
+#view-dashboard .study-mode-card,
+#dashboard-decks-grid .deck-card,
+#view-decks .deck-card,
+.deck-card,
+.study-mode-card {
+  border-top: 1px solid var(--lg-directional-border-top) !important;
+  border-left: 1px solid var(--lg-directional-border-left) !important;
+  border-right: 1px solid var(--lg-directional-border-right) !important;
+  border-bottom: 1px solid var(--lg-directional-border-bottom) !important;
+}
+
+/* 3. THU GỌN QUẦNG SÁNG KHI HOVER KHUNG QUOTE (CHỈ CHIẾU NHẸ DƯỚI ĐÁY KHUNG) */
+:root .hero-card:hover,
+html[data-theme="dark"] .hero-card:hover,
+html[data-theme="purple-pink"] .hero-card:hover,
+body[data-theme="purple-pink"] .hero-card:hover,
+html[data-color-mode="purple-pink"] .hero-card:hover,
+html[data-theme="violet-rose"] .hero-card:hover {
+  box-shadow:
+    var(--lg-directional-bevel),
+    0 14px 22px -12px rgba(192, 132, 252, 0.32),
+    0 18px 36px -14px rgba(0, 0, 0, 0.65) !important;
+}
+
+html[data-theme="monochrome"] .hero-card:hover,
+body[data-theme="monochrome"] .hero-card:hover,
+html[data-color-mode="bw-dark"] .hero-card:hover,
+html[data-theme="bw-dark"] .hero-card:hover {
+  box-shadow:
+    var(--lg-directional-bevel),
+    0 14px 22px -12px rgba(255, 255, 255, 0.22),
+    0 18px 36px -14px rgba(0, 0, 0, 0.80) !important;
+}
+
+html[data-theme="white-orange"] .hero-card:hover,
+body[data-theme="white-orange"] .hero-card:hover,
+html[data-color-mode="white-orange"] .hero-card:hover {
+  box-shadow:
+    var(--lg-directional-bevel),
+    0 14px 22px -12px rgba(255, 126, 54, 0.26),
+    0 18px 36px -14px rgba(154, 52, 18, 0.14) !important;
+}
+
+/* 4, 5 & 6. 4 Ô TRẠNG THÁI KHUNG QUOTE (border-radius: 4px !important; HOVER ĐƠN SẮC LIGHT NEON) */
+#view-dashboard .stats-grid > div,
+#view-dashboard .stat-card,
+.hero-card .stat-card,
+.stats-grid .stat-card,
+.hero-stat-bento-card,
+.hero-stat-card,
+.quote-stat-box {
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  background-clip: padding-box !important;
+  position: relative !important;
+  transition: background-color 0.22s ease,
+              border-color 0.22s ease,
+              box-shadow 0.22s ease,
+              transform 0.22s ease !important;
+}
+
+/* Mode Tím Hồng: Nghỉ kính mờ, hover Tím Light Neon ĐƠN SẮC dịu sáng */
+:root #view-dashboard .stat-card,
+html[data-theme="dark"] #view-dashboard .stat-card,
+html[data-theme="purple-pink"] #view-dashboard .stat-card,
+body[data-theme="purple-pink"] #view-dashboard .stat-card,
+html[data-color-mode="purple-pink"] #view-dashboard .stat-card,
+html[data-theme="violet-rose"] #view-dashboard .stat-card,
+:root .stats-grid > div,
+html[data-theme="dark"] .stats-grid > div,
+html[data-theme="purple-pink"] .stats-grid > div {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(216, 180, 254, 0.14) !important;
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.20) !important;
+  color: #f8f6fd !important;
+}
+
+:root #view-dashboard .stat-card:hover,
+html[data-theme="dark"] #view-dashboard .stat-card:hover,
+html[data-theme="purple-pink"] #view-dashboard .stat-card:hover,
+body[data-theme="purple-pink"] #view-dashboard .stat-card:hover,
+html[data-color-mode="purple-pink"] #view-dashboard .stat-card:hover,
+html[data-theme="violet-rose"] #view-dashboard .stat-card:hover,
+:root .stats-grid > div:hover,
+html[data-theme="dark"] .stats-grid > div:hover,
+html[data-theme="purple-pink"] .stats-grid > div:hover {
+  background: rgba(192, 132, 252, 0.28) !important;
+  border-top-color: rgba(245, 208, 254, 0.75) !important;
+  border-left-color: rgba(232, 121, 249, 0.55) !important;
+  border-right-color: rgba(192, 132, 252, 0.25) !important;
+  border-bottom-color: rgba(232, 121, 249, 0.45) !important;
+  box-shadow:
+    inset 1px 1px 1.5px rgba(255, 255, 255, 0.55),
+    0 10px 22px -8px rgba(192, 132, 252, 0.32) !important;
+  transform: translateY(-2px) !important;
+  color: #ffffff !important;
+}
+
+/* Mode Trắng Đen: Nghỉ kính mờ, hover Trắng Bạc ĐƠN SẮC dịu sáng */
+html[data-theme="monochrome"] #view-dashboard .stat-card,
+body[data-theme="monochrome"] #view-dashboard .stat-card,
+html[data-color-mode="bw-dark"] #view-dashboard .stat-card,
+html[data-theme="bw-dark"] #view-dashboard .stat-card,
+html[data-theme="monochrome"] .stats-grid > div {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.24) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="monochrome"] #view-dashboard .stat-card:hover,
+body[data-theme="monochrome"] #view-dashboard .stat-card:hover,
+html[data-color-mode="bw-dark"] #view-dashboard .stat-card:hover,
+html[data-theme="bw-dark"] #view-dashboard .stat-card:hover,
+html[data-theme="monochrome"] .stats-grid > div:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-top-color: rgba(255, 255, 255, 0.82) !important;
+  border-left-color: rgba(255, 255, 255, 0.60) !important;
+  border-right-color: rgba(255, 255, 255, 0.22) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.42) !important;
+  box-shadow:
+    inset 1px 1px 1.5px rgba(255, 255, 255, 0.68),
+    0 10px 22px -8px rgba(255, 255, 255, 0.20) !important;
+  transform: translateY(-2px) !important;
+  color: #ffffff !important;
+}
+
+/* Mode Trắng Cam: Nghỉ kính kem mờ, hover Cam Light Neon ĐƠN SẮC (KHÔNG GRADIENT), chữ than đậm rõ */
+html[data-theme="white-orange"] #view-dashboard .stat-card,
+body[data-theme="white-orange"] #view-dashboard .stat-card,
+html[data-color-mode="white-orange"] #view-dashboard .stat-card,
+html[data-theme="white-orange"] .stats-grid > div {
+  background: rgba(255, 255, 255, 0.30) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.88) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.48) !important;
+  box-shadow:
+    inset 1px 1px 1.5px rgba(255, 255, 255, 0.90),
+    0 6px 18px -8px rgba(154, 52, 18, 0.06) !important;
+  color: #1c1917 !important;
+}
+
+html[data-theme="white-orange"] #view-dashboard .stat-card:hover,
+body[data-theme="white-orange"] #view-dashboard .stat-card:hover,
+html[data-color-mode="white-orange"] #view-dashboard .stat-card:hover,
+html[data-theme="white-orange"] .stats-grid > div:hover {
+  background: rgba(255, 158, 88, 0.28) !important;
+  border-top-color: rgba(255, 255, 255, 0.96) !important;
+  border-left-color: rgba(255, 168, 104, 0.75) !important;
+  border-right-color: rgba(255, 148, 77, 0.30) !important;
+  border-bottom-color: rgba(255, 148, 77, 0.50) !important;
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.92),
+    0 10px 22px -8px rgba(255, 132, 56, 0.22) !important;
+  transform: translateY(-2px) !important;
+  color: #1c1917 !important;
+}
+html[data-theme="white-orange"] #view-dashboard .stat-card:hover *,
+html[data-theme="white-orange"] .stats-grid > div:hover * {
+  color: #1c1917 !important;
+}
+
+/* 14. ĐỒNG BỘ THANH KÉO ÂM LƯỢNG (RANGE SLIDER) THEO 3 THEME LIQUID GLASS */
+:root,
+html[data-theme="dark"],
+html[data-theme="purple-pink"],
+body[data-theme="purple-pink"],
+html[data-color-mode="purple-pink"],
+html[data-theme="violet-rose"] {
+  --range-track-bg: rgba(255, 255, 255, 0.12);
+  --range-fill-color: #c084fc;
+  --range-thumb-bg: #f472b6;
+  --range-thumb-border: #ffffff;
+  --range-thumb-glow: rgba(232, 121, 249, 0.55);
+}
+
+html[data-theme="monochrome"],
+body[data-theme="monochrome"],
+html[data-color-mode="bw-dark"],
+html[data-theme="bw-dark"] {
+  --range-track-bg: rgba(255, 255, 255, 0.14);
+  --range-fill-color: #ffffff;
+  --range-thumb-bg: #ffffff;
+  --range-thumb-border: #27272a;
+  --range-thumb-glow: rgba(255, 255, 255, 0.50);
+}
+
+html[data-theme="white-orange"],
+body[data-theme="white-orange"],
+html[data-color-mode="white-orange"] {
+  --range-track-bg: rgba(154, 52, 18, 0.14);
+  --range-fill-color: #f97316;
+  --range-thumb-bg: #ea580c;
+  --range-thumb-border: #ffffff;
+  --range-thumb-glow: rgba(249, 115, 22, 0.45);
+}
+
+input[type="range"].lofi-volume-slider,
+#view-settings input[type="range"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: var(--range-track-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  outline: none !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+input[type="range"].lofi-volume-slider::-webkit-slider-thumb,
+#view-settings input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: var(--range-thumb-bg) !important;
+  border: 2.5px solid var(--range-thumb-border) !important;
+  box-shadow: 0 0 14px var(--range-thumb-glow), 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+  cursor: grab !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+input[type="range"].lofi-volume-slider::-webkit-slider-thumb:hover,
+#view-settings input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15) !important;
+}
+
+
 
