@@ -24,6 +24,7 @@ const jsFilesToCheck = [
   'js/audio.js',
   'js/audio-config.js',
   'js/confetti.js',
+  'js/lofi-music.js',
   'quotes.js',
   'sw.js',
   'server.js'

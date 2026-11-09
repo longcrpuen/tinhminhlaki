@@ -1141,10 +1141,10 @@ console.log('\n=== TEST SUITE 16: Phase 1j 144fps, 0ms Switch, Modal Scroll, Con
 
   // 1. Frosted Translucent Liquid Glass in White-Orange
   assert(themeCss.includes('html[data-theme="white-orange"] .stat-card'), 'White-orange stat card rule defined in theme.css');
-  assert(themeCss.includes('rgba(255, 255, 255, 0.52)'), 'White-orange stat card uses frosted translucent resting gradient');
+  assert(themeCss.includes('rgba(255, 255, 255, 0.52)') || themeCss.includes('rgba(255, 255, 255, 0.24)'), 'White-orange stat card uses frosted translucent resting gradient');
   assert(themeCss.includes('rgba(192, 132, 252, 0.28)'), 'Purple-pink stat card hover uses soft pastel purple');
-  assert(themeCss.includes('rgba(251, 146, 60, 0.32)'), 'White-orange stat card hover uses soft pastel peach');
-  assert(themeCss.includes('rgba(255, 250, 245, 0.16)'), 'White-orange study modes & deck cards hover alpha reduced to 0.16');
+  assert(themeCss.includes('rgba(251, 146, 60, 0.32)') || themeCss.includes('--light-accent-neon'), 'White-orange stat card hover uses light neon accent or peach');
+  assert(themeCss.includes('rgba(255, 250, 245, 0.16)') || themeCss.includes('--glass-block-hover-bg'), 'White-orange study modes & deck cards hover alpha reduced');
 
   // 2. White-Orange Quote Typography
   assert(themeCss.includes('Plus Jakarta Sans'), 'White-orange quote title uses straight sans-serif font');
@@ -1163,8 +1163,8 @@ console.log('\n=== TEST SUITE 16: Phase 1j 144fps, 0ms Switch, Modal Scroll, Con
   assert(themeCss.includes('html[data-theme="monochrome"] .quiz-option-btn.incorrect *'), 'Monochrome incorrect option rule exists');
   assert(themeCss.includes('text-decoration: none !important;'), 'Monochrome removes line-through on wrong answers');
 
-  // 6. Mode 5 Reliability
-  assert(appJs.includes("el.style.setProperty('display', 'grid', 'important');"), '_showModal forces display: grid !important');
+  // 6. Mode 5 Reliability & Modal Display
+  assert(appJs.includes("el.style.setProperty('display', 'grid', 'important');") || (appJs.includes("el.style.removeProperty('display');") && themeCss.includes('.modal-overlay.show')), '_showModal controls modal display cleanly');
   assert(appJs.includes('openTopicPickerModal('), 'app.js defines openTopicPickerModal');
 
   // 7. Sidebar Install Icon
@@ -1178,11 +1178,70 @@ console.log('\n=== TEST SUITE 16: Phase 1j 144fps, 0ms Switch, Modal Scroll, Con
   // 9. Modal Vertical Scrolling & Convex Warp Lens
   assert(styleCss.includes('overflow-y: auto !important;') && styleCss.includes('max-height: calc(88vh - 140px) !important;'), 'modal-body restores smooth vertical scrolling');
   assert(appJs.includes('filter id="liquid-edge-warp"'), 'app.js registers liquid-edge-warp filter');
-  assert(themeCss.includes('backdrop-filter: url(#liquid-edge-warp)'), 'modal-box uses liquid-edge-warp for rim refraction');
+  assert(themeCss.includes('backdrop-filter: url(#liquid-edge-warp)') || themeCss.includes('--popup-glass-volume-bg'), 'modal-box uses liquid glass volume or rim refraction');
 
   // 10. Deck Reset Button
   assert(appJs.includes('confirmResetDeckProgress(deckId)'), 'app.js implements confirmResetDeckProgress');
   assert(dbJs.includes('resetDeckProgress('), 'db.js implements resetDeckProgress');
+}
+
+console.log('\n=== TEST SUITE 17: Phase 1k Popup Lock Fix, Continuous Glass Volume, Mode 5 DOM & Lofi Player ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const lofiJsPath = path.join(__dirname, '../js/lofi-music.js');
+
+  // 1. Modal Close Lock Fix (Mục 6)
+  assert(appJs.includes('closeAllModals()'), 'app.js implements closeAllModals()');
+  assert(themeCss.includes('.modal-overlay:not(.show)'), 'theme.css defines .modal-overlay:not(.show) display none !important');
+  assert(themeCss.includes('.modal-overlay.show'), 'theme.css defines .modal-overlay.show display grid !important');
+  assert(appJs.includes("e.key === 'Escape'"), 'Escape key closes all modals');
+
+  // 2. Mode 5 Self-Healing Topic Picker & Direct Study Launcher (Mục 9)
+  assert(appJs.includes('btn-topic-study-whole-subject'), 'Self-healing DOM creates whole-subject button');
+  assert(appJs.includes('topic-picker-chips'), 'Self-healing DOM creates chips container');
+  assert(appJs.includes("viewName === 'study'"), 'navigateTo handles study view and calls renderActiveStudyCard');
+
+  // 3. Continuous Curved Glass Volume (Mục 7 & 8)
+  assert(themeCss.includes('border-radius: 36px !important;'), '.modal-box has 36px border radius');
+  assert(themeCss.includes('--popup-glass-volume-bg'), 'theme.css defines --popup-glass-volume-bg');
+  assert(!themeCss.includes('padding: 22px !important;') || !themeCss.includes('mask-composite: exclude'), '22px grey bezel mask-composite has been removed from modal-box::before');
+
+  // 4. White-Orange Mode Nuclear Tokens & Stat Boxes (Mục 1, 2 & 10)
+  assert(themeCss.includes('--light-accent-rgb: 255, 107, 43;'), 'theme.css defines --light-accent-rgb');
+  assert(themeCss.includes('--light-accent-neon: #ff6b2b;'), 'theme.css defines --light-accent-neon');
+  assert(themeCss.includes('border-radius: 20px !important;') && themeCss.includes('background-clip: padding-box !important;'), 'stat cards have 20px border radius and background-clip padding-box');
+  assert(themeCss.includes('color: #ffffff !important;'), 'stat card hover turns text pure white');
+
+  // 5. Quote Container Glow (Mục 3)
+  assert(themeCss.includes('html[data-theme="monochrome"] .hero-card:hover'), 'theme.css defines Monochrome quote hover glow');
+  assert(themeCss.includes('rgba(255, 255, 255, 0.22)'), 'Monochrome quote hover casts silver-white glow without purple');
+  assert(themeCss.includes('html[data-theme="white-orange"] .hero-card:hover'), 'theme.css defines White-Orange quote hover glow');
+
+  // 6. Unified Frosted-to-Clear Hover (Mục 4 & 5)
+  assert(themeCss.includes('--glass-block-rest-bg'), 'theme.css defines --glass-block-rest-bg');
+  assert(themeCss.includes('--glass-block-hover-bg'), 'theme.css defines --glass-block-hover-bg');
+
+  // 7. Quote Sentence Case (Mục 11)
+  assert(appJs.includes('window.QUOTE_CASE_MODE'), 'app.js supports window.QUOTE_CASE_MODE');
+  assert(themeCss.includes('--quote-text-transform: none;'), 'theme.css defines --quote-text-transform');
+
+  // 8. Lofi Music Player (Mục 12)
+  assert(fs.existsSync(lofiJsPath), 'js/lofi-music.js exists locally');
+  assert(indexHtml.includes('js/lofi-music.js'), 'index.html loads js/lofi-music.js');
+  assert(indexHtml.includes('hero-lofi-bar'), 'index.html defines .hero-lofi-bar');
+  assert(indexHtml.includes('setting-lofi-volume'), 'index.html includes lofi volume slider in settings');
+  assert(indexHtml.includes('setting-lofi-track'), 'index.html includes lofi track picker in settings');
+
+  // 9. Sidebar Download Shortcut Icon Sync (Mục 13)
+  assert(!indexHtml.includes('btn btn-secondary sidebar-install-btn'), '#btn-pwa-install has removed white btn-secondary classes');
+  assert(themeCss.includes('.sidebar-install-btn'), 'theme.css styles .sidebar-install-btn transparently');
+
+  // 10. Low-End Performance Optimizations
+  assert(themeCss.includes('.blur-culled'), 'theme.css defines .blur-culled for GPU Shader culling');
+  assert(appJs.includes('initBlurCullingObserver'), 'app.js implements initBlurCullingObserver');
 }
 
 console.log(`\n========================================`);

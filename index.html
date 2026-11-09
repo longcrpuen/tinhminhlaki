@@ -111,7 +111,7 @@
       </ul>
 
       <div class="sidebar-footer">
-        <button id="btn-pwa-install" type="button" class="btn btn-secondary sidebar-install-btn" style="display: none; width: 100%; font-size: 0.85rem;" title="Cài đặt ứng dụng" data-tooltip="Cài đặt ứng dụng">
+        <button id="btn-pwa-install" type="button" class="sidebar-install-btn" style="display: none;" title="Cài đặt ứng dụng" data-tooltip="Cài đặt ứng dụng">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none"></path>
             <polyline points="7 10 12 15 17 10" fill="none"></polyline>
@@ -170,7 +170,24 @@
                   <span class="hero-title-accent">NGU</span>
                   <span class="hero-title-sub">BẠN CŨNG THẾ</span>
                 </h2>
-                <p class="hero-desc">Hệ thống áp dụng thuật toán lặp lại ngắt quãng (SM-2) để giúp bạn ôn luyện đúng thời điểm vàng trước khi não bộ quên.</p>
+                <div class="hero-lofi-bar" id="hero-lofi-bar">
+                  <button type="button" class="lofi-ctrl-btn" id="btn-lofi-toggle" onclick="LofiPlayer.togglePlay()" title="Phát / Tạm dừng nhạc nền học tập">
+                    <svg id="lofi-play-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  </button>
+                  <div class="lofi-eq-bars" id="lofi-eq-bars" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <span class="lofi-status-text">
+                    Đang phát: <strong id="lofi-current-track-name">Midnight Rain in Hanoi (Lofi Chill)</strong>
+                  </span>
+                  <button type="button" class="lofi-ctrl-btn" onclick="LofiPlayer.nextTrack()" title="Đổi bài nhạc khác">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                  </button>
+                  <button type="button" class="lofi-ctrl-btn" onclick="LofiPlayer.triggerUpload()" title="Tải nhạc .mp3 / .m4a của bạn lên">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  </button>
+                  <input type="file" id="lofi-file-upload" accept=".mp3,.m4a,.wav,.ogg,audio/mp3,audio/mpeg,audio/mp4,audio/x-m4a" multiple style="display: none;" onchange="LofiPlayer.handleFilesUpload(event)">
+                </div>
                 <div class="hero-actions">
                   <button id="dashboard-study-btn" class="btn btn-primary" onclick="App.startSession(null, 'srs')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -1488,6 +1505,43 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
               </div>
             </div>
 
+            <!-- Lofi Music Settings (Phase 1k Mục 12) -->
+            <div class="quiz-card" id="settings-lofi-section">
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">Nhạc Nền Học Tập Lofi Chill</h3>
+              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Nhạc nền Lofi thư giãn giúp tăng khả năng tập trung sâu (Deep Work). Hỗ trợ tải lên file .mp3, .m4a cá nhân lưu trữ trên máy.
+              </p>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Âm lượng nhạc nền Lofi (<span id="lofi-volume-label">14%</span>)</div>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);">Mức khuyến nghị 10% - 20% để không át suy nghĩ</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <input type="range" id="setting-lofi-volume" min="0" max="100" value="14" style="width: 140px; cursor: pointer; accent-color: var(--accent);" oninput="if(window.LofiPlayer){LofiPlayer.setVolume(this.value / 100); const l=document.getElementById('lofi-volume-label'); if(l) l.textContent=this.value+'%';}">
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Chọn bài hát</div>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);">4 bài hòa âm thủ công hoặc file nhạc cá nhân đã tải lên</div>
+                </div>
+                <select id="setting-lofi-track" class="form-control" style="width: auto; min-width: 240px;" onchange="if(window.LofiPlayer) LofiPlayer.selectTrack(parseInt(this.value))">
+                </select>
+              </div>
+
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                <button type="button" class="btn btn-secondary" onclick="if(window.LofiPlayer) LofiPlayer.triggerUpload()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Tải lên file nhạc .mp3 / .m4a
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="if(window.LofiPlayer) LofiPlayer.togglePlay()">
+                  Bật / Dừng nhạc
+                </button>
+              </div>
+            </div>
+
             <!-- Backup & Restore (Mandatory Requirement) -->
             <div class="quiz-card">
               <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">Sao lưu & Chuyển đổi thiết bị (JSON)</h3>
@@ -1669,27 +1723,31 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
         <h3 class="modal-title">5. Ôn Theo Môn Học & Chương</h3>
-        <button type="button" class="icon-btn modal-close" onclick="App._closeModal('modal-topic-picker')" style="width: 32px; height: 32px;">✕</button>
+        <button type="button" class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group" style="margin-bottom: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label class="form-label" style="font-weight: 600; margin: 0;">1. Lọc theo Môn học:</label>
-            <button type="button" class="btn btn-sm btn-secondary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="App.startSubjectSession(App.currentSubjectIdForTopic, 'srs')">Ôn toàn bộ môn đang chọn</button>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+            <label class="form-label" style="margin: 0; font-weight: 700;">1. Chọn Môn học:</label>
+            <button type="button" class="btn btn-secondary" id="btn-topic-study-whole-subject" style="padding: 6px 14px; font-size: 0.82rem;">
+              Ôn toàn bộ môn đang chọn
+            </button>
           </div>
           <div id="topic-picker-subjects" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
         <div class="form-group" style="margin-bottom: 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label class="form-label" style="font-weight: 600; margin: 0;">2. Chọn Chương / Chủ đề cần ôn:</label>
-            <button type="button" class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="App.toggleAllTopicsInPicker()">Chọn tất cả</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px;">
+            <label class="form-label" style="margin: 0; font-weight: 700;">2. Chọn Chương / Chủ đề cần ôn:</label>
+            <button type="button" class="btn btn-secondary" id="btn-topic-toggle-all" style="padding: 6px 14px; font-size: 0.82rem;">
+              Chọn tất cả
+            </button>
           </div>
-          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 280px; overflow-y: auto; padding: 4px;"></div>
+          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 280px; overflow-y: auto; padding: 10px; border-radius: 16px; border: 1px solid var(--input-box-border); min-height: 72px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;"></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary modal-close" onclick="App._closeModal('modal-topic-picker')">Hủy</button>
-        <button type="button" class="btn btn-primary" onclick="App.startTopicReview()">Bắt đầu ôn tập</button>
+        <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+        <button type="button" class="btn btn-primary" id="btn-topic-start-now">Bắt đầu ôn tập</button>
       </div>
     </div>
   </div>
@@ -2137,6 +2195,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <script src="./js/audio-config.js"></script>
   <script src="./js/audio.js"></script>
   <script src="./js/confetti.js"></script>
+  <script src="./js/lofi-music.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>

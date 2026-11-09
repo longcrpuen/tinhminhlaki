@@ -3,6 +3,10 @@
  * Single Page Application Logic, PWA, SRS & Quiz Modes
  */
 
+if (typeof window !== 'undefined' && typeof window.QUOTE_CASE_MODE === 'undefined') {
+  window.QUOTE_CASE_MODE = 'sentence';
+}
+
 const App = {
   currentView: 'dashboard',
   currentDeck: null,
@@ -48,22 +52,40 @@ const App = {
     const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
     if (!el) return;
     el.style.removeProperty('display');
-    el.style.setProperty('display', 'grid', 'important');
-    el.style.setProperty('opacity', '1', 'important');
-    el.style.setProperty('visibility', 'visible', 'important');
-    el.style.setProperty('pointer-events', 'auto', 'important');
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('visibility');
+    el.style.removeProperty('pointer-events');
     el.classList.add('show', 'active');
     document.body.classList.add('modal-open');
   },
 
   _closeModal(modal) {
+    if (!modal) {
+      this.closeAllModals();
+      return;
+    }
     const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
-    if (!el) return;
-    el.classList.remove('show', 'active');
-    el.style.setProperty('display', 'none', 'important');
+    if (el) {
+      el.classList.remove('show', 'active');
+      el.style.removeProperty('display');
+      el.style.removeProperty('opacity');
+      el.style.removeProperty('visibility');
+      el.style.removeProperty('pointer-events');
+    }
     if (document.querySelectorAll('.modal-overlay.show').length === 0) {
       document.body.classList.remove('modal-open');
     }
+  },
+
+  closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.classList.remove('show', 'active');
+      m.style.removeProperty('display');
+      m.style.removeProperty('opacity');
+      m.style.removeProperty('visibility');
+      m.style.removeProperty('pointer-events');
+    });
+    document.body.classList.remove('modal-open');
   },
 
   getMonoSvg(key, customClass = 'mono-icon') {
@@ -263,6 +285,33 @@ const App = {
       });
     }
     this.observeUnrevealedItems();
+    this.initBlurCullingObserver();
+  },
+
+  initBlurCullingObserver() {
+    if (typeof IntersectionObserver === 'undefined') return;
+    if (!this._blurCullObserver) {
+      this._blurCullObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('blur-culled');
+          } else {
+            entry.target.classList.add('blur-culled');
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '120px 0px 120px 0px',
+        threshold: 0
+      });
+    }
+    const selectors = '.study-mode-card, .mode-card, .deck-card, .hero-stat-bento-card, .stat-card';
+    document.querySelectorAll(selectors).forEach(el => {
+      if (!el.classList.contains('blur-cull-bound')) {
+        el.classList.add('blur-cull-bound');
+        this._blurCullObserver.observe(el);
+      }
+    });
   },
 
   observeUnrevealedItems() {
@@ -277,6 +326,7 @@ const App = {
         this._scrollObserver.observe(el);
       }
     });
+    this.initBlurCullingObserver();
   },
 
   // --- INITIALIZATION ---
@@ -400,6 +450,9 @@ const App = {
     this.updateHeroQuote();
     await this.updateGlobalStats();
     await this.renderDashboard();
+    if (typeof window !== 'undefined' && window.LofiPlayer && typeof window.LofiPlayer.updateUI === 'function') {
+      try { window.LofiPlayer.updateUI(); } catch (e) { console.warn('Lofi updateUI failed:', e); }
+    }
   },
 
   // --- PERFORMANCE ENGINE & WEB WORKER HELPERS (Part B) ---
@@ -1150,6 +1203,10 @@ const App = {
         }
       } else if (viewName === 'settings') {
         this.renderSettingsView();
+      } else if (viewName === 'study') {
+        if (this.activeSession && Array.isArray(this.activeSession.cards) && this.activeSession.cards.length > 0) {
+          this.renderActiveStudyCard();
+        }
       }
     };
 
@@ -1301,8 +1358,7 @@ const App = {
 
     // Close modal handlers (buttons and overlay backdrop click)
     const closeModal = () => {
-      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
-      document.body.classList.remove('modal-open');
+      this.closeAllModals();
       this._batteryAnimToken++;
       if (this._batteryCountTimer) {
         clearInterval(this._batteryCountTimer);
@@ -1340,6 +1396,28 @@ const App = {
         }
       });
     });
+
+    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1k Mục 6)
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('.modal-close');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const parentModal = closeBtn.closest('.modal-overlay');
+        if (parentModal) this._closeModal(parentModal);
+        else this.closeAllModals();
+        return;
+      }
+      if (e.target.classList && e.target.classList.contains('modal-overlay') && e.target.classList.contains('show')) {
+        this._closeModal(e.target);
+      }
+    }, true);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeAllModals();
+      }
+    }, true);
 
     // Global click listener to close Cyber Violet dropdown menus when clicking outside
     document.addEventListener('click', (e) => {
@@ -1637,10 +1715,26 @@ const App = {
 
   formatQuoteHtml(rawQuote) {
     if (!rawQuote || typeof rawQuote !== 'string') {
-      return '<span class="hero-title-main">TÔI</span> <span class="hero-title-accent">NGU</span> <span class="hero-title-sub">BẠN CŨNG THẾ</span>';
+      rawQuote = 'TÔI **NGU** BẠN CŨNG THẾ';
     }
 
-    const parts = rawQuote.split(/(\*\*[^*]+\*\*)/g);
+    const caseMode = (typeof window !== 'undefined' && window.QUOTE_CASE_MODE) ? window.QUOTE_CASE_MODE : 'sentence';
+    let processed = rawQuote;
+    if (caseMode === 'lowercase') {
+      processed = processed.toLowerCase();
+    } else if (caseMode === 'sentence') {
+      const lower = processed.toLowerCase();
+      let capitalized = false;
+      processed = lower.replace(/\p{L}/u, match => {
+        if (!capitalized) {
+          capitalized = true;
+          return match.toUpperCase();
+        }
+        return match;
+      });
+    }
+
+    const parts = processed.split(/(\*\*[^*]+\*\*)/g);
     let html = '';
 
     parts.forEach(part => {
@@ -1653,7 +1747,7 @@ const App = {
       }
     });
 
-    return html || `<span class="hero-title-main">${this._escapeHtml(rawQuote)}</span>`;
+    return html || `<span class="hero-title-main">${this._escapeHtml(processed)}</span>`;
   },
 
   currentDashboardSubjectFilter: 'all',
@@ -3587,172 +3681,236 @@ const App = {
   },
 
   // --- TOPIC PICKER MODAL (MODE 5: ÔN THEO MÔN & CHƯƠNG) ---
-  async openTopicPickerModal(deckId = null, subjectId = null) {
+  async openTopicPickerModal(deckId = null, preselectedSubjectId = null) {
     this.currentDeckIdForTopic = deckId || null;
-    this.currentSubjectIdForTopic = subjectId || null;
+    this.selectedSubjectForTopicPicker = preselectedSubjectId || 'all';
+    this.currentSubjectIdForTopic = preselectedSubjectId || null;
     if (!this.selectedTopicsForReview) this.selectedTopicsForReview = new Set();
     this.selectedTopicsForReview.clear();
 
     const modal = document.getElementById('modal-topic-picker');
-    if (modal) {
-      this._showModal(modal); // Mở modal ngay lập tức ở 0ms!
+    if (!modal) return;
+
+    // Bắt buộc tự tái tạo cấu trúc chuẩn bên trong #modal-topic-picker để không bao giờ bị thiếu phần tử!
+    const modalBody = modal.querySelector('.modal-body');
+    const modalFooter = modal.querySelector('.modal-footer');
+    if (modalBody) {
+      modalBody.innerHTML = `
+        <div class="form-group" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+            <label class="form-label" style="margin: 0; font-weight: 700;">1. Chọn Môn học:</label>
+            <button type="button" class="btn btn-secondary" id="btn-topic-study-whole-subject" style="padding: 6px 14px; font-size: 0.82rem;">
+              Ôn toàn bộ môn đang chọn
+            </button>
+          </div>
+          <div id="topic-picker-subjects" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px;">
+            <label class="form-label" style="margin: 0; font-weight: 700;">2. Chọn Chương / Chủ đề cần ôn:</label>
+            <button type="button" class="btn btn-secondary" id="btn-topic-toggle-all" style="padding: 6px 14px; font-size: 0.82rem;">
+              Chọn tất cả
+            </button>
+          </div>
+          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 280px; overflow-y: auto; padding: 10px; border-radius: 16px; border: 1px solid var(--input-box-border, rgba(255,255,255,0.15)); min-height: 72px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;"></div>
+        </div>
+      `;
     }
-    try {
-      await this.renderTopicPickerModalContent();
-    } catch (err) {
-      console.error('Error rendering topic picker content:', err);
+    if (modalFooter) {
+      modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+        <button type="button" class="btn btn-primary" id="btn-topic-start-now">Bắt đầu ôn tập</button>
+      `;
+    }
+
+    this._showModal(modal);
+    await this.renderTopicPickerModalContent();
+
+    const wholeSubjBtn = document.getElementById('btn-topic-study-whole-subject');
+    if (wholeSubjBtn) {
+      wholeSubjBtn.onclick = () => {
+        this._closeModal(modal);
+        this.startSubjectSession(this.selectedSubjectForTopicPicker || 'all', 'srs');
+      };
+    }
+    const toggleAllBtn = document.getElementById('btn-topic-toggle-all');
+    if (toggleAllBtn) {
+      toggleAllBtn.onclick = () => this.toggleAllTopicsInPicker();
+    }
+    const startNowBtn = document.getElementById('btn-topic-start-now');
+    if (startNowBtn) {
+      startNowBtn.onclick = () => this.startTopicReview();
     }
   },
 
   async renderTopicPickerModalContent() {
     const subjContainer = document.getElementById('topic-picker-subjects');
+    const chipsContainer = document.getElementById('topic-picker-chips');
+    if (!chipsContainer) return;
+
+    const allCards = await db.getAllCards();
+    const allDecks = await db.getAllDecks();
+    const subjects = await db.getAllSubjects();
+
+    // Map deckId -> subjectId
+    const deckToSubj = new Map();
+    allDecks.forEach(d => deckToSubj.set(String(d.id), d.subjectId || 'subj_unassigned'));
+
+    const getCardSubjectId = (c) => {
+      if (c.subjectId && c.subjectId !== 'subj_unassigned') return c.subjectId;
+      return deckToSubj.get(String(c.deckId)) || c.subjectId || 'subj_unassigned';
+    };
+
     if (subjContainer) {
-      const summaries = await db.getSubjectSummaries();
-      const allCards = await db.getAllCards();
-      const totalAll = allCards.length;
+      const subjList = [
+        { id: 'all', name: `Tất cả môn (${allCards.length})` },
+        ...subjects.map(s => {
+          const cnt = allCards.filter(c => getCardSubjectId(c) === s.id).length;
+          return { id: s.id, name: `${s.name} (${cnt})` };
+        })
+      ];
+      subjContainer.innerHTML = subjList.map(s => `
+        <button type="button" class="subject-filter-pill ${String(this.selectedSubjectForTopicPicker) === String(s.id) ? 'active' : ''}" data-subj-id="${this._escapeHtml(String(s.id))}" style="padding: 6px 14px; border-radius: 999px; cursor: pointer;">
+          ${this._escapeHtml(s.name)}
+        </button>
+      `).join('');
 
-      let subjectsHtml = `
-        <div class="topic-subject-item ${!this.currentSubjectIdForTopic ? 'active' : ''}" onclick="App.filterPickerTopicsBySubject(null)">
-          <div class="topic-subject-meta">
-            <span class="subject-badge" style="background: var(--surface-code); color: var(--text-primary); border-color: var(--border-color);">
-              <span class="subject-badge-icon">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-              </span>
-              <span>Tất cả môn</span>
-            </span>
-            <span style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">(${totalAll} câu)</span>
-          </div>
-          <span style="font-size: 0.78rem; color: var(--text-muted);">Hiện toàn bộ chương</span>
-        </div>
-      `;
-
-      summaries.forEach(s => {
-        const isActive = this.currentSubjectIdForTopic === s.subject.id;
-        subjectsHtml += `
-          <div class="topic-subject-item ${isActive ? 'active' : ''}" onclick="App.filterPickerTopicsBySubject('${s.subject.id}')">
-            <div class="topic-subject-meta">
-              <span class="subject-badge">
-                <span class="subject-badge-icon">${this.renderSubjectIcon(s.subject.icon)}</span>
-                <span>${this._escapeHtml(s.subject.name)}</span>
-              </span>
-              <span style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">(${s.totalCards} câu)</span>
-            </div>
-            <div class="topic-subject-actions" onclick="event.stopPropagation()">
-              ${s.totalCards > 0 ? `
-                <button type="button" class="btn btn-xs btn-primary" onclick="App.startSubjectSession('${s.subject.id}', 'free')" style="font-size: 0.75rem; padding: 3px 10px;">
-                  Ôn cả môn
-                </button>
-              ` : ''}
-            </div>
-          </div>
-        `;
+      subjContainer.querySelectorAll('button[data-subj-id]').forEach(btn => {
+        btn.onclick = async (ev) => {
+          ev.stopPropagation();
+          this.selectedSubjectForTopicPicker = btn.getAttribute('data-subj-id') || 'all';
+          this.selectedTopicsForReview.clear();
+          await this.renderTopicPickerModalContent();
+        };
       });
-      subjContainer.innerHTML = subjectsHtml;
     }
 
-    await this.filterPickerTopicsBySubject(this.currentSubjectIdForTopic);
-  },
+    // Lọc danh sách câu hỏi theo môn đang chọn
+    const filteredCards = this.selectedSubjectForTopicPicker === 'all'
+      ? allCards
+      : allCards.filter(c => getCardSubjectId(c) === this.selectedSubjectForTopicPicker);
 
-  async filterPickerTopicsBySubject(subjectId) {
-    this.currentSubjectIdForTopic = subjectId;
-    this.selectedTopicsForReview.clear();
+    // Gom nhóm theo Chương / Chủ đề
+    const topicCounts = new Map();
+    filteredCards.forEach(c => {
+      const tName = String(c.topic || c.tag || 'Chương chung').trim() || 'Chương chung';
+      topicCounts.set(tName, (topicCounts.get(tName) || 0) + 1);
+    });
 
-    const items = document.querySelectorAll('.topic-subject-item');
-    items.forEach(it => it.classList.remove('active'));
+    if (topicCounts.size === 0) {
+      chipsContainer.innerHTML = '<p style="color: var(--text-secondary); margin: 8px 4px;">Môn học này hiện chưa có câu hỏi nào.</p>';
+      return;
+    }
 
-    const label = document.getElementById('topic-picker-selected-subject-label');
-    if (label) {
-      if (!subjectId) {
-        label.textContent = '(Tất cả môn)';
-        if (items[0]) items[0].classList.add('active');
-      } else {
-        const subj = await db.getSubject(subjectId);
-        label.textContent = subj ? `(${subj.name})` : '(Môn đã chọn)';
-        items.forEach(it => {
-          if (it.getAttribute('onclick')?.includes(subjectId)) {
-            it.classList.add('active');
-          }
-        });
+    // Mặc định nếu người dùng chưa chọn chương nào, tự động chọn tất cả các chương của môn đó để bấm "Bắt đầu ôn tập" là vào học ngay!
+    if (this.selectedTopicsForReview.size === 0) {
+      for (const tName of topicCounts.keys()) {
+        this.selectedTopicsForReview.add(tName);
       }
     }
 
-    const topics = await db.getAllTopics(this.currentDeckIdForTopic, subjectId);
-    const container = document.getElementById('topic-picker-chips');
-    if (!container) return;
+    chipsContainer.innerHTML = Array.from(topicCounts.entries()).map(([tName, cnt]) => {
+      const isSelected = this.selectedTopicsForReview.has(tName);
+      return `
+        <button type="button" class="topic-chip ${isSelected ? 'selected' : ''}" data-topic-val="${this._escapeHtml(tName)}">
+          <span>${this._escapeHtml(tName)}</span>
+          <span class="topic-chip-count">${cnt} câu</span>
+        </button>
+      `;
+    }).join('');
 
-    if (topics.length === 0) {
-      container.innerHTML = '<p style="color: var(--text-muted); padding: 12px 0;">Không có chương nào trong môn học này.</p>';
-    } else {
-      container.innerHTML = topics.map(t => `
-        <div class="topic-chip" data-topic="${this._escapeHtml(t.topic)}" onclick="App.toggleTopicSelection(this, '${this._escapeHtml(t.topic)}')">
-          <span style="display:inline-flex; align-items:center; gap:6px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            ${this._escapeHtml(t.topic)}
-          </span>
-          <span class="topic-chip-count">${t.count} câu</span>
-        </div>
-      `).join('');
-    }
-    this._updateTopicPickerCount();
-  },
-
-  toggleTopicSelection(el, topic) {
-    if (this.selectedTopicsForReview.has(topic)) {
-      this.selectedTopicsForReview.delete(topic);
-      el.classList.remove('selected');
-    } else {
-      this.selectedTopicsForReview.add(topic);
-      el.classList.add('selected');
-    }
-    this._updateTopicPickerCount();
+    chipsContainer.querySelectorAll('.topic-chip').forEach(chip => {
+      chip.onclick = (ev) => {
+        ev.stopPropagation();
+        const val = chip.getAttribute('data-topic-val');
+        if (!val) return;
+        if (this.selectedTopicsForReview.has(val)) {
+          this.selectedTopicsForReview.delete(val);
+          chip.classList.remove('selected');
+        } else {
+          this.selectedTopicsForReview.add(val);
+          chip.classList.add('selected');
+        }
+      };
+    });
   },
 
   toggleAllTopicsInPicker() {
     const chips = document.querySelectorAll('#topic-picker-chips .topic-chip');
     if (chips.length === 0) return;
-    const allSelected = Array.from(chips).every(c => this.selectedTopicsForReview.has(c.getAttribute('data-topic')));
-    this.selectAllPickerTopics(!allSelected);
-  },
-
-  selectAllPickerTopics(select = true) {
-    const chips = document.querySelectorAll('#topic-picker-chips .topic-chip');
+    const allSelected = Array.from(chips).every(c => this.selectedTopicsForReview.has(c.getAttribute('data-topic-val')));
     chips.forEach(chip => {
-      const topic = chip.getAttribute('data-topic');
-      if (select) {
-        this.selectedTopicsForReview.add(topic);
+      const val = chip.getAttribute('data-topic-val');
+      if (!val) return;
+      if (!allSelected) {
+        this.selectedTopicsForReview.add(val);
         chip.classList.add('selected');
       } else {
-        this.selectedTopicsForReview.delete(topic);
+        this.selectedTopicsForReview.delete(val);
         chip.classList.remove('selected');
       }
     });
-    this._updateTopicPickerCount();
   },
 
-  _updateTopicPickerCount() {
-    const countEl = document.getElementById('topic-picker-selected-count');
-    const count = this.selectedTopicsForReview.size;
-    if (countEl) countEl.textContent = `Đã chọn: ${count} chương`;
-    const btn = document.getElementById('btn-start-topic-review');
-    if (btn) {
-      btn.textContent = count > 0 ? `Bắt đầu ôn (${count} chương đã chọn)` : 'Bắt đầu ôn các chương đã chọn';
+  async startTopicReview() {
+    const allCards = await db.getAllCards();
+    const allDecks = await db.getAllDecks();
+    const deckToSubj = new Map();
+    allDecks.forEach(d => deckToSubj.set(String(d.id), d.subjectId || 'subj_unassigned'));
+    const getCardSubjectId = (c) => {
+      if (c.subjectId && c.subjectId !== 'subj_unassigned') return c.subjectId;
+      return deckToSubj.get(String(c.deckId)) || c.subjectId || 'subj_unassigned';
+    };
+
+    let candidateCards = this.selectedSubjectForTopicPicker === 'all'
+      ? allCards
+      : allCards.filter(c => getCardSubjectId(c) === this.selectedSubjectForTopicPicker);
+
+    const selectedTopics = Array.from(this.selectedTopicsForReview || []);
+    if (selectedTopics.length > 0) {
+      const topicSet = new Set(selectedTopics.map(t => t.trim().toLowerCase()));
+      const byTopic = candidateCards.filter(c => {
+        const ct = String(c.topic || c.tag || 'Chương chung').trim().toLowerCase() || 'chương chung';
+        return topicSet.has(ct);
+      });
+      if (byTopic.length > 0) candidateCards = byTopic;
     }
+
+    if (!candidateCards || candidateCards.length === 0) {
+      this.showToast('Không có câu hỏi nào trong mục đã chọn!', 'warning');
+      return;
+    }
+
+    const modal = document.getElementById('modal-topic-picker');
+    if (modal) this._closeModal(modal);
+
+    const sessionCards = [...candidateCards];
+    this._shuffleArray(sessionCards);
+
+    this.activeSession = {
+      mode: 'topic',
+      deckId: this.currentDeckIdForTopic || null,
+      subjectId: this.selectedSubjectForTopicPicker || 'all',
+      title: selectedTopics.length > 0
+        ? `5. Ôn Theo Chương (${selectedTopics.length} chương • ${sessionCards.length} câu)`
+        : `5. Ôn Theo Môn (${sessionCards.length} câu)`,
+      cards: sessionCards,
+      currentIndex: 0,
+      score: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      blindMode: false,
+      blindRevealed: false,
+      userAnswers: {},
+      answeredList: []
+    };
+
+    this.navigateTo('study');
+    this.renderActiveStudyCard();
   },
 
   startTopicSession() {
     this.startTopicReview();
-  },
-
-  startTopicReview() {
-    const topics = Array.from(this.selectedTopicsForReview);
-    const modal = document.getElementById('modal-topic-picker');
-    if (modal) this._closeModal(modal);
-
-    // Nếu chưa tích chọn chương nào: tự động ôn toàn bộ môn học đang chọn (hoặc toàn bộ kho thẻ) không báo lỗi (Prompt 1i Mục 1.1)
-    if (topics.length === 0) {
-      return this.startSubjectSession(this.currentSubjectIdForTopic, 'srs');
-    }
-    this.startSession(this.currentDeckIdForTopic, 'topic', { topics, subjectId: this.currentSubjectIdForTopic });
   },
 
   // --- MỤC 13: KHÔI PHỤC TIẾN TRÌNH HỌC (RESET) CHO TỪNG BỘ THẺ ---

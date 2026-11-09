@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.13.0';
+const CACHE_NAME = 'mindsparks-v4.14.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const STATIC_ASSETS = [
   './js/audio-config.js',
   './js/audio.js',
   './js/confetti.js',
+  './js/lofi-music.js',
   './js/app.js',
   './data/sample-deck.json',
   './backgrounds/bg-pixel-meadow.webp',

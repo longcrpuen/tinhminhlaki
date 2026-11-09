@@ -622,6 +622,27 @@ body[data-theme="white-orange"],
 html[data-theme="white-orange"] {
   color-scheme: light;
 
+  /* ==========================================================================
+     PHASE 1K (MỤC 10): 5 BIẾN HẠT NHÂN ĐIỀU PHỐI LIGHT MODE
+     ========================================================================== */
+  --light-accent-rgb: 255, 107, 43; /* Light Neon Orange */
+  --light-accent-neon: #ff6b2b; /* Màu chủ đạo */
+  --light-accent-neon-hover: #ff540a; /* Hover đậm hơn một chút */
+  --light-accent-soft: rgba(255, 107, 43, 0.16); /* Nền mềm mờ */
+  --light-accent-glow: rgba(255, 107, 43, 0.38); /* Ánh sáng phát quang */
+
+  /* Tự động dẫn xuất toàn bộ hệ thống từ 5 biến hạt nhân trên */
+  --accent: var(--light-accent-neon);
+  --accent-strong: var(--light-accent-neon-hover);
+  --accent-soft: var(--light-accent-soft);
+  --accent-border: rgba(var(--light-accent-rgb), 0.45);
+  --accent-glow: var(--light-accent-glow);
+  --btn-primary-bg: var(--light-accent-neon);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: var(--light-accent-neon-hover);
+  --btn-primary-hover-bg: var(--light-accent-neon-hover);
+  --card-hover-glow: 0 18px 48px -8px var(--light-accent-glow);
+
   /* NHÓM 1: SURFACES & LIQUID GLASS */
   --bg-base: #f8f4ef;
   --surface-card: rgba(255, 255, 255, 0.62);
@@ -1569,25 +1590,39 @@ html[data-theme="monochrome"] .quiz-option-btn.incorrect * {
    PHASE 1J — TỐI ƯU HIỆU NĂNG 144+ FPS, 0MS TAB SWITCH & CHUẨN HÓA LIQUID GLASS
    ========================================================================== */
 
-/* MỤC 1: Kính mờ đục trong suốt (alpha ~0.52/0.38 + blur 18px) cho 4 ô Quote ở Mode Trắng Cam */
+/* MỤC 1 & 2: 4 Ô THỐNG KÊ DƯỚI KHUNG QUOTE (RESTING FROSTED, HOVER NEON ORANGE) */
+.stat-card,
+.hero-stat-bento-card {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background-clip: padding-box !important;
+  position: relative !important;
+  transition: background-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.24s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.stat-card::before,
+.stat-card::after,
+.hero-stat-bento-card::before,
+.hero-stat-bento-card::after {
+  display: none !important;
+  content: none !important;
+}
+
 html[data-theme="white-orange"] .stat-card,
 html[data-theme="white-orange"] .hero-stat-bento-card {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.52) 0%,
-    rgba(255, 245, 235, 0.38) 100%
-  ) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.88) !important;
-  box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 2px rgba(234, 88, 12, 0.08),
-    0 10px 28px -8px rgba(154, 52, 18, 0.10) !important;
+  background: rgba(255, 255, 255, 0.24) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.68) !important;
+  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.85),
+              0 8px 24px -6px rgba(154, 52, 18, 0.08) !important;
   color: #1c1917 !important;
 }
 
-/* Hover trên 4 ô Quote: Lên màu pastel dịu nhẹ ở cả 3 mode */
+/* Hover trên 4 ô Quote */
 html[data-theme="purple-pink"] .stat-card:hover,
 html[data-theme="purple-pink"] .hero-stat-bento-card:hover {
   background: rgba(192, 132, 252, 0.28) !important;
@@ -1606,50 +1641,99 @@ html[data-theme="monochrome"] .hero-stat-bento-card:hover {
 
 html[data-theme="white-orange"] .stat-card:hover,
 html[data-theme="white-orange"] .hero-stat-bento-card:hover {
-  background: rgba(251, 146, 60, 0.32) !important;
-  border-color: rgba(234, 88, 12, 0.65) !important;
-  color: #7c2d12 !important;
-  box-shadow: 0 14px 32px -8px rgba(234, 88, 12, 0.20),
-              inset 0 1.5px 2px rgba(255, 255, 255, 0.85) !important;
+  background: var(--light-accent-neon, #ff6b2b) !important;
+  border-color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 14px 32px -6px rgba(var(--light-accent-rgb, 255, 107, 43), 0.45),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.65) !important;
+  transform: translateY(-3px) !important;
+  color: #ffffff !important;
 }
 html[data-theme="white-orange"] .stat-card:hover *,
 html[data-theme="white-orange"] .hero-stat-bento-card:hover * {
-  color: #7c2d12 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
-/* MỤC 2: 7 Ô Chế độ học & Thẻ Bộ câu hỏi ở Mode Trắng Cam:
-   Trạng thái nghỉ: Kính mờ đục Liquid Glass (alpha ~0.56/0.44 + blur 18px).
-   Khi Hover: Trong suốt hẳn ra (alpha 0.16 + blur 8px) để nổi bật! */
-html[data-theme="white-orange"] .study-mode-card,
-html[data-theme="white-orange"] .mode-card,
-html[data-theme="white-orange"] .deck-card {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 253, 250, 0.56) 0%,
-    rgba(255, 242, 228, 0.44) 100%
-  ) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.90) !important;
-  box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.96),
-    inset 1px 0 2px rgba(255, 255, 255, 0.75),
-    inset 0 -1.5px 3px rgba(234, 88, 12, 0.08),
-    0 12px 32px -8px rgba(154, 52, 18, 0.11) !important;
-  color: #1c1917 !important;
+/* MỤC 3: ÁNH SÁNG HẮT RA DƯỚI KHUNG QUOTE KHI TRỎ CHUỘT VÀO */
+html[data-theme="purple-pink"] .hero-card:hover,
+html[data-theme="purple-pink"] .hero-inspiration-stage:hover {
+  border-color: rgba(192, 132, 252, 0.55) !important;
+  box-shadow: 0 20px 52px -10px rgba(192, 132, 252, 0.35),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.25) !important;
 }
 
-html[data-theme="white-orange"] .study-mode-card:hover,
-html[data-theme="white-orange"] .mode-card:hover,
-html[data-theme="white-orange"] .deck-card:hover {
-  background: rgba(255, 250, 245, 0.16) !important;
-  backdrop-filter: blur(8px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
-  border-color: rgba(234, 88, 12, 0.72) !important;
-  box-shadow:
-    inset 0 2px 5px rgba(255, 255, 255, 0.98),
-    0 18px 40px -8px rgba(234, 88, 12, 0.22) !important;
+/* Mode Trắng Đen: Ánh sáng trắng bạc tinh khiết, TUYỆT ĐỐI KHÔNG CÒN MÀU TÍM! */
+html[data-theme="monochrome"] .hero-card:hover,
+html[data-theme="monochrome"] .hero-inspiration-stage:hover {
+  border-color: rgba(255, 255, 255, 0.60) !important;
+  box-shadow: 0 20px 52px -10px rgba(255, 255, 255, 0.22),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Mode Trắng Cam: Ánh sáng Cam Light Neon ấm áp hắt ra dưới khung Quote! */
+html[data-theme="white-orange"] .hero-card:hover,
+html[data-theme="white-orange"] .hero-inspiration-stage:hover {
+  border-color: rgba(var(--light-accent-rgb, 255, 107, 43), 0.65) !important;
+  box-shadow: 0 20px 52px -10px rgba(var(--light-accent-rgb, 255, 107, 43), 0.38),
+              inset 0 2px 4px rgba(255, 255, 255, 0.90) !important;
+}
+
+/* MỤC 4 & MỤC 5: UNIFIED FROSTED-TO-CLEAR HOVER CHO 7 MODE CARDS & DECK CARDS */
+.study-mode-card,
+.mode-card,
+.deck-card,
+#view-decks .deck-card,
+#dashboard-decks-grid .deck-card {
+  background: var(--glass-block-rest-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1.5px solid var(--glass-block-rest-border) !important;
+  box-shadow: var(--glass-block-rest-shadow) !important;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              backdrop-filter 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.study-mode-card:hover,
+.mode-card:hover,
+.deck-card:hover,
+#view-decks .deck-card:hover,
+#dashboard-decks-grid .deck-card:hover {
+  background: var(--glass-block-hover-bg) !important;
+  backdrop-filter: blur(4px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(4px) saturate(120%) !important;
+  border-color: var(--glass-block-hover-border) !important;
+  box-shadow: var(--glass-block-hover-shadow) !important;
   transform: translateY(-3px) !important;
+}
+
+html[data-theme="purple-pink"] {
+  --glass-block-rest-bg: rgba(30, 23, 52, 0.78);
+  --glass-block-rest-border: rgba(255, 255, 255, 0.16);
+  --glass-block-rest-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.18), 0 12px 30px -8px rgba(0, 0, 0, 0.55);
+  --glass-block-hover-bg: rgba(192, 132, 252, 0.06);
+  --glass-block-hover-border: rgba(192, 132, 252, 0.75);
+  --glass-block-hover-shadow: inset 0 1.5px 3px rgba(255, 255, 255, 0.35), 0 18px 40px -8px rgba(192, 132, 252, 0.25);
+}
+
+html[data-theme="monochrome"] {
+  --glass-block-rest-bg: rgba(28, 28, 34, 0.76);
+  --glass-block-rest-border: rgba(255, 255, 255, 0.20);
+  --glass-block-rest-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.22), 0 12px 30px -8px rgba(0, 0, 0, 0.75);
+  --glass-block-hover-bg: rgba(255, 255, 255, 0.03);
+  --glass-block-hover-border: rgba(255, 255, 255, 0.85);
+  --glass-block-hover-shadow: inset 0 1.5px 3px rgba(255, 255, 255, 0.45), 0 18px 40px -8px rgba(255, 255, 255, 0.18);
+}
+
+html[data-theme="white-orange"] {
+  --glass-block-rest-bg: rgba(255, 252, 248, 0.62);
+  --glass-block-rest-border: rgba(255, 255, 255, 0.90);
+  --glass-block-rest-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.96), 0 12px 30px -8px rgba(154, 52, 18, 0.10);
+  --glass-block-hover-bg: rgba(255, 255, 255, 0.12);
+  --glass-block-hover-border: var(--light-accent-neon, #ff6b2b);
+  --glass-block-hover-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.98), 0 18px 40px -8px rgba(var(--light-accent-rgb, 255, 107, 43), 0.24);
 }
 
 /* MỤC 3: Chữ đen (.hero-title-main, .hero-title-sub) là FONT TRƠN THẲNG TUỘT (Sans-serif không chân, không râu móc),
@@ -1719,46 +1803,246 @@ html[data-theme="white-orange"] #mobile-bottom-nav .bottom-nav-item.active {
   stroke-linejoin: round !important;
 }
 
-/* MỤC 11 & 12: POPUP THẤU KÍNH LỒI BÓP MÉO VIỀN (#liquid-edge-warp) */
+/* ==========================================================================
+   MỤC 6 & MỤC 7: SỬA LỖI ĐÓNG POPUP & TÁI THIẾT KẾ KHỐI KÍNH LỒI CONTINUOUS GLASS
+   ========================================================================== */
 .modal-overlay {
-  background: rgba(0, 0, 0, 0.14) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-.modal-box {
-  background: var(--modal-convex-bg) !important;
-  backdrop-filter: url(#liquid-edge-warp) blur(18px) saturate(190%) !important;
-  -webkit-backdrop-filter: url(#liquid-edge-warp) blur(18px) saturate(190%) !important;
-  border-radius: 34px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
-  box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.85),
-    inset 2px 0 3px rgba(255, 255, 255, 0.45),
-    inset 0 -3px 6px rgba(255, 255, 255, 0.25),
-    inset 0 0 32px rgba(255, 255, 255, 0.16),
-    0 30px 70px -12px rgba(0, 0, 0, 0.50) !important;
+.modal-overlay:not(.show) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
+.modal-overlay.show {
+  display: grid !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Khối Popup Liquid Glass: 1 thể tích kính cong duy nhất, không có khung viền xám tách rời! */
+.modal-box {
+  position: relative !important;
+  border-radius: 36px !important;
+  background: var(--popup-glass-volume-bg) !important;
+  backdrop-filter: blur(28px) saturate(210%) brightness(1.06) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(210%) brightness(1.06) !important;
+  border: 1.5px solid var(--popup-glass-rim-border) !important;
+  box-shadow: var(--popup-glass-volume-shadow) !important;
+  overflow: hidden !important;
+}
+
+/* Ánh sáng Fresnel mềm mại uốn theo đường cong 36px của mép kính (không cắt vạch 22px!) */
 .modal-box::before {
   content: '' !important;
   position: absolute !important;
   inset: 0 !important;
   border-radius: inherit !important;
-  padding: 22px !important;
-  backdrop-filter: url(#liquid-edge-warp) saturate(220%) contrast(115%) brightness(1.08) !important;
-  -webkit-backdrop-filter: url(#liquid-edge-warp) saturate(220%) contrast(115%) brightness(1.08) !important;
+  padding: 0 !important;
+  -webkit-mask: none !important;
+  mask: none !important;
   background: radial-gradient(
-    closest-side,
-    transparent calc(100% - 24px),
-    rgba(255, 255, 255, 0.18) calc(100% - 8px),
-    rgba(255, 255, 255, 0.42) 100%
+    120% 100% at 50% 0%,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 45%,
+    transparent 75%
   ) !important;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
-  -webkit-mask-composite: xor !important;
-  mask-composite: exclude !important;
   pointer-events: none !important;
-  z-index: 1 !important;
+  z-index: 0 !important;
+}
+
+html[data-theme="purple-pink"] {
+  --popup-glass-volume-bg: linear-gradient(155deg, rgba(42, 32, 68, 0.62) 0%, rgba(22, 16, 38, 0.52) 100%);
+  --popup-glass-rim-border: rgba(255, 255, 255, 0.32);
+  --popup-glass-volume-shadow:
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.65),
+    inset 1px 0 1.5px rgba(255, 255, 255, 0.35),
+    inset 0 18px 38px -12px rgba(255, 255, 255, 0.12),
+    inset 0 -18px 36px -14px rgba(192, 132, 252, 0.16),
+    0 32px 72px -12px rgba(0, 0, 0, 0.65);
+}
+
+html[data-theme="monochrome"] {
+  --popup-glass-volume-bg: linear-gradient(155deg, rgba(38, 38, 44, 0.58) 0%, rgba(18, 18, 22, 0.48) 100%);
+  --popup-glass-rim-border: rgba(255, 255, 255, 0.36);
+  --popup-glass-volume-shadow:
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.75),
+    inset 1px 0 1.5px rgba(255, 255, 255, 0.40),
+    inset 0 18px 38px -12px rgba(255, 255, 255, 0.14),
+    inset 0 -18px 36px -14px rgba(255, 255, 255, 0.08),
+    0 32px 72px -12px rgba(0, 0, 0, 0.78);
+}
+
+html[data-theme="white-orange"] {
+  --popup-glass-volume-bg: linear-gradient(155deg, rgba(255, 252, 248, 0.68) 0%, rgba(255, 240, 226, 0.54) 100%);
+  --popup-glass-rim-border: rgba(255, 255, 255, 0.92);
+  --popup-glass-volume-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.98),
+    inset 1.5px 0 2px rgba(255, 255, 255, 0.80),
+    inset 0 20px 40px -12px rgba(255, 255, 255, 0.55),
+    inset 0 -18px 36px -14px rgba(var(--light-accent-rgb, 255, 107, 43), 0.12),
+    0 32px 72px -12px rgba(120, 53, 15, 0.20);
+}
+
+/* ==========================================================================
+   MỤC 11: QUOTE SENTENCE CASE / LOWERCASE / UPPERCASE
+   ========================================================================== */
+:root {
+  --quote-text-transform: none;
+}
+#hero-title,
+.hero-title,
+.hero-title-main,
+.hero-title-sub,
+.hero-title-accent {
+  text-transform: var(--quote-text-transform, none) !important;
+}
+
+/* ==========================================================================
+   MỤC 12: LOFI MUSIC PLAYER BAR DƯỚI QUOTE (.hero-lofi-bar)
+   ========================================================================== */
+.hero-lofi-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 20px 0;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: var(--surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.lofi-ctrl-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 0;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.lofi-ctrl-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: scale(1.08);
+}
+
+.lofi-status-text {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.lofi-status-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.lofi-eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 14px;
+  width: 14px;
+}
+
+.lofi-eq-bars span {
+  display: block;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 1px;
+  height: 3px;
+  transition: height 0.2s ease;
+}
+
+.hero-lofi-bar.playing .lofi-eq-bars span:nth-child(1) {
+  animation: lofiEqPulse1 0.75s ease-in-out infinite alternate;
+}
+.hero-lofi-bar.playing .lofi-eq-bars span:nth-child(2) {
+  animation: lofiEqPulse2 0.6s ease-in-out infinite alternate 0.2s;
+}
+.hero-lofi-bar.playing .lofi-eq-bars span:nth-child(3) {
+  animation: lofiEqPulse3 0.85s ease-in-out infinite alternate 0.4s;
+}
+
+@keyframes lofiEqPulse1 {
+  0% { height: 3px; }
+  100% { height: 13px; }
+}
+@keyframes lofiEqPulse2 {
+  0% { height: 5px; }
+  100% { height: 14px; }
+}
+@keyframes lofiEqPulse3 {
+  0% { height: 2px; }
+  100% { height: 11px; }
+}
+
+@media (max-width: 640px) {
+  .hero-lofi-bar {
+    width: 100%;
+    justify-content: space-between;
+    padding: 6px 12px;
+  }
+  .lofi-status-text {
+    max-width: 180px;
+    font-size: 0.78rem;
+  }
+}
+
+/* ==========================================================================
+   MỤC 13: ĐỒNG BỘ ICON DOWNLOAD SHORTCUT Ở ĐÁY SIDEBAR (#btn-pwa-install)
+   ========================================================================== */
+#btn-pwa-install,
+.sidebar-install-btn {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  color: var(--text-secondary) !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+#btn-pwa-install:hover,
+.sidebar-install-btn:hover {
+  background: var(--accent-soft) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ==========================================================================
+   VIEWPORT-GATED BACKDROP BLUR CULLING (TỐI ƯU MÁY YẾU)
+   ========================================================================== */
+.blur-culled {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 
