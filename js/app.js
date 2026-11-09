@@ -15,6 +15,17 @@ const App = {
   currentBankSubjectId: '',
   lastUsedSubjectId: null,
   collapsedSubjectIds: new Set(),
+  _viewRendered: { dashboard: false, decks: false, bank: false, stats: false },
+  _dbDirty: true,
+  _scrollObserver: null,
+
+  markDbDirty() {
+    this._dbDirty = true;
+    this._viewRendered = { dashboard: false, decks: false, bank: false, stats: false };
+    if (typeof db !== 'undefined' && db && typeof db.invalidateSubjectCache === 'function') {
+      db.invalidateSubjectCache();
+    }
+  },
 
   setLastUsedSubject(subjectId) {
     if (!subjectId) return;
@@ -34,18 +45,22 @@ const App = {
   },
 
   _showModal(modal) {
-    if (!modal) return;
     const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
-    if (el) {
-      el.classList.add('show');
-      document.body.classList.add('modal-open');
-    }
+    if (!el) return;
+    el.style.removeProperty('display');
+    el.style.setProperty('display', 'grid', 'important');
+    el.style.setProperty('opacity', '1', 'important');
+    el.style.setProperty('visibility', 'visible', 'important');
+    el.style.setProperty('pointer-events', 'auto', 'important');
+    el.classList.add('show', 'active');
+    document.body.classList.add('modal-open');
   },
 
   _closeModal(modal) {
-    if (!modal) return;
     const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
-    if (el) el.classList.remove('show');
+    if (!el) return;
+    el.classList.remove('show', 'active');
+    el.style.setProperty('display', 'none', 'important');
     if (document.querySelectorAll('.modal-overlay.show').length === 0) {
       document.body.classList.remove('modal-open');
     }
@@ -207,6 +222,12 @@ const App = {
       svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none;z-index:-1;';
       svg.innerHTML = `
         <defs>
+          <filter id="liquid-edge-warp" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+            <feImage href="${mapUrl}" result="lensMap" preserveAspectRatio="none" />
+            <feDisplacementMap in="SourceGraphic" in2="lensMap" scale="68" xChannelSelector="R" yChannelSelector="G" result="warped" />
+            <feGaussianBlur in="warped" stdDeviation="0.6" result="clean" />
+            <feColorMatrix in="clean" type="saturate" values="2.2" result="saturated" />
+          </filter>
           <filter id="liquid-convex-lens" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
             <feImage href="${mapUrl}" result="lensMap" preserveAspectRatio="none" />
             <feDisplacementMap in="SourceGraphic" in2="lensMap" scale="32" xChannelSelector="R" yChannelSelector="G" result="refracted" />
@@ -221,12 +242,50 @@ const App = {
     }
   },
 
+  initScrollRevealObserver() {
+    if (typeof IntersectionObserver === 'undefined') return;
+    if (!this._scrollObserver) {
+      this._scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            el.classList.add('is-revealed');
+            setTimeout(() => {
+              el.style.willChange = 'auto';
+            }, 550);
+            this._scrollObserver.unobserve(el);
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '0px 0px -30px 0px',
+        threshold: 0.08
+      });
+    }
+    this.observeUnrevealedItems();
+  },
+
+  observeUnrevealedItems() {
+    if (!this._scrollObserver) return;
+    const selectors = '.study-mode-card, .deck-card, .subject-group, .bank-card-item, .stat-card, .lms-preview-card';
+    document.querySelectorAll(selectors).forEach((el, idx) => {
+      if (!el.classList.contains('scroll-reveal-bound')) {
+        el.classList.add('scroll-reveal-bound', 'scroll-reveal-item');
+        // Tạo độ trễ lệch nhịp nhẹ (stagger 0ms -> 120ms) theo cột để các thẻ trôi lên cực mượt
+        const colDelay = (idx % 3) * 45;
+        el.style.setProperty('--reveal-delay', `${colDelay}ms`);
+        this._scrollObserver.observe(el);
+      }
+    });
+  },
+
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
     await db.init();
     this.initHeroGlassMatrix();
     this.initLiquidGlassLensFilter();
+    this.initScrollRevealObserver();
 
     // Check migration notice (Section A)
     try {
@@ -995,29 +1054,16 @@ const App = {
       this._batterySegTimer = null;
     }
 
-    // Trigger tab wave curtain transition & whoosh sound (< 450ms)
+    // Play sound on tab switch without curtain delay
     if (!isSameView) {
       if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        sounds.playTabWhoosh();
-        const curtain = document.getElementById('tab-wave-curtain');
-        if (curtain) {
-          if (this._curtainTimer) {
-            clearTimeout(this._curtainTimer);
-            this._curtainTimer = null;
-          }
-          curtain.classList.remove('animating');
-          requestAnimationFrame(() => {
-            curtain.classList.add('animating');
-            this._curtainTimer = setTimeout(() => {
-              curtain.classList.remove('animating');
-              this._curtainTimer = null;
-            }, 380);
-          });
+        if (typeof sounds !== 'undefined' && sounds.playTabWhoosh) {
+          sounds.playTabWhoosh();
         }
       }
     }
 
-    // Update nav classes
+    // Update nav classes synchronously
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.dataset.view === viewName);
     });
@@ -1075,31 +1121,39 @@ const App = {
     const mainEl = document.querySelector('.app-main');
     if (mainEl) mainEl.scrollTop = 0;
 
-    // View specific lifecycle (scheduled after current frame to keep curtain animation at max FPS)
+    // View specific lifecycle (0ms transition, preserves DOM if data has not changed)
     const renderTargetView = () => {
       if (this.currentView !== viewName) return;
       if (viewName === 'dashboard') {
-        this.renderDashboard();
+        if (!this._viewRendered.dashboard || this._dbDirty) {
+          this.renderDashboard();
+          this._viewRendered.dashboard = true;
+        }
       } else if (viewName === 'decks') {
-        this.renderDecks();
+        if (!this._viewRendered.decks || this._dbDirty) {
+          this.renderDecks();
+          this._viewRendered.decks = true;
+        }
       } else if (viewName === 'bank') {
-        this.renderQuestionBank();
+        if (!this._viewRendered.bank || this._dbDirty) {
+          this.renderQuestionBank();
+          this._viewRendered.bank = true;
+        }
       } else if (viewName === 'import') {
         this.setupImportView(params);
       } else if (viewName === 'import-lms') {
         this.setupImportLmsView(params);
       } else if (viewName === 'stats') {
-        this.renderStatsView();
+        if (!this._viewRendered.stats || this._dbDirty) {
+          this.renderStatsView();
+          this._viewRendered.stats = true;
+        }
       } else if (viewName === 'settings') {
         this.renderSettingsView();
       }
     };
 
-    if (!isSameView && typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => renderTargetView());
-    } else {
-      renderTargetView();
-    }
+    renderTargetView();
   },
 
   // --- PWA SETUP ---
@@ -1176,6 +1230,27 @@ const App = {
         this.navigateTo(view);
       });
     });
+
+    // Capture-phase listener for Mode 5: Ôn theo Môn & Chương (0ms instant response)
+    document.addEventListener('click', (e) => {
+      const modeCard = e.target.closest('.study-mode-card, .mode-card');
+      if (modeCard) {
+        const text = (modeCard.textContent || '').toLowerCase();
+        const onclickAttr = modeCard.getAttribute('onclick') || '';
+        if (
+          text.includes('5.') ||
+          text.includes('môn & chương') ||
+          text.includes('môn / chương') ||
+          text.includes('chủ đề/tag') ||
+          onclickAttr.includes('Topic') ||
+          onclickAttr.includes("'topic'")
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.openTopicPickerModal();
+        }
+      }
+    }, true);
 
     // Sound toggle in settings
     const soundToggle = document.getElementById('setting-sound');
@@ -1791,6 +1866,7 @@ const App = {
         }
       }
     }
+    this.observeUnrevealedItems();
   },
 
   _createDeckCardHtml(deck, totalCards, dueCards, subject = null, options = {}) {
@@ -2002,6 +2078,7 @@ const App = {
     }
 
     container.innerHTML = html;
+    this.observeUnrevealedItems();
   },
 
   toggleSubjectCollapse(subjectId) {
@@ -3511,10 +3588,23 @@ const App = {
 
   // --- TOPIC PICKER MODAL (MODE 5: ÔN THEO MÔN & CHƯƠNG) ---
   async openTopicPickerModal(deckId = null, subjectId = null) {
-    this.currentDeckIdForTopic = deckId;
+    this.currentDeckIdForTopic = deckId || null;
     this.currentSubjectIdForTopic = subjectId || null;
+    if (!this.selectedTopicsForReview) this.selectedTopicsForReview = new Set();
     this.selectedTopicsForReview.clear();
 
+    const modal = document.getElementById('modal-topic-picker');
+    if (modal) {
+      this._showModal(modal); // Mở modal ngay lập tức ở 0ms!
+    }
+    try {
+      await this.renderTopicPickerModalContent();
+    } catch (err) {
+      console.error('Error rendering topic picker content:', err);
+    }
+  },
+
+  async renderTopicPickerModalContent() {
     const subjContainer = document.getElementById('topic-picker-subjects');
     if (subjContainer) {
       const summaries = await db.getSubjectSummaries();
@@ -3561,9 +3651,6 @@ const App = {
     }
 
     await this.filterPickerTopicsBySubject(this.currentSubjectIdForTopic);
-
-    const modal = document.getElementById('modal-topic-picker');
-    if (modal) this._showModal(modal);
   },
 
   async filterPickerTopicsBySubject(subjectId) {
@@ -3666,6 +3753,26 @@ const App = {
       return this.startSubjectSession(this.currentSubjectIdForTopic, 'srs');
     }
     this.startSession(this.currentDeckIdForTopic, 'topic', { topics, subjectId: this.currentSubjectIdForTopic });
+  },
+
+  // --- MỤC 13: KHÔI PHỤC TIẾN TRÌNH HỌC (RESET) CHO TỪNG BỘ THẺ ---
+  async confirmResetDeckProgress(deckId) {
+    if (!deckId) return;
+    const deck = await db.getDeck(deckId);
+    if (!deck) {
+      this.showToast('Không tìm thấy bộ thẻ cần đặt lại.', 'warning');
+      return;
+    }
+    const resetCount = await db.resetDeckProgress(deckId);
+    if (typeof db !== 'undefined' && db && typeof db.invalidateSubjectCache === 'function') {
+      db.invalidateSubjectCache();
+      db.invalidateAllCaches();
+    }
+    this.markDbDirty();
+    await this.updateGlobalStats();
+    await this.renderDashboard();
+    await this.renderDecks();
+    this.showToast(`Đã đặt lại tiến trình học của "${deck.name}" (${resetCount} câu hỏi về trạng thái Cần ôn).`, 'success');
   },
 
   // --- SPRINT CRAM MODAL (MODE 7) ---
@@ -4996,6 +5103,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     await this.renderContributionHeatmap();
     await this.renderSubjectPerformanceTable(allCards);
     await this.renderTopicPerformanceTable(allCards);
+    this.observeUnrevealedItems();
   },
 
   // --- SECTION 5: CARD ACTIONS & FOCUS MODE ---
@@ -6129,6 +6237,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         this.adaptOptionsLayout(grid);
       }
     }
+    this.observeUnrevealedItems();
   },
 
   renderQuestionBankCardItem(card, decksMap, isCardBookmarked, isCardFlagged) {

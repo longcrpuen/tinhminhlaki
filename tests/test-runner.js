@@ -1131,6 +1131,60 @@ console.log('\n=== TEST SUITE 15: Subject Classification & Migration v2 (Section
   assert(styleCss.includes('.subject-badge'), 'style.css defines .subject-badge');
 }
 
+console.log('\n=== TEST SUITE 16: Phase 1j 144fps, 0ms Switch, Modal Scroll, Convex Warp & White-Orange Glass ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // 1. Frosted Translucent Liquid Glass in White-Orange
+  assert(themeCss.includes('html[data-theme="white-orange"] .stat-card'), 'White-orange stat card rule defined in theme.css');
+  assert(themeCss.includes('rgba(255, 255, 255, 0.52)'), 'White-orange stat card uses frosted translucent resting gradient');
+  assert(themeCss.includes('rgba(192, 132, 252, 0.28)'), 'Purple-pink stat card hover uses soft pastel purple');
+  assert(themeCss.includes('rgba(251, 146, 60, 0.32)'), 'White-orange stat card hover uses soft pastel peach');
+  assert(themeCss.includes('rgba(255, 250, 245, 0.16)'), 'White-orange study modes & deck cards hover alpha reduced to 0.16');
+
+  // 2. White-Orange Quote Typography
+  assert(themeCss.includes('Plus Jakarta Sans'), 'White-orange quote title uses straight sans-serif font');
+  assert(themeCss.includes('font-style: normal !important;'), 'White-orange quote title enforces font-style: normal !important');
+
+  // 3. 0ms Tab Switch & RAM Caches
+  assert(dbJs.includes('_cardsCache') && dbJs.includes('_decksCache') && dbJs.includes('_subjectsCache'), 'db.js implements memory caches');
+  assert(styleCss.includes('#tab-wave-curtain') && styleCss.includes('display: none !important;'), 'tab-wave-curtain is disabled for 0ms transitions');
+  assert(appJs.includes('_viewRendered') && appJs.includes('_dbDirty'), 'app.js implements DOM preservation during tab navigation');
+
+  // 4. Scroll-Reveal Animation
+  assert(themeCss.includes('.scroll-reveal-item') && themeCss.includes('.scroll-reveal-item.is-revealed'), 'theme.css defines scroll-reveal classes');
+  assert(appJs.includes('initScrollRevealObserver()') && appJs.includes('observeUnrevealedItems()'), 'app.js defines scroll-reveal observer');
+
+  // 5. Monochrome Wrong Answer
+  assert(themeCss.includes('html[data-theme="monochrome"] .quiz-option-btn.incorrect *'), 'Monochrome incorrect option rule exists');
+  assert(themeCss.includes('text-decoration: none !important;'), 'Monochrome removes line-through on wrong answers');
+
+  // 6. Mode 5 Reliability
+  assert(appJs.includes("el.style.setProperty('display', 'grid', 'important');"), '_showModal forces display: grid !important');
+  assert(appJs.includes('openTopicPickerModal('), 'app.js defines openTopicPickerModal');
+
+  // 7. Sidebar Install Icon
+  assert(indexHtml.includes('sidebar-install-btn'), 'index.html defines sidebar-install-btn');
+  assert(!indexHtml.includes('▯'), 'index.html eliminates corrupted square symbol ▯');
+
+  // 8. Mobile Bottom Nav Clean Path SVGs
+  assert(indexHtml.includes('id="mobile-bottom-nav"'), 'index.html defines mobile-bottom-nav');
+  assert(themeCss.includes('#mobile-bottom-nav .bnav-svg'), 'theme.css styles mobile bottom nav bnav-svg');
+
+  // 9. Modal Vertical Scrolling & Convex Warp Lens
+  assert(styleCss.includes('overflow-y: auto !important;') && styleCss.includes('max-height: calc(88vh - 140px) !important;'), 'modal-body restores smooth vertical scrolling');
+  assert(appJs.includes('filter id="liquid-edge-warp"'), 'app.js registers liquid-edge-warp filter');
+  assert(themeCss.includes('backdrop-filter: url(#liquid-edge-warp)'), 'modal-box uses liquid-edge-warp for rim refraction');
+
+  // 10. Deck Reset Button
+  assert(appJs.includes('confirmResetDeckProgress(deckId)'), 'app.js implements confirmResetDeckProgress');
+  assert(dbJs.includes('resetDeckProgress('), 'db.js implements resetDeckProgress');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

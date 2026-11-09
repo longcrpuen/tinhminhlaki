@@ -72,7 +72,7 @@ const desktopCss = styleCss.slice(0, mobile768Idx) + '\n' + styleCss.slice(mobil
 console.log('--- PHẦN A: Mobile Bottom Nav Simplification ---');
 
 test('A1.1: Mobile bottom-nav has exactly 5 visible tabs (dashboard, decks, bank, stats, settings)', () => {
-  const bottomNavMatch = indexHtml.match(/<nav class="bottom-nav">([\s\S]*?)<\/nav>/);
+  const bottomNavMatch = indexHtml.match(/<nav[^>]*class="[^"]*bottom-nav[^"]*"[^>]*>([\s\S]*?)<\/nav>/);
   assert(bottomNavMatch, '<nav class="bottom-nav"> must exist in index.html');
   const bottomNavContent = bottomNavMatch[1];
 
@@ -96,7 +96,8 @@ test('A1.1: Mobile bottom-nav has exactly 5 visible tabs (dashboard, decks, bank
 });
 
 test('A1.2: Both "import" and "import-lms" are hidden on mobile bottom-nav', () => {
-  const bottomNavMatch = indexHtml.match(/<nav class="bottom-nav">([\s\S]*?)<\/nav>/);
+  const bottomNavMatch = indexHtml.match(/<nav[^>]*class="[^"]*bottom-nav[^"]*"[^>]*>([\s\S]*?)<\/nav>/);
+  assert(bottomNavMatch, '<nav class="bottom-nav"> must exist in index.html');
   const bottomNavContent = bottomNavMatch[1];
 
   const importBtnMatch = bottomNavContent.match(/<button[^>]*data-view="import"[^>]*>/);

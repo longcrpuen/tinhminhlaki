@@ -10,6 +10,9 @@ class QuizDatabase {
     this.db = null;
     this.initPromise = null;
     this._subjectCache = null;
+    this._cardsCache = null;
+    this._decksCache = null;
+    this._subjectsCache = null;
   }
 
   async init() {
@@ -284,6 +287,7 @@ class QuizDatabase {
   }
 
   async getAllSubjects() {
+    if (this._subjectsCache) return [...this._subjectsCache];
     await this.init();
     const tx = this._tx('subjects', 'readonly');
     const store = tx.objectStore('subjects');
@@ -293,7 +297,8 @@ class QuizDatabase {
       subjects = [def];
     }
     subjects.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || (a.createdAt || 0) - (b.createdAt || 0));
-    return subjects;
+    this._subjectsCache = subjects;
+    return [...subjects];
   }
 
   async getSubject(id) {
@@ -422,6 +427,13 @@ class QuizDatabase {
 
   invalidateSubjectCache() {
     this._subjectCache = null;
+    this._cardsCache = null;
+    this._decksCache = null;
+    this._subjectsCache = null;
+  }
+
+  invalidateAllCaches() {
+    this.invalidateSubjectCache();
   }
 
   async getSubjectSummaries() {
@@ -471,10 +483,13 @@ class QuizDatabase {
 
   // --- DECKS ---
   async getAllDecks() {
+    if (this._decksCache) return [...this._decksCache];
     await this.init();
     const tx = this._tx('decks', 'readonly');
     const store = tx.objectStore('decks');
-    return this._promisify(store.getAll());
+    const decks = await this._promisify(store.getAll());
+    this._decksCache = decks;
+    return [...decks];
   }
 
   async getDeck(id) {
@@ -542,10 +557,13 @@ class QuizDatabase {
 
   // --- CARDS ---
   async getAllCards() {
+    if (this._cardsCache) return [...this._cardsCache];
     await this.init();
     const tx = this._tx('cards', 'readonly');
     const store = tx.objectStore('cards');
-    return this._promisify(store.getAll());
+    const cards = await this._promisify(store.getAll());
+    this._cardsCache = cards;
+    return [...cards];
   }
 
   async getCard(id) {
@@ -960,6 +978,8 @@ class QuizDatabase {
       };
     }
     await this.saveCardsBatch(cards);
+    this.invalidateSubjectCache();
+    this.invalidateAllCaches();
     return cards.length;
   }
 

@@ -831,8 +831,10 @@ body.tab-hidden *::after {
   100% { opacity: 1; }
 }
 
-/* ========== TAB WAVE CURTAIN TRANSITION (< 450ms) ========== */
+/* ========== TAB WAVE CURTAIN TRANSITION (Disabled for 0ms Instant Switch) ========== */
+#tab-wave-curtain,
 .tab-wave-curtain {
+  display: none !important;
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -8721,8 +8723,38 @@ textarea::placeholder,
   outline: none !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
 }
+.modal-box {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: min(88vh, 820px) !important;
+  max-height: min(88dvh, 820px) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.modal-header {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
 .modal-body {
-  overflow: visible !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: calc(88vh - 140px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  position: relative !important;
+  z-index: 2 !important;
+  padding: 20px 24px !important;
+}
+
+.modal-footer {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
 }
 
 /* 6. Bulk Reassign Modal deck rows */
@@ -8813,5 +8845,26 @@ textarea::placeholder,
   font-weight: 800;
   color: var(--accent);
   font-size: 0.95rem;
+}
+
+/* Phase 1j: Sidebar Install Button compact styling */
+.sidebar-install-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: all 0.2s ease !important;
+}
+.app-sidebar.collapsed .sidebar-install-btn {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  margin: 0 auto !important;
+}
+.app-sidebar.collapsed .sidebar-install-btn .nav-label {
+  display: none !important;
 }
 
