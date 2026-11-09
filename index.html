@@ -21,7 +21,7 @@
   <!-- Modern Tech, Poster Heavy & Editorial Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Lora:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Merriweather:ital,wght@0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@800;900&family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=PT+Serif:wght@400;700&family=Lora:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Merriweather:ital,wght@0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Preload Critical Background Wallpaper -->
   <link rel="preload" as="image" href="./backgrounds/bg-2.webp" type="image/webp">
@@ -156,7 +156,7 @@
         <section id="view-dashboard" class="view-section active">
           <!-- Editorial Hero Inspirational Stage (First Viewport) -->
           <div class="hero-card editorial-hero-stage">
-            <div class="hero-glass-matrix-layer" id="hero-glass-matrix" aria-hidden="true"></div>
+            <!-- hero glass matrix removed -->
             <!-- Tầng Giữa: Monumental Quote Canvas -->
             <div class="hero-content editorial-quote-canvas">
               <div class="hero-heading-scrim">
@@ -277,7 +277,7 @@
             <div class="editorial-stage-footer">
               <div class="stats-grid editorial-stats-grid">
                 <div class="stat-card">
-                  <div class="stat-col-num">01 //</div>
+                  
                   <div class="stat-info">
                     <span class="stat-num" id="stat-total-cards">0</span>
                     <span class="stat-label">TỔNG KHO THẺ</span>
@@ -285,7 +285,7 @@
                 </div>
 
                 <div class="stat-card">
-                  <div class="stat-col-num">02 //</div>
+                  
                   <div class="stat-info">
                     <span class="stat-num" id="stat-due-today">0</span>
                     <span class="stat-label">CẦN ÔN HÔM NAY</span>
@@ -293,7 +293,7 @@
                 </div>
 
                 <div class="stat-card">
-                  <div class="stat-col-num">03 //</div>
+                  
                   <div class="stat-info">
                     <span class="stat-num" id="stat-mastered-cards">0</span>
                     <span class="stat-label">ĐÃ THÀNH THẠO</span>
@@ -301,7 +301,7 @@
                 </div>
 
                 <div class="stat-card">
-                  <div class="stat-col-num">04 //</div>
+                  
                   <div class="stat-info">
                     <span class="stat-num" id="stat-streak-days">0 ngày</span>
                     <span class="stat-label">CHUỖI BỀN BỈ</span>
@@ -838,30 +838,47 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="exam-timer-display">10:00</span>
               </div>
               <span id="exam-q-counter" style="font-weight: 700;">Câu 1 / 10</span>
+              <button id="btn-exam-header-submit" class="btn btn-primary" style="display: none; padding: 6px 14px; font-size: 0.85rem;" onclick="App.submitExam()">
+                Nộp bài thi
+              </button>
             </div>
 
-            <div class="quiz-card">
-              <h3 id="exam-q-text" class="quiz-question-text">Đang tải câu hỏi thi...</h3>
-              <div id="exam-options-container" class="quiz-options-list"></div>
-              
-              <!-- Exam Numeric Answer Box -->
-              <div id="exam-numeric-container" class="quiz-numeric-box" style="display: none;">
-                <div class="numeric-input-card">
-                  <label for="exam-numeric-input" class="numeric-label">
-                    Nhập đáp án số:
-                  </label>
-                  <div class="numeric-input-row">
-                    <input type="text" inputmode="decimal" id="exam-numeric-input" class="numeric-input" placeholder="Ví dụ: 3.14 hoặc 12,5" autocomplete="off" oninput="App.onExamNumericInput(event)">
+            <!-- Single Question Mode -->
+            <div id="exam-single-card-wrap">
+              <div class="quiz-card">
+                <h3 id="exam-q-text" class="quiz-question-text">Đang tải câu hỏi thi...</h3>
+                <div id="exam-options-container" class="quiz-options-list"></div>
+                
+                <!-- Exam Numeric Answer Box -->
+                <div id="exam-numeric-container" class="quiz-numeric-box" style="display: none;">
+                  <div class="numeric-input-card">
+                    <label for="exam-numeric-input" class="numeric-label">
+                      Nhập đáp án số:
+                    </label>
+                    <div class="numeric-input-row">
+                      <input type="text" inputmode="decimal" id="exam-numeric-input" class="numeric-input" placeholder="Ví dụ: 3.14 hoặc 12,5" autocomplete="off" oninput="App.onExamNumericInput(event)">
+                    </div>
                   </div>
                 </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 24px;">
+                  <button id="btn-exam-prev" class="btn btn-secondary" onclick="App.examPrevQuestion()">
+                    Câu trước
+                  </button>
+                  <button id="btn-exam-next" class="btn btn-primary" onclick="App.renderExamQuestion()">
+                    Câu sau
+                  </button>
+                </div>
               </div>
-              
-              <div style="display: flex; justify-content: space-between; margin-top: 24px;">
-                <button id="btn-exam-prev" class="btn btn-secondary" onclick="App.examPrevQuestion()">
-                  Câu trước
-                </button>
-                <button id="btn-exam-next" class="btn btn-primary" onclick="App.renderExamQuestion()">
-                  Câu sau
+            </div>
+
+            <!-- All Questions LMS Scroll Mode -->
+            <div id="exam-all-questions-wrap" style="display: none;">
+              <div id="exam-palette-bar" class="exam-palette-bar"></div>
+              <div id="exam-all-questions-list" class="exam-all-questions-list"></div>
+              <div style="display: flex; justify-content: center; margin-top: 28px; margin-bottom: 40px;">
+                <button class="btn btn-primary btn-lg" style="min-width: 200px;" onclick="App.submitExam()">
+                  Nộp bài thi
                 </button>
               </div>
             </div>
@@ -1617,6 +1634,25 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label for="exam-timer-enabled" style="font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 0;">
             Bật giới hạn đếm ngược thời gian
           </label>
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">Chế độ hiển thị bài thi:</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label class="exam-mode-choice" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 12px; cursor: pointer; background: var(--bg-surface-elevated, var(--card-frosted-bg));">
+              <input type="radio" name="exam-display-mode" value="single" checked style="margin-top: 3px; accent-color: var(--primary);">
+              <div>
+                <div style="font-weight: 700; font-size: 0.88rem;">Từng câu một</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">Tập trung từng câu, có nút Trước / Sau</div>
+              </div>
+            </label>
+            <label class="exam-mode-choice" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 12px; cursor: pointer; background: var(--bg-surface-elevated, var(--card-frosted-bg));">
+              <input type="radio" name="exam-display-mode" value="all" style="margin-top: 3px; accent-color: var(--primary);">
+              <div>
+                <div style="font-weight: 700; font-size: 0.88rem;">Toàn bộ (Cuộn LMS)</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">Cuộn dọc mượt, bảng số câu nhảy nhanh</div>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

@@ -330,6 +330,27 @@ body[data-theme="purple-pink"] {
 
   --matrix-glow-color: rgba(192, 132, 252, 0.55);
   --matrix-glow-secondary: rgba(244, 114, 182, 0.40);
+
+  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h) */
+  --glass-slab-bg: linear-gradient(145deg, rgba(38, 30, 62, 0.86) 0%, rgba(22, 17, 38, 0.80) 100%);
+  --glass-slab-blur: blur(42px) saturate(180%);
+  --glass-slab-border: rgba(255, 255, 255, 0.22);
+  --glass-slab-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.28), inset 1px 0 1px rgba(255, 255, 255, 0.14), 0 24px 60px -12px rgba(0, 0, 0, 0.70);
+
+  --card-frosted-bg: linear-gradient(145deg, rgba(34, 27, 54, 0.78) 0%, rgba(22, 17, 36, 0.70) 100%);
+  --card-frosted-hover-bg: linear-gradient(145deg, rgba(48, 38, 76, 0.56) 0%, rgba(32, 24, 52, 0.48) 100%);
+  --card-frosted-border: rgba(255, 255, 255, 0.16);
+  --card-frosted-hover-border: rgba(192, 132, 252, 0.60);
+  --card-frosted-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.20), 0 14px 34px -10px rgba(0, 0, 0, 0.55);
+
+  --stat-box-hover-bg: linear-gradient(135deg, rgba(168, 85, 247, 0.32) 0%, rgba(236, 72, 153, 0.24) 100%);
+  --stat-box-hover-border: rgba(192, 132, 252, 0.65);
+  --stat-box-hover-text: #ffffff;
+
+  --spotlight-color-1: rgba(192, 132, 252, 0.14);
+  --spotlight-color-2: rgba(167, 139, 250, 0.04);
+  --accent-soft: rgba(192, 132, 252, 0.16);
+
 }
 
 /* ==========================================================================
@@ -548,6 +569,27 @@ html[data-theme="monochrome"] {
 
   --matrix-glow-color: rgba(255, 255, 255, 0.48);
   --matrix-glow-secondary: rgba(212, 212, 216, 0.30);
+
+  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h) */
+  --glass-slab-bg: linear-gradient(145deg, rgba(36, 36, 42, 0.86) 0%, rgba(20, 20, 24, 0.80) 100%);
+  --glass-slab-blur: blur(42px) saturate(150%);
+  --glass-slab-border: rgba(255, 255, 255, 0.26);
+  --glass-slab-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.32), inset 1px 0 1px rgba(255, 255, 255, 0.16), 0 24px 60px -12px rgba(0, 0, 0, 0.80);
+
+  --card-frosted-bg: linear-gradient(145deg, rgba(32, 32, 38, 0.78) 0%, rgba(20, 20, 24, 0.70) 100%);
+  --card-frosted-hover-bg: linear-gradient(145deg, rgba(46, 46, 54, 0.56) 0%, rgba(28, 28, 34, 0.46) 100%);
+  --card-frosted-border: rgba(255, 255, 255, 0.18);
+  --card-frosted-hover-border: rgba(255, 255, 255, 0.65);
+  --card-frosted-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.24), 0 14px 34px -10px rgba(0, 0, 0, 0.75);
+
+  --stat-box-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(161, 161, 170, 0.14) 100%);
+  --stat-box-hover-border: #ffffff;
+  --stat-box-hover-text: #ffffff;
+
+  --spotlight-color-1: rgba(255, 255, 255, 0.12);
+  --spotlight-color-2: rgba(255, 255, 255, 0.03);
+  --accent-soft: rgba(255, 255, 255, 0.14);
+
 }
 
 /* ==========================================================================
@@ -1120,48 +1162,12 @@ html[data-theme="white-orange"] .bottom-nav-item.active {
   font-weight: 600 !important;
 }
 
-/* 1.10 Interactive Glass Tile Matrix */
-.hero-inspiration-stage,
-.hero-card {
-  position: relative;
-}
 
-.hero-glass-matrix-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
-  grid-auto-rows: 68px;
-  gap: 6px;
-  padding: 16px;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  background:
-    radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), var(--matrix-glow-color), var(--matrix-glow-secondary) 45%, transparent 75%);
-  -webkit-mask-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0,0,0,0.65) 55%, transparent 100%);
-  mask-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0,0,0,0.65) 55%, transparent 100%);
-}
+/* ==========================================================================
+   2. FROSTED MILKY LIQUID GLASS SYSTEM (PHASE 1H — ẢNH 1 & ẢNH 4)
+   ========================================================================== */
 
-.hero-inspiration-stage:hover .hero-glass-matrix-layer,
-.hero-card:hover .hero-glass-matrix-layer,
-.hero-glass-matrix-layer.is-hovering {
-  opacity: 1;
-}
-
-.glass-matrix-cell {
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow:
-    inset 2px 2px 5px rgba(255, 255, 255, 0.32),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* 2.1 White-Orange Straight Serif Quote Typography */
+/* 2.1 White-Orange Straight Serif Quote Typography (Spatial Designer Style) */
 html[data-theme="white-orange"] .hero-quote-title,
 html[data-theme="white-orange"] .hero-quote-line,
 html[data-theme="white-orange"] .hero-card-title,
@@ -1171,79 +1177,120 @@ html[data-theme="white-orange"] #hero-title {
 
 html[data-theme="white-orange"] .hero-title-main,
 html[data-theme="white-orange"] .hero-title-sub {
-  font-family: 'Merriweather', 'Lora', 'Noto Serif', Georgia, serif !important;
+  font-family: 'Newsreader', 'PT Serif', 'Georgia', serif !important;
   font-style: normal !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.03em !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
   color: #1c1917 !important;
-  font-variant-ligatures: none !important;
-  font-feature-settings: "swsh" 0, "calt" 0 !important;
+  text-shadow: none !important;
+  filter: none !important;
 }
 
 html[data-theme="white-orange"] .hero-title-accent {
-  font-family: 'Lora', 'Merriweather', Georgia, serif !important;
+  font-family: 'Playfair Display', 'Instrument Serif', Georgia, serif !important;
   font-style: italic !important;
   font-weight: 400 !important;
   letter-spacing: -0.02em !important;
   color: #ea580c !important;
+  text-shadow: none !important;
+  filter: none !important;
 }
 
-/* 2.2 & 2.3 White-Orange Smoked Frosted Glass Cards with Hover Transition */
+/* 2.2 Modal & Sidebar Frosted Milky Liquid Glass */
+.modal-box,
+.app-sidebar {
+  background: var(--glass-slab-bg) !important;
+  backdrop-filter: var(--glass-slab-blur) !important;
+  -webkit-backdrop-filter: var(--glass-slab-blur) !important;
+  border: 1.5px solid var(--glass-slab-border) !important;
+  box-shadow: var(--glass-slab-shadow) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-box {
+  border-radius: 28px !important;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  background: transparent !important;
+  border-color: rgba(128, 128, 128, 0.14) !important;
+}
+
+.modal-title {
+  color: var(--text-primary) !important;
+}
+
+body.disable-backdrop-blur .modal-box,
+body.disable-backdrop-blur .app-sidebar {
+  backdrop-filter: var(--glass-slab-blur) !important;
+  -webkit-backdrop-filter: var(--glass-slab-blur) !important;
+}
+
+/* 2.3 Universal Frosted Liquid Glass Cards */
+.hero-stat-bento-card,
+.stat-card,
+.study-mode-card,
+.mode-card,
+.deck-card {
+  background: var(--card-frosted-bg) !important;
+  backdrop-filter: blur(40px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(170%) !important;
+  border: 1.5px solid var(--card-frosted-border) !important;
+  box-shadow: var(--card-frosted-shadow) !important;
+  color: var(--text-primary) !important;
+  border-radius: 22px !important;
+  transition: background 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.28s ease !important;
+}
+
+/* Mode Trắng Cam: chữ trong card luôn đậm và rõ ràng ở trạng thái nghỉ */
 html[data-theme="white-orange"] .hero-stat-bento-card,
 html[data-theme="white-orange"] .stat-card,
 html[data-theme="white-orange"] .study-mode-card,
 html[data-theme="white-orange"] .mode-card,
 html[data-theme="white-orange"] .deck-card {
-  background: var(--card-glass-bg) !important;
-  backdrop-filter: blur(22px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
-  border: 1px solid var(--card-glass-border) !important;
-  box-shadow: var(--card-glass-shadow), var(--card-inner-specular) !important;
-  color: var(--text-on-card) !important;
-  border-radius: 22px !important;
-  transition: background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  color: #1c1917 !important;
 }
-
-html[data-theme="white-orange"] .hero-stat-bento-card *,
+html[data-theme="white-orange"] .stat-card .stat-num,
 html[data-theme="white-orange"] .stat-card .stat-value,
-html[data-theme="white-orange"] .study-mode-card .study-mode-title,
-html[data-theme="white-orange"] .mode-card h3,
+html[data-theme="white-orange"] .study-mode-title,
 html[data-theme="white-orange"] .deck-card .deck-title {
-  color: #fff7ed !important;
+  color: #1c1917 !important;
+}
+html[data-theme="white-orange"] .stat-card .stat-label,
+html[data-theme="white-orange"] .study-mode-desc,
+html[data-theme="white-orange"] .deck-card .deck-meta {
+  color: #44403c !important;
 }
 
-html[data-theme="white-orange"] .study-mode-card p,
-html[data-theme="white-orange"] .mode-card p,
-html[data-theme="white-orange"] .deck-card .deck-meta,
-html[data-theme="white-orange"] .hero-stat-bento-card .stat-label {
-  color: rgba(255, 237, 213, 0.78) !important;
-}
-
-html[data-theme="white-orange"] .deck-card .btn-secondary,
-html[data-theme="white-orange"] .study-mode-card .study-mode-pill-btn {
-  background: rgba(255, 255, 255, 0.10) !important;
-  color: #fff7ed !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-}
-html[data-theme="white-orange"] .deck-card .btn-secondary:hover,
-html[data-theme="white-orange"] .study-mode-card:hover .study-mode-pill-btn {
-  background: #ea580c !important;
-  color: #ffffff !important;
-  border-color: #fb923c !important;
-}
-
-html[data-theme="white-orange"] .hero-stat-bento-card:hover,
-html[data-theme="white-orange"] .stat-card:hover,
-html[data-theme="white-orange"] .study-mode-card:hover,
-html[data-theme="white-orange"] .mode-card:hover,
-html[data-theme="white-orange"] .deck-card:hover {
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba(249, 115, 22, 0.28) 0%, rgba(48, 36, 28, 0.48) 70%) !important;
-  border-color: #fb923c !important;
-  box-shadow: 0 18px 40px -8px rgba(234, 88, 12, 0.28),
-              inset 0 1px 2px rgba(255, 255, 255, 0.55) !important;
+/* 4 Stat Boxes Hover: Transition to Peach/Terracotta in White-Orange */
+.hero-stat-bento-card:hover,
+.editorial-stats-grid .stat-card:hover {
+  background: var(--stat-box-hover-bg) !important;
+  border-color: var(--stat-box-hover-border) !important;
+  color: var(--stat-box-hover-text) !important;
   transform: translateY(-3px) !important;
+  box-shadow: 0 18px 38px -8px var(--accent-glow),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.65) !important;
 }
+.hero-stat-bento-card:hover *,
+.editorial-stats-grid .stat-card:hover * {
+  color: var(--stat-box-hover-text) !important;
+}
+
+/* 7 Study Modes & Deck Cards Hover: More transparent with border glow */
+.study-mode-card:hover,
+.mode-card:hover,
+.deck-card:hover {
+  background: var(--card-frosted-hover-bg) !important;
+  border-color: var(--card-frosted-hover-border) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 18px 38px -8px var(--accent-glow),
+              inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
+}
+

@@ -153,51 +153,7 @@ const App = {
   },
 
 
-  initHeroGlassMatrix() {
-    const container = document.getElementById('hero-glass-matrix');
-    if (!container) return;
-    const stage = container.closest('.hero-card') || container.closest('.hero-inspiration-stage') || container.parentElement;
-    if (!stage) return;
-
-    if (container.children.length === 0) {
-      const fragment = document.createDocumentFragment();
-      for (let i = 0; i < 90; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'glass-matrix-cell';
-        fragment.appendChild(cell);
-      }
-      container.appendChild(fragment);
-    }
-
-    let rafId = null;
-    let pendingX = 0;
-    let pendingY = 0;
-
-    const onMouseMove = (e) => {
-      const rect = container.getBoundingClientRect();
-      pendingX = Math.round(e.clientX - rect.left);
-      pendingY = Math.round(e.clientY - rect.top);
-      if (!rafId) {
-        rafId = requestAnimationFrame(() => {
-          container.style.setProperty('--mx', `${pendingX}px`);
-          container.style.setProperty('--my', `${pendingY}px`);
-          container.classList.add('is-hovering');
-          rafId = null;
-        });
-      }
-    };
-
-    const onMouseLeave = () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      container.classList.remove('is-hovering');
-    };
-
-    stage.addEventListener('mousemove', onMouseMove, { passive: true });
-    stage.addEventListener('mouseleave', onMouseLeave, { passive: true });
-  },
+  initHeroGlassMatrix() {},
 
   // --- INITIALIZATION ---
   async init() {
@@ -1984,26 +1940,34 @@ const App = {
     }
   },
 
-  async startSubjectSession(subjectId, mode = 'srs') {
+  async startSubjectSession(subjectId = null, mode = 'srs') {
+    const targetSubjId = subjectId || this.activeDeckSubjectFilter || 'all';
+    let subjectName = 'Tất cả môn học';
+    if (targetSubjId === 'subj_unassigned') {
+      subjectName = 'Chưa phân loại';
+    } else if (targetSubjId !== 'all') {
+      const subjObj = await db.getSubject(targetSubjId);
+      if (subjObj) subjectName = subjObj.name;
+    }
+
     const pickerModal = document.getElementById('modal-topic-picker');
     if (pickerModal) this._closeModal(pickerModal);
-    const subject = await db.getSubject(subjectId);
-    if (!subject) return;
-    const cards = await db.getDueCards(null, subjectId);
-    let sessionCards = cards;
-    let title = `Ôn Tập Môn: ${subject.name}`;
-    if (sessionCards.length === 0) {
-      sessionCards = await db.getCardsBySubject(subjectId);
-      title = `Luyện Tập Tự Do: ${subject.name}`;
+
+    let sessionCards = await db.getDueCards(null, targetSubjId === 'all' ? null : targetSubjId);
+    let title = `Ôn Tập Môn: ${subjectName}`;
+    if (!sessionCards || sessionCards.length === 0) {
+      sessionCards = await db.getCardsBySubject(targetSubjId);
+      title = `Luyện Tập Môn: ${subjectName}`;
     }
-    if (sessionCards.length === 0) {
-      this.showToast(`Môn "${subject.name}" chưa có câu hỏi nào!`, 'warning');
+    if (!sessionCards || sessionCards.length === 0) {
+      this.showToast(`Môn "${subjectName}" hiện chưa có câu hỏi nào để ôn tập.`, 'warning');
       return;
     }
+
     this._shuffleArray(sessionCards);
     this.activeSession = {
       mode: mode,
-      subjectId: subjectId,
+      subjectId: targetSubjId,
       deckId: null,
       title: title,
       cards: sessionCards,
@@ -2011,40 +1975,15 @@ const App = {
       score: 0,
       correctCount: 0,
       incorrectCount: 0,
-      blindMode: false,
-      blindRevealed: false,
-      userAnswers: {},
-      answeredList: []
+      answers: [],
+      startTime: Date.now(),
+      timerRemaining: null
     };
+
+    this.saveActiveSessionState();
     this.navigateTo('study');
-    this.renderActiveStudyCard();
+    this.initStudySession();
   },
-
-  async confirmResetDeckProgress(deckId) {
-    const deck = await db.getDeck(deckId);
-    if (!deck) return;
-    if (confirm(`Bạn có chắc chắn muốn đặt lại toàn bộ tiến trình học (SRS) của bộ thẻ "${deck.name}" về ban đầu? (Tất cả thẻ sẽ trở về trạng thái Mới)`)) {
-      await db.resetDeckProgress(deckId);
-      this.showToast(`Đã đặt lại tiến trình của bộ thẻ "${deck.name}".`, 'info');
-      this.renderDecks();
-      this.renderDashboard();
-      this.updateGlobalStats();
-    }
-  },
-
-  async confirmDeleteDeck(deckId) {
-    const deck = await db.getDeck(deckId);
-    if (!deck) return;
-    if (confirm(`Bạn có chắc chắn muốn xóa bộ câu hỏi "${deck.name}" và toàn bộ thẻ bên trong?`)) {
-      await db.deleteDeck(deckId);
-      this.showToast('Đã xóa bộ thẻ thành công.', 'info');
-      this.renderDecks();
-      this.updateGlobalStats();
-    }
-  },
-
-  // --- STUDY SESSIONS (7 CORE MODES) ---
-  selectedTopicsForReview: new Set(),
 
   async startSession(deckId, mode = 'srs', options = {}) {
     let cards = [];
@@ -3109,10 +3048,12 @@ const App = {
   },
 
   rateFlashcard(rating) {
+    if (this._isSwitchingFlashcard) return;
     this.clearPerQuestionTimer();
     const session = this.activeSession;
     if (!session) return;
     const card = session.cards[session.currentIndex];
+    if (!card) return;
 
     const isCorrect = rating >= 3;
     if (isCorrect) {
@@ -3125,6 +3066,7 @@ const App = {
 
     const nextSrs = SRS.calculateNext(card.srs, rating);
     card.srs = nextSrs;
+    card.stats = card.stats || {};
     card.stats.reviewsCount = (card.stats.reviewsCount || 0) + 1;
     if (isCorrect) {
       card.stats.correctCount = (card.stats.correctCount || 0) + 1;
@@ -3133,7 +3075,6 @@ const App = {
     }
     card.stats.lastReviewed = Date.now();
 
-    // Background asynchronous write without blocking UI (< 16ms transition)
     Promise.all([
       db.saveCard(card),
       db.logReview({
@@ -3143,20 +3084,31 @@ const App = {
         isCorrect: isCorrect,
         mode: 'flashcard'
       })
-    ]).catch(err => console.error('[SRS Save Error]', err));
+    ]).catch(err => console.error('Background SRS save error:', err));
 
-    // Auto-save session progress (Section 5)
     this.saveActiveSessionState();
 
+    const flashcardEl = document.getElementById('active-flashcard');
     session.currentIndex++;
-    const cardEl = document.getElementById('active-flashcard');
-    if (cardEl && cardEl.classList.contains('flipped')) {
-      cardEl.classList.add('is-flipping');
-      cardEl.classList.remove('flipped');
+
+    if (session.currentIndex >= session.cards.length) {
+      this.renderActiveStudyCard();
+      return;
+    }
+
+    if (flashcardEl) {
+      this._isSwitchingFlashcard = true;
+      flashcardEl.classList.add('switching-out');
       setTimeout(() => {
+        flashcardEl.classList.remove('switching-out', 'flipped');
+        flashcardEl.classList.add('switching-in-start');
         this.renderActiveStudyCard();
-        cardEl.classList.remove('is-flipping');
-      }, 260);
+        void flashcardEl.offsetWidth; // Force reflow
+        requestAnimationFrame(() => {
+          flashcardEl.classList.remove('switching-in-start');
+          this._isSwitchingFlashcard = false;
+        });
+      }, 145);
     } else {
       this.renderActiveStudyCard();
     }
@@ -3444,8 +3396,15 @@ const App = {
     }
     this.clearActiveSessionState();
 
+    const examDisplayMode = document.querySelector('input[name="exam-display-mode"]:checked')?.value || 'single';
+    const examListEl = document.getElementById('exam-all-questions-list');
+    if (examListEl) examListEl.innerHTML = '';
+    const examPaletteEl = document.getElementById('exam-palette-bar');
+    if (examPaletteEl) examPaletteEl.innerHTML = '';
+
     this.activeSession = {
       mode: 'exam',
+      displayMode: examDisplayMode,
       cards: examCards,
       currentIndex: 0,
       correctCount: 0,
@@ -3678,6 +3637,20 @@ const App = {
 
   renderExamQuestion() {
     const session = this.activeSession;
+    if (!session) return;
+
+    if (session.displayMode === 'all') {
+      this.renderExamAllQuestions();
+      return;
+    }
+
+    const singleWrap = document.getElementById('exam-single-card-wrap');
+    const allWrap = document.getElementById('exam-all-questions-wrap');
+    const submitHeaderBtn = document.getElementById('btn-exam-header-submit');
+    if (singleWrap) singleWrap.style.display = 'block';
+    if (allWrap) allWrap.style.display = 'none';
+    if (submitHeaderBtn) submitHeaderBtn.style.display = 'none';
+
     const card = session.cards[session.currentIndex];
     const total = session.cards.length;
     const current = session.currentIndex + 1;
@@ -3708,40 +3681,27 @@ const App = {
       session.cardShuffledOptions = session.cardShuffledOptions || {};
       let shuffledList = session.cardShuffledOptions[session.currentIndex];
       if (!shuffledList) {
-        const originalOptions = card.options || [];
-        const correctIdx = card.answerIndex !== undefined ? card.answerIndex : 0;
-        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-        const prepared = originalOptions.map((optText, idx) => {
-          let optId = letters[idx];
-          let rawText = optText;
-          if (typeof optText === 'object' && optText !== null) {
-            optId = optText.id || letters[idx];
-            rawText = optText.text || '';
-          }
-          const isCorrect = (card.correct_option_id && optId === card.correct_option_id) ||
-                            (card.correctOptionId && optId === card.correctOptionId) ||
-                            (idx === correctIdx);
-          return { id: optId, text: rawText, originalIdx: idx, isCorrect: Boolean(isCorrect) };
-        });
-        shuffledList = this.shuffleArray(prepared);
+        shuffledList = (card.options || []).map((text, idx) => ({
+          text: typeof text === 'string' ? text : (text?.text || ''),
+          origIdx: idx,
+          isCorrect: idx === card.answerIndex
+        }));
+        this._shuffleArray(shuffledList);
         session.cardShuffledOptions[session.currentIndex] = shuffledList;
       }
 
-      const chosen = session.userAnswers[session.currentIndex];
-      const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-
-      shuffledList.forEach((optObj, idx) => {
+      shuffledList.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = `quiz-option-btn ${chosen === idx ? 'correct' : ''}`;
-        btn.dataset.index = idx;
+        btn.className = 'quiz-option-btn';
+        if (session.userAnswers[session.currentIndex] === idx) {
+          btn.classList.add('selected');
+        }
 
-        const { letter, cleanText } = this.cleanOptionText(optObj.text, idx);
-        const defaultLetter = defaultLetters[idx] || letter;
-
+        const letter = String.fromCharCode(65 + idx);
         btn.innerHTML = `
-          <span class="quiz-option-letter select-none">${defaultLetter}.</span>
-          <div class="quiz-option-content">${this.renderLatexText(cleanText)}</div>
+          <span class="quiz-option-letter">${letter}</span>
+          <span class="quiz-option-text">${this.renderLatexText(opt.text)}</span>
         `;
         btn.onclick = () => {
           session.userAnswers[session.currentIndex] = idx;
@@ -3766,6 +3726,141 @@ const App = {
         session.currentIndex++;
         this.renderExamQuestion();
       };
+    }
+  },
+
+  renderExamAllQuestions() {
+    const session = this.activeSession;
+    if (!session) return;
+
+    const singleWrap = document.getElementById('exam-single-card-wrap');
+    const allWrap = document.getElementById('exam-all-questions-wrap');
+    const submitHeaderBtn = document.getElementById('btn-exam-header-submit');
+    if (singleWrap) singleWrap.style.display = 'none';
+    if (allWrap) allWrap.style.display = 'block';
+    if (submitHeaderBtn) submitHeaderBtn.style.display = 'inline-flex';
+
+    const total = session.cards.length;
+    const answeredCount = Object.keys(session.userAnswers).filter(k => session.userAnswers[k] !== undefined && session.userAnswers[k] !== '').length;
+    const counterEl = document.getElementById('exam-q-counter');
+    if (counterEl) counterEl.textContent = `Đã làm: ${answeredCount} / ${total}`;
+
+    // Render Question Palette
+    const palette = document.getElementById('exam-palette-bar');
+    if (palette) {
+      palette.innerHTML = session.cards.map((c, idx) => {
+        const isAnswered = session.userAnswers[idx] !== undefined && session.userAnswers[idx] !== '';
+        return `
+          <button type="button" class="exam-palette-btn ${isAnswered ? 'answered' : ''}" id="exam-palette-btn-${idx}" onclick="document.getElementById('exam-q-item-${idx}')?.scrollIntoView({ behavior: 'smooth', block: 'center' })">
+            ${idx + 1}
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Render questions list
+    const listEl = document.getElementById('exam-all-questions-list');
+    if (listEl && listEl.children.length === 0) {
+      let html = '';
+      session.cardShuffledOptions = session.cardShuffledOptions || {};
+
+      session.cards.forEach((card, idx) => {
+        const userAns = session.userAnswers[idx];
+        html += `
+          <div class="quiz-card exam-lms-item" id="exam-q-item-${idx}" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-weight: 700; font-size: 0.95rem; color: var(--primary);">Câu ${idx + 1} / ${total}</span>
+              <span id="exam-status-badge-${idx}" class="subject-badge" style="font-size: 0.75rem; ${userAns !== undefined && userAns !== '' ? '' : 'display: none;'}">Đã trả lời</span>
+            </div>
+            <h3 class="quiz-question-text" style="font-size: 1.05rem; margin-bottom: 16px;">
+              ${this.renderLatexText(card.question)}
+            </h3>
+        `;
+
+        if (card.type === 'numeric') {
+          html += `
+            <div class="numeric-input-card">
+              <label class="numeric-label">Nhập đáp án số:</label>
+              <div class="numeric-input-row">
+                <input type="text" inputmode="decimal" class="numeric-input exam-lms-numeric-input" data-card-idx="${idx}" placeholder="Ví dụ: 3.14 hoặc 12,5" value="${userAns !== undefined ? this._escapeHtml(String(userAns)) : ''}">
+              </div>
+            </div>
+          `;
+        } else {
+          let shuffledList = session.cardShuffledOptions[idx];
+          if (!shuffledList) {
+            shuffledList = (card.options || []).map((text, origIdx) => ({
+              text: typeof text === 'string' ? text : (text?.text || ''),
+              origIdx: origIdx,
+              isCorrect: origIdx === card.answerIndex
+            }));
+            this._shuffleArray(shuffledList);
+            session.cardShuffledOptions[idx] = shuffledList;
+          }
+
+          html += `<div class="quiz-options-list" id="exam-lms-options-${idx}">`;
+          shuffledList.forEach((opt, optIdx) => {
+            const isSelected = userAns === optIdx;
+            const letter = String.fromCharCode(65 + optIdx);
+            html += `
+              <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
+                <span class="quiz-option-letter">${letter}</span>
+                <span class="quiz-option-text">${this.renderLatexText(opt.text)}</span>
+              </button>
+            `;
+          });
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      });
+
+      listEl.innerHTML = html;
+
+      // Event listeners for option buttons
+      listEl.querySelectorAll('.exam-lms-opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cardIdx = parseInt(btn.getAttribute('data-card-idx'), 10);
+          const optIdx = parseInt(btn.getAttribute('data-opt-idx'), 10);
+          session.userAnswers[cardIdx] = optIdx;
+
+          const optsBox = document.getElementById(`exam-lms-options-${cardIdx}`);
+          if (optsBox) {
+            optsBox.querySelectorAll('.exam-lms-opt-btn').forEach(b => {
+              b.classList.toggle('selected', b === btn);
+            });
+          }
+
+          const paletteBtn = document.getElementById(`exam-palette-btn-${cardIdx}`);
+          if (paletteBtn) paletteBtn.classList.add('answered');
+
+          const statusBadge = document.getElementById(`exam-status-badge-${cardIdx}`);
+          if (statusBadge) statusBadge.style.display = 'inline-flex';
+
+          const newAnsweredCount = Object.keys(session.userAnswers).filter(k => session.userAnswers[k] !== undefined && session.userAnswers[k] !== '').length;
+          if (counterEl) counterEl.textContent = `Đã làm: ${newAnsweredCount} / ${total}`;
+        });
+      });
+
+      // Event listeners for numeric inputs
+      listEl.querySelectorAll('.exam-lms-numeric-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const cardIdx = parseInt(input.getAttribute('data-card-idx'), 10);
+          const val = e.target.value.trim();
+          session.userAnswers[cardIdx] = val;
+
+          const paletteBtn = document.getElementById(`exam-palette-btn-${cardIdx}`);
+          if (paletteBtn) paletteBtn.classList.toggle('answered', val !== '');
+
+          const statusBadge = document.getElementById(`exam-status-badge-${cardIdx}`);
+          if (statusBadge) statusBadge.style.display = val !== '' ? 'inline-flex' : 'none';
+
+          const newAnsweredCount = Object.keys(session.userAnswers).filter(k => session.userAnswers[k] !== undefined && session.userAnswers[k] !== '').length;
+          if (counterEl) counterEl.textContent = `Đã làm: ${newAnsweredCount} / ${total}`;
+        });
+      });
+
+      this.renderMath(listEl);
     }
   },
 
@@ -5970,6 +6065,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
   },
 
+  renderQuestionBankCardItem(card, decksMap, isCardBookmarked, isCardFlagged) {
+    return this._generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged);
+  },
+
   _generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged) {
     const deckName = decksMap[card.deckId] || 'Bộ thẻ';
     const diff = this.normalizeDifficulty(card.difficulty);
@@ -6662,6 +6761,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const subjects = await db.getAllSubjects();
     const otherSubjects = subjects.filter(s => s.id !== subject.id);
+    const targetOptions = [
+      ...otherSubjects,
+      ...(subject.id !== 'subj_unassigned' ? [{ id: 'subj_unassigned', name: 'Chưa phân loại', icon: 'folder' }] : [])
+    ];
 
     // Populate merge target select & Cyber Violet dropdown
     const mergeSelect = document.getElementById('manage-subject-merge-target');
@@ -6669,24 +6772,42 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const mergeLabel = document.getElementById('manage-subject-merge-dropdown-label');
     const mergeIcon = document.getElementById('manage-subject-merge-dropdown-icon');
 
-    if (otherSubjects.length > 0) {
-      const firstTarget = otherSubjects[0];
+    if (targetOptions.length > 0) {
+      const firstTarget = targetOptions[0];
       if (mergeSelect) {
-        mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
+        mergeSelect.innerHTML = targetOptions.map(s => `<option value="${s.id}">${this._escapeHtml(s.name)}</option>`).join('');
         mergeSelect.value = firstTarget.id;
       }
       if (mergeMenu) {
-        mergeMenu.innerHTML = otherSubjects.map(s => {
-          const isActive = s.id === firstTarget.id;
-          return `
-            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectMergeTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
-              <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
-            </button>
-          `;
-        }).join('');
+        mergeMenu.innerHTML = targetOptions.map((s, idx) => `
+          <button type="button" class="cyber-dropdown-item ${idx === 0 ? 'active' : ''}" role="option" aria-selected="${idx === 0}" data-target-subj-id="${s.id}" data-target-subj-name="${this._escapeHtml(s.name)}">
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              ${this.renderSubjectIcon(s.icon)}
+              <span>${this._escapeHtml(s.name)}</span>
+            </span>
+          </button>
+        `).join('');
+
+        mergeMenu.querySelectorAll('.cyber-dropdown-item').forEach(btn => {
+          btn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const targetId = btn.getAttribute('data-target-subj-id');
+            const targetName = btn.getAttribute('data-target-subj-name');
+            const targetSubj = targetOptions.find(s => s.id === targetId);
+            if (mergeSelect) mergeSelect.value = targetId;
+            if (mergeLabel) mergeLabel.textContent = targetName;
+            if (mergeIcon && targetSubj) mergeIcon.innerHTML = this.renderSubjectIcon(targetSubj.icon);
+            mergeMenu.querySelectorAll('.cyber-dropdown-item').forEach(b => {
+              const isMatch = b === btn;
+              b.classList.toggle('active', isMatch);
+              b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+            });
+            this.closeAllCyberDropdowns();
+          });
+        });
       }
       if (mergeLabel) mergeLabel.textContent = firstTarget.name;
-      if (mergeIcon) mergeIcon.textContent = firstTarget.icon || 'book';
+      if (mergeIcon) mergeIcon.innerHTML = this.renderSubjectIcon(firstTarget.icon);
     } else {
       if (mergeSelect) {
         mergeSelect.innerHTML = '<option value="">(Không có môn khác để gộp)</option>';
@@ -6710,24 +6831,42 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (deleteReassignWrap) {
       if (decks.length > 0) {
         deleteReassignWrap.style.display = 'block';
-        if (otherSubjects.length > 0) {
-          const firstTarget = otherSubjects[0];
+        if (targetOptions.length > 0) {
+          const firstTarget = targetOptions[0];
           if (deleteSelect) {
-            deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
+            deleteSelect.innerHTML = targetOptions.map(s => `<option value="${s.id}">${this._escapeHtml(s.name)}</option>`).join('');
             deleteSelect.value = firstTarget.id;
           }
           if (deleteMenu) {
-            deleteMenu.innerHTML = otherSubjects.map(s => {
-              const isActive = s.id === firstTarget.id;
-              return `
-                <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectDeleteTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
-                  <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
-                </button>
-              `;
-            }).join('');
+            deleteMenu.innerHTML = targetOptions.map((s, idx) => `
+              <button type="button" class="cyber-dropdown-item ${idx === 0 ? 'active' : ''}" role="option" aria-selected="${idx === 0}" data-target-subj-id="${s.id}" data-target-subj-name="${this._escapeHtml(s.name)}">
+                <span style="display: inline-flex; align-items: center; gap: 8px;">
+                  ${this.renderSubjectIcon(s.icon)}
+                  <span>${this._escapeHtml(s.name)}</span>
+                </span>
+              </button>
+            `).join('');
+
+            deleteMenu.querySelectorAll('.cyber-dropdown-item').forEach(btn => {
+              btn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                const targetId = btn.getAttribute('data-target-subj-id');
+                const targetName = btn.getAttribute('data-target-subj-name');
+                const targetSubj = targetOptions.find(s => s.id === targetId);
+                if (deleteSelect) deleteSelect.value = targetId;
+                if (deleteLabel) deleteLabel.textContent = targetName;
+                if (deleteIcon && targetSubj) deleteIcon.innerHTML = this.renderSubjectIcon(targetSubj.icon);
+                deleteMenu.querySelectorAll('.cyber-dropdown-item').forEach(b => {
+                  const isMatch = b === btn;
+                  b.classList.toggle('active', isMatch);
+                  b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+                });
+                this.closeAllCyberDropdowns();
+              });
+            });
           }
           if (deleteLabel) deleteLabel.textContent = firstTarget.name;
-          if (deleteIcon) deleteIcon.textContent = firstTarget.icon || 'book';
+          if (deleteIcon) deleteIcon.innerHTML = this.renderSubjectIcon(firstTarget.icon);
         } else {
           if (deleteSelect) {
             deleteSelect.innerHTML = '<option value="">(Không có môn khác)</option>';
@@ -6899,32 +7038,58 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   async openBulkReassignModal() {
     this.closeAllCyberDropdowns();
     const subjects = await db.getAllSubjects();
+    const hasUnassigned = subjects.some(s => s.id === 'subj_unassigned');
+    const reassignOptions = [
+      ...subjects,
+      ...(!hasUnassigned ? [{ id: 'subj_unassigned', name: 'Chưa phân loại', icon: 'folder' }] : [])
+    ];
     const targetSelect = document.getElementById('bulk-reassign-target-subject');
     const menu = document.getElementById('bulk-reassign-subject-dropdown-menu');
     const label = document.getElementById('bulk-reassign-subject-dropdown-label');
     const icon = document.getElementById('bulk-reassign-subject-dropdown-icon');
 
     const lastUsedSubjectId = this.getLastUsedSubjectId();
-    const defaultSubject = subjects.find(s => s.id === lastUsedSubjectId) || subjects[0] || { id: 'subj_unassigned', name: 'Chưa phân loại', icon: 'folder' };
+    const defaultSubject = reassignOptions.find(s => s.id === lastUsedSubjectId) || reassignOptions[0];
 
     if (targetSelect) {
-      targetSelect.innerHTML = subjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
+      targetSelect.innerHTML = reassignOptions.map(s => `<option value="${s.id}">${this._escapeHtml(s.name)}</option>`).join('');
       targetSelect.value = defaultSubject.id;
     }
 
     if (menu) {
-      menu.innerHTML = subjects.map(s => {
+      menu.innerHTML = reassignOptions.map((s, idx) => {
         const isActive = s.id === defaultSubject.id;
         return `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectBulkReassignSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
-            <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" data-target-subj-id="${s.id}" data-target-subj-name="${this._escapeHtml(s.name)}">
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              ${this.renderSubjectIcon(s.icon)}
+              <span>${this._escapeHtml(s.name)}</span>
+            </span>
           </button>
         `;
       }).join('');
+
+      menu.querySelectorAll('.cyber-dropdown-item').forEach(btn => {
+        btn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const targetId = btn.getAttribute('data-target-subj-id');
+          const targetName = btn.getAttribute('data-target-subj-name');
+          const targetSubj = reassignOptions.find(s => s.id === targetId);
+          if (targetSelect) targetSelect.value = targetId;
+          if (label) label.textContent = targetName;
+          if (icon && targetSubj) icon.innerHTML = this.renderSubjectIcon(targetSubj.icon);
+          menu.querySelectorAll('.cyber-dropdown-item').forEach(b => {
+            const isMatch = b === btn;
+            b.classList.toggle('active', isMatch);
+            b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+          });
+          this.closeAllCyberDropdowns();
+        });
+      });
     }
 
     if (label) label.textContent = defaultSubject.name;
-    if (icon) icon.textContent = defaultSubject.icon || 'book';
+    if (icon) icon.innerHTML = this.renderSubjectIcon(defaultSubject.icon);
 
     const decks = await db.getAllDecks();
     const subjectsMap = {};

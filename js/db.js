@@ -404,14 +404,20 @@ class QuizDatabase {
 
   async getCardsBySubject(subjectId) {
     await this.init();
-    const tx = this._tx('cards', 'readonly');
-    const store = tx.objectStore('cards');
-    if (store.indexNames.contains('subjectId')) {
-      const index = store.index('subjectId');
-      return this._promisify(index.getAll(subjectId));
+    const allCards = await this.getAllCards();
+    if (!subjectId || subjectId === 'all') {
+      return allCards;
     }
-    const all = await this.getAllCards();
-    return all.filter(c => (c.subjectId || 'subj_unassigned') === subjectId);
+    const allDecks = await this.getAllDecks();
+    const subjectDeckIds = new Set(
+      allDecks
+        .filter(d => (d.subjectId || 'subj_unassigned') === subjectId)
+        .map(d => d.id)
+    );
+    return allCards.filter(c => {
+      const cardSubj = c.subjectId || 'subj_unassigned';
+      return cardSubj === subjectId || subjectDeckIds.has(c.deckId);
+    });
   }
 
   invalidateSubjectCache() {
