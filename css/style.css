@@ -9333,64 +9333,124 @@ body,
 }
 
 .energy-wave-stage {
-  position: relative;
-  width: 100%;
-  height: 120px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative !important;
+  width: 100% !important;
+  height: 136px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  padding: 12px 16px !important;
 }
 
 .energy-wave-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  filter: drop-shadow(0 4px 16px rgba(168, 85, 247, 0.35));
-  transition: filter 0.3s ease;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 4px 16px rgba(168, 85, 247, 0.35)) !important;
+  transition: filter 0.3s ease !important;
 }
 
+/* Hộp chữ nằm gọn ở tầng trên cùng, có lớp đệm kính mờ bảo vệ tương phản 100%, không bị sóng cắt ngang chữ */
 .energy-wave-hud {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  position: relative !important;
+  z-index: 3 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: 100% !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  background: rgba(12, 10, 22, 0.72) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  pointer-events: none !important;
 }
 
-.energy-wave-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--accent);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
+html[data-theme="white-orange"] .energy-wave-hud {
+  background: rgba(255, 252, 248, 0.88) !important;
+  border: 1px solid rgba(234, 88, 12, 0.25) !important;
 }
 
 .energy-wave-title {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
 
+html[data-theme="white-orange"] .energy-wave-title {
+  color: #1c1917 !important;
+  text-shadow: none !important;
+}
+
+.energy-wave-badge {
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--accent) !important;
+}
+
+html[data-theme="white-orange"] .energy-wave-badge {
+  background: rgba(234, 88, 12, 0.14) !important;
+  color: #ea580c !important;
+}
+
+/* Vạch đánh dấu 2 ngưỡng Threshold (33.5% và 66.5%) trên rãnh trượt */
 .energy-slider-control-wrap {
-  padding: 16px 20px 18px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.12);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  position: relative !important;
+  padding: 16px 20px 18px 20px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(0, 0, 0, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.energy-slider-control-wrap::before,
+.energy-slider-control-wrap::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 14px !important;
+  width: 2px !important;
+  height: 16px !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-radius: 2px !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+.energy-slider-control-wrap::before { left: 33.5% !important; }
+.energy-slider-control-wrap::after  { left: 66.5% !important; }
+html[data-theme="white-orange"] .energy-slider-control-wrap::before,
+html[data-theme="white-orange"] .energy-slider-control-wrap::after {
+  background: rgba(234, 88, 12, 0.45) !important;
+}
+
+/* Lớp sóng lan tỏa toàn màn hình khi vượt ngưỡng đổi Theme */
+#theme-wave-transition-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, var(--wave-transition-color, rgba(192, 132, 252, 0.3)), transparent 75%);
+}
+#theme-wave-transition-overlay.active {
+  animation: themeWavePulse 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes themeWavePulse {
+  0%   { opacity: 0; transform: scale(0.85); }
+  40%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.35); }
 }
 
 .theme-energy-slider {
@@ -9482,5 +9542,361 @@ body,
   background: linear-gradient(135deg, #f97316, #ea580c);
   box-shadow: 0 0 8px rgba(249, 115, 22, 0.7);
 }
+
+/* ==========================================================================
+   PHASE 1o - ITEM 6: MOBILE BOTTOM NAV (PORTRAIT) — LỚP NỀN MÀU TĨNH DƯỚI LAYER STROKE RÕ NÉT
+   ========================================================================== */
+@media (max-width: 840px) and (orientation: portrait) {
+  :root,
+  html[data-theme="dark"],
+  html[data-theme="purple-pink"] {
+    --bnav-shell-bg: rgba(20, 14, 36, 0.95);
+    --bnav-shell-border: rgba(216, 180, 254, 0.28);
+    --bnav-idle-bg: rgba(255, 255, 255, 0.06);
+    --bnav-idle-stroke: #d8b4fe;
+    --bnav-active-bg: #9333ea;       /* Màu tĩnh đặc dưới layer stroke khi active */
+    --bnav-active-stroke: #ffffff;   /* Stroke trắng tinh nổi bật 100% trên nền tím đặc */
+    --bnav-active-shadow: 0 6px 16px rgba(147, 51, 234, 0.45);
+  }
+
+  html[data-theme="monochrome"],
+  body[data-theme="monochrome"] {
+    --bnav-shell-bg: rgba(18, 18, 22, 0.96);
+    --bnav-shell-border: rgba(255, 255, 255, 0.24);
+    --bnav-idle-bg: rgba(255, 255, 255, 0.07);
+    --bnav-idle-stroke: #d4d4d8;
+    --bnav-active-bg: #ffffff;       /* Màu tĩnh trắng đặc dưới layer stroke khi active */
+    --bnav-active-stroke: #09090b;   /* Stroke đen sâu nổi bật 100% trên nền trắng đặc */
+    --bnav-active-shadow: 0 6px 16px rgba(255, 255, 255, 0.28);
+  }
+
+  html[data-theme="white-orange"],
+  body[data-theme="white-orange"] {
+    --bnav-shell-bg: rgba(255, 250, 244, 0.96);
+    --bnav-shell-border: rgba(234, 88, 12, 0.28);
+    --bnav-idle-bg: rgba(154, 52, 18, 0.07);
+    --bnav-idle-stroke: #44403c;
+    --bnav-active-bg: #f97316;       /* Màu tĩnh cam đặc dưới layer stroke khi active */
+    --bnav-active-stroke: #ffffff;   /* Stroke trắng tinh nổi bật 100% trên nền cam đặc */
+    --bnav-active-shadow: 0 6px 16px rgba(249, 115, 22, 0.40);
+  }
+
+  .bottom-nav,
+  #mobile-bottom-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    position: fixed !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: calc(100% - 24px) !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    height: 64px !important;
+    padding: 6px 8px !important;
+    border-radius: 20px !important;
+    background: var(--bnav-shell-bg) !important;
+    border: 1.5px solid var(--bnav-shell-border) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+    z-index: 1000 !important;
+  }
+
+  /* Mỗi nút đều có lớp nền tĩnh (idle-bg) ở dưới layer stroke để làm nổi bật nét vẽ */
+  .bottom-nav .bottom-nav-item,
+  #mobile-bottom-nav .bottom-nav-item {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 50px !important;
+    min-height: 48px !important;
+    padding: 5px 4px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    background: var(--bnav-idle-bg) !important;
+    color: var(--bnav-idle-stroke) !important;
+    border: 1px solid transparent !important;
+    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease !important;
+  }
+
+  /* Khi nút ĐANG CHỌN (.active): Đổ màu nền tĩnh đặc rực rỡ dưới layer stroke! */
+  .bottom-nav .bottom-nav-item.active,
+  #mobile-bottom-nav .bottom-nav-item.active {
+    background: var(--bnav-active-bg) !important;
+    color: var(--bnav-active-stroke) !important;
+    box-shadow: var(--bnav-active-shadow) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .bottom-nav .bottom-nav-item svg,
+  .bottom-nav .bottom-nav-item svg * {
+    width: 20px !important;
+    height: 20px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.95 !important;
+    background: transparent !important;
+  }
+
+  .bottom-nav .bottom-nav-item.active svg,
+  .bottom-nav .bottom-nav-item.active svg * {
+    stroke: var(--bnav-active-stroke) !important;
+    stroke-width: 2.35 !important; /* Nét stroke dày sắc sảo trên nền màu tĩnh */
+  }
+
+  .bottom-nav .bottom-nav-item span {
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+    color: inherit !important;
+  }
+  .bottom-nav .bottom-nav-item.active span {
+    font-weight: 800 !important;
+    color: var(--bnav-active-stroke) !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 1o - ITEM 7: TỐI ƯU HÓA TOÀN DIỆN CHẾ ĐỘ MOBILE XOAY NGANG (MOBILE LANDSCAPE)
+   Áp dụng cho mọi điện thoại xoay ngang (chiều cao <= 550px, chiều rộng <= 960px)
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 550px),
+       (orientation: landscape) and (max-width: 960px) and (max-height: 600px) {
+
+  /* 1. Ẩn hoàn toàn Sidebar Desktop trên Mobile xoay ngang */
+  .app-sidebar {
+    display: none !important;
+  }
+
+  /* 2. Biến .bottom-nav thành Thanh Dock Dọc Bên Trái (Slim Left Dock 64px) có lớp nền tĩnh dưới stroke */
+  body:not(.quiz-active):not(.flashcard-active) .bottom-nav,
+  body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    right: auto !important;
+    width: 64px !important;
+    max-width: 64px !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 10px 8px !important;
+    border-radius: 0 18px 18px 0 !important;
+    background: var(--bnav-shell-bg, rgba(20, 14, 36, 0.95)) !important;
+    border: none !important;
+    border-right: 1.5px solid var(--bnav-shell-border, rgba(255, 255, 255, 0.22)) !important;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.28) !important;
+    z-index: 1000 !important;
+  }
+
+  body:not(.quiz-active):not(.flashcard-active) .bottom-nav .bottom-nav-item,
+  body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-item {
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px !important;
+    min-height: 44px !important;
+    flex: 0 0 46px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    background: var(--bnav-idle-bg, rgba(255, 255, 255, 0.06)) !important;
+    color: var(--bnav-idle-stroke, #d4d4d8) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  body:not(.quiz-active):not(.flashcard-active) .bottom-nav .bottom-nav-item.active,
+  body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-item.active {
+    background: var(--bnav-active-bg, #9333ea) !important;
+    color: var(--bnav-active-stroke, #ffffff) !important;
+    box-shadow: var(--bnav-active-shadow, 0 4px 12px rgba(0, 0, 0, 0.35)) !important;
+    transform: none !important;
+  }
+
+  body:not(.quiz-active):not(.flashcard-active) .bottom-nav .bottom-nav-item span {
+    display: none !important; /* Chỉ hiện icon sắc nét khi ở thanh dọc xoay ngang */
+  }
+
+  /* Đẩy khung nội dung .app-main sang phải 64px để KHÔNG BAO GIỜ bị thanh Dock trái đè lên! */
+  body:not(.quiz-active):not(.flashcard-active) .app-main {
+    margin-left: 64px !important;
+    width: calc(100% - 64px) !important;
+    max-width: calc(100% - 64px) !important;
+    padding-bottom: 24px !important;
+  }
+
+  body:not(.quiz-active):not(.flashcard-active) .content-wrapper {
+    padding: 48px 16px 24px 16px !important;
+    max-width: 100% !important;
+  }
+
+  /* Thu gọn cụm HUD góc trên phải khi xoay ngang */
+  .topbar-hud-capsule {
+    top: 8px !important;
+    right: 12px !important;
+    transform: scale(0.9) !important;
+    transform-origin: top right !important;
+  }
+
+  /* 3. Khi vào chế độ học (Quiz hoặc Flashcard) trên Mobile xoay ngang:
+        Ẩn hoàn toàn .bottom-nav để dành 100% diện tích màn hình cho bài học! */
+  body.quiz-active .bottom-nav,
+  body.quiz-active #mobile-bottom-nav,
+  body.flashcard-active .bottom-nav,
+  body.flashcard-active #mobile-bottom-nav {
+    display: none !important;
+  }
+
+  body.quiz-active .app-main,
+  body.flashcard-active .app-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  body.quiz-active .content-wrapper,
+  body.flashcard-active .content-wrapper {
+    padding: 8px 16px 24px 16px !important;
+    max-width: 100% !important;
+  }
+
+  /* 4. Tối ưu Màn hình Quiz trên Mobile Xoay Ngang:
+        Bố cục 2x2 gọn gàng, nút "Câu tiếp theo" nằm ngay dưới tầm ngón tay cái! */
+  body.quiz-active .quiz-container,
+  #view-study .quiz-container {
+    max-width: 100% !important;
+    padding: 4px 8px 24px 8px !important;
+  }
+
+  body.quiz-active .quiz-header-bar,
+  #view-study .quiz-header-bar {
+    margin-bottom: 6px !important;
+    padding: 4px 0 !important;
+  }
+
+  body.quiz-active .quiz-card,
+  #view-study .quiz-card {
+    padding: 12px 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 8px !important;
+  }
+
+  body.quiz-active .quiz-question-text,
+  #view-study .quiz-question-text {
+    font-size: 0.96rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 10px !important;
+  }
+
+  body.quiz-active .quiz-options-list,
+  #view-study .quiz-options-list,
+  #quiz-options-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  body.quiz-active .quiz-option-btn,
+  #view-study .quiz-option-btn {
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+    font-size: 0.86rem !important;
+    line-height: 1.32 !important;
+    border-radius: 12px !important;
+  }
+
+  /* Nút Tiếp theo & Thanh hành động dưới câu hỏi Quiz luôn gọn và dễ bấm */
+  .quiz-footer-actions,
+  .study-action-bar,
+  #quiz-next-btn,
+  #btn-next-question {
+    margin-top: 6px !important;
+    min-height: 42px !important;
+  }
+
+  /* 5. Tối ưu Màn hình Flashcard 3D & 4 Nút Mức Độ Hiểu SRS trên Mobile Xoay Ngang:
+        Vừa khít 1 màn hình ngang (~380px), tự giãn mượt khi có giải thích dài! */
+  .flashcard-player-container {
+    max-width: 100% !important;
+    gap: 8px !important;
+    padding: 0 4px !important;
+  }
+
+  .flashcard-stage,
+  .flashcard-card,
+  .flashcard-card:not(.flipped) .flashcard-front,
+  .flashcard-card.flipped .flashcard-back {
+    min-height: 165px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .flashcard-face {
+    padding: 12px 18px !important;
+    border-radius: 16px !important;
+  }
+
+  .flashcard-question-text,
+  .flashcard-answer-text {
+    font-size: 1.02rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .flashcard-explanation-box {
+    margin-top: 8px !important;
+    padding: 10px 14px !important;
+  }
+
+  /* 4 nút đánh giá mức độ hiểu (Chưa thuộc / Khó nhớ / Nhớ tốt / Rất dễ) xếp thành 1 hàng 4 cột ngang gọn gàng */
+  #flashcard-srs-bar,
+  .srs-ratings-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
+  #flashcard-srs-bar .srs-btn,
+  .srs-ratings-bar .srs-btn {
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 6px 8px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+  }
+
+  #flashcard-srs-bar .srs-label,
+  .srs-ratings-bar .srs-label {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+  }
+
+  #flashcard-srs-bar .srs-interval,
+  .srs-ratings-bar .srs-interval {
+    font-size: 0.68rem !important;
+    line-height: 1.1 !important;
+  }
+}
+
 
 

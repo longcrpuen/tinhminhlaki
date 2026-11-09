@@ -1413,6 +1413,53 @@ console.log('\n=== TEST SUITE 20: Phase 1n 15 UI/UX Refinements, 135deg Directio
   assert(appJs.includes('selectThemeViaEnergyWave'), 'app.js supports direct wave node selection');
 }
 
+console.log('\n=== TEST SUITE 21: Phase 1o Free Wave Threshold Switching, Lofi Track Switcher, Modal Liquid Glass & Mobile Responsive Architecture ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const lofiJs = fs.readFileSync(path.join(__dirname, '../js/lofi-music.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // Item 1: Energy Wave Free Dragging, Threshold Switching & Screen Ripple
+  assert(indexHtml.includes('id="theme-energy-slider"') && indexHtml.includes('step="0.5"'), 'Energy slider allows smooth continuous dragging with step=0.5');
+  assert(indexHtml.includes('id="theme-wave-transition-overlay"'), 'DOM contains screen-wide wave transition overlay');
+  assert(appJs.includes('_updateEnergyWaveVisuals') && appJs.includes('cycles = 2.2 + t * 3.8'), 'app.js continuously morphs wave geometry across 0..100%');
+  assert(appJs.includes('33.5') && appJs.includes('66.5') && appJs.includes('triggerThemeWaveTransition'), 'app.js triggers theme change and ripple only when crossing 33.5% or 66.5%');
+  assert(styleCss.includes('.energy-wave-hud') && styleCss.includes('rgba(12, 10, 22, 0.72) !important;'), 'Energy wave HUD uses high-contrast blurred background above wave');
+  assert(styleCss.includes('.energy-slider-control-wrap::before { left: 33.5% !important; }'), 'Energy slider indicates 33.5% threshold marker');
+  assert(styleCss.includes('.energy-slider-control-wrap::after  { left: 66.5% !important; }'), 'Energy slider indicates 66.5% threshold marker');
+
+  // Item 2: Lofi Track Switcher & selectTrack
+  assert(lofiJs.includes('selectTrack(trackKey, event)'), 'LofiPlayer implements selectTrack');
+  assert(lofiJs.includes('this.stop()') && lofiJs.includes('tinhminhlakey_lofi_track_idx'), 'selectTrack halts existing playback and updates saved track index');
+  assert(lofiJs.includes('this.selectTrack((this.currentIndex + 1)'), 'LofiPlayer nextTrack delegates to selectTrack');
+
+  // Item 3: Modal Liquid Glass 3 Themes
+  assert((themeCss.includes('rgba(64, 48, 98, 0.56) 0%,') && themeCss.includes('rgba(32, 22, 54, 0.46) 55%')), 'Purple-pink modal-box uses luminous liquid glass');
+  assert(themeCss.includes('html[data-theme="monochrome"] .modal-box') && themeCss.includes('rgba(54, 54, 62, 0.56) 0%,') && themeCss.includes('rgba(22, 22, 26, 0.46) 55%'), 'Monochrome modal-box uses 100% silver-smoke noir glass without purple tint');
+  assert(themeCss.includes('html[data-theme="white-orange"] .modal-box') && themeCss.includes('rgba(255, 253, 250, 0.66) 0%,') && themeCss.includes('rgba(255, 242, 228, 0.52) 55%'), 'White-orange modal-box uses warm milky glass with crisp dark text');
+
+  // Item 4: Flashcard answer LaTeX color in white-orange
+  assert(themeCss.includes('html[data-theme="white-orange"] #flashcard-answer-text .katex') && themeCss.includes('color: #059669 !important;'), 'White-orange flashcard answer LaTeX formulas styled emerald green');
+
+  // Item 5: LMS Format Guide Card theme sync
+  assert(!indexHtml.includes('tech-tag" style="background: rgba(167, 139, 250'), 'index.html has no purple inline styles on LMS tech-tag');
+  assert(themeCss.includes('html[data-theme="monochrome"] .lms-format-guide-card') && themeCss.includes('rgba(32, 32, 38, 0.64) !important;'), 'LMS guide card themed for monochrome');
+  assert(themeCss.includes('html[data-theme="white-orange"] .lms-format-guide-card') && themeCss.includes('rgba(255, 248, 240, 0.76) !important;'), 'LMS guide card themed for white-orange');
+
+  // Item 6: Mobile Bottom Nav Portrait Solid Static Backing
+  assert(styleCss.includes('@media (max-width: 840px) and (orientation: portrait)'), 'style.css defines mobile portrait bottom nav query');
+  assert(styleCss.includes('--bnav-active-bg: #9333ea;') && styleCss.includes('--bnav-active-bg: #ffffff;') && styleCss.includes('--bnav-active-bg: #f97316;'), 'Theme-specific static solid backing colors defined');
+  assert(styleCss.includes('stroke-width: 2.35 !important;'), 'Active bottom nav item has crisp 2.35px stroke width');
+
+  // Item 7: Mobile Landscape Ergonomics
+  assert(styleCss.includes('@media (orientation: landscape) and (max-height: 550px)'), 'style.css defines mobile landscape media query');
+  assert(styleCss.includes('width: 64px !important;') && styleCss.includes('margin-left: 64px !important;'), 'Landscape bottom nav becomes slim 64px left dock');
+  assert(styleCss.includes('body.quiz-active .bottom-nav') && styleCss.includes('display: none !important;'), 'Bottom nav hidden during study mode in landscape');
+  assert(styleCss.includes('.srs-ratings-bar') && styleCss.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'SRS buttons laid out in 1 row 4 columns for landscape');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

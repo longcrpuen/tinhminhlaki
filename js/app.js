@@ -948,150 +948,227 @@ const App = {
       }
     });
 
-    // Sync Interactive Resonance Energy Wave Chamber (Phase 1n)
-    this.syncThemeEnergyChamber(theme);
+    // Sync Interactive Resonance Energy Wave Chamber (Phase 1n & 1o)
+    this.syncThemeEnergyChamber(theme, options);
 
     // Re-render hero quote to apply responsive styles & weights
     this.updateHeroQuote();
   },
 
-  // --- INTERACTIVE RESONANCE ENERGY WAVE TUNER (PHASE 1N ITEM 15) ---
-  syncThemeEnergyChamber(themeKey) {
-    const slider = document.getElementById('theme-energy-slider');
-    const badge = document.getElementById('energy-wave-mode-badge');
-    const title = document.getElementById('energy-wave-mode-title');
-    const svgEl = document.getElementById('energy-wave-svg');
-    const stop1 = document.getElementById('ew-stop-1');
-    const stop2 = document.getElementById('ew-stop-2');
-    const stop3 = document.getElementById('ew-stop-3');
-    const areaTop = document.getElementById('ew-area-top');
-    const areaBot = document.getElementById('ew-area-bot');
-
+  // --- INTERACTIVE RESONANCE ENERGY WAVE TUNER (PHASE 1O & 1N) ---
+  syncThemeEnergyChamber(themeKey, options = {}) {
     const theme = (themeKey === 'purple-pink' || themeKey === 'violet-rose' || themeKey === 'dark') ? 'violet-rose'
                 : (themeKey === 'monochrome' || themeKey === 'bw-dark') ? 'monochrome'
                 : 'white-orange';
 
-    let sliderVal = 12;
-    let badgeText = 'RESONANCE // VIOLET ROSE';
-    let titleText = 'Tím Hồng (Dreamy Liquid Glass)';
-    let colors = { s1: '#a855f7', s2: '#ec4899', s3: '#f472b6', fill: '#c084fc', glow: 'rgba(168, 85, 247, 0.45)' };
-    let activeOpt = 'purple-pink';
+    this._lastEnergyZone = theme;
 
-    if (theme === 'monochrome') {
-      sliderVal = 50;
-      badgeText = 'RESONANCE // MONOCHROME NOIR';
-      titleText = 'Trắng Đen (100% Noir B&W)';
-      colors = { s1: '#71717a', s2: '#a1a1aa', s3: '#ffffff', fill: '#ffffff', glow: 'rgba(255, 255, 255, 0.35)' };
-      activeOpt = 'monochrome';
-    } else if (theme === 'white-orange') {
-      sliderVal = 88;
-      badgeText = 'RESONANCE // WHITE ORANGE';
-      titleText = 'Trắng Cam (Milky Cream & Warm Amber)';
-      colors = { s1: '#ea580c', s2: '#f97316', s3: '#fb923c', fill: '#f97316', glow: 'rgba(249, 115, 22, 0.45)' };
-      activeOpt = 'white-orange';
+    const slider = document.getElementById('theme-energy-slider');
+    let sliderVal = theme === 'violet-rose' ? 16 : (theme === 'monochrome' ? 50 : 84);
+
+    if (!options || !options.fromEnergySlider) {
+      try {
+        const savedVal = localStorage.getItem('tinhminhlakey_energy_slider_val');
+        if (savedVal !== null) {
+          const parsed = parseFloat(savedVal);
+          const zone = parsed < 33.5 ? 'violet-rose' : (parsed <= 66.5 ? 'monochrome' : 'white-orange');
+          if (zone === theme) sliderVal = parsed;
+        }
+      } catch (_) {}
+      if (slider) slider.value = String(sliderVal);
+    } else if (slider) {
+      sliderVal = parseFloat(slider.value) || sliderVal;
     }
 
-    if (slider && !this._isDraggingThemeSlider) {
-      slider.value = sliderVal;
-    }
-    if (badge) badge.textContent = badgeText;
-    if (title) title.textContent = titleText;
-
-    if (stop1) stop1.setAttribute('stop-color', colors.s1);
-    if (stop2) stop2.setAttribute('stop-color', colors.s2);
-    if (stop3) stop3.setAttribute('stop-color', colors.s3);
-    if (areaTop) areaTop.setAttribute('stop-color', colors.fill);
-    if (areaBot) areaBot.setAttribute('stop-color', colors.fill);
-    if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${colors.glow})`;
-
-    const nodeBtns = document.querySelectorAll('.energy-node-btn');
-    nodeBtns.forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeOpt);
-    });
+    this._updateEnergyWaveVisuals(sliderVal);
   },
 
-  onThemeEnergySliderInput(val) {
-    this._isDraggingThemeSlider = true;
-    const v = parseFloat(val);
-    let targetTheme = 'violet-rose';
-    let badgeText = 'RESONANCE // VIOLET ROSE';
-    let titleText = 'Tím Hồng (Dreamy Liquid Glass)';
-    let colors = { s1: '#a855f7', s2: '#ec4899', s3: '#f472b6', fill: '#c084fc', glow: 'rgba(168, 85, 247, 0.45)' };
-    let activeOpt = 'purple-pink';
+  onThemeEnergySliderInput(rawVal) {
+    const val = parseFloat(rawVal) || 0;
+    this._updateEnergyWaveVisuals(val);
 
-    if (v >= 67) {
-      targetTheme = 'white-orange';
-      badgeText = 'RESONANCE // WHITE ORANGE';
-      titleText = 'Trắng Cam (Milky Cream & Warm Amber)';
-      colors = { s1: '#ea580c', s2: '#f97316', s3: '#fb923c', fill: '#f97316', glow: 'rgba(249, 115, 22, 0.45)' };
-      activeOpt = 'white-orange';
-    } else if (v >= 34) {
-      targetTheme = 'monochrome';
-      badgeText = 'RESONANCE // MONOCHROME NOIR';
-      titleText = 'Trắng Đen (100% Noir B&W)';
-      colors = { s1: '#71717a', s2: '#a1a1aa', s3: '#ffffff', fill: '#ffffff', glow: 'rgba(255, 255, 255, 0.35)' };
-      activeOpt = 'monochrome';
+    // Xác định vùng năng lượng theo 2 ngưỡng Threshold: 33.5% và 66.5%
+    const targetTheme = val < 33.5 ? 'violet-rose' : (val <= 66.5 ? 'monochrome' : 'white-orange');
+    if (!this._lastEnergyZone) {
+      let cur = document.documentElement.getAttribute('data-theme') || 'violet-rose';
+      if (cur === 'dark' || cur === 'purple-pink') cur = 'violet-rose';
+      this._lastEnergyZone = cur;
     }
 
-    // Instant zero-lag CSS attribute update
-    document.documentElement.setAttribute('data-theme', targetTheme);
-    document.body.dataset.theme = targetTheme;
-    const colorModeMap = {
-      'violet-rose': 'purple-pink',
-      'monochrome': 'bw-dark',
-      'white-orange': 'white-orange'
-    };
-    const colorMode = colorModeMap[targetTheme] || targetTheme;
-    document.documentElement.setAttribute('data-color-mode', colorMode);
-    document.body.dataset.colorMode = colorMode;
+    // Chỉ khi kéo VƯỢT QUA NGƯỠNG sang vùng theme khác mới kích hoạt chuyển cảnh & đổi theme!
+    if (targetTheme !== this._lastEnergyZone) {
+      this._lastEnergyZone = targetTheme;
+      this.triggerThemeWaveTransition(targetTheme);
+      this.setTheme(targetTheme, { fromEnergySlider: true, syncDefaultBg: true });
+    }
+  },
 
-    const badge = document.getElementById('energy-wave-mode-badge');
-    const title = document.getElementById('energy-wave-mode-title');
-    const svgEl = document.getElementById('energy-wave-svg');
+  onThemeEnergySliderCommit(rawVal) {
+    // Giữ nguyên vị trí con trượt tự nhiên nơi người dùng thả tay, chỉ lưu lại vào localStorage
+    const val = parseFloat(rawVal) || 0;
+    try {
+      localStorage.setItem('tinhminhlakey_energy_slider_val', String(val));
+    } catch (_) {}
+    this._updateEnergyWaveVisuals(val);
+  },
+
+  selectThemeViaEnergyWave(themeName) {
+    const normTheme = (themeName === 'purple-pink' || themeName === 'violet-rose') ? 'violet-rose' : themeName;
+    const targetVal = normTheme === 'violet-rose' ? 16 : (normTheme === 'monochrome' ? 50 : 84);
+    const slider = document.getElementById('theme-energy-slider');
+    const startVal = slider ? parseFloat(slider.value) || 0 : targetVal;
+    this._lastEnergyZone = normTheme;
+    this.triggerThemeWaveTransition(normTheme);
+    this.setTheme(normTheme, { fromEnergySlider: true, syncDefaultBg: true });
+    try {
+      localStorage.setItem('tinhminhlakey_energy_slider_val', String(targetVal));
+    } catch (_) {}
+
+    // Hoạt ảnh lướt con trượt & biến đổi sóng mượt mà tới vùng đã chọn
+    const duration = 320;
+    const startTime = performance.now();
+    const animateSlider = (now) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const cur = startVal + (targetVal - startVal) * eased;
+      if (slider) slider.value = String(cur);
+      this._updateEnergyWaveVisuals(cur);
+      if (t < 1) requestAnimationFrame(animateSlider);
+    };
+    requestAnimationFrame(animateSlider);
+  },
+
+  _updateEnergyWaveVisuals(val) {
+    const pct = Math.max(0, Math.min(100, parseFloat(val) || 0));
+    const t = pct / 100; // 0.0 -> 1.0
+
+    // 1. Biến đổi hình thái sóng liên tục (Frequency, Amplitude & Phase Morphing)
+    const mainPath = document.getElementById('energy-wave-main-path');
+    const harmPath = document.getElementById('energy-wave-harmonic-path');
+    const bgPath = document.getElementById('energy-wave-bg-path');
+
+    if (mainPath && harmPath && bgPath) {
+      // Tần số tăng dần từ 2.2 chu kỳ (mộng mơ) -> 4.0 chu kỳ (tối giản) -> 6.0 chu kỳ (năng lượng cao)
+      const cycles = 2.2 + t * 3.8;
+      const phase = t * Math.PI * 4.5;
+      const ampMain = 22 + Math.sin(t * Math.PI) * 8 + (t > 0.665 ? 8 : 0);
+      const baseY = 82; // Đặt ở nửa dưới buồng kính để KHÔNG BAO GIỜ chạm vào chữ ở trên!
+      const width = 900;
+      const steps = 60;
+
+      let dMain = '';
+      let dHarm = '';
+      let dBg = '';
+
+      for (let i = 0; i <= steps; i++) {
+        const ratio = i / steps;
+        const x = (ratio * width).toFixed(1);
+        const angle = ratio * cycles * Math.PI * 2 + phase;
+        // Pha trộn sóng cơ bản và sóng hài bậc 2, bậc 3 theo vị trí kéo t
+        const yMain = (
+          baseY +
+          Math.sin(angle) * ampMain * (0.75 + 0.25 * Math.cos(ratio * Math.PI)) +
+          Math.cos(angle * 1.5 - phase * 0.6) * (t * 9)
+        ).toFixed(1);
+
+        const yHarm = (
+          baseY -
+          Math.sin(angle * 1.25 - 0.8) * (ampMain * 0.72) +
+          Math.sin(angle * 2.5) * (t * 6)
+        ).toFixed(1);
+
+        const yBg = (
+          baseY +
+          Math.cos(angle * 0.8 + 0.5) * (ampMain * 0.65)
+        ).toFixed(1);
+
+        const cmd = i === 0 ? 'M' : 'L';
+        dMain += `${cmd} ${x} ${yMain} `;
+        dHarm += `${cmd} ${x} ${yHarm} `;
+        dBg += `${cmd} ${x} ${yBg} `;
+      }
+      dBg += `L ${width} 135 L 0 135 Z`;
+
+      mainPath.setAttribute('d', dMain.trim());
+      harmPath.setAttribute('d', dHarm.trim());
+      bgPath.setAttribute('d', dBg.trim());
+      mainPath.style.strokeWidth = `${3.2 + (pct / 100) * 1.5}`;
+    }
+
+    // 2. Nội suy màu sắc sóng mượt mà theo vùng và cập nhật HUD
     const stop1 = document.getElementById('ew-stop-1');
     const stop2 = document.getElementById('ew-stop-2');
     const stop3 = document.getElementById('ew-stop-3');
     const areaTop = document.getElementById('ew-area-top');
     const areaBot = document.getElementById('ew-area-bot');
+    const badgeEl = document.getElementById('energy-wave-mode-badge');
+    const titleEl = document.getElementById('energy-wave-mode-title');
+    const svgEl = document.getElementById('energy-wave-svg');
 
-    if (badge) badge.textContent = badgeText;
-    if (title) title.textContent = titleText;
-    if (stop1) stop1.setAttribute('stop-color', colors.s1);
-    if (stop2) stop2.setAttribute('stop-color', colors.s2);
-    if (stop3) stop3.setAttribute('stop-color', colors.s3);
-    if (areaTop) areaTop.setAttribute('stop-color', colors.fill);
-    if (areaBot) areaBot.setAttribute('stop-color', colors.fill);
-    if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${colors.glow})`;
+    let glowColor = 'rgba(168, 85, 247, 0.45)';
+    let activeZone = 'purple-pink';
 
-    // Dynamic wave stroke animation based on slider position
-    const mainPath = document.getElementById('energy-wave-main-path');
-    if (mainPath) {
-      mainPath.style.strokeWidth = `${3.2 + (v / 100) * 1.5}`;
+    if (pct < 33.5) {
+      if (stop1) stop1.setAttribute('stop-color', '#a855f7');
+      if (stop2) stop2.setAttribute('stop-color', '#ec4899');
+      if (stop3) stop3.setAttribute('stop-color', '#f472b6');
+      if (areaTop) areaTop.setAttribute('stop-color', '#c084fc');
+      if (areaBot) areaBot.setAttribute('stop-color', '#c084fc');
+      if (badgeEl) badgeEl.textContent = `NEBULA WAVE // ${Math.round(pct)}%`;
+      if (titleEl) titleEl.textContent = 'Tím Hồng (Dreamy Liquid Glass)';
+      glowColor = 'rgba(168, 85, 247, 0.45)';
+      activeZone = 'purple-pink';
+    } else if (pct <= 66.5) {
+      if (stop1) stop1.setAttribute('stop-color', '#71717a');
+      if (stop2) stop2.setAttribute('stop-color', '#e4e4e7');
+      if (stop3) stop3.setAttribute('stop-color', '#ffffff');
+      if (areaTop) areaTop.setAttribute('stop-color', '#ffffff');
+      if (areaBot) areaBot.setAttribute('stop-color', '#ffffff');
+      if (badgeEl) badgeEl.textContent = `CYBER NOIR // ${Math.round(pct)}%`;
+      if (titleEl) titleEl.textContent = 'Trắng Đen (Monochrome Eclipse)';
+      glowColor = 'rgba(255, 255, 255, 0.35)';
+      activeZone = 'monochrome';
+    } else {
+      if (stop1) stop1.setAttribute('stop-color', '#fb923c');
+      if (stop2) stop2.setAttribute('stop-color', '#f97316');
+      if (stop3) stop3.setAttribute('stop-color', '#ea580c');
+      if (areaTop) areaTop.setAttribute('stop-color', '#f97316');
+      if (areaBot) areaBot.setAttribute('stop-color', '#f97316');
+      if (badgeEl) badgeEl.textContent = `SOLAR FLARE // ${Math.round(pct)}%`;
+      if (titleEl) titleEl.textContent = 'Trắng Cam (Warm Solar Glass)';
+      glowColor = 'rgba(249, 115, 22, 0.45)';
+      activeZone = 'white-orange';
     }
 
-    const nodeBtns = document.querySelectorAll('.energy-node-btn');
-    nodeBtns.forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeOpt);
+    if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${glowColor})`;
+
+    // Đánh dấu nút mốc tương ứng
+    document.querySelectorAll('.energy-node-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeZone);
     });
   },
 
-  async onThemeEnergySliderCommit(val) {
-    this._isDraggingThemeSlider = false;
-    const v = parseFloat(val);
-    let finalTheme = 'violet-rose';
-    if (v >= 67) {
-      finalTheme = 'white-orange';
-    } else if (v >= 34) {
-      finalTheme = 'monochrome';
+  triggerThemeWaveTransition(targetTheme) {
+    let ripple = document.getElementById('theme-wave-transition-overlay');
+    if (!ripple) {
+      ripple = document.createElement('div');
+      ripple.id = 'theme-wave-transition-overlay';
+      document.body.appendChild(ripple);
     }
-    await this.setTheme(finalTheme, { syncDefaultBg: true });
-    this.syncThemeEnergyChamber(finalTheme);
-  },
-
-  async selectThemeViaEnergyWave(themeOpt) {
-    const theme = (themeOpt === 'purple-pink' || themeOpt === 'violet-rose') ? 'violet-rose' : themeOpt;
-    await this.setTheme(theme, { syncDefaultBg: true });
-    this.syncThemeEnergyChamber(theme);
+    const glowColor =
+      targetTheme === 'white-orange'
+        ? 'rgba(255, 148, 77, 0.32)'
+        : targetTheme === 'monochrome'
+        ? 'rgba(255, 255, 255, 0.22)'
+        : 'rgba(192, 132, 252, 0.32)';
+    ripple.style.setProperty('--wave-transition-color', glowColor);
+    ripple.classList.remove('active');
+    void ripple.offsetWidth; // Force reflow nhẹ để kích hoạt animation
+    ripple.classList.add('active');
+    clearTimeout(this._waveTransTimer);
+    this._waveTransTimer = setTimeout(() => {
+      ripple.classList.remove('active');
+    }, 420);
   },
 
   // --- SIDEBAR DOM DETACH / RE-ATTACH LIFECYCLE ---

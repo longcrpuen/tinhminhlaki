@@ -1092,7 +1092,7 @@
               <div class="lms-format-guide-card">
                 <div class="lms-format-guide-header">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="tech-tag" style="background: rgba(167, 139, 250, 0.15); color: var(--accent); border-color: rgba(167, 139, 250, 0.3);">MẪU ĐỊNH DẠNG LMS (MOODLE)</span>
+                    <span class="tech-tag">MẪU ĐỊNH DẠNG LMS (MOODLE)</span>
                   </div>
                   <button type="button" id="btn-lms-paste-sample" class="btn btn-secondary btn-lms-paste-sample" onclick="App.pasteLmsSampleData()">
                     Dán mẫu LMS thử nghiệm
@@ -1376,7 +1376,13 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                 <div class="theme-energy-wave-chamber" id="theme-energy-chamber">
                   <!-- Màn hình Sóng Năng Lượng SVG (100% GPU Transform, 0% lag) -->
                   <div class="energy-wave-stage" id="energy-wave-stage">
-                    <svg class="energy-wave-svg" id="energy-wave-svg" viewBox="0 0 900 130" preserveAspectRatio="none" aria-hidden="true">
+                    <!-- Thông tin Tần số Theme hiện tại nổi trên mặt kính ở tầng trên -->
+                    <div class="energy-wave-hud">
+                      <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng (Dreamy Liquid Glass)</strong>
+                      <span class="energy-wave-badge" id="energy-wave-mode-badge">NEBULA WAVE // 16%</span>
+                    </div>
+
+                    <svg class="energy-wave-svg" id="energy-wave-svg" viewBox="0 0 900 135" preserveAspectRatio="none" aria-hidden="true">
                       <defs>
                         <linearGradient id="energy-wave-grad-primary" x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop id="ew-stop-1" offset="0%" stop-color="#a855f7" />
@@ -1390,30 +1396,24 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                       </defs>
                       <!-- Lớp sóng nền hài bậc 2 -->
                       <path id="energy-wave-bg-path" class="energy-wave-path-secondary"
-                            d="M 0 70 Q 112 20, 225 70 T 450 70 T 675 70 T 900 70 L 900 130 L 0 130 Z"
+                            d="M 0 82 Q 112 50, 225 82 T 450 82 T 675 82 T 900 82 L 900 135 L 0 135 Z"
                             fill="url(#energy-wave-area-fill)" />
                       <!-- Dải sóng năng lượng được thắp sáng theo vị trí kéo (--energy-clip-pct) -->
                       <g id="energy-wave-active-group">
                         <path id="energy-wave-main-path" class="energy-wave-path-main"
-                              d="M 0 68 C 90 12, 180 124, 270 68 C 360 12, 450 124, 540 68 C 630 12, 720 124, 810 68 C 855 40, 880 55, 900 68"
+                              d="M 0 82 C 90 40, 180 120, 270 82 C 360 40, 450 120, 540 82 C 630 40, 720 120, 810 82 C 855 60, 880 75, 900 82"
                               fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="3.5" stroke-linecap="round" />
                         <path id="energy-wave-harmonic-path" class="energy-wave-path-harmonic"
-                              d="M 0 68 C 110 115, 200 20, 310 68 C 420 115, 510 20, 620 68 C 730 115, 820 20, 900 68"
+                              d="M 0 82 C 110 115, 200 45, 310 82 C 420 115, 510 45, 620 82 C 730 115, 820 45, 900 82"
                               fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="1.6" stroke-dasharray="6 6" opacity="0.7" />
                       </g>
                     </svg>
-
-                    <!-- Thông tin Tần số Theme hiện tại nổi trên mặt kính -->
-                    <div class="energy-wave-hud">
-                      <span class="energy-wave-badge" id="energy-wave-mode-badge">RESONANCE // VIOLET ROSE</span>
-                      <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng (Dreamy Liquid Glass)</strong>
-                    </div>
                   </div>
 
                   <!-- Thanh kéo Năng lượng liên tục (Kéo đến đâu sóng lan & đổi màu Theme đến đấy!) -->
                   <div class="energy-slider-control-wrap">
                     <input type="range" id="theme-energy-slider" class="theme-energy-slider"
-                           min="0" max="100" value="12" step="1"
+                           min="0" max="100" value="16" step="0.5"
                            aria-label="Kéo để chuyển đổi sóng năng lượng giao diện"
                            oninput="App.onThemeEnergySliderInput(this.value)"
                            onchange="App.onThemeEnergySliderCommit(this.value)">
@@ -2231,5 +2231,6 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <script src="./js/confetti.js"></script>
   <script src="./js/lofi-music.js"></script>
   <script src="./js/app.js"></script>
+  <div id="theme-wave-transition-overlay" aria-hidden="true"></div>
 </body>
 </html>

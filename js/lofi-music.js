@@ -336,36 +336,78 @@ class LofiMusicPlayer {
     this.updateUI();
   }
 
+  stop() {
+    this.isPlaying = false;
+    this.stopProceduralSynth();
+    if (this.audioElement) {
+      try {
+        this.audioElement.pause();
+        this.audioElement.currentTime = 0;
+      } catch (_) {}
+    }
+    this.updateUI();
+  }
+
+  selectTrack(trackKey, event) {
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    const allTracks = this.getAllTracks ? this.getAllTracks() : (this.tracks || []);
+    if (!allTracks.length) return;
+
+    // Hỗ trợ cả truyền vào index số (0, 1, 2...), chuỗi số ("0", "1"), hoặc id / title của bài nhạc
+    let resolvedIdx = -1;
+    if (typeof trackKey === 'number' && trackKey >= 0 && trackKey < allTracks.length) {
+      resolvedIdx = trackKey;
+    } else if (typeof trackKey === 'string' && /^\d+$/.test(trackKey.trim())) {
+      const parsed = parseInt(trackKey.trim(), 10);
+      if (parsed >= 0 && parsed < allTracks.length) resolvedIdx = parsed;
+    }
+    if (resolvedIdx === -1) {
+      resolvedIdx = allTracks.findIndex(
+        (t, i) => String(t.id) === String(trackKey) || String(t.title) === String(trackKey) || i === trackKey
+      );
+    }
+    if (resolvedIdx === -1) resolvedIdx = 0;
+
+    // 1. Dừng ngay lập tức bài nhạc đang phát (cả Procedural WebAudio lẫn thẻ <audio>)
+    this.stop();
+
+    // 2. Cập nhật index bài nhạc mới & lưu vào localStorage
+    this.currentIndex = resolvedIdx;
+    this.currentTrackIndex = resolvedIdx;
+    try {
+      localStorage.setItem('tinhminhlakey_lofi_track_idx', String(resolvedIdx));
+      localStorage.setItem('mindsparks_lofi_track_index', String(resolvedIdx));
+    } catch (_) {}
+
+    // 3. Phát ngay bài nhạc mới vừa chọn!
+    this.play();
+
+    // 4. Cập nhật toàn bộ nhãn tên bài hát trên Trang chủ + trong Cài đặt + đóng Dropdown
+    this.updateUI();
+    const wrap = document.getElementById('lofi-track-dropdown-wrap');
+    if (wrap) wrap.classList.remove('open');
+    const menu = document.getElementById('lofi-track-dropdown-menu');
+    if (menu) menu.classList.remove('open', 'show');
+  }
+
   nextTrack() {
     const tracks = this.getAllTracks();
-    this.currentTrackIndex = (this.currentTrackIndex + 1) % tracks.length;
-    if (this.isPlaying) {
-      this.play();
-    } else {
-      this.updateUI();
-    }
+    if (!tracks.length) return;
+    this.selectTrack((this.currentIndex + 1) % tracks.length);
   }
 
   prevTrack() {
     const tracks = this.getAllTracks();
-    this.currentTrackIndex = (this.currentTrackIndex - 1 + tracks.length) % tracks.length;
-    if (this.isPlaying) {
-      this.play();
-    } else {
-      this.updateUI();
-    }
+    if (!tracks.length) return;
+    this.selectTrack((this.currentIndex - 1 + tracks.length) % tracks.length);
   }
 
   setTrack(index) {
-    const tracks = this.getAllTracks();
-    if (index >= 0 && index < tracks.length) {
-      this.currentTrackIndex = index;
-      if (this.isPlaying) {
-        this.play();
-      } else {
-        this.updateUI();
-      }
-    }
+    this.selectTrack(index);
   }
 
   setVolume(vol) {
@@ -595,7 +637,7 @@ class LofiMusicPlayer {
                 data-track-index="${idx}"
                 role="option"
                 aria-selected="${idx === this.currentTrackIndex ? 'true' : 'false'}"
-                onclick="if(window.LofiPlayer){window.LofiPlayer.selectTrack(${idx}); const w=document.getElementById('lofi-track-dropdown-wrap'); if(w) w.classList.remove('open');}">
+                onclick="if(window.LofiPlayer){window.LofiPlayer.selectTrack(${idx}, event);}">
           <span style="font-weight: 700; opacity: 0.6; margin-right: 6px;">${idx + 1}.</span>
           <span style="flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</span>
           ${idx === this.currentTrackIndex ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
