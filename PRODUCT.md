@@ -27,14 +27,14 @@ App học tập offline-first hoàn toàn không cần server hay tài khoản b
 ## Capabilities and Constraints
 
 - **Bảo toàn dữ liệu tuyệt đối:** Dữ liệu người dùng trong IndexedDB (`MindSparksQuizDB`) không được phép mất mát.
-- **Phong cách thị giác & Cấu trúc (Phase 1f):**
-  - **Zero Hardcoded Purple Tokens:** Quét sạch 100% màu tím viết cứng trong CSS và JS; điều phối hoàn toàn qua biến trung tâm trong `css/theme.css`.
-  - **Universal Monochrome SVG System (`App.getMonoSvg` & `App.renderSubjectIcon`):** Loại bỏ hoàn toàn emoji màu khỏi DOM; 100% biểu tượng môn học và bộ lọc là inline SVG nét mảnh `stroke="currentColor"`.
-  - **Sidebar Pill Animation Chuẩn 44px:** Xóa notification badge khỏi nút "Tổng quan", loại bỏ vạch dọc `::before`, chuyển toàn bộ 7 nút sang hoạt ảnh pill đơn sắc đồng nhất.
-  - **Thanh Pin Năng Lượng Đa Theme (`--battery-*`):** Khắc phục triệt để hộp đen xanh neon; hiển thị trắng/xám matte ở Trắng Đen và kem ấm + cam `#ea580c` ở Trắng Cam.
-  - **Khôi Phục Chế Độ 5 & Đẩy 7 Chế Độ Lên Đầu Dashboard:** Khối 7 Chế Độ Ôn Tập xuất hiện ngay dưới Hero Quote, trước Bộ câu hỏi; Chế độ 5 mở popup chọn môn & chương mượt mà.
-  - **Liquid Glass Popups & Topbar HUD Capsule:** Toàn bộ `.modal-box` áp dụng `var(--bg-glass-liquid)` kèm `backdrop-filter: blur(28px)`; `.topbar-hud-capsule` mờ kính 20px; nút Tiếp theo trên Mobile phẳng đơn sắc.
-  - **Tương Phản Nghỉ & Typography Serif Cho Mode Trắng Cam:** Thẻ có viền cam nhạt và bóng đổ ấm ngay ở trạng thái nghỉ; Quote Hero dùng font Serif dày (`Playfair Display`, `font-weight: 700`) cho chữ thường và bỏ in đậm cho chữ nghiêng điểm nhấn.
+- **Phong cách thị giác & Cấu trúc (Phase 1g):**
+  - **Zero Unicode Emoji Policy:** Quét sạch 100% ký tự emoji màu khỏi `index.html` và `js/app.js` (kiểm toán tự động đạt 0 emoji còn sót). Toàn bộ biểu tượng chức năng (Quiz toolbar, bookmark, flag, toast, modal) là inline SVG đơn sắc (`stroke="currentColor" fill="none"`).
+  - **Kiến Trúc Token Trung Tâm Toàn Diện:** Card, Modal, Dropdown, Scrollbar, Toast, Session Restore Banner, Mobile Bottom Nav đều nhận biến trực tiếp từ `css/theme.css`. Chữ dropdown sắc nét, thanh cuộn đồng bộ thumb và toast mang phong cách glass đa theme.
+  - **Lưới 20 Icon SVG Tối Giản Cho Môn Học:** Xóa bỏ hoàn toàn "Màu nhận diện (Vibe Swatches)", `<input type="color">` và ô xem trước emoji; chỉ giữ lại tên môn và lưới 20 nút icon SVG monochrome.
+  - **Frosted Liquid Glass Modals:** Popup dạng kính mờ chất lỏng (`backdrop-filter: blur(28px) saturate(180%)`), gỡ bỏ blur nặng trên overlay (`backdrop-filter: none !important`), làm sạch màu nền viết cứng ở footer.
+  - **Interactive Glass Tile Matrix (Dashboard Hero):** Lưới ô kính phản chiếu tương tác theo con trỏ chuột (`--mx`, `--my`) đạt trên 140 FPS nhờ tối ưu GPU radial gradient.
+  - **Tối Ưu Chế Độ 5 ("Ôn theo môn học & chương"):** Khôi phục popup chọn môn và chương đa chọn với `dataset.topicVal`, hỗ trợ lọc `subjectId` sâu trong IndexedDB.
+  - **Tương Phản Nghỉ & Typography Serif Cho Mode Trắng Cam:** Quote Hero dùng Serif thẳng đứng phẳng phiu (`Merriweather` / `Lora`, `font-style: normal !important`); các thẻ áp dụng Smoked Frosted Glass nghỉ (`rgba(34, 27, 22, 0.72)`) và hover trong suốt rực ánh cam.
 - **Ràng buộc hiệu năng cứng:**
   - Chỉ animate `transform` và `opacity`.
   - Không animate trực tiếp `box-shadow` hay `filter`.

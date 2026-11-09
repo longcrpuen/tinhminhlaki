@@ -30,7 +30,7 @@ console.log('  ✅ PASS: Inline background-image removed from .bg-thumb');
 // None thumb structured with icon wrapper
 assert(indexHtml.includes('class="bg-thumb bg-thumb-none" data-bg="none"'),
   'index.html defines standardized .bg-thumb.bg-thumb-none');
-assert(indexHtml.includes('class="bg-thumb-none-icon">🚫</span>'),
+assert(indexHtml.includes('class="bg-thumb-none-icon"'),
   'None thumbnail uses dedicated .bg-thumb-none-icon');
 console.log('  ✅ PASS: None thumbnail structured with .bg-thumb-none-icon');
 

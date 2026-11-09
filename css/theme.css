@@ -114,7 +114,8 @@
   --flashcard-explanation-size: 0.95rem;
 
   --hero-border-width: 2px;
-  --dropdown-trigger-radius: 12px;
+  
+  --card-hover-glow: var(--card-hover-shadow);
 }
 
 /* ==========================================================================
@@ -285,6 +286,50 @@ body[data-theme="purple-pink"] {
   --battery-segment-active-glow: rgba(192, 132, 252, 0.45);
   --battery-label-color: #e9d5ff;
   --battery-badge-color: #f472b6;
+
+  /* UNIFIED COMPONENT TOKEN SYSTEM (PHASE 1G) */
+  --card-glass-bg: rgba(24, 19, 40, 0.62);
+  --card-glass-hover-bg: rgba(38, 30, 62, 0.42);
+  --card-glass-border: rgba(255, 255, 255, 0.12);
+  --card-glass-hover-border: rgba(192, 132, 252, 0.55);
+  --card-glass-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+  --card-inner-specular: inset 0 1px 1px rgba(255, 255, 255, 0.18);
+
+  --modal-backdrop-dim: rgba(6, 5, 12, 0.35);
+  --modal-glass-bg: rgba(26, 20, 44, 0.58);
+  --modal-glass-border: rgba(255, 255, 255, 0.22);
+  --modal-glass-shadow: 0 28px 64px -12px rgba(0, 0, 0, 0.65),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.28),
+                        inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+  --modal-inner-box-bg: rgba(255, 255, 255, 0.06);
+  --modal-inner-box-border: rgba(255, 255, 255, 0.14);
+
+  --text-on-card: #f8fafc;
+  --text-on-card-sub: #cbd5e1;
+
+  --btn-primary-bg: #c084fc;
+  --btn-primary-text: #0d0b14;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+  --btn-secondary-text: #f8fafc;
+  --btn-secondary-border: rgba(255, 255, 255, 0.16);
+  --btn-secondary-hover-bg: rgba(192, 132, 252, 0.20);
+  --btn-secondary-hover-border: rgba(192, 132, 252, 0.50);
+
+  --dropdown-text: #f8fafc;
+  --dropdown-item-hover-bg: rgba(192, 132, 252, 0.18);
+  --dropdown-item-active-bg: #c084fc;
+  --dropdown-item-active-text: #0d0b14;
+  --scrollbar-thumb: rgba(192, 132, 252, 0.38);
+  --scrollbar-thumb-hover: rgba(192, 132, 252, 0.65);
+
+  --status-glass-bg: rgba(26, 20, 44, 0.82);
+  --status-glass-border: rgba(192, 132, 252, 0.42);
+  --status-glass-text: #f8fafc;
+  --bottom-nav-bg: rgba(22, 18, 38, 0.78);
+  --bottom-nav-border: rgba(255, 255, 255, 0.14);
+
+  --matrix-glow-color: rgba(192, 132, 252, 0.55);
+  --matrix-glow-secondary: rgba(244, 114, 182, 0.40);
 }
 
 /* ==========================================================================
@@ -455,6 +500,54 @@ html[data-theme="monochrome"] {
   --battery-segment-active-glow: rgba(255, 255, 255, 0.45);
   --battery-label-color: #ffffff;
   --battery-badge-color: #e4e4e7;
+
+  /* UNIFIED COMPONENT TOKEN SYSTEM (PHASE 1G) */
+  --card-glass-bg: rgba(24, 24, 28, 0.64);
+  --card-glass-hover-bg: rgba(38, 38, 44, 0.44);
+  --card-glass-border: rgba(255, 255, 255, 0.14);
+  --card-glass-hover-border: rgba(255, 255, 255, 0.55);
+  --card-glass-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.75);
+  --card-inner-specular: inset 0 1px 1px rgba(255, 255, 255, 0.22);
+
+  --modal-backdrop-dim: rgba(0, 0, 0, 0.40);
+  --modal-glass-bg: rgba(24, 24, 28, 0.56);
+  --modal-glass-border: rgba(255, 255, 255, 0.26);
+  --modal-glass-shadow: 0 28px 64px -12px rgba(0, 0, 0, 0.80),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.32),
+                        inset 0 -1px 1px rgba(255, 255, 255, 0.10);
+  --modal-inner-box-bg: rgba(255, 255, 255, 0.06);
+  --modal-inner-box-border: rgba(255, 255, 255, 0.16);
+
+  --text-on-card: #ffffff;
+  --text-on-card-sub: #d4d4d8;
+
+  --btn-primary-bg: #ffffff;
+  --btn-primary-text: #09090b;
+  --btn-primary-hover-bg: #e4e4e7;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-border: rgba(255, 255, 255, 0.20);
+  --btn-secondary-hover-bg: rgba(255, 255, 255, 0.18);
+  --btn-secondary-hover-border: rgba(255, 255, 255, 0.55);
+
+  --dropdown-bg: rgba(24, 24, 28, 0.90);
+  --dropdown-text: #ffffff;
+  --dropdown-border: rgba(255, 255, 255, 0.22);
+  --dropdown-menu-bg: rgba(18, 18, 22, 0.94);
+  --dropdown-item-hover-bg: rgba(255, 255, 255, 0.14);
+  --dropdown-item-active-bg: #ffffff;
+  --dropdown-item-active-text: #09090b;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.35);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.65);
+
+  --status-glass-bg: rgba(24, 24, 28, 0.84);
+  --status-glass-border: rgba(255, 255, 255, 0.35);
+  --status-glass-text: #ffffff;
+  --bottom-nav-bg: rgba(20, 20, 24, 0.80);
+  --bottom-nav-border: rgba(255, 255, 255, 0.18);
+
+  --matrix-glow-color: rgba(255, 255, 255, 0.48);
+  --matrix-glow-secondary: rgba(212, 212, 216, 0.30);
 }
 
 /* ==========================================================================
@@ -625,6 +718,54 @@ html[data-theme="white-orange"] {
   --battery-segment-active-glow: rgba(234, 88, 12, 0.35);
   --battery-label-color: #9a3412;
   --battery-badge-color: #ea580c;
+
+  /* UNIFIED COMPONENT TOKEN SYSTEM (PHASE 1G) */
+  --card-glass-bg: rgba(34, 27, 22, 0.72);
+  --card-glass-hover-bg: rgba(48, 36, 28, 0.52);
+  --card-glass-border: rgba(255, 255, 255, 0.24);
+  --card-glass-hover-border: #fb923c;
+  --card-glass-shadow: 0 14px 34px -8px rgba(28, 25, 23, 0.28);
+  --card-inner-specular: inset 0 1px 1px rgba(255, 255, 255, 0.32);
+
+  --text-on-card: #fff7ed;
+  --text-on-card-sub: #fed7aa;
+
+  --modal-backdrop-dim: rgba(28, 25, 23, 0.22);
+  --modal-glass-bg: rgba(255, 250, 245, 0.62);
+  --modal-glass-border: rgba(255, 255, 255, 0.68);
+  --modal-glass-shadow: 0 28px 64px -12px rgba(124, 45, 18, 0.22),
+                        inset 0 1px 2px rgba(255, 255, 255, 0.85),
+                        inset 0 -1px 1px rgba(234, 88, 12, 0.14);
+  --modal-inner-box-bg: rgba(255, 255, 255, 0.48);
+  --modal-inner-box-border: rgba(234, 88, 12, 0.24);
+
+  --btn-primary-bg: #ea580c;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #f97316;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.72);
+  --btn-secondary-text: #1c1917;
+  --btn-secondary-border: rgba(234, 88, 12, 0.28);
+  --btn-secondary-hover-bg: #ffedd5;
+  --btn-secondary-hover-border: #ea580c;
+
+  --dropdown-bg: rgba(255, 255, 255, 0.88);
+  --dropdown-text: #1c1917;
+  --dropdown-border: rgba(234, 88, 12, 0.32);
+  --dropdown-menu-bg: rgba(255, 252, 248, 0.95);
+  --dropdown-item-hover-bg: rgba(234, 88, 12, 0.12);
+  --dropdown-item-active-bg: #ea580c;
+  --dropdown-item-active-text: #ffffff;
+  --scrollbar-thumb: rgba(234, 88, 12, 0.42);
+  --scrollbar-thumb-hover: rgba(234, 88, 12, 0.72);
+
+  --status-glass-bg: rgba(255, 250, 245, 0.88);
+  --status-glass-border: rgba(234, 88, 12, 0.45);
+  --status-glass-text: #1c1917;
+  --bottom-nav-bg: rgba(255, 250, 245, 0.84);
+  --bottom-nav-border: rgba(234, 88, 12, 0.24);
+
+  --matrix-glow-color: rgba(249, 115, 22, 0.62);
+  --matrix-glow-secondary: rgba(251, 191, 36, 0.45);
 }
 
 
@@ -830,4 +971,279 @@ html[data-theme="white-orange"] .modal-overlay {
 .btn-quiz-card-next:hover {
   background: var(--btn-primary-hover-bg) !important;
   color: var(--btn-primary-text) !important;
+}
+
+
+/* ==========================================================================
+   PHASE 1G: UNIFIED COMPONENT RULES & FROSTED LIQUID GLASS SYSTEM
+   ========================================================================== */
+
+/* 1.2 Toast & Session Restore Banner */
+.toast,
+.restore-banner,
+#session-restore-banner {
+  background: var(--status-glass-bg) !important;
+  color: var(--status-glass-text) !important;
+  border: 1px solid var(--status-glass-border) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  box-shadow: var(--card-glass-shadow), var(--card-inner-specular) !important;
+  border-radius: 999px !important;
+}
+
+/* 1.3 Mobile Bottom Nav & SVG Rendering */
+.bottom-nav {
+  background: var(--bottom-nav-bg) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid var(--bottom-nav-border) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), var(--card-inner-specular) !important;
+}
+
+.bottom-nav-item svg,
+.bottom-nav-item.active svg,
+.bottom-nav-item svg *,
+.bottom-nav-item.active svg * {
+  fill: none !important;
+  background: transparent !important;
+  stroke: currentColor !important;
+  stroke-width: 2px !important;
+}
+
+.bottom-nav-item {
+  color: var(--text-secondary) !important;
+  border-radius: 999px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.bottom-nav-item.active {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+}
+html[data-theme="white-orange"] .bottom-nav-item.active {
+  background: rgba(234, 88, 12, 0.16) !important;
+  color: #ea580c !important;
+}
+
+/* 1.4 & 1.5 Cyber Dropdown Contrast & Scrollbar */
+.cyber-dropdown-trigger {
+  background: var(--dropdown-bg) !important;
+  color: var(--dropdown-text) !important;
+  border: 1px solid var(--dropdown-border) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.cyber-dropdown-trigger .cyber-dropdown-label,
+.cyber-dropdown-trigger .cyber-dropdown-icon {
+  color: var(--dropdown-text) !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}
+
+.cyber-dropdown-trigger .cyber-dropdown-chevron {
+  color: var(--dropdown-text) !important;
+  opacity: 0.75 !important;
+}
+
+.cyber-dropdown-trigger:hover,
+.cyber-dropdown.open .cyber-dropdown-trigger {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+.cyber-dropdown.open .cyber-dropdown-chevron {
+  color: var(--accent) !important;
+  transform: rotate(180deg);
+}
+
+.cyber-dropdown-menu,
+.bulk-deck-list,
+.modal-body {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--scrollbar-thumb) transparent !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+  border-radius: 999px !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+/* 1.7 & 1.9 Frosted Liquid Glass Modals */
+.modal-overlay {
+  background: var(--modal-backdrop-dim) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.modal-box {
+  background: var(--modal-glass-bg) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid var(--modal-glass-border) !important;
+  box-shadow: var(--modal-glass-shadow) !important;
+  border-radius: 28px !important;
+  color: var(--text-primary) !important;
+  overflow: hidden !important;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  background: transparent !important;
+  border-color: var(--modal-inner-box-border) !important;
+}
+
+#bulk-reassign-deck-list,
+.bulk-deck-list,
+#topic-picker-chips,
+.subject-icon-picker-grid button {
+  background: var(--modal-inner-box-bg) !important;
+  border: 1px solid var(--modal-inner-box-border) !important;
+  color: var(--text-primary) !important;
+}
+
+#bulk-reassign-count {
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+
+/* 1.10 Interactive Glass Tile Matrix */
+.hero-inspiration-stage,
+.hero-card {
+  position: relative;
+}
+
+.hero-glass-matrix-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  grid-auto-rows: 68px;
+  gap: 6px;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background:
+    radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), var(--matrix-glow-color), var(--matrix-glow-secondary) 45%, transparent 75%);
+  -webkit-mask-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0,0,0,0.65) 55%, transparent 100%);
+  mask-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0,0,0,0.65) 55%, transparent 100%);
+}
+
+.hero-inspiration-stage:hover .hero-glass-matrix-layer,
+.hero-card:hover .hero-glass-matrix-layer,
+.hero-glass-matrix-layer.is-hovering {
+  opacity: 1;
+}
+
+.glass-matrix-cell {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 2px 2px 5px rgba(255, 255, 255, 0.32),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 2.1 White-Orange Straight Serif Quote Typography */
+html[data-theme="white-orange"] .hero-quote-title,
+html[data-theme="white-orange"] .hero-quote-line,
+html[data-theme="white-orange"] .hero-card-title,
+html[data-theme="white-orange"] #hero-title {
+  font-style: normal !important;
+}
+
+html[data-theme="white-orange"] .hero-title-main,
+html[data-theme="white-orange"] .hero-title-sub {
+  font-family: 'Merriweather', 'Lora', 'Noto Serif', Georgia, serif !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  color: #1c1917 !important;
+  font-variant-ligatures: none !important;
+  font-feature-settings: "swsh" 0, "calt" 0 !important;
+}
+
+html[data-theme="white-orange"] .hero-title-accent {
+  font-family: 'Lora', 'Merriweather', Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: #ea580c !important;
+}
+
+/* 2.2 & 2.3 White-Orange Smoked Frosted Glass Cards with Hover Transition */
+html[data-theme="white-orange"] .hero-stat-bento-card,
+html[data-theme="white-orange"] .stat-card,
+html[data-theme="white-orange"] .study-mode-card,
+html[data-theme="white-orange"] .mode-card,
+html[data-theme="white-orange"] .deck-card {
+  background: var(--card-glass-bg) !important;
+  backdrop-filter: blur(22px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
+  border: 1px solid var(--card-glass-border) !important;
+  box-shadow: var(--card-glass-shadow), var(--card-inner-specular) !important;
+  color: var(--text-on-card) !important;
+  border-radius: 22px !important;
+  transition: background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+html[data-theme="white-orange"] .hero-stat-bento-card *,
+html[data-theme="white-orange"] .stat-card .stat-value,
+html[data-theme="white-orange"] .study-mode-card .study-mode-title,
+html[data-theme="white-orange"] .mode-card h3,
+html[data-theme="white-orange"] .deck-card .deck-title {
+  color: #fff7ed !important;
+}
+
+html[data-theme="white-orange"] .study-mode-card p,
+html[data-theme="white-orange"] .mode-card p,
+html[data-theme="white-orange"] .deck-card .deck-meta,
+html[data-theme="white-orange"] .hero-stat-bento-card .stat-label {
+  color: rgba(255, 237, 213, 0.78) !important;
+}
+
+html[data-theme="white-orange"] .deck-card .btn-secondary,
+html[data-theme="white-orange"] .study-mode-card .study-mode-pill-btn {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #fff7ed !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+html[data-theme="white-orange"] .deck-card .btn-secondary:hover,
+html[data-theme="white-orange"] .study-mode-card:hover .study-mode-pill-btn {
+  background: #ea580c !important;
+  color: #ffffff !important;
+  border-color: #fb923c !important;
+}
+
+html[data-theme="white-orange"] .hero-stat-bento-card:hover,
+html[data-theme="white-orange"] .stat-card:hover,
+html[data-theme="white-orange"] .study-mode-card:hover,
+html[data-theme="white-orange"] .mode-card:hover,
+html[data-theme="white-orange"] .deck-card:hover {
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(249, 115, 22, 0.28) 0%, rgba(48, 36, 28, 0.48) 70%) !important;
+  border-color: #fb923c !important;
+  box-shadow: 0 18px 40px -8px rgba(234, 88, 12, 0.28),
+              inset 0 1px 2px rgba(255, 255, 255, 0.55) !important;
+  transform: translateY(-3px) !important;
 }

@@ -21,7 +21,7 @@
   <!-- Modern Tech, Poster Heavy & Editorial Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Montserrat:wght@800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&family=Lora:ital,wght@0,400;0,700;0,800;1,400;1,700&family=Merriweather:ital,wght@0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Preload Critical Background Wallpaper -->
   <link rel="preload" as="image" href="./backgrounds/bg-2.webp" type="image/webp">
@@ -112,7 +112,7 @@
 
       <div class="sidebar-footer">
         <button id="btn-pwa-install" class="btn btn-secondary" style="display: none; width: 100%; font-size: 0.85rem;" data-tooltip="Cài đặt PWA">
-          <span>📲</span>
+          <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
           <span class="nav-label">Cài đặt ứng dụng</span>
         </button>
         <span class="sidebar-footer-text" style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">TinhMinhLaKey v1.0 • 100% Offline PWA</span>
@@ -156,6 +156,7 @@
         <section id="view-dashboard" class="view-section active">
           <!-- Editorial Hero Inspirational Stage (First Viewport) -->
           <div class="hero-card editorial-hero-stage">
+            <div class="hero-glass-matrix-layer" id="hero-glass-matrix" aria-hidden="true"></div>
             <!-- Tầng Giữa: Monumental Quote Canvas -->
             <div class="hero-content editorial-quote-canvas">
               <div class="hero-heading-scrim">
@@ -212,7 +213,7 @@
                 <!-- SM-2 Memory Retention Radar & 7-Day Mini Heatmap (Replaces duplicate battery) -->
                 <div class="sm2-retention-card" id="dashboard-retention-card">
                   <div class="sm2-retention-header">
-                    <span class="sm2-retention-title">⚡ CHỈ SỐ GHI NHỚ</span>
+                    <span class="sm2-retention-title">CHỈ SỐ GHI NHỚ</span>
                     <span class="tech-tag" style="padding: 2px 7px; font-size: 0.65rem;">SM-2 OPTIMAL</span>
                   </div>
                   <div class="sm2-retention-stat-row">
@@ -244,7 +245,7 @@
                 <!-- Pixel Battery container retained in DOM for test runner compatibility (hidden from dashboard) -->
                 <div id="dashboard-battery-container" style="display: none;" class="pixel-battery-wrapper">
                   <div class="pixel-battery-header">
-                    <span class="pixel-battery-title">⚡ PIN NĂNG LƯỢNG</span>
+                    <span class="pixel-battery-title">PIN NĂNG LƯỢNG</span>
                     <span id="dashboard-battery-pct" class="pixel-battery-pct">0%</span>
                   </div>
                   <div class="pixel-battery-row">
@@ -494,7 +495,7 @@
                   
                 </div>
                 <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
-                  Duyệt nhanh theo Môn học, lọc theo chủ đề/độ khó hoặc lọc riêng câu Bookmark ⭐ và câu Diễn đạt chưa rõ 🚩.
+                  Duyệt nhanh theo Môn học, lọc theo chủ đề/độ khó hoặc lọc riêng câu Bookmark và câu Diễn đạt chưa rõ.
                 </p>
               </div>
               <div class="bank-actions-row">
@@ -512,7 +513,7 @@
 
             <!-- Filter Bar with Cyber Violet Dropdowns (Subject FIRST) -->
             <div class="bank-filter-bar">
-              <input type="text" id="bank-search-input" class="bank-search-input" placeholder="🔍 Tìm kiếm câu hỏi, đáp án, giải thích..." oninput="App.onBankFilterChange()">
+              <input type="text" id="bank-search-input" class="bank-search-input" placeholder="Tìm kiếm câu hỏi, đáp án, giải thích..." oninput="App.onBankFilterChange()">
               
               <!-- Custom Cyber Violet Dropdown: Chọn Môn Học (FIRST) -->
               <div class="cyber-dropdown" id="bank-subject-dropdown-wrap">
@@ -532,7 +533,7 @@
               <!-- Custom Cyber Violet Dropdown: Chọn chủ đề/chương -->
               <div class="cyber-dropdown" id="bank-topic-dropdown-wrap">
                 <button type="button" class="cyber-dropdown-trigger" id="bank-topic-dropdown-trigger" onclick="App.toggleBankTopicDropdown(event)">
-                  <span class="cyber-dropdown-icon">📚</span>
+                  <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                   <span class="cyber-dropdown-label" id="bank-topic-dropdown-label">Chọn chủ đề / chương</span>
                   <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -624,7 +625,7 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Cần sửa (<span id="bank-count-flag">0</span>)
                 </button>
                 <button id="bank-filter-review" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 14px;" onclick="App.toggleBankFilter('review')" title="Lọc câu hỏi LMS cần kiểm tra lại">
-                  ⚠️ Cần kiểm tra (<span id="bank-count-review">0</span>)
+                  <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Cần kiểm tra (<span id="bank-count-review">0</span>)
                 </button>
               </div>
             </div>
@@ -653,7 +654,7 @@
                 <div id="study-progress-fill" class="quiz-progress-fill" style="width: 0%;"></div>
               </div>
               <button id="btn-toggle-blind" type="button" class="blind-toggle-pill" onclick="App.toggleBlindMode()">
-                🧠 Đoán trước: <b id="blind-status-label">Tắt</b>
+                <svg class="mono-icon" style="width:14px;height:14px;margin-right:2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"></path></svg> Đoán trước: <b id="blind-status-label">Tắt</b>
               </button>
               <button id="btn-quiz-fast-next" class="btn-quiz-fast-next px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-primary to-accent text-white shadow-md active:scale-95 transition-all" onclick="App.nextStudyQuestion()" style="display: none;">
                 Tiếp theo
@@ -686,20 +687,20 @@
 
                 <!-- Secondary Action Toolbar (Star, Flag, Edit, Target aligned to the left) -->
                 <div class="card-actions-toolbar">
-                  <button id="btn-card-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng (⭐)" onclick="App.toggleCurrentCardBookmark()">☆</button>
-                  <button id="btn-card-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ (🚩)" onclick="App.toggleCurrentCardFlag()">⚑</button>
-                  <button id="btn-card-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi (✏️)" onclick="App.openEditCurrentCardModal()">✏️</button>
-                  <button id="btn-card-focus" class="btn-card-action" title="Bật/Tắt Chế độ tập trung (Focus Mode 🎯)" onclick="App.toggleFocusMode()">🎯</button>
+                  <button id="btn-card-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+                  <button id="btn-card-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
+                  <button id="btn-card-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
+                  <button id="btn-card-focus" class="btn-card-action" title="Bật/Tắt Chế độ tập trung" onclick="App.toggleFocusMode()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></button>
                 </div>
                 <h3 id="quiz-card-question" class="quiz-question-text">Câu hỏi đang tải...</h3>
 
                 <!-- Blind Active Recall Box -->
                 <div id="quiz-blind-veil" class="blind-recall-box" style="display: none;">
-                  <div class="blind-recall-icon">🧠</div>
+                  <div class="blind-recall-icon"><svg class="mono-icon" style="width:36px;height:36px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"></path></svg></div>
                   <h4 class="blind-recall-title">Tự Truy Xuất Kiến Thức (Active Recall)</h4>
                   <p class="blind-recall-desc">Hãy tự suy nghĩ câu trả lời hoặc viết ra nháp trước khi xem 4 lựa chọn!</p>
                   <button type="button" class="btn-reveal-options" onclick="App.revealBlindOptions()">
-                    👁️ Hiện các lựa chọn & Đối chiếu
+                    Hiện các lựa chọn & Đối chiếu
                   </button>
                 </div>
 
@@ -709,7 +710,7 @@
                 <div id="quiz-numeric-container" class="quiz-numeric-box" style="display: none;">
                   <div class="numeric-input-card">
                     <label for="quiz-numeric-input" class="numeric-label">
-                      🔢 Nhập đáp án số:
+                      Nhập đáp án số:
                     </label>
                     <div class="numeric-input-row">
                       <input type="text" inputmode="decimal" id="quiz-numeric-input" class="numeric-input" placeholder="Ví dụ: 3.14 hoặc 12,5" autocomplete="off" onkeydown="if(event.key==='Enter') App.submitNumericAnswer()">
@@ -740,9 +741,9 @@
             <div id="study-flashcard-area" class="flashcard-player-container" style="display: none;">
               <!-- Flashcard Secondary Action Toolbar (Bookmark, Flag, Edit) -->
               <div class="card-actions-toolbar flashcard-actions-toolbar" style="margin-bottom: 8px; justify-content: flex-end;">
-                <button id="btn-flashcard-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng (⭐)" onclick="event.stopPropagation(); App.toggleCurrentCardBookmark()">☆</button>
-                <button id="btn-flashcard-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ (🚩)" onclick="event.stopPropagation(); App.toggleCurrentCardFlag()">⚑</button>
-                <button id="btn-flashcard-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi (✏️)" onclick="event.stopPropagation(); App.openEditCurrentCardModal()">✏️</button>
+                <button id="btn-flashcard-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="event.stopPropagation(); App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+                <button id="btn-flashcard-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="event.stopPropagation(); App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
+                <button id="btn-flashcard-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="event.stopPropagation(); App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
               </div>
 
               <!-- Flashcard Interactive Stage (3D Perspective) -->
@@ -847,7 +848,7 @@
               <div id="exam-numeric-container" class="quiz-numeric-box" style="display: none;">
                 <div class="numeric-input-card">
                   <label for="exam-numeric-input" class="numeric-label">
-                    🔢 Nhập đáp án số:
+                    Nhập đáp án số:
                   </label>
                   <div class="numeric-input-row">
                     <input type="text" inputmode="decimal" id="exam-numeric-input" class="numeric-input" placeholder="Ví dụ: 3.14 hoặc 12,5" autocomplete="off" oninput="App.onExamNumericInput(event)">
@@ -857,10 +858,10 @@
               
               <div style="display: flex; justify-content: space-between; margin-top: 24px;">
                 <button id="btn-exam-prev" class="btn btn-secondary" onclick="App.examPrevQuestion()">
-                  ⬅️ Câu trước
+                  Câu trước
                 </button>
                 <button id="btn-exam-next" class="btn btn-primary" onclick="App.renderExamQuestion()">
-                  Câu sau ➡️
+                  Câu sau
                 </button>
               </div>
             </div>
@@ -883,7 +884,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                 <div style="font-weight: 700; font-size: 1rem;">Mẫu Prompt AI chuẩn hóa</div>
                 <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.copyAIPrompt()">
-                  📋 Sao chép Prompt AI 1-Click
+                  Sao chép Prompt AI 1-Click
                 </button>
               </div>
               <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
@@ -915,7 +916,7 @@
                 <label class="form-label" id="import-deck-label">2. Chọn Bộ Câu Hỏi Đích:</label>
                 <div class="cyber-dropdown" id="import-deck-dropdown-wrap" style="width: 100%;">
                   <button type="button" class="cyber-dropdown-trigger" id="import-deck-dropdown-trigger" onclick="App.toggleImportDeckDropdown(event)">
-                    <span class="cyber-dropdown-icon">🎴</span>
+                    <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="14" rx="2" ry="2"></rect><path d="M6 3h12a2 2 0 0 1 2 2v12"></path></svg></span>
                     <span class="cyber-dropdown-label" id="import-deck-dropdown-label">+ Tạo bộ thẻ mới</span>
                     <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -976,7 +977,7 @@
 
               <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
                 <button type="button" class="btn btn-primary" style="padding: 12px 28px;" onclick="App.processImport()">
-                  🚀 Lưu vào kho thẻ & Ôn tập
+                  Lưu vào kho thẻ & Ôn tập
                 </button>
               </div>
             </div>
@@ -1021,7 +1022,7 @@
                   <label class="form-label" id="lms-deck-label">2. Chọn Bộ Câu Hỏi Đích:</label>
                   <div class="cyber-dropdown" id="lms-deck-dropdown-wrap" style="width: 100%;">
                     <button type="button" class="cyber-dropdown-trigger" id="lms-deck-dropdown-trigger" onclick="App.toggleLmsDeckDropdown(event)">
-                      <span class="cyber-dropdown-icon">🎴</span>
+                      <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="14" rx="2" ry="2"></rect><path d="M6 3h12a2 2 0 0 1 2 2v12"></path></svg></span>
                       <span class="cyber-dropdown-label" id="lms-deck-dropdown-label">+ Tạo bộ thẻ mới</span>
                       <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1058,7 +1059,7 @@
                     <span class="tech-tag" style="background: rgba(167, 139, 250, 0.15); color: var(--accent); border-color: rgba(167, 139, 250, 0.3);">MẪU ĐỊNH DẠNG LMS (MOODLE)</span>
                   </div>
                   <button type="button" id="btn-lms-paste-sample" class="btn btn-secondary btn-lms-paste-sample" onclick="App.pasteLmsSampleData()">
-                    📋 Dán mẫu LMS thử nghiệm
+                    Dán mẫu LMS thử nghiệm
                   </button>
                 </div>
                 <div class="lms-sample-snippet">
@@ -1102,7 +1103,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
               <div class="lms-parse-btn-row">
                 <button type="button" id="btn-lms-parse" class="btn btn-primary btn-lms-parse" onclick="App.parseLmsInput()">
-                  🔍 Phân tích & Tách câu hỏi
+                  Phân tích & Tách câu hỏi
                 </button>
               </div>
             </div>
@@ -1111,7 +1112,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <div id="lms-batch-panel" class="hero-card" style="display: none; margin-bottom: 20px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <div style="font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                  <span>⚡ Gán đáp án hàng loạt (Batch Key Assignment)</span>
+                  <span>Gán đáp án hàng loạt (Batch Key Assignment)</span>
                   <span class="tech-tag">OPTIONAL</span>
                 </div>
               </div>
@@ -1143,7 +1144,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                     Xóa làm lại
                   </button>
                   <button type="button" id="btn-lms-save" class="btn btn-primary" style="font-size: 0.88rem; padding: 10px 20px;" onclick="App.saveLmsImport()">
-                    💾 Lưu vào kho thẻ & Ôn tập
+                    Lưu vào kho thẻ & Ôn tập
                   </button>
                 </div>
               </div>
@@ -1152,7 +1153,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
               <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
                 <button type="button" class="btn btn-primary" style="padding: 12px 32px; font-size: 0.95rem;" onclick="App.saveLmsImport()">
-                  🚀 Hoàn tất & Lưu vào kho thẻ
+                  Hoàn tất & Lưu vào kho thẻ
                 </button>
               </div>
             </div>
@@ -1169,14 +1170,14 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
             <div class="stats-grid" style="margin-bottom: 24px;">
               <div class="stat-card">
-                <div class="stat-icon-wrap green">🎯</div>
+                <div class="stat-icon-wrap green"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
                 <div class="stat-info">
                   <span class="stat-num" id="stat-acc-pct">0%</span>
                   <span class="stat-label">Tỉ lệ trả lời đúng</span>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon-wrap indigo">📝</div>
+                <div class="stat-icon-wrap indigo"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
                 <div class="stat-info">
                   <span class="stat-num" id="stat-total-reviews">0</span>
                   <span class="stat-label">Lượt ôn tập đã làm</span>
@@ -1252,10 +1253,10 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                   <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent);">
-                    Chuỗi dài nhất: <span id="stats-max-streak">0</span> ngày 🔥
+                    Chuỗi dài nhất: <span id="stats-max-streak">0</span> ngày
                   </div>
                   <button onclick="App.scrollHeatmapToToday()" class="btn btn-secondary" style="font-size: 0.78rem; padding: 5px 12px; border-radius: var(--radius-full);">
-                    📅 Hôm nay
+                    Hôm nay
                   </button>
                 </div>
               </div>
@@ -1331,7 +1332,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
             <!-- Background Customization -->
             <div class="quiz-card">
-              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;">🎨 Giao Diện & Hình Nền</h3>
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;">Giao Diện & Hình Nền</h3>
               
               <!-- 3-Theme Mode Selector Cards (Prompt 1c) -->
               <div style="margin-bottom: 22px;">
@@ -1412,7 +1413,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                     <span class="bg-thumb-label">Noir Trắng Đen</span>
                   </div>
                   <div class="bg-thumb bg-thumb-none" data-bg="none" onclick="App.setBackground('none')">
-                    <span class="bg-thumb-none-icon">🚫</span>
+                    <span class="bg-thumb-none-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg></span>
                     <span class="bg-thumb-label">Không nền</span>
                   </div>
                 </div>
@@ -1420,7 +1421,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                   <input type="text" id="bg-url-input" class="bg-url-input" placeholder="Dán link ảnh nền tùy chọn...">
                   <div class="bg-custom-actions">
                     <button class="btn btn-secondary" onclick="App.setBackground(document.getElementById('bg-url-input').value)" style="white-space:nowrap;">Áp dụng</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('bg-file-input').click()" style="white-space:nowrap;">📁 Upload</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('bg-file-input').click()" style="white-space:nowrap;">Upload</button>
                   </div>
                   <input type="file" id="bg-file-input" accept="image/*" style="display:none;" onchange="App.handleBgUpload(event)">
                 </div>
@@ -1477,13 +1478,13 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="App.exportBackup()">
-                  💾 Xuất file Backup JSON
+                  Xuất file Backup JSON
                 </button>
                 <button class="btn btn-secondary" onclick="App.triggerImportBackup('merge')">
-                  📥 Nhập Backup (Gộp thẻ)
+                  Nhập Backup (Gộp thẻ)
                 </button>
                 <button class="btn btn-danger" onclick="App.triggerImportBackup('replace')">
-                  ⚠️ Nhập Backup (Ghi đè)
+                  Nhập Backup (Ghi đè)
                 </button>
                 <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="App.handleBackupFileChosen(event)">
               </div>
@@ -1551,7 +1552,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="exam-count-label">Số lượng câu hỏi:</label>
           <div class="cyber-dropdown" id="exam-count-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="exam-count-dropdown-trigger" onclick="App.toggleExamCountDropdown(event)">
-              <span class="cyber-dropdown-icon">🎯</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
               <span class="cyber-dropdown-label" id="exam-count-dropdown-label">10 câu (Tiêu chuẩn)</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1559,16 +1560,16 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             </button>
             <div class="cyber-dropdown-menu" id="exam-count-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamQuestionCount(5, '5 câu (Nhanh)')">
-                <span>⚡ 5 câu (Nhanh)</span>
+                <span>5 câu (Nhanh)</span>
               </button>
               <button type="button" class="cyber-dropdown-item active" onclick="App.selectExamQuestionCount(10, '10 câu (Tiêu chuẩn)')">
-                <span>🎯 10 câu (Tiêu chuẩn)</span>
+                <span>10 câu (Tiêu chuẩn)</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamQuestionCount(20, '20 câu (Toàn diện)')">
-                <span>📚 20 câu (Toàn diện)</span>
+                <span>20 câu (Toàn diện)</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamQuestionCount(50, '50 câu (Thử thách)')">
-                <span>🔥 50 câu (Thử thách)</span>
+                <span>50 câu (Thử thách)</span>
               </button>
             </div>
           </div>
@@ -1583,7 +1584,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="exam-time-label">Thời gian làm bài:</label>
           <div class="cyber-dropdown" id="exam-time-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="exam-time-dropdown-trigger" onclick="App.toggleExamTimeDropdown(event)">
-              <span class="cyber-dropdown-icon">⏱️</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
               <span class="cyber-dropdown-label" id="exam-time-dropdown-label">10 phút</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1591,16 +1592,16 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             </button>
             <div class="cyber-dropdown-menu" id="exam-time-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamTimeLimit(5, '5 phút')">
-                <span>⏱️ 5 phút</span>
+                <span>5 phút</span>
               </button>
               <button type="button" class="cyber-dropdown-item active" onclick="App.selectExamTimeLimit(10, '10 phút')">
-                <span>⏱️ 10 phút</span>
+                <span>10 phút</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamTimeLimit(15, '15 phút')">
-                <span>⏱️ 15 phút</span>
+                <span>15 phút</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectExamTimeLimit(30, '30 phút')">
-                <span>⏱️ 30 phút</span>
+                <span>30 phút</span>
               </button>
             </div>
           </div>
@@ -1620,54 +1621,34 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary modal-close">Hủy</button>
-        <button class="btn btn-primary" onclick="App.startExamFromModal()">Bắt đầu làm bài ⏱️</button>
+        <button class="btn btn-primary" onclick="App.startExamFromModal()">Bắt đầu làm bài</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Subject & Chapter Dual Picker for Mode 5 -->
+  <!-- MODAL: Topic & Subject Picker for Mode 5 -->
   <div id="modal-topic-picker" class="modal-overlay">
-    <div class="modal-box" style="max-width: 640px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <h3 class="modal-title">Ôn theo Môn & Chương (Mode 5)</h3>
-        <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
+        <h3 class="modal-title">5. Ôn Theo Môn Học & Chương</h3>
+        <button type="button" class="icon-btn modal-close" onclick="App._closeModal('modal-topic-picker')" style="width: 32px; height: 32px;">✕</button>
       </div>
-      <div class="modal-body" style="overflow-y: auto; padding-right: 4px;">
-        <!-- Phần 1: Chọn Môn Học -->
-        <div class="topic-picker-section" style="margin-bottom: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
-              <span>1. Chọn Môn Học</span>
-            </h4>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Bấm môn để lọc chương hoặc ôn cả môn</span>
-          </div>
-          <div id="topic-picker-subjects" class="topic-subject-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">1. Lọc theo Môn học:</label>
+          <div id="topic-picker-subjects" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
-
-        <!-- Phần 2: Chọn Chương -->
-        <div class="topic-picker-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
-              <span>2. Chọn Chương</span>
-              <span id="topic-picker-selected-subject-label" style="font-size: 0.82rem; font-weight: 600; color: var(--accent); padding: 2px 8px; border-radius: 999px; background: var(--accent-subtle-bg);">(Tất cả môn)</span>
-            </h4>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-ghost btn-xs" onclick="App.selectAllPickerTopics(true)" style="font-size: 0.78rem; padding: 2px 8px;">Chọn tất cả</button>
-              <button type="button" class="btn btn-ghost btn-xs" onclick="App.selectAllPickerTopics(false)" style="font-size: 0.78rem; padding: 2px 8px;">Bỏ chọn</button>
-            </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="font-weight: 600; margin: 0;">2. Chọn Chương / Chủ đề cần ôn:</label>
+            <button type="button" class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="App.toggleAllTopicsInPicker()">Chọn tất cả</button>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
-            Nhấp để chọn một hoặc nhiều chương bạn muốn rèn luyện:
-          </p>
-          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 220px; overflow-y: auto;"></div>
+          <div id="topic-picker-chips" class="topic-chips-container" style="max-height: 280px; overflow-y: auto; padding: 4px;"></div>
         </div>
       </div>
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <span id="topic-picker-selected-count" style="font-size: 0.84rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">Đã chọn: 0 chương</span>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary modal-close">Hủy</button>
-          <button id="btn-start-topic-review" class="btn btn-primary" onclick="App.startTopicReview()">Bắt đầu ôn các chương đã chọn</button>
-        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-close" onclick="App._closeModal('modal-topic-picker')">Hủy</button>
+        <button type="button" class="btn btn-primary" onclick="App.startTopicReview()">Bắt đầu ôn tập</button>
       </div>
     </div>
   </div>
@@ -1676,7 +1657,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <div id="modal-sprint-setup" class="modal-overlay">
     <div class="modal-box" style="max-width: 500px;">
       <div class="modal-header">
-        <h3 class="modal-title">Cấu Hình Ôn Nước Rút 🚀 (Mode 7)</h3>
+        <h3 class="modal-title">Cấu Hình Ôn Nước Rút (Mode 7)</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
@@ -1687,7 +1668,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="sprint-count-label">Số lượng câu cần gom:</label>
           <div class="cyber-dropdown" id="sprint-count-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="sprint-count-dropdown-trigger" onclick="App.toggleSprintCountDropdown(event)">
-              <span class="cyber-dropdown-icon">🎯</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
               <span class="cyber-dropdown-label" id="sprint-count-dropdown-label">15 câu (Tiêu chuẩn)</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1695,16 +1676,16 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             </button>
             <div class="cyber-dropdown-menu" id="sprint-count-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
               <button type="button" class="cyber-dropdown-item" onclick="App.selectSprintCardCount(10, '10 câu (Cấp tốc 5 phút)')">
-                <span>⚡ 10 câu (Cấp tốc 5 phút)</span>
+                <span>10 câu (Cấp tốc 5 phút)</span>
               </button>
               <button type="button" class="cyber-dropdown-item active" onclick="App.selectSprintCardCount(15, '15 câu (Tiêu chuẩn)')">
-                <span>🎯 15 câu (Tiêu chuẩn)</span>
+                <span>15 câu (Tiêu chuẩn)</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectSprintCardCount(25, '25 câu (Toàn diện)')">
-                <span>📚 25 câu (Toàn diện)</span>
+                <span>25 câu (Toàn diện)</span>
               </button>
               <button type="button" class="cyber-dropdown-item" onclick="App.selectSprintCardCount(40, '40 câu (Tổng lực)')">
-                <span>🔥 40 câu (Tổng lực)</span>
+                <span>40 câu (Tổng lực)</span>
               </button>
             </div>
           </div>
@@ -1718,7 +1699,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary modal-close">Hủy</button>
-        <button class="btn btn-primary" onclick="App.startSprintReview()">Bắt đầu ôn nước rút ⚡</button>
+        <button class="btn btn-primary" onclick="App.startSprintReview()">Bắt đầu ôn nước rút</button>
       </div>
     </div>
   </div>
@@ -1756,7 +1737,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
           <div style="text-align: center;">
             <p id="complete-correct-ratio" style="font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; color: var(--text-primary);">0 / 0 câu đúng</p>
-            <span id="result-battery-badge" class="pixel-sparkle-badge" style="display: none;">✨ PERFECT ✨</span>
+            <span id="result-battery-badge" class="pixel-sparkle-badge" style="display: none;">PERFECT</span>
           </div>
         </div>
 
@@ -1779,7 +1760,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <div id="modal-edit-card" class="modal-overlay">
     <div class="modal-box" style="max-width: 650px;">
       <div class="modal-header">
-        <h3 class="modal-title">✏️ Sửa Nhanh Nội Dung Câu Hỏi</h3>
+        <h3 class="modal-title">Sửa Nhanh Nội Dung Câu Hỏi</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
@@ -1806,7 +1787,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="edit-card-deck-label">Chọn bộ thẻ (Deck):</label>
           <div class="cyber-dropdown" id="edit-card-deck-dropdown-wrap" style="width: 100%;">
             <button type="button" class="cyber-dropdown-trigger" id="edit-card-deck-dropdown-trigger" onclick="App.toggleEditCardDeckDropdown(event)">
-              <span class="cyber-dropdown-icon">🎴</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="14" rx="2" ry="2"></rect><path d="M6 3h12a2 2 0 0 1 2 2v12"></path></svg></span>
               <span class="cyber-dropdown-label" id="edit-card-deck-dropdown-label">Chọn bộ thẻ...</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1828,21 +1809,21 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             <label class="form-label" id="edit-card-diff-label">Độ khó:</label>
             <div class="cyber-dropdown" id="edit-card-diff-dropdown-wrap" style="width: 100%;">
               <button type="button" class="cyber-dropdown-trigger" id="edit-card-diff-dropdown-trigger" onclick="App.toggleEditCardDiffDropdown(event)">
-                <span class="cyber-dropdown-icon">⚡</span>
-                <span class="cyber-dropdown-label" id="edit-card-diff-dropdown-label">🟡 Vừa (Medium)</span>
+                <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span>
+                <span class="cyber-dropdown-label" id="edit-card-diff-dropdown-label">Vừa (Medium)</span>
                 <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
               </button>
               <div class="cyber-dropdown-menu" id="edit-card-diff-dropdown-menu" style="width: 100%; min-width: 100%; box-sizing: border-box;">
                 <button type="button" class="cyber-dropdown-item" onclick="App.selectEditCardDifficulty('easy')">
-                  <span>🟢 Dễ (Easy)</span>
+                  <span>Dễ (Easy)</span>
                 </button>
                 <button type="button" class="cyber-dropdown-item active" onclick="App.selectEditCardDifficulty('medium')">
-                  <span>🟡 Vừa (Medium)</span>
+                  <span>Vừa (Medium)</span>
                 </button>
                 <button type="button" class="cyber-dropdown-item" onclick="App.selectEditCardDifficulty('hard')">
-                  <span>🔴 Khó (Hard)</span>
+                  <span>Khó (Hard)</span>
                 </button>
               </div>
             </div>
@@ -1887,7 +1868,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" id="edit-card-correct-label">Đáp án đúng:</label>
           <div class="cyber-dropdown" id="edit-card-correct-dropdown-wrap" style="width: auto; min-width: 160px;">
             <button type="button" class="cyber-dropdown-trigger" id="edit-card-correct-dropdown-trigger" onclick="App.toggleEditCardCorrectDropdown(event)">
-              <span class="cyber-dropdown-icon">🎯</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
               <span class="cyber-dropdown-label" id="edit-card-correct-dropdown-label">Đáp án A</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -1926,7 +1907,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <!-- Live Preview Toggle & Box -->
         <div style="margin-top: 12px; margin-bottom: 8px;">
           <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="App.toggleEditCardPreview()">
-            👁️ Xem trước công thức LaTeX
+            Xem trước công thức LaTeX
           </button>
         </div>
         <div id="edit-card-preview-box" style="display: none; padding: 12px; border-radius: var(--radius-md); background: var(--bg-surface-elevated); border: 1px solid var(--border-color); font-size: 0.9rem;">
@@ -1935,47 +1916,29 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary modal-close">Hủy</button>
-        <button class="btn btn-primary" onclick="App.saveCardEdit()">💾 Lưu thay đổi</button>
+        <button class="btn btn-primary" onclick="App.saveCardEdit()">Lưu thay đổi</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Create New Subject -->
   <div id="modal-create-subject" class="modal-overlay">
-    <div class="modal-box" style="max-width: 490px;">
+    <div class="modal-box" style="max-width: 520px;">
       <div class="modal-header">
-        <h3 class="modal-title">➕ Tạo Môn Học Mới</h3>
+        <h3 class="modal-title">Tạo Môn Học Mới</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label class="form-label" for="create-subject-name">Tên môn học (bắt buộc):</label>
-          <input type="text" id="create-subject-name" class="form-control" placeholder="Ví dụ: Toán Học, Triết Học, Lập Trình..." oninput="App.updateSubjectModalPreview('create')">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="create-subject-name" style="font-weight: 600; margin-bottom: 6px; display: block;">Tên môn học (bắt buộc):</label>
+          <input type="text" id="create-subject-name" class="form-control" placeholder="Ví dụ: Toán Học, Triết Học, Lập Trình...">
         </div>
 
-        <!-- Live Subject Badge Preview (Prompt 1b) -->
-        <div class="subject-preview-row">
-          <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
-          <span id="create-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
-            <span class="deck-subject-icon" id="create-subject-preview-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-            <span class="deck-subject-name" id="create-subject-preview-name">Tên môn học</span>
-          </span>
-        </div>
-
-        <!-- 1-Click Educational Emoji Picker (Prompt 1b) -->
-        <div class="form-group" style="margin-bottom: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="form-label" for="create-subject-icon" style="margin-bottom: 0;">Biểu tượng (Icon 1-Click):</label>
-            <input type="text" id="create-subject-icon" class="form-control" placeholder="Emoji..." value="📚" style="width: 54px; height: 32px; padding: 2px 6px; text-align: center; font-size: 1.15rem; border-radius: 8px;" oninput="App.updateSubjectModalPreview('create')">
-          </div>
-          <div id="create-subject-emoji-grid" class="emoji-picker-grid"></div>
-        </div>
-
-        <!-- 1-Click Vibe Color Swatches (Prompt 1b) -->
         <div class="form-group" style="margin-bottom: 8px;">
-          <label class="form-label" for="create-subject-color" style="margin-bottom: 4px;">Màu nhận diện (Vibe Swatches):</label>
-          <input type="color" id="create-subject-color" class="form-control" value="#a855f7" style="display: none;">
-          <div id="create-subject-color-grid" class="color-swatch-grid"></div>
+          <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">Biểu tượng môn học (Chọn 1 trong 20 icon):</label>
+          <input type="hidden" id="create-subject-icon" value="book">
+          <input type="hidden" id="create-subject-color" value="#c084fc">
+          <div id="create-subject-icon-grid" class="subject-icon-picker-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1987,57 +1950,39 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
   <!-- MODAL: Manage Subject (Edit, Merge, Delete) -->
   <div id="modal-manage-subject" class="modal-overlay">
-    <div class="modal-box" style="max-width: 520px;">
+    <div class="modal-box" style="max-width: 540px;">
       <div class="modal-header">
-        <h3 class="modal-title" id="manage-subject-modal-title">⚙️ Quản Lý Môn Học</h3>
+        <h3 class="modal-title" id="manage-subject-modal-title">Quản Lý Môn Học</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;">✕</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="manage-subject-id">
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label class="form-label" for="manage-subject-name">Tên môn học:</label>
-          <input type="text" id="manage-subject-name" class="form-control" oninput="App.updateSubjectModalPreview('manage')">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="manage-subject-name" style="font-weight: 600; margin-bottom: 6px; display: block;">Tên môn học:</label>
+          <input type="text" id="manage-subject-name" class="form-control">
         </div>
 
-        <!-- Live Subject Badge Preview (Prompt 1b) -->
-        <div class="subject-preview-row">
-          <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Xem trước nhãn:</span>
-          <span id="manage-subject-preview-badge" class="deck-subject-badge" style="--subj-color: #a855f7;">
-            <span class="deck-subject-icon" id="manage-subject-preview-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-            <span class="deck-subject-name" id="manage-subject-preview-name">Môn học</span>
-          </span>
-        </div>
-
-        <!-- 1-Click Educational Emoji Picker (Prompt 1b) -->
-        <div class="form-group" style="margin-bottom: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="form-label" for="manage-subject-icon" style="margin-bottom: 0;">Biểu tượng (Emoji 1-Click):</label>
-            <input type="text" id="manage-subject-icon" class="form-control" style="width: 54px; height: 32px; padding: 2px 6px; text-align: center; font-size: 1.15rem; border-radius: 8px;" oninput="App.updateSubjectModalPreview('manage')">
-          </div>
-          <div id="manage-subject-emoji-grid" class="emoji-picker-grid"></div>
-        </div>
-
-        <!-- 1-Click Vibe Color Swatches (Prompt 1b) -->
-        <div class="form-group" style="margin-bottom: 14px;">
-          <label class="form-label" for="manage-subject-color" style="margin-bottom: 4px;">Màu nhận diện (Vibe Swatches):</label>
-          <input type="color" id="manage-subject-color" class="form-control" style="display: none;">
-          <div id="manage-subject-color-grid" class="color-swatch-grid"></div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">Biểu tượng môn học (20 icon đơn sắc):</label>
+          <input type="hidden" id="manage-subject-icon" value="book">
+          <input type="hidden" id="manage-subject-color" value="#c084fc">
+          <div id="manage-subject-icon-grid" class="subject-icon-picker-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;"></div>
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-          <button class="btn btn-primary" style="flex: 1;" onclick="App.saveManageSubject()">💾 Lưu Thay Đổi</button>
+          <button class="btn btn-primary" style="flex: 1;" onclick="App.saveManageSubject()">Lưu Thay Đổi</button>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid rgba(139, 92, 246, 0.2); margin: 16px 0;">
+        <hr style="border: 0; border-top: 1px solid var(--modal-inner-box-border); margin: 16px 0;">
 
         <!-- Advanced Actions: Merge & Delete -->
         <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-primary);">Tác vụ nâng cao</h4>
-        <div style="background: rgba(139, 92, 246, 0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+        <div style="background: var(--modal-inner-box-bg); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--modal-inner-box-border);">
           <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px;">Gộp môn này vào môn khác:</label>
           <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center;">
             <div class="cyber-dropdown" id="manage-subject-merge-dropdown-wrap" style="flex: 1; min-width: 0;">
               <button type="button" class="cyber-dropdown-trigger" id="manage-subject-merge-dropdown-trigger" onclick="App.toggleManageSubjectMergeDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-merge-dropdown-menu">
-                <span class="cyber-dropdown-icon" id="manage-subject-merge-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+                <span class="cyber-dropdown-icon" id="manage-subject-merge-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
                 <span class="cyber-dropdown-label" id="manage-subject-merge-dropdown-label">Chọn môn cần gộp vào...</span>
                 <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -2046,22 +1991,18 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
               <div class="cyber-dropdown-menu" id="manage-subject-merge-dropdown-menu" role="listbox" style="width: 100%; min-width: 100%; box-sizing: border-box;"></div>
             </div>
             <select id="manage-subject-merge-target" class="form-control" style="display: none;"></select>
-            <button class="btn btn-secondary" onclick="App.mergeCurrentSubject()" style="white-space: nowrap; height: 42px;">🔀 Gộp Môn</button>
+            <button class="btn btn-secondary" onclick="App.mergeCurrentSubject()" style="white-space: nowrap; height: 42px;">Gộp Môn</button>
           </div>
-          <small style="color: var(--text-secondary); display: block; margin-top: 4px;">Toàn bộ bộ thẻ của môn này sẽ được chuyển sang môn đích, môn hiện tại sẽ được xóa.</small>
         </div>
 
-        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); padding: 12px; border-radius: 8px;">
-          <div style="font-size: 0.85rem; font-weight: 600; color: #ef4444; margin-bottom: 6px;">Xóa môn học</div>
-          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
-            Nếu môn này còn bộ thẻ, hệ thống yêu cầu chọn môn chuyển sang để bảo đảm không mất dữ liệu.
-          </p>
-          <div id="manage-subject-delete-reassign-wrap" style="display: none; margin-bottom: 8px;">
-            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 6px;">Chuyển các bộ thẻ sang:</label>
-            <div class="cyber-dropdown" id="manage-subject-delete-dropdown-wrap" style="width: 100%;">
+        <div style="background: rgba(244, 63, 94, 0.08); padding: 12px; border-radius: 8px; border: 1px solid rgba(244, 63, 94, 0.22);">
+          <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px; color: var(--danger);">Xóa vĩnh viễn môn học:</label>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">Môn bị xóa sẽ chuyển các bộ thẻ về "Chưa phân loại" hoặc môn thay thế bên dưới.</p>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+            <div class="cyber-dropdown" id="manage-subject-delete-dropdown-wrap" style="flex: 1; min-width: 0;">
               <button type="button" class="cyber-dropdown-trigger" id="manage-subject-delete-dropdown-trigger" onclick="App.toggleManageSubjectDeleteDropdown(event)" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="manage-subject-delete-dropdown-menu">
-                <span class="cyber-dropdown-icon" id="manage-subject-delete-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-                <span class="cyber-dropdown-label" id="manage-subject-delete-dropdown-label">Chọn môn chuyển sang...</span>
+                <span class="cyber-dropdown-icon" id="manage-subject-delete-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+                <span class="cyber-dropdown-label" id="manage-subject-delete-dropdown-label">Chuyển thẻ sang môn khác (tùy chọn)...</span>
                 <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
@@ -2070,7 +2011,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
             </div>
             <select id="manage-subject-delete-target" class="form-control" style="display: none;"></select>
           </div>
-          <button class="btn btn-danger" style="width: 100%;" onclick="App.confirmDeleteCurrentSubject()">🗑️ Xóa Môn Học Này</button>
+          <button class="btn btn-danger" style="width: 100%;" onclick="App.confirmDeleteCurrentSubject()">Xóa Môn Học Này</button>
         </div>
       </div>
       <div class="modal-footer">
@@ -2083,7 +2024,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <div id="modal-bulk-reassign-decks" class="modal-overlay">
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <h3 class="modal-title">🔀 Gán Lại Môn Học Hàng Loạt</h3>
+        <h3 class="modal-title">Gán Lại Môn Học Hàng Loạt</h3>
         <button class="icon-btn modal-close" style="width: 32px; height: 32px;" aria-label="Đóng">✕</button>
       </div>
       <div class="modal-body">
@@ -2107,11 +2048,11 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
             <label class="form-label" style="margin-bottom: 0; font-weight: 600;">2. Chọn Các Bộ Thẻ Cần Chuyển:</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <span id="bulk-reassign-count" style="font-size: 0.8rem; color: #a78bfa; font-weight: 500;">Đã chọn 0/0 bộ thẻ</span>
+              <span id="bulk-reassign-count" style="font-size: 0.8rem; font-weight: 500;">Đã chọn 0/0 bộ thẻ</span>
               <button type="button" id="bulk-reassign-select-all-btn" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" onclick="App.toggleSelectAllBulkDecks()">Chọn tất cả</button>
             </div>
           </div>
-          <div id="bulk-reassign-deck-list" class="bulk-deck-list" style="max-height: 250px; overflow-y: auto; background: rgba(19, 17, 34, 0.75); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 8px; scrollbar-width: thin;">
+          <div id="bulk-reassign-deck-list" class="bulk-deck-list" style="max-height: 250px; overflow-y: auto; border-radius: 12px; padding: 8px; scrollbar-width: thin;">
             <!-- Checkboxes of decks -->
           </div>
         </div>
@@ -2125,7 +2066,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
   <!-- Floating Session Restore Banner (Section 5) -->
   <div id="session-restore-banner" class="restore-banner" style="display: none;">
-    <span class="restore-banner-text" style="font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto;">💾 Bạn có phiên học chưa hoàn tất trước đó.</span>
+    <span class="restore-banner-text" style="font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto;"><svg class="mono-icon" style="width: 15px; height: 15px; margin-right: 6px; display: inline-block; vertical-align: -2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Bạn có phiên học chưa hoàn tất trước đó.</span>
     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
       <button class="btn btn-primary shrink-0 whitespace-nowrap" style="padding: 8px 18px; font-size: 0.84rem; white-space: nowrap; flex-shrink: 0; border-radius: 9999px;" onclick="App.resumeSavedSession()">
         Tiếp tục học

@@ -902,7 +902,7 @@ console.log('\n=== TEST SUITE 13: Desktop Layout Enlargement & Background Standa
     'Inline background-image removed from .bg-thumb to avoid layout conflicts');
   assert(html.includes('class="bg-thumb bg-thumb-none" data-bg="none"'),
     'None thumbnail uses standardized .bg-thumb.bg-thumb-none');
-  assert(html.includes('class="bg-thumb-none-icon">🚫</span>'),
+  assert(html.includes('class="bg-thumb-none-icon"'),
     'None thumbnail uses dedicated .bg-thumb-none-icon');
   assert(css.includes('.bg-thumb {') && css.includes('aspect-ratio: 16 / 9 !important;'),
     'style.css enforces aspect-ratio: 16 / 9 !important on .bg-thumb');

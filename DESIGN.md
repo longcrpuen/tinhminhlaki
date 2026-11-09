@@ -1,6 +1,6 @@
 ---
 name: TinhMinhLaKey Design System
-description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, 6 Standard Token Groups, HUD Capsule, 360° 3D Card Flip, Dual Mode 5 & SM-2 Mastery Spectrum, Universal Monochrome SVG Icons & Zero Hardcoded Purple (Phase 1f)
+description: 100% Offline-First PWA Study App - Google Material 3 Expressive, Liquid Glass, 6 Standard Token Groups, HUD Capsule, 360° 3D Card Flip, Dual Mode 5 & SM-2 Mastery Spectrum, Universal Monochrome SVG Icons & Zero Unicode Emoji Policy (Phase 1g)
 themes:
   violet-rose:
     label: "Tím Hồng (Violet Rose - Default)"
@@ -35,9 +35,10 @@ typography:
     letterSpacing: "-0.035em"
     strokeWidth: "1.1px"
   quoteSerifWhiteOrange:
-    fontFamily: "'Playfair Display', 'Newsreader', Georgia, serif"
+    fontFamily: "'Merriweather', 'Lora', 'Newsreader', Georgia, serif"
+    fontStyle: "normal"
     fontWeight: 700
-    letterSpacing: "-0.035em"
+    letterSpacing: "-0.02em"
   quoteAccentWhiteOrange:
     fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif"
     fontStyle: "italic"
@@ -78,18 +79,18 @@ rounded:
   full: "9999px"
 ---
 
-# TinhMinhLaKey Design System (Đợt 1f)
+# TinhMinhLaKey Design System (Đợt 1g)
 
 ## 1. Tổng Quan & Triết Lý Thiết Kế (Overview & Philosophy)
 
-**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1f**, toàn bộ hệ thống giao diện, hiệu năng và tương tác được hoàn thiện sâu:
-- **Zero Hardcoded Purple Tokens**: Quét sạch 100% mã màu tím viết cứng (`#8b5cf6`, `#7c3aed`, `#a78bfa`, `#131122`, `#12101e`, `rgba(36, 29, 58, ...)`, `rgba(124, 58, 237, ...)`) trong `css/style.css` và `js/app.js`, quy tụ toàn bộ về hệ biến trung tâm trong `css/theme.css`.
-- **Hệ Thống SVG Đơn Sắc Toàn Diện (`App.getMonoSvg` & `App.renderSubjectIcon`)**: Xóa bỏ hoàn toàn emoji màu ra khỏi DOM. Tất cả icon môn học (kể cả icon lưu trong DB như `📚`, `🥀`, `📁`), bộ lọc Ngân hàng câu hỏi, Modal tạo môn học và Modal hoàn tất buổi học đều chuyển sang Inline SVG đơn sắc (`stroke="currentColor"`).
-- **Đồng Bộ Nút Sidebar & 44px Uniform Pill Animation**: Xóa bỏ badge thông báo gây giãn nút "Tổng quan", loại bỏ xung đột pseudo-element `::before`, chuyển toàn bộ 7 nút Sidebar sang hiệu ứng 1 pill bo tròn mượt mà 44px.
-- **Thanh Pin Năng Lượng Đa Theme (`--battery-*`)**: Hiển thị trắng/xám matte ở Trắng Đen, nền kem sáng ấm + vạch pin cam `#ea580c` ở Trắng Cam; xóa sạch hộp đen viền xanh neon `#00f5d4` và chữ hồng `#e879f9`.
-- **Thứ Tự Bố Cục Dashboard & Khôi Phục Chế Độ 5**: Đẩy khối 7 Chế Độ Ôn Tập Thông Minh lên ngay dưới màn hình Hero Quote, trước khối Bộ câu hỏi; sửa dứt điểm hàm `openTopicPickerModal()` và `startTopicSession()` cho Chế độ 5 ("5. Ôn theo môn học & chương").
-- **Liquid Glass Popups & Topbar HUD**: Toàn bộ `.modal-box` sử dụng `var(--bg-glass-liquid)` kèm `backdrop-filter: blur(28px) saturate(160%)`; `.topbar-hud-capsule` áp dụng `var(--bg-glass-hud)` kèm `backdrop-filter: blur(20px)`; nút chuyển câu trên Mobile đơn sắc theo theme.
-- **Tương Phản Nghỉ & Typography Serif Cho Mode Trắng Cam**: Thẻ `.deck-card`, `.mode-card`, `.study-mode-card` có viền cam nhạt `1.5px solid rgba(234, 88, 12, 0.28)` và bóng đổ ấm ngay ở trạng thái nghỉ; Quote Hero dùng Serif dày (`Playfair Display`, `font-weight: 700; letter-spacing: -0.035em`) cho chữ thường và bỏ in đậm (`font-weight: 400; font-style: italic`) cho chữ nghiêng điểm nhấn.
+**TinhMinhLaKey** là ứng dụng học tập và thi thử cá nhân hóa 100% Offline-First PWA. Bước sang phiên bản **1g**, toàn bộ hệ thống giao diện, hiệu năng và tương tác được hoàn thiện sâu:
+- **Zero Unicode Emoji Policy**: Quét sạch 100% ký tự emoji màu (`\p{Extended_Pictographic}`) khỏi `index.html` và `js/app.js`, duy trì kết quả kiểm toán 0 emoji thông qua script `scripts/sanitize-1g.js`. Mọi biểu tượng chức năng (Quiz toolbar, bookmark, flag, toast, modal, completion banner) đều dùng SVG đơn sắc (`stroke="currentColor" fill="none"`).
+- **Hệ Thống Token Trung Tâm Cho Toàn Bộ Component**: Gom Card, Modal, Dropdown, Scrollbar, Toast, Session Restore Banner, Mobile Bottom Nav về hệ biến trung tâm trong `css/theme.css`. Khắc phục hoàn toàn lỗi chữ dropdown mờ, đồng bộ scrollbar thumb và toast notification theo theme.
+- **Xóa Bỏ "Màu Nhận Diện" (Vibe Swatches) Trong Modal Môn Học**: Loại bỏ hoàn toàn hộp màu `<input type="color">` và ô xem trước emoji, quy về lưới 20 icon SVG đơn sắc thanh lịch, tối giản.
+- **Frosted Liquid Glass Modals**: Tái thiết kế toàn bộ modal box sang hiệu ứng kính mờ chất lỏng (`backdrop-filter: blur(28px) saturate(180%)`), gỡ bỏ blur nặng trên `.modal-overlay` (`backdrop-filter: none !important`), xóa bỏ màu nền cứng trên modal footer và danh sách gán thẻ.
+- **Interactive Glass Tile Matrix (Dashboard Hero)**: Lưới ô kính phản chiếu tương tác đa chiều trên Hero Quote (`.hero-glass-matrix-layer`), đón ánh sáng spotlight di chuyển theo con trỏ chuột (`--mx`, `--my`) với hiệu năng GPU tối ưu (>140 FPS).
+- **Tối Ưu Chế Độ 5 ("Ôn theo môn học & chương")**: Tái cấu trúc `#modal-topic-picker` và phương thức `db.getCardsByTopics` hỗ trợ `subjectId`, điều khiển thông qua `dataset.topicVal` và event delegation mượt mà.
+- **Hoàn Thiện Mode Trắng Cam (`white-orange`)**: Kiểu chữ Quote Serif thẳng đứng phẳng phiu (`Merriweather` / `Lora`, `font-style: normal !important`) không cong móc; các thẻ Bento và Chế độ học áp dụng Smoked Frosted Glass ở trạng thái nghỉ (`rgba(34, 27, 22, 0.72)` + blur 22px), chuyển sang độ trong suốt thanh thoát khi hover kèm ánh cam tinh tế.
 
 ---
 

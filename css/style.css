@@ -1968,7 +1968,7 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
 .stat-icon-wrap.indigo { background: var(--accent-subtle-bg); color: var(--accent); }
 .stat-icon-wrap.green  { background: var(--success-bg); color: var(--success); }
 .stat-icon-wrap.amber  { background: rgba(212,168,85,0.10); color: var(--streak-color); }
-.stat-icon-wrap.purple { background: var(--accent-soft); color: #c084fc; }
+.stat-icon-wrap.purple { background: var(--accent-soft); color: var(--accent) !important; }
 
 .stat-info { display: flex; flex-direction: column; }
 .stat-num {
@@ -3473,7 +3473,7 @@ body.disable-backdrop-blur .app-topbar {
   flex-shrink: 0;
   box-sizing: border-box;
 }
-.modal-title { font-size: 1.2rem; font-weight: 700; color: #ede9f6; }
+.modal-title { font-size: 1.2rem; font-weight: 700; color: var(--status-glass-text); }
 .modal-body {
   padding: 24px;
   flex: 1 1 auto;
@@ -3599,7 +3599,7 @@ body.disable-backdrop-blur .app-topbar {
   display: flex; justify-content: flex-end; gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(22, 19, 36, 0.98);
+  background: transparent;
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -3611,11 +3611,11 @@ body.disable-backdrop-blur .app-topbar {
   z-index: 10000; pointer-events: none;
 }
 .toast {
-  background: #221e36;
+  background: var(--status-glass-bg);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius-md);
   padding: 12px 20px;
-  color: #ede9f6; font-size: 0.9rem; font-weight: 500;
+  color: var(--status-glass-text); font-size: 0.9rem; font-weight: 500;
   box-shadow: 0 6px 20px rgba(0,0,0,0.40);
   display: flex; align-items: center; gap: 10px;
   animation: toastBounceIn var(--dur-norm) var(--ease-spring);
@@ -5284,7 +5284,7 @@ body.focus-mode-active .focus-exit-btn { display: inline-flex !important; }
   background-color: var(--surface-dropdown) !important; color: var(--text-primary) !important;
   border: 1px solid rgba(255, 255, 255, 0.10) !important;
   border-radius: var(--radius-lg, 12px);
-  color: #e4e4e7 !important;
+  color: var(--dropdown-text) !important;
   font-size: 0.875rem !important;
   font-weight: 500;
   cursor: pointer;
@@ -5296,8 +5296,7 @@ body.focus-mode-active .focus-exit-btn { display: inline-flex !important; }
 }
 .cyber-dropdown-trigger:hover,
 .cyber-dropdown.open .cyber-dropdown-trigger {
-  border-color: rgba(139, 92, 246, 0.40) !important;
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.25);
+  border-color: var(--accent) !important; box-shadow: 0 0 0 3px var(--accent-soft) !important;
 }
 .cyber-dropdown-icon {
   font-size: 1rem;
@@ -5320,7 +5319,7 @@ body.focus-mode-active .focus-exit-btn { display: inline-flex !important; }
 }
 .cyber-dropdown.open .cyber-dropdown-chevron {
   transform: rotate(180deg);
-  color: #c084fc;
+  color: var(--accent) !important;
 }
 .cyber-dropdown-menu {
   position: absolute;
@@ -5331,7 +5330,7 @@ body.focus-mode-active .focus-exit-btn { display: inline-flex !important; }
   max-height: 280px;
   overflow-y: auto;
   background-color: var(--surface-dropdown-menu) !important; color: var(--text-primary) !important;
-  border: 1px solid rgba(139, 92, 246, 0.20) !important;
+  border: 1px solid var(--dropdown-border) !important;
   border-radius: 12px;
   padding: 6px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.80), 0 0 20px rgba(139, 92, 246, 0.15) !important;
@@ -5339,7 +5338,7 @@ body.focus-mode-active .focus-exit-btn { display: inline-flex !important; }
   display: none;
   flex-direction: column;
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.35) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 .cyber-dropdown.open .cyber-dropdown-menu {
   display: flex;
@@ -5608,14 +5607,14 @@ select optgroup {
   min-height: 32px !important;
   border-radius: var(--radius-sm, 6px) !important;
   background-color: var(--surface-dropdown) !important; color: var(--text-primary) !important;
-  border: 1px solid rgba(139, 92, 246, 0.30) !important;
-  color: #e4e4e7 !important;
+  border: 1px solid var(--dropdown-border) !important;
+  color: var(--dropdown-text) !important;
   gap: 6px !important;
 }
 .lms-type-cyber-dropdown .cyber-dropdown-trigger:hover,
 .lms-type-cyber-dropdown.open .cyber-dropdown-trigger {
   border-color: var(--accent-glow) !important;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
 }
 .lms-type-cyber-dropdown .cyber-dropdown-menu {
   min-width: 150px;
@@ -5634,14 +5633,14 @@ select optgroup {
   min-height: 42px !important;
   border-radius: var(--radius-md, 8px) !important;
   background-color: var(--surface-dropdown) !important; color: var(--text-primary) !important;
-  border: 1px solid rgba(139, 92, 246, 0.30) !important;
-  color: #e4e4e7 !important;
+  border: 1px solid var(--dropdown-border) !important;
+  color: var(--dropdown-text) !important;
   gap: 6px !important;
 }
 .lms-diff-cyber-dropdown .cyber-dropdown-trigger:hover,
 .lms-diff-cyber-dropdown.open .cyber-dropdown-trigger {
   border-color: var(--accent-glow) !important;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
 }
 .lms-diff-cyber-dropdown .cyber-dropdown-menu {
   width: 100%;
@@ -5798,13 +5797,13 @@ select optgroup {
 .restore-banner {
   position: fixed; bottom: 84px; left: 50%;
   transform: translateX(-50%);
-  background: #221e36;
+  background: var(--status-glass-bg);
   border: 1px solid var(--accent);
   box-shadow: var(--shadow-md), var(--shadow-glow);
   padding: 14px 24px;
   border-radius: var(--radius-full);
   display: flex; align-items: center; gap: 16px;
-  z-index: 1000; color: #ede9f6;
+  z-index: 1000; color: var(--status-glass-text);
   animation: toastBounceIn var(--dur-norm) var(--ease-spring);
 }
 
@@ -6293,7 +6292,7 @@ select optgroup {
 }
 .source-badge-lms {
   background: rgba(168, 85, 247, 0.18);
-  color: #c084fc;
+  color: var(--accent) !important;
   border: 1px solid rgba(168, 85, 247, 0.35);
 }
 .source-badge-ai {

@@ -86,6 +86,17 @@ const App = {
       copy: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`,
       eye: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
       shuffle: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>`,
+            flag: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`,
+      check: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+      warning: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+      info: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+      crosshair: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`,
+      clock: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+      calendar: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+      numeric: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>`,
+      arrowLeft: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+      arrowRight: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+      ban: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`,
       inbox: `<svg class="${customClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>`
     };
     return svgs[k] || svgs.book;
@@ -99,39 +110,39 @@ const App = {
       return this.getMonoSvg(str, customClass);
     }
     const emojiMap = {
-      '📚': 'book', '📖': 'book', '📕': 'book',
-      '📐': 'math', '📏': 'math', '🔢': 'math',
-      '🧪': 'flask', '⚗️': 'flask',
-      '🧬': 'dna', '🔬': 'dna',
-      '💻': 'code', '🖥️': 'code', '⌨️': 'code',
-      '🌐': 'globe', '🌍': 'globe', '🌎': 'globe', '🌏': 'globe',
-      '🏛️': 'landmark', '🏛': 'landmark',
-      '⚖️': 'scale', '⚖': 'scale',
-      '🎨': 'palette',
-      '🎵': 'music', '🎶': 'music',
-      '🧠': 'brain',
-      '🩺': 'pulse', '❤️': 'pulse',
-      '📊': 'chart', '📈': 'chart', '📉': 'chart', '💰': 'chart',
-      '🚀': 'rocket',
-      '⚡': 'zap',
-      '🔥': 'flame',
-      '💡': 'bulb',
-      '🎯': 'target',
-      '🏆': 'trophy', '🥇': 'trophy',
-      '🌟': 'star', '⭐': 'star', '✨': 'star',
-      '📁': 'folder', '📂': 'folder',
-      '🥀': 'flower', '🥀🥀': 'flower', '🌸': 'flower', '🌹': 'flower', '🌱': 'flower', '🌿': 'flower',
-      '➕': 'plus',
-      '🏷️': 'tag', '🏷': 'tag',
-      '⚙️': 'settings', '⚙': 'settings',
-      '🗑️': 'trash', '🗑': 'trash',
-      '✏️': 'edit', '✏': 'edit',
-      '🔍': 'search',
-      '🎴': 'cards',
-      '📋': 'copy',
-      '👁️': 'eye', '👁': 'eye',
-      '🔀': 'shuffle',
-      '📥': 'inbox'
+      '\u{1F4DA}': 'book', '\u{1F4D6}': 'book', '\u{1F4D5}': 'book',
+      '\u{1F4D0}': 'math', '\u{1F4CF}': 'math', '\u{1F522}': 'math',
+      '\u{1F9EA}': 'flask', '\u{2697}': 'flask',
+      '\u{1F9EC}': 'dna', '\u{1F52C}': 'dna',
+      '\u{1F4BB}': 'code', '\u{1F5A5}': 'code', '\u{2328}': 'code',
+      '\u{1F310}': 'globe', '\u{1F30D}': 'globe', '\u{1F30E}': 'globe', '\u{1F30F}': 'globe',
+      '\u{1F3DB}': 'landmark',
+      '\u{2696}': 'scale',
+      '\u{1F3A8}': 'palette',
+      '\u{1F3B5}': 'music', '\u{1F3B6}': 'music',
+      '\u{1F9E0}': 'brain',
+      '\u{1FA7A}': 'pulse', '\u{2764}': 'pulse',
+      '\u{1F4CA}': 'chart', '\u{1F4C8}': 'chart', '\u{1F4C9}': 'chart', '\u{1F4B0}': 'chart',
+      '\u{1F680}': 'rocket',
+      '\u{26A1}': 'zap',
+      '\u{1F525}': 'flame',
+      '\u{1F4A1}': 'bulb',
+      '\u{1F3AF}': 'target',
+      '\u{1F3C6}': 'trophy', '\u{1F947}': 'trophy',
+      '\u{1F31F}': 'star', '\u{2B50}': 'star', '\u{2728}': 'star',
+      '\u{1F4C1}': 'folder', '\u{1F4C2}': 'folder',
+      '\u{1F940}': 'flower', '\u{1F338}': 'flower', '\u{1F339}': 'flower', '\u{1F331}': 'flower', '\u{1F33F}': 'flower',
+      '\u{2795}': 'plus',
+      '\u{1F3F7}': 'tag',
+      '\u{2699}': 'settings',
+      '\u{1F5D1}': 'trash',
+      '\u{270F}': 'edit',
+      '\u{1F50D}': 'search',
+      '\u{1F3B4}': 'cards',
+      '\u{1F4CB}': 'copy',
+      '\u{1F441}': 'eye',
+      '\u{1F500}': 'shuffle',
+      '\u{1F4E5}': 'inbox'
     };
     for (const [em, key] of Object.entries(emojiMap)) {
       if (str.includes(em)) {
@@ -142,10 +153,57 @@ const App = {
   },
 
 
+  initHeroGlassMatrix() {
+    const container = document.getElementById('hero-glass-matrix');
+    if (!container) return;
+    const stage = container.closest('.hero-card') || container.closest('.hero-inspiration-stage') || container.parentElement;
+    if (!stage) return;
+
+    if (container.children.length === 0) {
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < 90; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'glass-matrix-cell';
+        fragment.appendChild(cell);
+      }
+      container.appendChild(fragment);
+    }
+
+    let rafId = null;
+    let pendingX = 0;
+    let pendingY = 0;
+
+    const onMouseMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      pendingX = Math.round(e.clientX - rect.left);
+      pendingY = Math.round(e.clientY - rect.top);
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          container.style.setProperty('--mx', `${pendingX}px`);
+          container.style.setProperty('--my', `${pendingY}px`);
+          container.classList.add('is-hovering');
+          rafId = null;
+        });
+      }
+    };
+
+    const onMouseLeave = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      container.classList.remove('is-hovering');
+    };
+
+    stage.addEventListener('mousemove', onMouseMove, { passive: true });
+    stage.addEventListener('mouseleave', onMouseLeave, { passive: true });
+  },
+
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
     await db.init();
+    this.initHeroGlassMatrix();
 
     // Check migration notice (Section A)
     try {
@@ -702,7 +760,7 @@ const App = {
 
       // 3. Save compressed Blob to DB and apply permanently
       await this.setBackground(compressedBlob, false);
-      this.showToast('Đã lưu hình nền tùy chọn thành công! 🖼️', 'success');
+      this.showToast('Đã lưu hình nền tùy chọn thành công!', 'success');
 
       // Reset file input so user can re-upload same file if desired
       event.target.value = '';
@@ -1690,7 +1748,7 @@ const App = {
           for (const deck of displayDecks) {
             const deckCards = allCards.filter(c => c.deckId === deck.id);
             const deckDue = deckCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= nowTs);
-            const subj = subjectsMap[deck.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📚', color: '#a855f7' };
+            const subj = subjectsMap[deck.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: 'book', color: '#a855f7' };
             html += this._createDeckCardHtml(deck, deckCards.length, deckDue.length, subj);
           }
           grid.innerHTML = html;
@@ -1808,7 +1866,7 @@ const App = {
         quickHtml += `
           </div>
           <div class="quickbar-search-wrap">
-            <input type="text" id="decks-search-quick" class="quickbar-search-input" placeholder="🔍 Lọc nhanh môn / bộ thẻ..." value="${this._escapeHtml(this._decksSearchQuery || '')}" oninput="App.onDecksSearchInput(this.value)">
+            <input type="text" id="decks-search-quick" class="quickbar-search-input" placeholder="Lọc nhanh môn / bộ thẻ..." value="${this._escapeHtml(this._decksSearchQuery || '')}" oninput="App.onDecksSearchInput(this.value)">
           </div>
         `;
         quickbar.innerHTML = quickHtml;
@@ -1836,12 +1894,12 @@ const App = {
     if (totalDecksCount === 0 && summaries.length <= 1) {
       container.innerHTML = `
         <div style="text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
-          <div style="font-size: 2.5rem; margin-bottom: 12px;">🎴</div>
+          <div style="font-size: 2.5rem; margin-bottom: 12px;"><svg class="mono-icon" style="width:48px;height:48px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="16" height="14" rx="2" ry="2"></rect><path d="M6 3h12a2 2 0 0 1 2 2v12"></path></svg></div>
           <h3>Chưa có bộ thẻ nào</h3>
           <p style="color: var(--text-secondary); margin: 12px 0 20px;">Dán câu hỏi do AI tạo hoặc nhập từ LMS để bắt đầu học ngay.</p>
           <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-primary" onclick="App.navigateTo('import')">+ Tạo hoặc Dán Thẻ Mới</button>
-            <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()">➕ Môn học mới</button>
+            <button class="btn btn-secondary" onclick="App.openCreateSubjectModal()">Môn học mới</button>
           </div>
         </div>
       `;
@@ -1877,7 +1935,7 @@ const App = {
                 ${this.getMonoSvg('settings')} Quản lý
               </button>
               <button class="icon-btn subject-collapse-btn" onclick="App.toggleSubjectCollapse('${s.id}')" title="Thu gọn / Mở rộng" style="width: 28px; height: 28px;">
-                ${isCollapsed ? '▶' : '▼'}
+                ${isCollapsed ? '►' : '▼'}
               </button>
             </div>
           </div>
@@ -1922,7 +1980,7 @@ const App = {
       body.style.display = isCollapsed ? 'none' : 'block';
       body.classList.toggle('collapsed', isCollapsed);
       const btn = body.parentElement?.querySelector('.subject-collapse-btn');
-      if (btn) btn.textContent = isCollapsed ? '▶' : '▼';
+      if (btn) btn.textContent = isCollapsed ? '►' : '▼';
     }
   },
 
@@ -1933,10 +1991,10 @@ const App = {
     if (!subject) return;
     const cards = await db.getDueCards(null, subjectId);
     let sessionCards = cards;
-    let title = `🎯 Ôn Tập Môn: ${subject.name}`;
+    let title = `Ôn Tập Môn: ${subject.name}`;
     if (sessionCards.length === 0) {
       sessionCards = await db.getCardsBySubject(subjectId);
-      title = `🎯 Luyện Tập Tự Do: ${subject.name}`;
+      title = `Luyện Tập Tự Do: ${subject.name}`;
     }
     if (sessionCards.length === 0) {
       this.showToast(`Môn "${subject.name}" chưa có câu hỏi nào!`, 'warning');
@@ -2034,7 +2092,7 @@ const App = {
       // 7. Ôn nước rút: Tự động gom N câu từ các chủ đề yếu nhất
       const count = options.count || 15;
       cards = await db.getSprintCards(count, deckId, options.subjectId);
-      title = `7. Ôn Nước Rút (${cards.length} câu chủ đề yếu nhất) 🚀`;
+      title = `7. Ôn Nước Rút (${cards.length} câu chủ đề yếu nhất)`;
     } else if (mode === 'flashcard') {
       cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
       title = 'Thẻ Ghi Nhớ Flashcard';
@@ -2208,10 +2266,10 @@ const App = {
             feedbackEl.style.display = 'block';
             if (answeredState.isCorrect) {
               feedbackEl.className = 'numeric-feedback correct';
-              feedbackEl.innerHTML = `🎉 Chính xác! Đáp án đúng: <b>${card.correct_answer}</b>`;
+              feedbackEl.innerHTML = `Chính xác! Đáp án đúng: <b>${card.correct_answer}</b>`;
             } else {
               feedbackEl.className = 'numeric-feedback incorrect';
-              feedbackEl.innerHTML = `❌ Chưa chính xác. Bạn nhập: <i>${this._escapeHtml(answeredState.userVal || '')}</i>. Đáp án đúng: <b>${card.correct_answer}</b>`;
+              feedbackEl.innerHTML = `Chưa chính xác. Bạn nhập: <i>${this._escapeHtml(answeredState.userVal || '')}</i>. Đáp án đúng: <b>${card.correct_answer}</b>`;
             }
           }
         } else {
@@ -2671,10 +2729,10 @@ const App = {
       feedbackEl.style.display = 'block';
       if (isCorrect) {
         feedbackEl.className = 'numeric-feedback correct';
-        feedbackEl.innerHTML = `🎉 Chính xác! Đáp án đúng: <b>${card.correct_answer}</b>`;
+        feedbackEl.innerHTML = `Chính xác! Đáp án đúng: <b>${card.correct_answer}</b>`;
       } else {
         feedbackEl.className = 'numeric-feedback incorrect';
-        feedbackEl.innerHTML = `❌ Chưa chính xác. Bạn nhập: <i>${this._escapeHtml(userVal)}</i>. Đáp án đúng: <b>${card.correct_answer}</b>`;
+        feedbackEl.innerHTML = `Chưa chính xác. Bạn nhập: <i>${this._escapeHtml(userVal)}</i>. Đáp án đúng: <b>${card.correct_answer}</b>`;
       }
     }
 
@@ -2950,9 +3008,9 @@ const App = {
     const diff = card.difficulty || 'medium';
     const diffLabel = diff === 'easy' ? 'Dễ' : diff === 'hard' ? 'Khó' : 'Trung bình';
     if (tagFront) {
-      const typeBadge = card.type === 'numeric' ? '<span class="topic-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">🔢 Điền số</span>' : '';
+      const typeBadge = card.type === 'numeric' ? '<span class="topic-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Điền số</span>' : '';
       tagFront.innerHTML = `
-        <span class="topic-badge">🏷️ ${this._escapeHtml(card.topic || card.tag || 'Chung')}</span>
+        <span class="topic-badge"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>${this._escapeHtml(card.topic || card.tag || 'Chung')}</span>
         <span class="difficulty-badge difficulty-${diff}">● ${diffLabel}</span>
         ${typeBadge}
       `;
@@ -2964,7 +3022,7 @@ const App = {
     // Back content
     let correctOpt;
     if (card.type === 'numeric') {
-      correctOpt = '🔢 ' + (card.correct_answer !== undefined ? card.correct_answer : '');
+      correctOpt = (card.correct_answer !== undefined ? card.correct_answer : '');
     } else {
       correctOpt = card.options?.[card.answerIndex] || 'Đáp án';
     }
@@ -3173,9 +3231,9 @@ const App = {
     // Strictly dynamic binding — never hardcoded
     if (ratioEl) ratioEl.textContent = `${correct} / ${total} câu đúng`;
 
-    let message = 'Bạn đã hoàn thành phiên ôn tập xuất sắc! 🎉';
+    let message = 'Bạn đã hoàn thành phiên ôn tập xuất sắc!';
     if (pct < 60) message = 'Hãy tiếp tục kiên trì! Ôn lại các câu sai để ghi nhớ sâu hơn nhé.';
-    else if (pct === 100) message = 'Hoàn hảo 100%! Trí nhớ của bạn đang hoạt động tuyệt vời! 🌟';
+    else if (pct === 100) message = 'Hoàn hảo 100%! Trí nhớ của bạn đang hoạt động tuyệt vời!';
     if (msgEl) msgEl.textContent = message;
 
     // Halt heavy background gradient animations while modal is open
@@ -3291,7 +3349,7 @@ const App = {
       modalBox.classList.add('overcharged-pulse');
     }
     if (resultBadge) {
-      resultBadge.textContent = '⚡ ⚡ OVERCHARGED 100% ⚡ ⚡';
+      resultBadge.textContent = 'OVERCHARGED 100%';
       resultBadge.style.display = 'inline-block';
     }
 
@@ -3700,10 +3758,10 @@ const App = {
     document.getElementById('btn-exam-prev').disabled = session.currentIndex === 0;
     const nextBtn = document.getElementById('btn-exam-next');
     if (session.currentIndex === total - 1) {
-      nextBtn.textContent = 'Nộp bài 🏁';
+      nextBtn.textContent = 'Nộp bài';
       nextBtn.onclick = () => this.submitExam();
     } else {
-      nextBtn.textContent = 'Câu sau ➡️';
+      nextBtn.textContent = 'Câu sau';
       nextBtn.onclick = () => {
         session.currentIndex++;
         this.renderExamQuestion();
@@ -3775,13 +3833,13 @@ const App = {
     const curSubjObj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
     const subjSelect = document.getElementById('import-subject-select');
     if (subjSelect) {
-      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
       subjSelect.value = currentSubjectId;
     }
 
     const subjLabel = document.getElementById('import-subject-dropdown-label');
     if (subjLabel) {
-      subjLabel.textContent = curSubjObj ? `${curSubjObj.icon || '📚'} ${curSubjObj.name}` : 'Chọn môn học...';
+      subjLabel.textContent = curSubjObj ? `${this._escapeHtml(curSubjObj.name)}` : 'Chọn môn học...';
     }
 
     const subjMenu = document.getElementById('import-subject-dropdown-menu');
@@ -3790,7 +3848,7 @@ const App = {
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -3848,14 +3906,14 @@ const App = {
     if (importMenu) {
       let menuHtml = `
         <button type="button" class="cyber-dropdown-item ${curDeckId === '__new__' ? 'active' : ''}" onclick="App.selectImportDeck('__new__', '+ Tạo bộ thẻ mới')">
-          <span>✨ + Tạo bộ thẻ mới</span>
+          <span>+ Tạo bộ thẻ mới</span>
         </button>
       `;
       decks.forEach(d => {
         const isActive = d.id === curDeckId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportDeck('${d.id}', '${this._escapeHtml(d.name).replace(/'/g, "\\'")}')">
-            <span>🎴 ${this._escapeHtml(d.name)}</span>
+            <span>${this._escapeHtml(d.name)}</span>
           </button>
         `;
       });
@@ -3952,7 +4010,7 @@ const App = {
           alertBox.innerHTML = `
             <div class="validation-alert-box">
               <div class="validation-alert-title">
-                ⚠️ Phát hiện ${parsed.errors.length} câu hỏi sai định dạng:
+                Phát hiện ${parsed.errors.length} câu hỏi sai định dạng:
               </div>
               <ul class="validation-alert-list">
                 ${parsed.errors.map(e => `<li><b>Câu ${e.index} (${e.id}):</b> ${this._escapeHtml(e.message)}</li>`).join('')}
@@ -4018,7 +4076,7 @@ const App = {
         this.activeSession.cards = [...(this.activeSession.cards || []), ...cardsToSave];
       }
 
-      let msg = `Đã lưu thành công ${cardsToSave.length} câu hỏi vào bộ thẻ! 🎉`;
+      let msg = `Đã lưu thành công ${cardsToSave.length} câu hỏi vào bộ thẻ!`;
       if (parsed.errors && parsed.errors.length > 0) {
         msg = `Đã lưu ${cardsToSave.length} câu hợp lệ (Bỏ qua ${parsed.errors.length} câu bị lỗi).`;
       }
@@ -4035,7 +4093,7 @@ const App = {
       if (alertBox) {
         alertBox.innerHTML = `
           <div class="validation-alert-box">
-            <div class="validation-alert-title">❌ Lỗi dữ liệu:</div>
+            <div class="validation-alert-title">Lỗi dữ liệu:</div>
             <p style="color: var(--text-secondary); font-size: 0.9rem;">${this._escapeHtml(err.message)}</p>
           </div>
         `;
@@ -4064,21 +4122,21 @@ const App = {
     const curSubjObj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
     const subjSelect = document.getElementById('lms-subject-select');
     if (subjSelect) {
-      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
       subjSelect.value = currentSubjectId;
     }
 
     const subjMenu = document.getElementById('lms-subject-dropdown-menu');
     const subjLabel = document.getElementById('lms-subject-dropdown-label');
     if (subjLabel) {
-      subjLabel.textContent = curSubjObj ? `${curSubjObj.icon || '📚'} ${curSubjObj.name}` : 'Chọn môn học...';
+      subjLabel.textContent = curSubjObj ? `${this._escapeHtml(curSubjObj.name)}` : 'Chọn môn học...';
     }
     if (subjMenu) {
       let menuHtml = '';
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -4136,14 +4194,14 @@ const App = {
     if (lmsMenu) {
       let menuHtml = `
         <button type="button" class="cyber-dropdown-item ${curDeckId === '__new__' ? 'active' : ''}" onclick="App.selectLmsDeck('__new__', '+ Tạo bộ thẻ mới')">
-          <span>✨ + Tạo bộ thẻ mới</span>
+          <span>+ Tạo bộ thẻ mới</span>
         </button>
       `;
       decks.forEach(d => {
         const isActive = d.id === curDeckId;
         menuHtml += `
           <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsDeck('${d.id}', '${this._escapeHtml(d.name).replace(/'/g, "\\'")}')">
-            <span>🎴 ${this._escapeHtml(d.name)}</span>
+            <span>${this._escapeHtml(d.name)}</span>
           </button>
         `;
       });
@@ -4302,7 +4360,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const isNumeric = q.type === 'numeric';
       const warningText = q.reviewWarning || q.reviewReason || (isNeedsReview ? 'Cần kiểm tra lại' : '');
       const reviewBadge = isNeedsReview
-        ? `<span class="badge-review-flag" title="${this._escapeHtml(warningText)}">⚠️ Cần kiểm tra (${this._escapeHtml(warningText)})</span>`
+        ? `<span class="badge-review-flag" title="${this._escapeHtml(warningText)}">Cần kiểm tra (${this._escapeHtml(warningText)})</span>`
         : '';
 
       let optionsHtml = '';
@@ -4326,7 +4384,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       } else {
         optionsHtml = `
           <div class="lms-numeric-row">
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--accent);">🔢 Đáp án số:</span>
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--accent);">Đáp án số:</span>
             <input type="text" class="lms-numeric-input" value="${this._escapeHtml(q.correct_answer !== null && q.correct_answer !== undefined ? String(q.correct_answer) : '')}" placeholder="Nhập số đúng (ví dụ: 3.14 hoặc 12,5)" oninput="App.onLmsNumericAnswerChange(${idx}, this.value)">
           </div>
         `;
@@ -4340,13 +4398,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         'hard': 'Khó (Hard)'
       };
       const diffIconMap = {
-        '': '⚡',
-        'easy': '🟢',
-        'medium': '🟡',
-        'hard': '🔴'
+        '': '',
+        'easy': '●',
+        'medium': '●',
+        'hard': '●'
       };
       const typeLabel = isNumeric ? 'Điền số' : 'Trắc nghiệm';
-      const typeIcon = isNumeric ? '🔢' : '📝';
+      const typeIcon = isNumeric ? 'Điền số' : 'Trắc nghiệm';
 
       cardEl.innerHTML = `
         <div class="lms-preview-card-header">
@@ -4367,10 +4425,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
               </button>
               <div class="cyber-dropdown-menu" id="lms-type-menu-${idx}">
                 <button type="button" class="cyber-dropdown-item ${!isNumeric ? 'active' : ''}" onclick="App.selectLmsCardType(${idx}, 'multiple_choice')">
-                  <span>📝 Trắc nghiệm</span>
+                  <span>Trắc nghiệm</span>
                 </button>
                 <button type="button" class="cyber-dropdown-item ${isNumeric ? 'active' : ''}" onclick="App.selectLmsCardType(${idx}, 'numeric')">
-                  <span>🔢 Điền số</span>
+                  <span>Điền số</span>
                 </button>
               </div>
             </div>
@@ -4379,7 +4437,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
               <option value="numeric" ${isNumeric ? 'selected' : ''}>Điền số</option>
             </select>
             <button type="button" class="lms-card-delete-btn" title="Xóa câu hỏi này" onclick="App.deleteLmsPreviewCard(${idx})">
-              🗑️ Xóa
+              Xóa
             </button>
           </div>
         </div>
@@ -4394,7 +4452,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           <!-- Cyber Violet Dropdown: Độ khó -->
           <div class="cyber-dropdown lms-diff-cyber-dropdown" id="lms-diff-dropdown-${idx}">
             <button type="button" class="cyber-dropdown-trigger lms-diff-dropdown-trigger" onclick="App.toggleLmsCardDiffDropdown(event, ${idx})">
-              <span class="cyber-dropdown-icon">${diffIconMap[curDiff] || '⚡'}</span>
+              <span class="cyber-dropdown-icon"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span>
               <span class="cyber-dropdown-label" id="lms-diff-label-${idx}">${diffLabelMap[curDiff] || 'Độ khó (Tùy chọn)'}</span>
               <svg class="cyber-dropdown-chevron" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -4402,16 +4460,16 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
             </button>
             <div class="cyber-dropdown-menu" id="lms-diff-menu-${idx}">
               <button type="button" class="cyber-dropdown-item ${!curDiff ? 'active' : ''}" onclick="App.selectLmsCardDifficulty(${idx}, '')">
-                <span>⚡ Độ khó (Tùy chọn)</span>
+                <span>Độ khó (Tùy chọn)</span>
               </button>
               <button type="button" class="cyber-dropdown-item ${curDiff === 'easy' ? 'active' : ''}" onclick="App.selectLmsCardDifficulty(${idx}, 'easy')">
-                <span>🟢 Dễ (Easy)</span>
+                <span>Dễ (Easy)</span>
               </button>
               <button type="button" class="cyber-dropdown-item ${curDiff === 'medium' ? 'active' : ''}" onclick="App.selectLmsCardDifficulty(${idx}, 'medium')">
-                <span>🟡 Trung bình (Medium)</span>
+                <span>Trung bình (Medium)</span>
               </button>
               <button type="button" class="cyber-dropdown-item ${curDiff === 'hard' ? 'active' : ''}" onclick="App.selectLmsCardDifficulty(${idx}, 'hard')">
-                <span>🔴 Khó (Hard)</span>
+                <span>Khó (Hard)</span>
               </button>
             </div>
           </div>
@@ -4465,10 +4523,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       'hard': 'Khó (Hard)'
     };
     const diffIconMap = {
-      '': '⚡',
-      'easy': '🟢',
-      'medium': '🟡',
-      'hard': '🔴'
+      '': '',
+      'easy': '●',
+      'medium': '●',
+      'hard': '●'
     };
 
     const labelEl = document.getElementById(`lms-diff-label-${idx}`);
@@ -4477,7 +4535,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const wrap = document.getElementById(`lms-diff-dropdown-${idx}`);
     if (wrap) {
       const iconEl = wrap.querySelector('.cyber-dropdown-icon');
-      if (iconEl) iconEl.textContent = diffIconMap[val] || '⚡';
+      if (iconEl) iconEl.innerHTML = '<svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>';
       wrap.querySelectorAll('.cyber-dropdown-item').forEach(item => {
         const onclickAttr = item.getAttribute('onclick') || '';
         item.classList.toggle('active', (val === '' && onclickAttr.includes("('')")) || (val && onclickAttr.includes(`'${val}'`)));
@@ -4566,7 +4624,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const count = parser.applyBatchAnswers(this._lmsParsedQuestions, seq);
     this.renderLmsPreview();
-    this.showToast(`Đã tự động gán đáp án cho ${count} câu hỏi trắc nghiệm! 🎯`, 'success');
+    this.showToast(`Đã tự động gán đáp án cho ${count} câu hỏi trắc nghiệm!`, 'success');
   },
 
   clearLmsPreview() {
@@ -4637,8 +4695,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         source: 'lms', // Explicit LMS source for Part A
         needsReview: Boolean(q.needs_review || q.needsReview),
         needs_review: Boolean(q.needs_review || q.needsReview),
-        reviewReason: q.reviewReason || q.reviewWarning || (Boolean(q.needs_review || q.needsReview) ? '⚠️ Cần kiểm tra' : ''),
-        reviewWarning: q.reviewWarning || (Boolean(q.needs_review || q.needsReview) ? '⚠️ Cần kiểm tra' : ''),
+        reviewReason: q.reviewReason || q.reviewWarning || (Boolean(q.needs_review || q.needsReview) ? 'Cần kiểm tra' : ''),
+        reviewWarning: q.reviewWarning || (Boolean(q.needs_review || q.needsReview) ? 'Cần kiểm tra' : ''),
         createdAt: Date.now(),
         updatedAt: Date.now(),
         srs: {
@@ -4666,7 +4724,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       this.activeSession.cards = [...(this.activeSession.cards || []), ...cardsToSave];
     }
 
-    this.showToast(`Đã lưu thành công ${cardsToSave.length} câu hỏi từ LMS vào kho thẻ! 🎉`, 'success');
+    this.showToast(`Đã lưu thành công ${cardsToSave.length} câu hỏi từ LMS vào kho thẻ!`, 'success');
     Confetti.fire({ count: 60, duration: 2500 });
 
     // Clear preview & input
@@ -4800,8 +4858,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     bookmarkBtns.forEach(btn => {
       btn.classList.toggle('active-bookmark', isBookmarked);
-      btn.title = isBookmarked ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi quan trọng (⭐)';
-      btn.innerHTML = isBookmarked ? '⭐' : '☆';
+      btn.title = isBookmarked ? 'Bỏ lưu câu hỏi' : 'Lưu câu hỏi quan trọng';
+      btn.innerHTML = isBookmarked ? this.getMonoSvg('star', 'mono-icon') : '<svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
     });
 
     const flagBtns = [
@@ -4811,8 +4869,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     flagBtns.forEach(btn => {
       btn.classList.toggle('active-flag', isFlagged);
-      btn.title = isFlagged ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Đánh dấu diễn đạt chưa rõ (🚩)';
-      btn.innerHTML = isFlagged ? '🚩' : '⚑';
+      btn.title = isFlagged ? 'Bỏ cờ diễn đạt chưa rõ' : 'Đánh dấu diễn đạt chưa rõ';
+      btn.innerHTML = this.getMonoSvg('flag', 'mono-icon');
     });
   },
 
@@ -4825,7 +4883,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     card.bookmarked = nextState;
     card.isBookmarked = nextState;
     this.updateStudyCardActionsUI(card);
-    this.showToast(nextState ? 'Đã lưu câu hỏi vào danh sách ⭐' : 'Đã bỏ lưu câu hỏi', 'info');
+    this.showToast(nextState ? 'Đã lưu câu hỏi vào danh sách' : 'Đã bỏ lưu câu hỏi', 'info');
   },
 
   async toggleCurrentCardFlag() {
@@ -4837,7 +4895,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     card.flagged = nextState;
     card.isFlagged = nextState;
     this.updateStudyCardActionsUI(card);
-    this.showToast(nextState ? 'Đã gắn cờ "Diễn đạt chưa rõ" 🚩' : 'Đã bỏ gắn cờ', 'info');
+    this.showToast(nextState ? 'Đã gắn cờ "Diễn đạt chưa rõ"' : 'Đã bỏ gắn cờ', 'info');
   },
 
   toggleFocusMode() {
@@ -4845,7 +4903,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const isFocus = document.body.classList.contains('focus-mode-active');
     const btn = document.getElementById('btn-card-focus');
     if (btn) btn.classList.toggle('active', isFocus);
-    this.showToast(isFocus ? 'Đã bật Chế độ tập trung 🎯 (ESC để thoát)' : 'Đã thoát Chế độ tập trung', 'info');
+    this.showToast(isFocus ? 'Đã bật Chế độ tập trung (ESC để thoát)' : 'Đã thoát Chế độ tập trung', 'info');
   },
 
   // --- PER-QUESTION COUNTDOWN TIMER ---
@@ -4873,7 +4931,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     this.perQuestionTimerTimeout = setTimeout(() => {
       sounds.playThud();
-      this.showToast('Hết thời gian suy nghĩ cho câu hỏi này! ⏰', 'warning');
+      this.showToast('Hết thời gian suy nghĩ cho câu hỏi này!', 'warning');
     }, seconds * 1000);
   },
 
@@ -4917,21 +4975,21 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const curSubj = subjects.find(s => s.id === currentSubjectId) || subjects[0];
     const subjSelect = document.getElementById('edit-card-subject-select');
     if (subjSelect) {
-      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      subjSelect.innerHTML = subjects.map(s => `<option value="${s.id}" ${s.id === currentSubjectId ? 'selected' : ''}>${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
       subjSelect.value = currentSubjectId;
     }
 
     const subjMenu = document.getElementById('edit-card-subject-dropdown-menu');
     const subjLabel = document.getElementById('edit-card-subject-dropdown-label');
     if (subjLabel) {
-      subjLabel.textContent = curSubj ? `${curSubj.icon || '📚'} ${curSubj.name}` : 'Chọn môn học...';
+      subjLabel.textContent = curSubj ? `${this._escapeHtml(curSubj.name)}` : 'Chọn môn học...';
     }
     if (subjMenu) {
       let menuHtml = '';
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${(s.icon || '📚')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -4954,7 +5012,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     await this._refreshEditCardDecksDropdown(currentSubjectId, deckId);
 
     const title = document.querySelector('#modal-edit-card .modal-title');
-    if (title) title.textContent = '➕ Thêm Câu Hỏi Mới';
+    if (title) title.textContent = 'Thêm Câu Hỏi Mới';
 
     document.getElementById('edit-card-id').value = ''; // empty indicates new card
     document.getElementById('edit-card-topic').value = '';
@@ -4983,7 +5041,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (group) group.style.display = 'none'; // Keep card in its existing deck
 
     const title = document.querySelector('#modal-edit-card .modal-title');
-    if (title) title.textContent = '✏️ Sửa Nhanh Nội Dung Câu Hỏi';
+    if (title) title.textContent = 'Sửa Nhanh Nội Dung Câu Hỏi';
 
     document.getElementById('edit-card-id').value = card.id;
     document.getElementById('edit-card-topic').value = card.topic || card.tag || '';
@@ -5056,7 +5114,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           const isActive = d.id === selectedDeckId;
           menuHtml += `
             <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardDeck('${d.id}', '${this._escapeHtml(d.name).replace(/'/g, "\\'")}')">
-              <span>🎴 ${this._escapeHtml(d.name)}</span>
+              <span>${this._escapeHtml(d.name)}</span>
             </button>
           `;
         });
@@ -5066,7 +5124,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       } else {
         deckMenu.innerHTML = `
           <button type="button" class="cyber-dropdown-item active" onclick="App.selectEditCardDeck('__new__', '+ Tự động tạo bộ thẻ mới')">
-            <span>✨ + Tự động tạo bộ thẻ mới</span>
+            <span>+ Tự động tạo bộ thẻ mới</span>
           </button>
         `;
         if (deckLabel) deckLabel.textContent = '+ Tự động tạo bộ thẻ mới';
@@ -5099,9 +5157,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   selectEditCardDifficulty(diff) {
     const diffMap = {
-      easy: '🟢 Dễ (Easy)',
-      medium: '🟡 Vừa (Medium)',
-      hard: '🔴 Khó (Hard)'
+      easy: 'Dễ (Easy)',
+      medium: 'Vừa (Medium)',
+      hard: 'Khó (Hard)'
     };
     const select = document.getElementById('edit-card-difficulty');
     if (select) select.value = diff;
@@ -5160,10 +5218,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       <div style="margin-bottom: 12px; font-size: 1rem;">${this._escapeHtml(q)}</div>
       <div style="font-weight: 700; margin-bottom: 6px;">Các lựa chọn:</div>
       <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;">
-        <div><b>A:</b> ${this._escapeHtml(a)} ${correct === 'A' ? '✅' : ''}</div>
-        <div><b>B:</b> ${this._escapeHtml(b)} ${correct === 'B' ? '✅' : ''}</div>
-        ${c ? `<div><b>C:</b> ${this._escapeHtml(c)} ${correct === 'C' ? '✅' : ''}</div>` : ''}
-        ${d ? `<div><b>D:</b> ${this._escapeHtml(d)} ${correct === 'D' ? '✅' : ''}</div>` : ''}
+        <div><b>A:</b> ${this._escapeHtml(a)} ${correct === 'A' ? '✓' : ''}</div>
+        <div><b>B:</b> ${this._escapeHtml(b)} ${correct === 'B' ? '✓' : ''}</div>
+        ${c ? `<div><b>C:</b> ${this._escapeHtml(c)} ${correct === 'C' ? '✓' : ''}</div>` : ''}
+        ${d ? `<div><b>D:</b> ${this._escapeHtml(d)} ${correct === 'D' ? '✓' : ''}</div>` : ''}
       </div>
       <div style="font-weight: 700; margin-bottom: 6px;">Giải thích:</div>
       <div>${this._escapeHtml(exp)}</div>
@@ -5288,7 +5346,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         this.activeSession.cards = [...(this.activeSession.cards || []), newCard];
       }
 
-      this.showToast('Đã thêm câu hỏi mới vào bộ thẻ thành công! 🎉', 'success');
+      this.showToast('Đã thêm câu hỏi mới vào bộ thẻ thành công!', 'success');
       Confetti.fire({ count: 40, duration: 2000 });
     }
 
@@ -5386,7 +5444,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     this.navigateTo('study');
     this.renderActiveStudyCard();
-    this.showToast('Đã khôi phục phiên học trước đó! 🚀', 'success');
+    this.showToast('Đã khôi phục phiên học trước đó!', 'success');
   },
 
   dismissSavedSession() {
@@ -5522,7 +5580,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
       html += `
         <tr style="border-bottom: 1px solid var(--border-color);">
-          <td style="padding: 10px 12px; font-weight: 600;">🏷️ ${this._escapeHtml(t.topic)}</td>
+          <td style="padding: 10px 12px; font-weight: 600;">${this._escapeHtml(t.topic)}</td>
           <td style="padding: 10px 12px; text-align: center;">${t.total}</td>
           <td style="padding: 10px 12px; text-align: center;">${t.reviewed}</td>
           <td style="padding: 10px 12px; text-align: center; color: var(--success);">${t.correct}</td>
@@ -5615,10 +5673,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const bankSubjSelect = document.getElementById('bank-subject-filter');
     if (bankSubjSelect) {
-      let html = '<option value="__all__">🌐 Tất cả môn</option>';
+      let html = '<option value="__all__">Tất cả môn</option>';
       subjects.forEach(s => {
         const isSel = this.currentBankSubjectId === s.id ? 'selected' : '';
-        html += `<option value="${s.id}" ${isSel}>${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`;
+        html += `<option value="${s.id}" ${isSel}>${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`;
       });
       bankSubjSelect.innerHTML = html;
       bankSubjSelect.value = this.currentBankSubjectId;
@@ -5752,9 +5810,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (diffLabel) {
       const diffMap = {
         '': 'Mọi độ khó',
-        'easy': '🟢 Dễ (Easy)',
-        'medium': '🟡 Vừa (Medium)',
-        'hard': '🔴 Khó (Hard)'
+        'easy': 'Dễ (Easy)',
+        'medium': 'Vừa (Medium)',
+        'hard': 'Khó (Hard)'
       };
       diffLabel.textContent = diffMap[curDiff] || 'Mọi độ khó';
     }
@@ -5813,9 +5871,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const srcLabel = document.getElementById('bank-source-dropdown-label');
     const srcMap = {
       '': 'Tất cả nguồn',
-      'lms': '🎓 Nguồn: LMS',
-      'ai': '✨ Nguồn: AI',
-      'manual': '✍️ Nguồn: Thủ công'
+      'lms': 'Nguồn: LMS',
+      'ai': 'Nguồn: AI',
+      'manual': 'Nguồn: Thủ công'
     };
     if (srcLabel) srcLabel.textContent = srcMap[selectedSource || ''] || 'Tất cả nguồn';
     const srcMenu = document.getElementById('bank-source-dropdown-menu');
@@ -5876,7 +5934,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (filtered.length === 0) {
       listContainer.innerHTML = `
         <div style="text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
-          <div style="font-size: 2.5rem; margin-bottom: 12px;">🔍</div>
+          <div style="font-size: 2.5rem; margin-bottom: 12px;"><svg class="mono-icon" style="width:48px;height:48px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
           <h3 style="margin-bottom: 8px;">Không tìm thấy câu hỏi nào phù hợp</h3>
           <p style="color: var(--text-secondary); font-size: 0.9rem;">Hãy thử nới lỏng bộ lọc hoặc thêm câu hỏi mới từ AI / LMS.</p>
         </div>
@@ -5933,7 +5991,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       : '<span class="source-badge source-badge-manual">Nguồn: Thủ công</span>';
 
     const reviewBadge = card.needsReview
-      ? `<span class="badge-review-flag" title="${this._escapeHtml(card.reviewReason || 'Cần kiểm tra lại')}">⚠️ Cần kiểm tra</span>`
+      ? `<span class="badge-review-flag" title="${this._escapeHtml(card.reviewReason || 'Cần kiểm tra lại')}">Cần kiểm tra</span>`
       : '';
 
     // Calculate days until SRS due
@@ -5942,9 +6000,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const diffMs = card.srs.dueDate - Date.now();
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
       if (diffDays <= 0) {
-        srsCountdown = '<span style="color: #F59E0B; font-weight: 600;">⏰ Cần ôn hôm nay</span>';
+        srsCountdown = '<span style="color: #F59E0B; font-weight: 600;">Cần ôn hôm nay</span>';
       } else {
-        srsCountdown = `<span style="color: var(--text-muted);">⏳ Còn ${diffDays} ngày nữa cần ôn</span>`;
+        srsCountdown = `<span style="color: var(--text-muted);">Còn ${diffDays} ngày nữa cần ôn</span>`;
       }
     }
 
@@ -5954,20 +6012,20 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
             ${sourceBadge}
             ${reviewBadge}
-            <span class="topic-badge">🏷️ ${this._escapeHtml(displayTopic)}</span>
+            <span class="topic-badge"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>${this._escapeHtml(displayTopic)}</span>
             <span class="difficulty-badge difficulty-${diff}">● ${diffLabel}</span>
-            <span style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface-elevated); padding: 3px 8px; border-radius: var(--radius-full);">📁 ${this._escapeHtml(deckName)}</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-surface-elevated); padding: 3px 8px; border-radius: var(--radius-full);"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${this._escapeHtml(deckName)}</span>
             <span style="font-size: 0.78rem;">${srsCountdown}</span>
           </div>
           <div style="display: flex; gap: 6px;">
-            <button class="btn-card-action ${isBookmarked ? 'active-bookmark' : ''}" title="${isBookmarked ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi (⭐)'}" onclick="App.toggleBankCardBookmark('${card.id}')">
-              ${isBookmarked ? '⭐' : '☆'}
+            <button class="btn-card-action ${isBookmarked ? 'active-bookmark' : ''}" title="${isBookmarked ? 'Bỏ lưu câu hỏi' : 'Lưu câu hỏi'}" onclick="App.toggleBankCardBookmark('${card.id}')">
+              ${isBookmarked ? this.getMonoSvg('star', 'mono-icon') : '<svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>'}
             </button>
-            <button class="btn-card-action ${isFlagged ? 'active-flag' : ''}" title="${isFlagged ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Gắn cờ diễn đạt chưa rõ (🚩)'}" onclick="App.toggleBankCardFlag('${card.id}')">
-              ${isFlagged ? '🚩' : '⚑'}
+            <button class="btn-card-action ${isFlagged ? 'active-flag' : ''}" title="${isFlagged ? 'Bỏ cờ diễn đạt chưa rõ' : 'Gắn cờ diễn đạt chưa rõ'}" onclick="App.toggleBankCardFlag('${card.id}')">
+              ${this.getMonoSvg('flag', 'mono-icon')}
             </button>
-            <button class="btn-card-action" title="Sửa nhanh nội dung ✏️" onclick="App.openEditCardById('${card.id}')">
-              ✏️
+            <button class="btn-card-action" title="Sửa nhanh nội dung" onclick="App.openEditCardById('${card.id}')">
+              ${this.getMonoSvg('edit', 'mono-icon')}
             </button>
           </div>
         </div>
@@ -5978,7 +6036,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
         ${card.type === 'numeric' ? `
           <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
-            🔢 <b>Đáp án số chính xác:</b> ${this._escapeHtml(card.correct_answer !== null && card.correct_answer !== undefined ? String(card.correct_answer) : '')}
+            <b>Đáp án số chính xác:</b> ${this._escapeHtml(card.correct_answer !== null && card.correct_answer !== undefined ? String(card.correct_answer) : '')}
           </div>
         ` : `
           <div class="bank-card-options-grid">
@@ -5995,7 +6053,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
         ${card.explanation ? `
           <div style="font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent);">
-            💡 <b>Giải thích:</b> ${this.renderLatexText(card.explanation)}
+            <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px;vertical-align:-2px;"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg><b>Giải thích:</b> ${this.renderLatexText(card.explanation)}
           </div>
         ` : ''}
       </div>
@@ -6092,9 +6150,9 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const label = document.getElementById('bank-source-dropdown-label');
     const srcMap = {
       '': 'Tất cả nguồn',
-      'lms': '🎓 Nguồn: LMS',
-      'ai': '✨ Nguồn: AI',
-      'manual': '✍️ Nguồn: Thủ công'
+      'lms': 'Nguồn: LMS',
+      'ai': 'Nguồn: AI',
+      'manual': 'Nguồn: Thủ công'
     };
     if (label) label.textContent = srcMap[src] || 'Tất cả nguồn';
     const menu = document.getElementById('bank-source-dropdown-menu');
@@ -6175,7 +6233,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   async toggleBankCardBookmark(cardId) {
     const updated = await db.toggleBookmark(cardId);
     const nextState = Boolean(updated?.isBookmarked ?? updated?.bookmarked ?? false);
-    this.showToast(nextState ? 'Đã lưu câu hỏi ⭐' : 'Đã bỏ lưu câu hỏi', 'info');
+    this.showToast(nextState ? 'Đã lưu câu hỏi' : 'Đã bỏ lưu câu hỏi', 'info');
 
     // Targeted DOM update - zero full re-render
     const cardEl = document.getElementById(`bank-item-${cardId}`);
@@ -6183,8 +6241,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const btn = cardEl.querySelector('.btn-card-action:first-child');
       if (btn) {
         btn.classList.toggle('active-bookmark', nextState);
-        btn.textContent = nextState ? '⭐' : '☆';
-        btn.title = nextState ? 'Bỏ lưu câu hỏi (⭐)' : 'Lưu câu hỏi (⭐)';
+        btn.innerHTML = nextState ? this.getMonoSvg('star', 'mono-icon') : '<svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+        btn.title = nextState ? 'Bỏ lưu câu hỏi' : 'Lưu câu hỏi';
       }
       if (this.bankFilters.bookmarkOnly && !nextState) {
         cardEl.remove();
@@ -6202,7 +6260,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   async toggleBankCardFlag(cardId) {
     const updated = await db.toggleFlag(cardId);
     const nextState = Boolean(updated?.isFlagged ?? updated?.flagged ?? false);
-    this.showToast(nextState ? 'Đã gắn cờ "Diễn đạt chưa rõ" 🚩' : 'Đã bỏ gắn cờ', 'info');
+    this.showToast(nextState ? 'Đã gắn cờ "Diễn đạt chưa rõ"' : 'Đã bỏ gắn cờ', 'info');
 
     // Targeted DOM update - zero full re-render
     const cardEl = document.getElementById(`bank-item-${cardId}`);
@@ -6210,8 +6268,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       const btn = cardEl.querySelector('.btn-card-action:nth-child(2)');
       if (btn) {
         btn.classList.toggle('active-flag', nextState);
-        btn.textContent = nextState ? '🚩' : '⚑';
-        btn.title = nextState ? 'Bỏ cờ diễn đạt chưa rõ (🚩)' : 'Gắn cờ diễn đạt chưa rõ (🚩)';
+        btn.innerHTML = this.getMonoSvg('flag', 'mono-icon');
+        btn.title = nextState ? 'Bỏ cờ diễn đạt chưa rõ' : 'Gắn cờ diễn đạt chưa rõ';
       }
       if (this.bankFilters.flagOnly && !nextState) {
         cardEl.remove();
@@ -6231,7 +6289,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const flagged = allCards.filter(c => c.flagged);
 
     if (flagged.length === 0) {
-      this.showToast('Bạn chưa gắn cờ 🚩 câu hỏi nào là "Diễn đạt chưa rõ"!', 'info');
+      this.showToast('Bạn chưa gắn cờ câu hỏi nào là "Diễn đạt chưa rõ"!', 'info');
       return;
     }
 
@@ -6252,7 +6310,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const promptText = `Hãy giúp tôi viết lại các câu hỏi trắc nghiệm sau đây cho thật chuẩn xác, sư phạm và mạch lạc:\n\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\``;
 
     navigator.clipboard.writeText(promptText).then(() => {
-      this.showToast(`Đã sao chép Prompt AI viết lại cho ${flagged.length} câu hỏi gắn cờ 🚩!`, 'success');
+      this.showToast(`Đã sao chép Prompt AI viết lại cho ${flagged.length} câu hỏi gắn cờ!`, 'success');
     }).catch(err => {
       alert('Không thể sao chép: ' + err.message);
     });
@@ -6351,12 +6409,15 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const toast = document.createElement('div');
     toast.className = 'toast';
     
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    if (type === 'warning') icon = '⚠️';
-    if (type === 'danger') icon = '❌';
+    let iconSvg = this.getMonoSvg('info', 'mono-icon');
+    if (type === 'success') iconSvg = this.getMonoSvg('check', 'mono-icon');
+    if (type === 'warning') iconSvg = this.getMonoSvg('warning', 'mono-icon');
+    if (type === 'danger' || type === 'error') iconSvg = this.getMonoSvg('trash', 'mono-icon');
 
-    toast.innerHTML = `<span>${icon}</span><span>${this._escapeHtml(message)}</span>`;
+    // Clean any trailing emoji from message string
+    const cleanMessage = String(message || '').replace(/\p{Extended_Pictographic}/gu, '').trim();
+
+    toast.innerHTML = `<span style="display:inline-flex; align-items:center;">${iconSvg}</span><span>${this._escapeHtml(cleanMessage)}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -6455,119 +6516,79 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   
   // --- SUBJECT EMOJI & COLOR PRESETS (Prompt 1b) ---
   SUBJECT_ICON_PRESETS: [
-    { key: 'book', name: 'Sách giáo trình', emojis: ['📚', '📖', '📕'] },
-    { key: 'math', name: 'Toán học & Hình học', emojis: ['📐', '📏', '🔢'] },
-    { key: 'flask', name: 'Hóa học & Thí nghiệm', emojis: ['🧪', '⚗️'] },
-    { key: 'dna', name: 'Sinh học & Y khoa', emojis: ['🧬', '🔬'] },
-    { key: 'code', name: 'Công nghệ & Lập trình', emojis: ['💻', '🖥️', '⌨️'] },
-    { key: 'globe', name: 'Địa lý & Quốc tế', emojis: ['🌐', '🌍', '🌎', '🌏'] },
-    { key: 'landmark', name: 'Lịch sử & Xã hội', emojis: ['🏛️', '🏛'] },
-    { key: 'scale', name: 'Pháp luật & Triết học', emojis: ['⚖️', '⚖'] },
-    { key: 'palette', name: 'Nghệ thuật & Thiết kế', emojis: ['🎨'] },
-    { key: 'music', name: 'Âm nhạc & Nghệ thuật', emojis: ['🎵', '🎶'] },
-    { key: 'brain', name: 'Tư duy & Tâm lý', emojis: ['🧠'] },
-    { key: 'pulse', name: 'Sức khỏe & Y tế', emojis: ['🩺', '❤️'] },
-    { key: 'chart', name: 'Kinh tế & Thống kê', emojis: ['📊', '📈', '📉', '💰'] },
-    { key: 'rocket', name: 'Vũ trụ & Đột phá', emojis: ['🚀'] },
-    { key: 'zap', name: 'Năng lượng & Điện tử', emojis: ['⚡'] },
-    { key: 'flame', name: 'Nhiệt huyết & Động lực', emojis: ['🔥'] },
-    { key: 'bulb', name: 'Ý tưởng & Sáng tạo', emojis: ['💡'] },
-    { key: 'target', name: 'Mục tiêu & Trọng tâm', emojis: ['🎯'] },
-    { key: 'trophy', name: 'Thành tích & Khen thưởng', emojis: ['🏆', '🥇'] },
-    { key: 'star', name: 'Ngôi sao & Xuất sắc', emojis: ['🌟', '⭐', '✨'] }
+    { key: 'book', name: 'Sách giáo trình' },
+    { key: 'math', name: 'Toán học & Hình học' },
+    { key: 'flask', name: 'Hóa học & Thí nghiệm' },
+    { key: 'dna', name: 'Sinh học & Y khoa' },
+    { key: 'code', name: 'Công nghệ & Lập trình' },
+    { key: 'globe', name: 'Địa lý & Quốc tế' },
+    { key: 'landmark', name: 'Lịch sử & Xã hội' },
+    { key: 'scale', name: 'Pháp luật & Triết học' },
+    { key: 'palette', name: 'Nghệ thuật & Thiết kế' },
+    { key: 'music', name: 'Âm nhạc & Nghệ thuật' },
+    { key: 'brain', name: 'Tư duy & Tâm lý' },
+    { key: 'pulse', name: 'Sức khỏe & Y tế' },
+    { key: 'chart', name: 'Kinh tế & Thống kê' },
+    { key: 'rocket', name: 'Vũ trụ & Đột phá' },
+    { key: 'zap', name: 'Năng lượng & Điện tử' },
+    { key: 'flame', name: 'Nhiệt huyết & Động lực' },
+    { key: 'bulb', name: 'Ý tưởng & Sáng tạo' },
+    { key: 'target', name: 'Mục tiêu & Trọng tâm' },
+    { key: 'trophy', name: 'Thành tích & Khen thưởng' },
+    { key: 'star', name: 'Ngôi sao & Xuất sắc' }
   ],
-  SUBJECT_EMOJI_PRESETS: [
-    '📚', '📐', '💻', '🔬', '🧬', '🧪', '⚛️', '🌍',
-    '🏛️', '⚖️', '📈', '💰', '🧠', '🩺', '🎨', '🎵',
-    '🇬🇧', '🇯🇵', '🇨🇳', '🚀', '⚡', '🎯', '🏆', '🎓'
-  ],
-  SUBJECT_COLOR_PRESETS: [
-    { hex: '#a855f7', name: 'Tím Lavender' },
-    { hex: '#c084fc', name: 'Tím Orchid' },
-    { hex: '#ec4899', name: 'Hồng Berry' },
-    { hex: '#f472b6', name: 'Hồng Pastel' },
-    { hex: '#8b5cf6', name: 'Tím Violet' },
-    { hex: '#6366f1', name: 'Chàm Indigo' },
-    { hex: '#38bdf8', name: 'Xanh Sky' },
-    { hex: '#2dd4bf', name: 'Xanh Mint' },
-    { hex: '#34d399', name: 'Xanh Emerald' },
-    { hex: '#facc15', name: 'Vàng Gold' },
-    { hex: '#fb923c', name: 'Cam Coral' },
-    { hex: '#fb7185', name: 'Đỏ Rose' }
-  ],
+  SUBJECT_EMOJI_PRESETS: [],
+  SUBJECT_COLOR_PRESETS: [],
 
   // --- SUBJECT MANAGEMENT CONTROLLERS (SECTION A) ---
   _createSubjectContext: '',
 
   
   renderSubjectPickerControls(mode) {
-    const emojiContainer = document.getElementById(`${mode}-subject-emoji-grid`);
-    const colorContainer = document.getElementById(`${mode}-subject-color-grid`);
+    const grid = document.getElementById(`${mode}-subject-icon-grid`);
     const iconInput = document.getElementById(`${mode}-subject-icon`);
-    const colorInput = document.getElementById(`${mode}-subject-color`);
     const currentIcon = iconInput ? (iconInput.value || 'book') : 'book';
-    const currentColor = colorInput ? (colorInput.value || '#a855f7') : '#a855f7';
 
-    if (emojiContainer) {
-      emojiContainer.innerHTML = this.SUBJECT_ICON_PRESETS.map(preset => {
-        const isActive = preset.key === currentIcon || preset.emojis.includes(currentIcon);
-        return `<button type="button" class="emoji-preset-btn ${isActive ? 'active' : ''}" data-icon-key="${preset.key}" onclick="App.selectSubjectEmoji('${mode}', '${preset.key}')" title="${preset.name}">${this.getMonoSvg(preset.key)}</button>`;
+    if (grid) {
+      grid.innerHTML = this.SUBJECT_ICON_PRESETS.map(preset => {
+        const isActive = preset.key === currentIcon;
+        return `<button type="button" class="btn btn-secondary subject-icon-btn ${isActive ? 'active' : ''}" style="height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; ${isActive ? 'background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--accent);' : ''}" data-icon-key="${preset.key}" onclick="App.selectSubjectIcon('${mode}', '${preset.key}')" title="${preset.name}">${this.getMonoSvg(preset.key)}</button>`;
       }).join('');
     }
+  },
 
-    if (colorContainer) {
-      colorContainer.innerHTML = this.SUBJECT_COLOR_PRESETS.map(preset => {
-        const isActive = preset.hex.toLowerCase() === currentColor.toLowerCase();
-        return `<button type="button" class="color-swatch-btn ${isActive ? 'active' : ''}" style="--swatch-color: ${preset.hex}; background-color: ${preset.hex};" onclick="App.selectSubjectColor('${mode}', '${preset.hex}')" title="${preset.name} (${preset.hex})"></button>`;
-      }).join('');
+  selectSubjectIcon(mode, iconKey) {
+    const iconInput = document.getElementById(`${mode}-subject-icon`);
+    if (iconInput) iconInput.value = iconKey;
+    const grid = document.getElementById(`${mode}-subject-icon-grid`);
+    if (grid) {
+      grid.querySelectorAll('button[data-icon-key]').forEach(btn => {
+        const isMatch = btn.getAttribute('data-icon-key') === iconKey;
+        btn.classList.toggle('active', isMatch);
+        if (isMatch) {
+          btn.style.background = 'var(--btn-primary-bg)';
+          btn.style.color = 'var(--btn-primary-text)';
+          btn.style.borderColor = 'var(--accent)';
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }
+      });
     }
-
-    this.updateSubjectModalPreview(mode);
   },
 
   selectSubjectEmoji(mode, iconKey) {
-    const iconInput = document.getElementById(`${mode}-subject-icon`);
-    if (iconInput) iconInput.value = iconKey;
-    const grid = document.getElementById(`${mode}-subject-emoji-grid`);
-    if (grid) {
-      grid.querySelectorAll('.emoji-preset-btn').forEach(btn => {
-        const k = btn.getAttribute('data-icon-key');
-        btn.classList.toggle('active', k === iconKey);
-      });
-    }
-    this.updateSubjectModalPreview(mode);
+    this.selectSubjectIcon(mode, iconKey);
   },
 
   selectSubjectColor(mode, hexColor) {
     const colorInput = document.getElementById(`${mode}-subject-color`);
     if (colorInput) colorInput.value = hexColor;
-    const grid = document.getElementById(`${mode}-subject-color-grid`);
-    if (grid) {
-      grid.querySelectorAll('.color-swatch-btn').forEach(btn => {
-        const swatchHex = btn.style.getPropertyValue('--swatch-color');
-        btn.classList.toggle('active', swatchHex.toLowerCase() === hexColor.toLowerCase());
-      });
-    }
-    this.updateSubjectModalPreview(mode);
   },
 
   updateSubjectModalPreview(mode) {
-    const nameInput = document.getElementById(`${mode}-subject-name`);
-    const iconInput = document.getElementById(`${mode}-subject-icon`);
-    const colorInput = document.getElementById(`${mode}-subject-color`);
-    const previewBadge = document.getElementById(`${mode}-subject-preview-badge`);
-    const previewIcon = document.getElementById(`${mode}-subject-preview-icon`);
-    const previewName = document.getElementById(`${mode}-subject-preview-name`);
-
-    const name = nameInput?.value?.trim() || (mode === 'create' ? 'Tên môn học' : 'Môn học');
-    const icon = iconInput?.value?.trim() || 'book';
-    const color = colorInput?.value || '#a855f7';
-
-    if (previewBadge) {
-      previewBadge.style.setProperty('--subj-color', color);
-    }
-    if (previewIcon) previewIcon.innerHTML = this.renderSubjectIcon(icon);
-    if (previewName) previewName.textContent = name;
+    // Kept as no-op for backward compatibility
   },
 
   openCreateSubjectModal(fromContext = '') {
@@ -6577,7 +6598,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const iconInput = document.getElementById('create-subject-icon');
     const colorInput = document.getElementById('create-subject-color');
     if (nameInput) nameInput.value = '';
-    if (iconInput) iconInput.value = '📚';
+    if (iconInput) iconInput.value = 'book';
     if (colorInput) colorInput.value = '#a855f7';
     this.renderSubjectPickerControls('create');
     const modal = document.getElementById('modal-create-subject');
@@ -6586,7 +6607,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   async saveCreateSubject() {
     const name = document.getElementById('create-subject-name')?.value?.trim();
-    const icon = document.getElementById('create-subject-icon')?.value?.trim() || '📚';
+    const icon = document.getElementById('create-subject-icon')?.value?.trim() || 'book';
     const color = document.getElementById('create-subject-color')?.value || '#8b5cf6';
 
     if (!name) {
@@ -6602,7 +6623,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const created = await db.saveSubject({ name, icon, color, order: 100 });
     this.setLastUsedSubject(created.id);
-    this.showToast(`Đã tạo môn học "${created.name}" thành công! 🎉`, 'success');
+    this.showToast(`Đã tạo môn học "${created.name}" thành công!`, 'success');
 
     const modal = document.getElementById('modal-create-subject');
     if (modal) this._closeModal(modal);
@@ -6632,12 +6653,12 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     document.getElementById('manage-subject-id').value = subject.id;
     document.getElementById('manage-subject-name').value = subject.name;
-    document.getElementById('manage-subject-icon').value = subject.icon || '📚';
+    document.getElementById('manage-subject-icon').value = subject.icon || 'book';
     document.getElementById('manage-subject-color').value = subject.color || '#a855f7';
     this.renderSubjectPickerControls('manage');
 
     const titleEl = document.getElementById('manage-subject-modal-title');
-    if (titleEl) titleEl.textContent = `⚙️ Quản Lý Môn: ${subject.name}`;
+    if (titleEl) titleEl.textContent = `Quản Lý Môn: ${subject.name}`;
 
     const subjects = await db.getAllSubjects();
     const otherSubjects = subjects.filter(s => s.id !== subject.id);
@@ -6651,21 +6672,21 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (otherSubjects.length > 0) {
       const firstTarget = otherSubjects[0];
       if (mergeSelect) {
-        mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+        mergeSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
         mergeSelect.value = firstTarget.id;
       }
       if (mergeMenu) {
         mergeMenu.innerHTML = otherSubjects.map(s => {
           const isActive = s.id === firstTarget.id;
           return `
-            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectMergeTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+            <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectMergeTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
               <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
             </button>
           `;
         }).join('');
       }
       if (mergeLabel) mergeLabel.textContent = firstTarget.name;
-      if (mergeIcon) mergeIcon.textContent = firstTarget.icon || '📚';
+      if (mergeIcon) mergeIcon.textContent = firstTarget.icon || 'book';
     } else {
       if (mergeSelect) {
         mergeSelect.innerHTML = '<option value="">(Không có môn khác để gộp)</option>';
@@ -6675,7 +6696,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         mergeMenu.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Không có môn khác để gộp</div>';
       }
       if (mergeLabel) mergeLabel.textContent = 'Không có môn khác để gộp';
-      if (mergeIcon) mergeIcon.textContent = 'ℹ️';
+      if (mergeIcon) mergeIcon.innerHTML = this.getMonoSvg('info');
     }
 
     // Check if subject has decks for deletion
@@ -6692,21 +6713,21 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         if (otherSubjects.length > 0) {
           const firstTarget = otherSubjects[0];
           if (deleteSelect) {
-            deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+            deleteSelect.innerHTML = otherSubjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
             deleteSelect.value = firstTarget.id;
           }
           if (deleteMenu) {
             deleteMenu.innerHTML = otherSubjects.map(s => {
               const isActive = s.id === firstTarget.id;
               return `
-                <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectDeleteTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+                <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectManageSubjectDeleteTarget('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
                   <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
                 </button>
               `;
             }).join('');
           }
           if (deleteLabel) deleteLabel.textContent = firstTarget.name;
-          if (deleteIcon) deleteIcon.textContent = firstTarget.icon || '📚';
+          if (deleteIcon) deleteIcon.textContent = firstTarget.icon || 'book';
         } else {
           if (deleteSelect) {
             deleteSelect.innerHTML = '<option value="">(Không có môn khác)</option>';
@@ -6716,7 +6737,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
             deleteMenu.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Không có môn khác</div>';
           }
           if (deleteLabel) deleteLabel.textContent = 'Không có môn khác';
-          if (deleteIcon) deleteIcon.textContent = 'ℹ️';
+          if (deleteIcon) deleteIcon.innerHTML = this.getMonoSvg('info');
         }
       } else {
         deleteReassignWrap.style.display = 'none';
@@ -6737,7 +6758,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const label = document.getElementById('manage-subject-merge-dropdown-label');
     if (label) label.textContent = labelText;
     const icon = document.getElementById('manage-subject-merge-dropdown-icon');
-    if (icon) icon.textContent = iconText || '📚';
+    if (icon) icon.textContent = iconText || 'book';
     const menu = document.getElementById('manage-subject-merge-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -6760,7 +6781,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const label = document.getElementById('manage-subject-delete-dropdown-label');
     if (label) label.textContent = labelText;
     const icon = document.getElementById('manage-subject-delete-dropdown-icon');
-    if (icon) icon.textContent = iconText || '📚';
+    if (icon) icon.textContent = iconText || 'book';
     const menu = document.getElementById('manage-subject-delete-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -6776,7 +6797,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   async saveManageSubject() {
     const id = document.getElementById('manage-subject-id')?.value;
     const name = document.getElementById('manage-subject-name')?.value?.trim();
-    const icon = document.getElementById('manage-subject-icon')?.value?.trim() || '📚';
+    const icon = document.getElementById('manage-subject-icon')?.value?.trim() || 'book';
     const color = document.getElementById('manage-subject-color')?.value || '#8b5cf6';
 
     if (!id || !name) {
@@ -6884,10 +6905,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const icon = document.getElementById('bulk-reassign-subject-dropdown-icon');
 
     const lastUsedSubjectId = this.getLastUsedSubjectId();
-    const defaultSubject = subjects.find(s => s.id === lastUsedSubjectId) || subjects[0] || { id: 'subj_unassigned', name: 'Chưa phân loại', icon: '📁' };
+    const defaultSubject = subjects.find(s => s.id === lastUsedSubjectId) || subjects[0] || { id: 'subj_unassigned', name: 'Chưa phân loại', icon: 'folder' };
 
     if (targetSelect) {
-      targetSelect.innerHTML = subjects.map(s => `<option value="${s.id}">${s.icon || '📚'} ${this._escapeHtml(s.name)}</option>`).join('');
+      targetSelect.innerHTML = subjects.map(s => `<option value="${s.id}">${s.icon || 'book'} ${this._escapeHtml(s.name)}</option>`).join('');
       targetSelect.value = defaultSubject.id;
     }
 
@@ -6895,7 +6916,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       menu.innerHTML = subjects.map(s => {
         const isActive = s.id === defaultSubject.id;
         return `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectBulkReassignSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || '📚'}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" role="option" aria-selected="${isActive}" onclick="App.selectBulkReassignSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}', '${s.icon || 'book'}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -6903,7 +6924,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     if (label) label.textContent = defaultSubject.name;
-    if (icon) icon.textContent = defaultSubject.icon || '📚';
+    if (icon) icon.textContent = defaultSubject.icon || 'book';
 
     const decks = await db.getAllDecks();
     const subjectsMap = {};
@@ -6916,7 +6937,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       } else {
         let html = '';
         decks.forEach(d => {
-          const s = subjectsMap[d.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: '📁', color: '#8b5cf6' };
+          const s = subjectsMap[d.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: 'folder', color: '#8b5cf6' };
           html += `
             <label class="bulk-deck-row" data-deck-id="${d.id}">
               <input type="checkbox" class="bulk-deck-checkbox cyber-checkbox" value="${d.id}" onchange="App.onBulkDeckCheckboxChange(this)" aria-label="${this._escapeHtml(d.name)}">
@@ -6945,7 +6966,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const label = document.getElementById('bulk-reassign-subject-dropdown-label');
     if (label) label.textContent = labelText;
     const icon = document.getElementById('bulk-reassign-subject-dropdown-icon');
-    if (icon) icon.textContent = iconText || '📚';
+    if (icon) icon.textContent = iconText || 'book';
     const menu = document.getElementById('bulk-reassign-subject-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -7009,7 +7030,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const targetSubj = await db.getSubject(targetId);
     const count = await db.reassignDecksSubject(checked, targetId);
 
-    this.showToast(`Đã chuyển thành công ${count} bộ thẻ sang môn "${targetSubj.name}"! 🎉`, 'success');
+    this.showToast(`Đã chuyển thành công ${count} bộ thẻ sang môn "${targetSubj.name}"!`, 'success');
 
     const modal = document.getElementById('modal-bulk-reassign-decks');
     if (modal) this._closeModal(modal);
