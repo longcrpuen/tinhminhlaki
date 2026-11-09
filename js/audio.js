@@ -1,7 +1,7 @@
 /**
- * Synthesized Web Audio Module for MindSparks — Retro 8-bit Edition
- * Generates tactile, chiptune-style sounds without any external audio files.
- * All waveforms use config from window.AUDIO_CONFIG (js/audio-config.js).
+ * Synthesized Web Audio Module for MindSparks — Acoustic Glass & Marimba Edition
+ * Generates organic, tactile, harmonic sounds without any external audio files.
+ * Uses Acoustic Glass & Wooden Marimba synthesis based on window.AUDIO_CONFIG.
  */
 class SoundEffects {
   constructor() {
@@ -23,19 +23,15 @@ class SoundEffects {
   }
 
   /**
-   * Create a simple low-pass filter to slightly tame harsh square/sawtooth waves.
-   * Sine/triangle pass through as-is.
+   * Create a low-pass filter to smooth transients and emulate physical acoustic materials.
    */
-  _createFilter(waveType, cutoff = 2200) {
+  _createFilter(cutoff = 2400) {
     if (!this.ctx) return null;
-    if (waveType === 'square' || waveType === 'sawtooth') {
-      const f = this.ctx.createBiquadFilter();
-      f.type = 'lowpass';
-      f.frequency.value = cutoff;
-      f.Q.value = 0.7;
-      return f;
-    }
-    return null;
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = cutoff;
+    f.Q.value = 0.8;
+    return f;
   }
 
   _connect(osc, gain, filter) {
@@ -57,12 +53,12 @@ class SoundEffects {
   }
 
   /**
-   * Short pixel blip for tab transitions
+   * 1. Soft Tactile Bubble Pop for tab transitions (320Hz -> 580Hz)
    */
   playTabWhoosh() {
     if (!this.enabled || !this.tabSoundEnabled) return;
     const cfg = window.AUDIO_CONFIG?.tabWhoosh || {
-      waveType: 'square', startFreq: 220, peakFreq: 440, endFreq: 330, duration: 0.12, volume: 0.10
+      waveType: 'sine', startFreq: 320, endFreq: 580, duration: 0.065, volume: 0.08
     };
     if (cfg.enabled === false) return;
 
@@ -73,33 +69,45 @@ class SoundEffects {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      const filter = this._createFilter(cfg.waveType || 'square', 1800);
+      const filter = this._createFilter(3000);
 
-      osc.type = cfg.waveType || 'square';
+      osc.type = cfg.waveType || 'sine';
       osc.frequency.setValueAtTime(cfg.startFreq, now);
-      osc.frequency.linearRampToValueAtTime(cfg.peakFreq || cfg.startFreq * 2, now + (cfg.duration * 0.4));
-      osc.frequency.linearRampToValueAtTime(cfg.endFreq || cfg.startFreq, now + cfg.duration - 0.01);
+      osc.frequency.exponentialRampToValueAtTime(cfg.endFreq, now + cfg.duration);
 
       gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(cfg.volume, now + 0.02);
+      gain.gain.linearRampToValueAtTime(cfg.volume, now + 0.012);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + cfg.duration);
 
       this._connect(osc, gain, filter);
 
       osc.start(now);
       osc.stop(now + cfg.duration + 0.01);
+
+      // Warm acoustic body thud
+      const thud = this.ctx.createOscillator();
+      const thudGain = this.ctx.createGain();
+      thud.type = 'sine';
+      thud.frequency.setValueAtTime(140, now);
+      thud.frequency.exponentialRampToValueAtTime(80, now + 0.035);
+      thudGain.gain.setValueAtTime(cfg.volume * 0.45, now);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+      thud.connect(thudGain);
+      thudGain.connect(this.ctx.destination);
+      thud.start(now);
+      thud.stop(now + 0.038);
     } catch (e) {
       // Ignore
     }
   }
 
   /**
-   * Retro "correct" chiptune — rising arpeggio
+   * 2. Acoustic Glass Marimba Chord — Correct answer (E5 -> B5 -> E6)
    */
   playCorrect() {
     if (!this.enabled) return;
     const cfg = window.AUDIO_CONFIG?.correct || {
-      waveType: 'square', notes: [392, 523.25, 784], staggerDelay: 0.07, duration: 0.12, volume: 0.14
+      waveType: 'sine', notes: [659.25, 987.77, 1318.5], staggerDelay: 0.06, duration: 0.24, volume: 0.12
     };
     if (cfg.enabled === false) return;
 
@@ -108,25 +116,41 @@ class SoundEffects {
       if (!this.ctx) return;
 
       const now = this.ctx.currentTime;
-      const notes = cfg.notes || [392, 523.25, 784];
+      const notes = cfg.notes || [659.25, 987.77, 1318.5];
 
       notes.forEach((freq, idx) => {
+        const start = now + idx * (cfg.staggerDelay || 0.06);
+
+        // Fundamental sine note
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const filter = this._createFilter(cfg.waveType || 'square', 2500);
+        const filter = this._createFilter(3600);
 
-        osc.type = cfg.waveType || 'square';
-        const start = now + idx * (cfg.staggerDelay || 0.07);
+        osc.type = cfg.waveType || 'sine';
         osc.frequency.setValueAtTime(freq, start);
 
         gain.gain.setValueAtTime(0.001, start);
-        gain.gain.linearRampToValueAtTime(cfg.volume, start + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + (cfg.duration || 0.12));
+        gain.gain.linearRampToValueAtTime(cfg.volume, start + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + (cfg.duration || 0.24));
 
         this._connect(osc, gain, filter);
-
         osc.start(start);
-        osc.stop(start + (cfg.duration || 0.12) + 0.02);
+        osc.stop(start + (cfg.duration || 0.24) + 0.02);
+
+        // Subtly resonant harmonic overtone (triangle at 2x frequency)
+        const harm = this.ctx.createOscillator();
+        const harmGain = this.ctx.createGain();
+        harm.type = 'triangle';
+        harm.frequency.setValueAtTime(freq * 2, start);
+
+        harmGain.gain.setValueAtTime(0.001, start);
+        harmGain.gain.linearRampToValueAtTime(cfg.volume * 0.18, start + 0.006);
+        harmGain.gain.exponentialRampToValueAtTime(0.0001, start + (cfg.duration * 0.45));
+
+        harm.connect(harmGain);
+        harmGain.connect(this.ctx.destination);
+        harm.start(start);
+        harm.stop(start + (cfg.duration * 0.45) + 0.01);
       });
     } catch (e) {
       // Ignore
@@ -134,12 +158,12 @@ class SoundEffects {
   }
 
   /**
-   * Retro "incorrect" buzzer — falling pitch
+   * 3. Wooden Muted Double-Tap — Incorrect answer (220Hz -> 164.8Hz)
    */
   playIncorrect() {
     if (!this.enabled) return;
     const cfg = window.AUDIO_CONFIG?.incorrect || {
-      waveType: 'square', startFreq: 220, endFreq: 98, duration: 0.22, volume: 0.14
+      waveType: 'triangle', notes: [220, 164.81], staggerDelay: 0.08, duration: 0.18, volume: 0.12
     };
     if (cfg.enabled === false) return;
 
@@ -148,33 +172,38 @@ class SoundEffects {
       if (!this.ctx) return;
 
       const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this._createFilter(cfg.waveType || 'square', 1400);
+      const notes = cfg.notes || [220, 164.81];
 
-      osc.type = cfg.waveType || 'square';
-      osc.frequency.setValueAtTime(cfg.startFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(cfg.endFreq, now + (cfg.duration - 0.04));
+      notes.forEach((freq, idx) => {
+        const start = now + idx * (cfg.staggerDelay || 0.08);
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this._createFilter(600); // Warm wooden low-pass filter
 
-      gain.gain.setValueAtTime(cfg.volume, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + cfg.duration);
+        osc.type = cfg.waveType || 'triangle';
+        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.88, start + 0.09);
 
-      this._connect(osc, gain, filter);
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(cfg.volume, start + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.095);
 
-      osc.start(now);
-      osc.stop(now + cfg.duration + 0.02);
+        this._connect(osc, gain, filter);
+        osc.start(start);
+        osc.stop(start + 0.10);
+      });
     } catch (e) {
       // Ignore
     }
   }
 
   /**
-   * Short pixel click for card flips / button presses
+   * 4. Velvet Mechanical Card Snap / Tactile Tap (520Hz -> 960Hz)
    */
   playFlip() {
     if (!this.enabled) return;
     const cfg = window.AUDIO_CONFIG?.flip || {
-      waveType: 'square', startFreq: 660, endFreq: 880, duration: 0.06, volume: 0.08
+      waveType: 'triangle', startFreq: 520, endFreq: 960, duration: 0.042, volume: 0.08
     };
     if (cfg.enabled === false) return;
 
@@ -185,17 +214,17 @@ class SoundEffects {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      const filter = this._createFilter(cfg.waveType || 'square', 3000);
+      const filter = this._createFilter(1600);
 
-      osc.type = cfg.waveType || 'square';
+      osc.type = cfg.waveType || 'triangle';
       osc.frequency.setValueAtTime(cfg.startFreq, now);
-      osc.frequency.linearRampToValueAtTime(cfg.endFreq, now + cfg.duration);
+      osc.frequency.exponentialRampToValueAtTime(cfg.endFreq, now + cfg.duration);
 
-      gain.gain.setValueAtTime(cfg.volume, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + cfg.duration);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(cfg.volume, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + cfg.duration);
 
       this._connect(osc, gain, filter);
-
       osc.start(now);
       osc.stop(now + cfg.duration + 0.01);
     } catch (e) {
@@ -204,21 +233,20 @@ class SoundEffects {
   }
 
   /**
-   * Chiptune fanfare — ascending melody like an old game win screen
+   * 5. Glass Harp Major 9th Fanfare — Completion celebration
    */
   playFanfare() {
     if (!this.enabled) return;
     const cfg = window.AUDIO_CONFIG?.fanfare || {
-      waveType: 'square',
+      waveType: 'sine',
       melody: [
-        { f: 262,  t: 0.00, d: 0.10 },
-        { f: 330,  t: 0.10, d: 0.10 },
-        { f: 392,  t: 0.20, d: 0.10 },
-        { f: 523,  t: 0.30, d: 0.10 },
-        { f: 659,  t: 0.40, d: 0.10 },
-        { f: 784,  t: 0.50, d: 0.32 }
+        { f: 523.25, t: 0.00, d: 0.22 },
+        { f: 659.25, t: 0.07, d: 0.22 },
+        { f: 783.99, t: 0.14, d: 0.24 },
+        { f: 987.77, t: 0.21, d: 0.26 },
+        { f: 1174.66, t: 0.28, d: 0.45 }
       ],
-      volume: 0.14
+      volume: 0.13
     };
     if (cfg.enabled === false) return;
 
@@ -232,9 +260,9 @@ class SoundEffects {
       melody.forEach(note => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const filter = this._createFilter(cfg.waveType || 'square', 2800);
+        const filter = this._createFilter(3200);
 
-        osc.type = cfg.waveType || 'square';
+        osc.type = cfg.waveType || 'sine';
         osc.frequency.setValueAtTime(note.f, now + note.t);
 
         gain.gain.setValueAtTime(0.001, now + note.t);
@@ -242,7 +270,6 @@ class SoundEffects {
         gain.gain.exponentialRampToValueAtTime(0.0001, now + note.t + note.d);
 
         this._connect(osc, gain, filter);
-
         osc.start(now + note.t);
         osc.stop(now + note.t + note.d + 0.02);
       });
@@ -252,12 +279,16 @@ class SoundEffects {
   }
 
   /**
-   * Retro 8-bit arpeggio chime for perfect score / battery fully charged
+   * 6. Glass Harp Arpeggio Major 9th — Perfect score chime
    */
   playBatteryCharged() {
     if (!this.enabled) return;
     const cfg = window.AUDIO_CONFIG?.batteryCharged || {
-      waveType: 'square', notes: [330, 392, 494, 659], staggerDelay: 0.07, duration: 0.10, volume: 0.13
+      waveType: 'sine',
+      notes: [523.25, 659.25, 783.99, 987.77, 1174.66],
+      staggerDelay: 0.06,
+      duration: 0.45,
+      volume: 0.13
     };
     if (cfg.enabled === false) return;
 
@@ -266,25 +297,24 @@ class SoundEffects {
       if (!this.ctx) return;
 
       const now = this.ctx.currentTime;
-      const notes = cfg.notes || [330, 392, 494, 659];
+      const notes = cfg.notes || [523.25, 659.25, 783.99, 987.77, 1174.66];
 
       notes.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const filter = this._createFilter(cfg.waveType || 'square', 2500);
+        const filter = this._createFilter(3200);
 
-        osc.type = cfg.waveType || 'square';
-        const start = now + idx * (cfg.staggerDelay || 0.07);
+        osc.type = cfg.waveType || 'sine';
+        const start = now + idx * (cfg.staggerDelay || 0.06);
         osc.frequency.setValueAtTime(freq, start);
 
         gain.gain.setValueAtTime(0.001, start);
         gain.gain.linearRampToValueAtTime(cfg.volume, start + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + (cfg.duration || 0.10));
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + (cfg.duration || 0.45));
 
         this._connect(osc, gain, filter);
-
         osc.start(start);
-        osc.stop(start + (cfg.duration || 0.10) + 0.02);
+        osc.stop(start + (cfg.duration || 0.45) + 0.02);
       });
     } catch (e) {
       // Ignore

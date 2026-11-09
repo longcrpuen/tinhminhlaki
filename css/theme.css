@@ -331,20 +331,31 @@ body[data-theme="purple-pink"] {
   --matrix-glow-color: rgba(192, 132, 252, 0.55);
   --matrix-glow-secondary: rgba(244, 114, 182, 0.40);
 
-  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h) */
+  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h & 1i) */
   --glass-slab-bg: linear-gradient(145deg, rgba(38, 30, 62, 0.86) 0%, rgba(22, 17, 38, 0.80) 100%);
   --glass-slab-blur: blur(42px) saturate(180%);
   --glass-slab-border: rgba(255, 255, 255, 0.22);
   --glass-slab-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.28), inset 1px 0 1px rgba(255, 255, 255, 0.14), 0 24px 60px -12px rgba(0, 0, 0, 0.70);
 
-  --card-frosted-bg: linear-gradient(145deg, rgba(34, 27, 54, 0.78) 0%, rgba(22, 17, 36, 0.70) 100%);
-  --card-frosted-hover-bg: linear-gradient(145deg, rgba(48, 38, 76, 0.56) 0%, rgba(32, 24, 52, 0.48) 100%);
-  --card-frosted-border: rgba(255, 255, 255, 0.16);
-  --card-frosted-hover-border: rgba(192, 132, 252, 0.60);
+  --sidebar-glass-bg: linear-gradient(160deg, rgba(42, 32, 68, 0.54) 0%, rgba(24, 18, 42, 0.46) 100%);
+  --sidebar-glass-border: rgba(192, 132, 252, 0.28);
+  --modal-convex-bg: linear-gradient(145deg, rgba(44, 34, 72, 0.72) 0%, rgba(24, 18, 42, 0.64) 100%);
+  --modal-convex-border: rgba(255, 255, 255, 0.28);
+
+  --flashcard-solid-bg: #1a142c;
+  --flashcard-solid-border: rgba(192, 132, 252, 0.42);
+
+  --input-box-bg: rgba(18, 14, 34, 0.88);
+  --input-box-border: rgba(192, 132, 252, 0.48);
+
+  --card-frosted-bg: rgba(28, 22, 46, 0.90);
+  --card-frosted-hover-bg: rgba(44, 34, 72, 0.34);
+  --card-frosted-border: rgba(255, 255, 255, 0.18);
+  --card-frosted-hover-border: #c084fc;
   --card-frosted-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.20), 0 14px 34px -10px rgba(0, 0, 0, 0.55);
 
-  --stat-box-hover-bg: linear-gradient(135deg, rgba(168, 85, 247, 0.32) 0%, rgba(236, 72, 153, 0.24) 100%);
-  --stat-box-hover-border: rgba(192, 132, 252, 0.65);
+  --stat-box-hover-bg: #9333ea;
+  --stat-box-hover-border: #c084fc;
   --stat-box-hover-text: #ffffff;
 
   --spotlight-color-1: rgba(192, 132, 252, 0.14);
@@ -570,21 +581,32 @@ html[data-theme="monochrome"] {
   --matrix-glow-color: rgba(255, 255, 255, 0.48);
   --matrix-glow-secondary: rgba(212, 212, 216, 0.30);
 
-  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h) */
+  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h & 1i) */
   --glass-slab-bg: linear-gradient(145deg, rgba(36, 36, 42, 0.86) 0%, rgba(20, 20, 24, 0.80) 100%);
   --glass-slab-blur: blur(42px) saturate(150%);
   --glass-slab-border: rgba(255, 255, 255, 0.26);
   --glass-slab-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.32), inset 1px 0 1px rgba(255, 255, 255, 0.16), 0 24px 60px -12px rgba(0, 0, 0, 0.80);
 
-  --card-frosted-bg: linear-gradient(145deg, rgba(32, 32, 38, 0.78) 0%, rgba(20, 20, 24, 0.70) 100%);
-  --card-frosted-hover-bg: linear-gradient(145deg, rgba(46, 46, 54, 0.56) 0%, rgba(28, 28, 34, 0.46) 100%);
-  --card-frosted-border: rgba(255, 255, 255, 0.18);
-  --card-frosted-hover-border: rgba(255, 255, 255, 0.65);
+  --sidebar-glass-bg: linear-gradient(160deg, rgba(38, 38, 44, 0.54) 0%, rgba(20, 20, 24, 0.46) 100%);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.24);
+  --modal-convex-bg: linear-gradient(145deg, rgba(40, 40, 46, 0.72) 0%, rgba(20, 20, 24, 0.64) 100%);
+  --modal-convex-border: rgba(255, 255, 255, 0.28);
+
+  --flashcard-solid-bg: #141418;
+  --flashcard-solid-border: rgba(255, 255, 255, 0.30);
+
+  --input-box-bg: rgba(16, 16, 20, 0.92);
+  --input-box-border: rgba(255, 255, 255, 0.42);
+
+  --card-frosted-bg: rgba(22, 22, 26, 0.90);
+  --card-frosted-hover-bg: rgba(40, 40, 46, 0.34);
+  --card-frosted-border: rgba(255, 255, 255, 0.20);
+  --card-frosted-hover-border: #ffffff;
   --card-frosted-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.24), 0 14px 34px -10px rgba(0, 0, 0, 0.75);
 
-  --stat-box-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(161, 161, 170, 0.14) 100%);
+  --stat-box-hover-bg: #ffffff;
   --stat-box-hover-border: #ffffff;
-  --stat-box-hover-text: #ffffff;
+  --stat-box-hover-text: #09090b;
 
   --spotlight-color-1: rgba(255, 255, 255, 0.12);
   --spotlight-color-2: rgba(255, 255, 255, 0.03);
@@ -808,6 +830,28 @@ html[data-theme="white-orange"] {
 
   --matrix-glow-color: rgba(249, 115, 22, 0.62);
   --matrix-glow-secondary: rgba(251, 191, 36, 0.45);
+
+  /* Master Frosted Milky Liquid Glass Tokens (Phase 1h & 1i) */
+  --sidebar-glass-bg: linear-gradient(160deg, rgba(255, 252, 248, 0.58) 0%, rgba(255, 237, 213, 0.46) 100%);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.85);
+  --modal-convex-bg: linear-gradient(145deg, rgba(255, 253, 250, 0.76) 0%, rgba(254, 243, 231, 0.66) 100%);
+  --modal-convex-border: rgba(255, 255, 255, 0.92);
+
+  --flashcard-solid-bg: #fffcf8;
+  --flashcard-solid-border: rgba(234, 88, 12, 0.38);
+
+  --input-box-bg: rgba(255, 255, 255, 0.92);
+  --input-box-border: rgba(234, 88, 12, 0.42);
+
+  --card-frosted-bg: rgba(255, 251, 246, 0.90);
+  --card-frosted-hover-bg: rgba(255, 247, 237, 0.34);
+  --card-frosted-border: rgba(255, 255, 255, 0.95);
+  --card-frosted-hover-border: #ea580c;
+  --card-frosted-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.98), 0 12px 30px -8px rgba(120, 53, 15, 0.12);
+
+  --stat-box-hover-bg: #ea580c;
+  --stat-box-hover-border: #ea580c;
+  --stat-box-hover-text: #ffffff;
 }
 
 
@@ -1293,4 +1337,234 @@ html[data-theme="white-orange"] .deck-card .deck-meta {
   box-shadow: 0 18px 38px -8px var(--accent-glow),
               inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
 }
+
+/* ==========================================================================
+   PHASE 1I: CONVEX LIQUID GLASS, CONTRAST, TYPOGRAPHY & SVG PROTECTIONS
+   ========================================================================== */
+
+/* KHÓA BẢO VỆ ICON SIDEBAR DESKTOP & BOTTOM NAV MOBILE — TUYỆT ĐỐI KHÔNG BỊ TÔ ĐẶC CỤC VUÔNG (MỤC 1.2 & 1.11) */
+.app-sidebar .nav-item svg,
+.app-sidebar .nav-item svg *,
+.app-sidebar .nav-item.active svg,
+.app-sidebar .nav-item.active svg *,
+.bottom-nav .bottom-nav-item svg,
+.bottom-nav .bottom-nav-item svg *,
+.bottom-nav .bottom-nav-item.active svg,
+.bottom-nav .bottom-nav-item.active svg * {
+  fill: none !important;
+  background: transparent !important;
+  stroke: currentColor !important;
+  stroke-width: 2px !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.app-sidebar .nav-item button svg,
+.bottom-nav .bottom-nav-item svg {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
+/* MỤC 1.9 & 1.12: POPUP THẤU KÍNH LỒI BÓP MÉO VIỀN + SIDEBAR KÍNH MỜ TRONG SUỐT */
+.modal-box {
+  position: relative !important;
+  background: var(--modal-convex-bg) !important;
+  backdrop-filter: url(#liquid-convex-lens) blur(32px) saturate(190%) !important;
+  -webkit-backdrop-filter: url(#liquid-convex-lens) blur(32px) saturate(190%) !important;
+  border-radius: 32px !important;
+  border: 1.5px solid var(--modal-convex-border) !important;
+  box-shadow:
+    inset 0 2.5px 4px rgba(255, 255, 255, 0.88),
+    inset 2px 0 3px rgba(255, 255, 255, 0.55),
+    inset 0 -2.5px 5px rgba(255, 255, 255, 0.28),
+    inset 0 0 28px rgba(255, 255, 255, 0.22),
+    0 28px 64px -12px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Vành kính lồi Meniscus chạy dọc mép trong của Popup tạo độ cong quang học */
+.modal-box::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  padding: 12px !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 35%,
+    rgba(255, 255, 255, 0.04) 65%,
+    rgba(255, 255, 255, 0.38) 100%
+  ) !important;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
+  -webkit-mask-composite: xor !important;
+  mask-composite: exclude !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* Mục 1.12: Biến Sidebar (.app-sidebar) thành Kính Mờ Đục Trong Suốt (Frosted Liquid Glass), KHÔNG PHẢI MÀU TRƠN */
+.app-sidebar {
+  background: var(--sidebar-glass-bg) !important;
+  backdrop-filter: blur(38px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(38px) saturate(190%) !important;
+  border: 1.5px solid var(--sidebar-glass-border) !important;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.60),
+    inset -1.5px 0 2px rgba(255, 255, 255, 0.30),
+    0 18px 42px -10px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Mục 2.3: Hover 7 Chế độ học đổi nút pill sang accent */
+.study-mode-card:hover .study-mode-pill-btn {
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border-color: var(--btn-primary-bg) !important;
+}
+html[data-theme="white-orange"] .study-mode-card:hover .study-mode-pill-btn {
+  background: #ea580c !important;
+  color: #ffffff !important;
+  border-color: #ea580c !important;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35) !important;
+}
+
+/* MỤC 2.5: BẮT BUỘC ĐỔI CHỮ ĐEN TO BẢN CỦA QUOTE Ở MODE TRẮNG CAM SANG FONT CÓ CHÂN THẲNG */
+html[data-theme="white-orange"] #hero-title,
+html[data-theme="white-orange"] .hero-title,
+html[data-theme="white-orange"] #hero-title .hero-title-main,
+html[data-theme="white-orange"] #hero-title .hero-title-sub,
+html[data-theme="white-orange"] .hero-title span:not(.hero-title-accent),
+html[data-theme="white-orange"] .hero-quote-line .hero-title-main,
+html[data-theme="white-orange"] .hero-quote-line .hero-title-sub {
+  font-family: 'PT Serif', 'Newsreader', 'Noto Serif', Georgia, serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important; /* Đứng thẳng 100%, không nghiêng */
+  letter-spacing: -0.02em !important;
+  color: #1c1917 !important;
+}
+
+/* Chữ màu cam điểm nhấn giữ nguyên in nghiêng thanh mảnh */
+html[data-theme="white-orange"] #hero-title .hero-title-accent,
+html[data-theme="white-orange"] .hero-title .hero-title-accent,
+html[data-theme="white-orange"] .hero-quote-line .hero-title-accent {
+  font-family: 'Newsreader', 'PT Serif', Georgia, serif !important;
+  font-weight: 400 !important;
+  font-style: italic !important;
+  color: #ea580c !important;
+}
+
+/* KHÔI PHỤC RÕ NÉT 100% KHUNG INPUT, SEARCH & TEXTAREA TRÊN CẢ 3 THEME (MỤC 3.1) */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+textarea,
+.form-control,
+.cyber-input,
+.cyber-textarea,
+#bank-search-input,
+#import-deck-name,
+#import-deck-desc,
+#import-raw-input,
+#ai-raw-input,
+#lms-raw-input,
+#create-subject-name,
+#manage-subject-name,
+#edit-card-topic,
+#edit-card-question,
+#edit-card-explanation {
+  background: var(--input-box-bg, rgba(18, 14, 32, 0.88)) !important;
+  border: 1.5px solid var(--input-box-border, rgba(192, 132, 252, 0.48)) !important;
+  color: var(--text-primary, #f8fafc) !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 12px 16px !important;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', 'Inter', sans-serif) !important;
+  font-size: 0.95rem !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+input:focus,
+textarea:focus,
+.form-control:focus,
+#bank-search-input:focus,
+#import-raw-input:focus,
+#lms-raw-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft), inset 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+  outline: none !important;
+}
+
+/* MỤC 3.2: TĂNG ĐỘ TƯƠNG PHẢN CHỮ ĐOÁN TRƯỚC VÀ NÚT REVEAL OPTIONS Ở DARK MODE */
+#btn-toggle-blind,
+.blind-toggle-pill {
+  background: var(--input-box-bg) !important;
+  border: 1.5px solid var(--input-box-border) !important;
+  color: var(--text-primary) !important;
+}
+#btn-toggle-blind *,
+.blind-toggle-pill * {
+  color: inherit !important;
+}
+
+#btn-toggle-blind.active,
+.blind-toggle-pill.active,
+.btn-reveal-options {
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border: 1.5px solid var(--btn-primary-bg) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 16px var(--accent-glow) !important;
+}
+#btn-toggle-blind.active *,
+.blind-toggle-pill.active *,
+.btn-reveal-options * {
+  color: var(--btn-primary-text) !important;
+}
+
+/* MỤC 4.1: TĂNG ĐỘ TƯƠNG PHẢN GIỮA CÂU SAI & CÂU ĐÚNG TRONG QUIZ Ở MODE TRẮNG ĐEN */
+html[data-theme="monochrome"] .quiz-option-btn.correct {
+  background: rgba(16, 185, 129, 0.28) !important;
+  border: 2.5px solid #34d399 !important;
+  border-left: 8px solid #10b981 !important;
+  color: #ecfdf5 !important;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.18) !important;
+  font-weight: 700 !important;
+}
+html[data-theme="monochrome"] .quiz-option-btn.correct .quiz-option-letter {
+  background: #10b981 !important;
+  color: #09090b !important;
+  border-radius: 6px !important;
+  padding: 2px 8px !important;
+}
+
+html[data-theme="monochrome"] .quiz-option-btn.incorrect {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(239, 68, 68, 0.30),
+    rgba(239, 68, 68, 0.30) 10px,
+    rgba(185, 28, 28, 0.22) 10px,
+    rgba(185, 28, 28, 0.22) 20px
+  ) !important;
+  border: 2.5px solid #f87171 !important;
+  border-left: 8px solid #ef4444 !important;
+  color: #fecaca !important;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.40), inset 0 0 14px rgba(239, 68, 68, 0.25) !important;
+}
+html[data-theme="monochrome"] .quiz-option-btn.incorrect .quiz-option-letter {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 2px 8px !important;
+}
+html[data-theme="monochrome"] .quiz-option-btn.incorrect .quiz-option-content {
+  text-decoration: line-through !important;
+  text-decoration-color: #f87171 !important;
+  text-decoration-thickness: 2px !important;
+  opacity: 0.92 !important;
+}
+
 

@@ -155,11 +155,78 @@ const App = {
 
   initHeroGlassMatrix() {},
 
+  // Hàm khởi tạo Bộ lọc Thấu kính Lồi Quang học (Phase 1i)
+  initLiquidGlassLensFilter() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('liquid-glass-svg-defs')) return;
+    try {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const imgData = ctx.createImageData(size, size);
+      const data = imgData.data;
+
+      // Tạo trường vector khúc xạ vành thấu kính lồi (Convex Meniscus Bezel)
+      const rimWidth = 0.24; // 24% vành ngoài bị uốn cong như thấu kính lồi
+      for (let y = 0; y < size; y++) {
+        const ny = (y / (size - 1)) * 2 - 1; // -1 .. 1
+        for (let x = 0; x < size; x++) {
+          const nx = (x / (size - 1)) * 2 - 1; // -1 .. 1
+          // Khoảng cách Signed Distance tới đường viền bo góc (Squircle / Rounded Rect)
+          const ax = Math.abs(nx);
+          const ay = Math.abs(ny);
+          const dist = Math.pow(Math.pow(ax, 4) + Math.pow(ay, 4), 0.25);
+
+          let r = 128;
+          let g = 128;
+          if (dist > 1 - rimWidth) {
+            const t = Math.min(1, (dist - (1 - rimWidth)) / rimWidth);
+            // Đường cong khúc xạ bậc 3 tạo hiệu ứng mép kính lồi
+            const curve = Math.pow(t, 2.6);
+            r = Math.round(128 + nx * curve * 120);
+            g = Math.round(128 + ny * curve * 120);
+          }
+          const idx = (y * size + x) * 4;
+          data[idx] = Math.max(0, Math.min(255, r));
+          data[idx + 1] = Math.max(0, Math.min(255, g));
+          data[idx + 2] = 128;
+          data[idx + 3] = 255;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const mapUrl = canvas.toDataURL('image/png');
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.id = 'liquid-glass-svg-defs';
+      svg.setAttribute('width', '0');
+      svg.setAttribute('height', '0');
+      svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none;z-index:-1;';
+      svg.innerHTML = `
+        <defs>
+          <filter id="liquid-convex-lens" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+            <feImage href="${mapUrl}" result="lensMap" preserveAspectRatio="none" />
+            <feDisplacementMap in="SourceGraphic" in2="lensMap" scale="32" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+            <feGaussianBlur in="refracted" stdDeviation="16" result="blurred" />
+            <feColorMatrix in="blurred" type="saturate" values="1.85" result="saturated" />
+          </filter>
+        </defs>
+      `;
+      document.body.appendChild(svg);
+    } catch (e) {
+      console.warn('Liquid glass SVG filter fallback to CSS blur:', e);
+    }
+  },
+
   // --- INITIALIZATION ---
   async init() {
     // 1. Setup DB
     await db.init();
     this.initHeroGlassMatrix();
+    this.initLiquidGlassLensFilter();
 
     // Check migration notice (Section A)
     try {
@@ -399,8 +466,14 @@ const App = {
   // --- ROBUST MIXED LATEX & TEXT PARSER & RENDERER ---
   renderLatexText(text) {
     if (text === null || text === undefined) return '';
-    const str = String(text);
+    let str = String(text);
     if (!str.trim()) return '';
+
+    // Khôi phục các ký tự LaTeX bị JSON.parse nuốt biến thành ký tự điều khiển (Prompt 1i Mục 1.3)
+    str = str.replace(/\x09heta/g, '\\theta')
+             .replace(/\x0crac/g, '\\frac')
+             .replace(/\x08eta/g, '\\beta')
+             .replace(/\x0dho/g, '\\rho');
 
     const hasKatex = (typeof katex !== 'undefined' && typeof katex.renderToString === 'function') ||
                      (typeof window !== 'undefined' && typeof window.katex !== 'undefined' && typeof window.katex.renderToString === 'function');
@@ -450,6 +523,13 @@ const App = {
         isBlock = false;
         code = code.slice(1, -1);
       }
+
+      // Khôi phục ký tự LaTeX & tự động nâng \frac thành \dfrac để phân số to rõ
+      code = code.replace(/\x09heta/g, '\\theta')
+                 .replace(/\x0crac/g, '\\frac')
+                 .replace(/\x08eta/g, '\\beta')
+                 .replace(/\x0dho/g, '\\rho')
+                 .replace(/\\frac\{/g, '\\dfrac{');
 
       // Step 3 Requirement: Auto-escape unescaped % into \% inside math formulas
       code = code.replace(/(^|[^\\])%/g, '$1\\%');
@@ -1986,6 +2066,11 @@ const App = {
   },
 
   async startSession(deckId, mode = 'srs', options = {}) {
+    // Nếu gọi mode 'topic' mà chưa truyền danh sách chương/chủ đề -> Mở ngay Modal Chọn Môn & Chương! (Prompt 1i Mục 1.1)
+    if (mode === 'topic' && (!options || !Array.isArray(options.topics) || options.topics.length === 0)) {
+      return this.openTopicPickerModal(deckId, options?.subjectId || null);
+    }
+
     let cards = [];
     let title = 'Ôn Tập';
     let blindMode = options.blindMode || (mode === 'blind');
@@ -2021,7 +2106,13 @@ const App = {
       // 5. Ôn theo Môn & Chương
       const topics = options.topics || [];
       cards = await db.getCardsByTopics(topics, deckId, options.subjectId);
-      title = `5. Ôn Theo Chương: ${topics.join(', ')}`;
+      if ((!cards || cards.length === 0) && options.subjectId) {
+        cards = await db.getCardsBySubject(options.subjectId);
+      }
+      if (!cards || cards.length === 0) {
+        cards = await db.getAllCards();
+      }
+      title = topics.length > 0 ? `5. Ôn Theo Chương: ${topics.join(', ')}` : '5. Ôn Theo Môn & Chương';
     } else if (mode === 'blind') {
       // 6. Đoán trước khi xem đáp án: Ẩn các lựa chọn trước
       cards = deckId ? await db.getCardsByDeck(deckId) : (options.subjectId ? await db.getCardsBySubject(options.subjectId) : await db.getAllCards());
@@ -2401,42 +2492,14 @@ const App = {
         }
 
         if (isOverflow) {
-          // Priority 1: Scale down font size of formula slightly (level 1: 0.88em)
-          for (const k of katexElements) {
-            k.classList.add('katex-scaled-down');
-            k.style.setProperty('font-size', '0.88em', 'important');
-          }
-
-          // Check if still overflows after first scale level
-          let stillOverflows = (item && item.scrollWidth > item.clientWidth + 1) ||
-            (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1) ||
-            Array.from(katexElements).some(k => k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1));
-
-          if (stillOverflows) {
-            // Level 1b: Scale slightly more down to reasonable minimum (0.82em)
-            for (const k of katexElements) {
-              k.style.setProperty('font-size', '0.82em', 'important');
-            }
-
-            stillOverflows = (item && item.scrollWidth > item.clientWidth + 1) ||
-              (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1) ||
-              Array.from(katexElements).some(k => k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1));
-
-            if (stillOverflows) {
-              // Priority 2: Fall back to 1-column layout (4 rows, each taking full card width)
-              forceSingleColumn = true;
-              break;
-            }
-          }
+          // Khi công thức dài, tự động chuyển sang 1 cột (.layout-single-column) thay vì ép nhỏ chữ (Prompt 1i Mục 1.3)
+          forceSingleColumn = true;
+          break;
         }
       }
 
       if (forceSingleColumn) {
         container.classList.add('layout-single-column');
-        container.querySelectorAll('.katex-scaled-down, .katex-scaled-down-1, .katex-scaled-down-2').forEach(el => {
-          el.classList.remove('katex-scaled-down', 'katex-scaled-down-1', 'katex-scaled-down-2');
-          el.style.removeProperty('font-size');
-        });
       }
     };
 
@@ -3091,24 +3154,19 @@ const App = {
     const flashcardEl = document.getElementById('active-flashcard');
     session.currentIndex++;
 
-    if (session.currentIndex >= session.cards.length) {
+    if (flashcardEl && session.currentIndex < session.cards.length) {
+      // 1. Tắt transition 3D ngay lập tức để đặt thẻ về mặt trước (0deg) ở 0ms mà KHÔNG quay lật ngược! (Prompt 1i Mục 1.5)
+      flashcardEl.style.transition = 'none';
+      flashcardEl.classList.remove('flipped', 'switching-out', 'switching-in-start');
+      // 2. Nạp ngay nội dung câu hỏi mới vào mặt trước
       this.renderActiveStudyCard();
-      return;
-    }
-
-    if (flashcardEl) {
-      this._isSwitchingFlashcard = true;
-      flashcardEl.classList.add('switching-out');
-      setTimeout(() => {
-        flashcardEl.classList.remove('switching-out', 'flipped');
-        flashcardEl.classList.add('switching-in-start');
-        this.renderActiveStudyCard();
-        void flashcardEl.offsetWidth; // Force reflow
-        requestAnimationFrame(() => {
-          flashcardEl.classList.remove('switching-in-start');
-          this._isSwitchingFlashcard = false;
-        });
-      }, 145);
+      // 3. Đặt vị trí trượt nhẹ từ bên phải (không làm biến mất thẻ!)
+      flashcardEl.style.transform = 'translate3d(26px, 0, 0) scale(0.985) rotateY(0deg)';
+      void flashcardEl.offsetWidth; // Force sync layout
+      // 4. Bật lại transition để thẻ mới lướt êm vào vị trí chuẩn ngay tức thì
+      flashcardEl.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)';
+      flashcardEl.style.transform = '';
+      this._isSwitchingFlashcard = false;
     } else {
       this.renderActiveStudyCard();
     }
@@ -3562,6 +3620,13 @@ const App = {
     this._updateTopicPickerCount();
   },
 
+  toggleAllTopicsInPicker() {
+    const chips = document.querySelectorAll('#topic-picker-chips .topic-chip');
+    if (chips.length === 0) return;
+    const allSelected = Array.from(chips).every(c => this.selectedTopicsForReview.has(c.getAttribute('data-topic')));
+    this.selectAllPickerTopics(!allSelected);
+  },
+
   selectAllPickerTopics(select = true) {
     const chips = document.querySelectorAll('#topic-picker-chips .topic-chip');
     chips.forEach(chip => {
@@ -3593,12 +3658,13 @@ const App = {
 
   startTopicReview() {
     const topics = Array.from(this.selectedTopicsForReview);
-    if (topics.length === 0) {
-      this.showToast('Vui lòng chọn ít nhất 1 chương / chủ đề!', 'warning');
-      return;
-    }
     const modal = document.getElementById('modal-topic-picker');
     if (modal) this._closeModal(modal);
+
+    // Nếu chưa tích chọn chương nào: tự động ôn toàn bộ môn học đang chọn (hoặc toàn bộ kho thẻ) không báo lỗi (Prompt 1i Mục 1.1)
+    if (topics.length === 0) {
+      return this.startSubjectSession(this.currentSubjectIdForTopic, 'srs');
+    }
     this.startSession(this.currentDeckIdForTopic, 'topic', { topics, subjectId: this.currentSubjectIdForTopic });
   },
 
