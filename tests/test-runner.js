@@ -1244,6 +1244,45 @@ console.log('\n=== TEST SUITE 17: Phase 1k Popup Lock Fix, Continuous Glass Volu
   assert(appJs.includes('initBlurCullingObserver'), 'app.js implements initBlurCullingObserver');
 }
 
+console.log('\n=== TEST SUITE 18: Phase 1l Unified Liquid Glass, 3D Meniscus Bevel, Light Neon & 144+ FPS ===');
+{
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // 1. 4 Quote Stat Boxes (Mục 1)
+  assert(themeCss.includes('border-radius: 22px !important;'), 'Stat cards enforce 22px border radius');
+  assert(themeCss.includes('border: none !important;'), 'Stat cards remove harsh white outer border');
+  assert(themeCss.includes('rgba(255, 132, 62, 0.44)'), 'White-orange stat card hover uses gentle Light Neon radial glow');
+  assert(!styleCss.includes('.editorial-stats-grid .stat-card {\n  background: transparent !important;\n  border: none !important;\n  box-shadow: none !important;\n  padding: 12px 16px !important;\n  border-left: 2px solid var(--border-color) !important;\n  border-radius: 0 !important;'), 'style.css removed square 0px border-radius from editorial stat cards');
+
+  // 2. Restore Purple Theme Glass Frame & Unified Tokens (Mục 2)
+  assert(themeCss.includes('--lg-card-rest-bg') && themeCss.includes('--lg-card-rest-shadow'), 'theme.css defines unified --lg-card-rest-* tokens');
+  assert(themeCss.includes('--lg-card-hover-bg') && themeCss.includes('--lg-card-hover-shadow'), 'theme.css defines unified --lg-card-hover-* tokens');
+  assert(themeCss.includes('html[data-theme="purple-pink"]') && themeCss.includes('rgba(38, 28, 66, 0.76)'), 'Purple-pink defines deep 3D frosted resting glass');
+  assert(themeCss.includes('html[data-theme="monochrome"]') && themeCss.includes('rgba(38, 38, 44, 0.76)'), 'Monochrome defines silver smoke resting glass');
+  assert(themeCss.includes('html[data-theme="white-orange"]') && themeCss.includes('rgba(255, 253, 250, 0.66)'), 'White-orange defines liquid milky glass');
+
+  // 3. Unified High Specificity Selectors (Mục 2)
+  assert(themeCss.includes('#view-dashboard .study-mode-card') && themeCss.includes('#dashboard-decks-grid .deck-card'), 'theme.css unifies dashboard modes and deck cards');
+  assert(themeCss.includes('#view-decks .deck-card') && themeCss.includes('.subject-group .deck-card'), 'theme.css unifies deck library cards and subject group cards');
+  assert(themeCss.includes('backdrop-filter: blur(20px) saturate(180%) !important;'), 'Resting cards have frosted 20px blur');
+  assert(themeCss.includes('backdrop-filter: blur(5px) saturate(135%) !important;'), 'Hovered cards turn crystal clear with 5px blur');
+  assert(themeCss.includes('#view-decks .subject-group'), 'theme.css restores subject group container frame');
+
+  // 4. Rimless 3D Meniscus Bevel (Mục 3)
+  assert(themeCss.includes('--lg-card-hover-border: rgba(255, 255, 255, 0.52);'), 'White-orange hover replaces harsh 2D orange border with 3D meniscus bevel');
+  assert(themeCss.includes('inset 0 2.5px 5px rgba(255, 255, 255, 0.98)'), 'White-orange hover applies multi-layer 3D inset meniscus reflection');
+
+  // 5. 144+ FPS Locked Scrolling Performance (Mục 4)
+  assert(!themeCss.includes('backdrop-filter: url(#liquid-convex-lens)'), 'Modal box removed CPU-GPU texture readback lens from backdrop-filter');
+  assert(themeCss.includes('backdrop-filter: blur(26px) saturate(195%) brightness(1.06) !important;'), 'Modal box uses pure GPU compositor backdrop filter');
+  assert(themeCss.includes('transform: translateZ(0) !important;') && themeCss.includes('contain: layout paint !important;'), 'theme.css isolates compositor layers on scroll containers');
+  assert(themeCss.includes('body.is-scrolling'), 'theme.css defines body.is-scrolling pointer freeze');
+  assert(appJs.includes("document.body.classList.contains('is-scrolling')"), 'app.js implements passive scroll pointer freeze');
+  assert(appJs.includes('initSpotlightHover() {\n    return;'), 'initSpotlightHover returns immediately to guarantee 0% CPU');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

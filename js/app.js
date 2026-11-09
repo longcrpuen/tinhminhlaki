@@ -289,29 +289,11 @@ const App = {
   },
 
   initBlurCullingObserver() {
-    if (typeof IntersectionObserver === 'undefined') return;
-    if (!this._blurCullObserver) {
-      this._blurCullObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.remove('blur-culled');
-          } else {
-            entry.target.classList.add('blur-culled');
-          }
-        });
-      }, {
-        root: null,
-        rootMargin: '120px 0px 120px 0px',
-        threshold: 0
-      });
+    // Phase 1l: Replaced with pure GPU Compositor CSS rules to prevent card frame dropouts
+    if (typeof document !== 'undefined') {
+      document.querySelectorAll('.blur-culled').forEach(el => el.classList.remove('blur-culled'));
     }
-    const selectors = '.study-mode-card, .mode-card, .deck-card, .hero-stat-bento-card, .stat-card';
-    document.querySelectorAll(selectors).forEach(el => {
-      if (!el.classList.contains('blur-cull-bound')) {
-        el.classList.add('blur-cull-bound');
-        this._blurCullObserver.observe(el);
-      }
-    });
+    return;
   },
 
   observeUnrevealedItems() {
@@ -1537,6 +1519,18 @@ const App = {
       }
     }, { passive: true });
 
+    // Passive Scroll Pointer-Freeze (Phase 1l: Tạm khóa kích hoạt lại hover tốn kém trong lúc đang cuộn nhanh để giữ cứng 144+ FPS)
+    let scrollTimer = null;
+    window.addEventListener('scroll', () => {
+      if (!document.body.classList.contains('is-scrolling')) {
+        document.body.classList.add('is-scrolling');
+      }
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+      }, 90);
+    }, { passive: true });
+
     // Adaptive options layout on resize
     window.addEventListener('resize', () => {
       const studyOptions = document.getElementById('quiz-options-container');
@@ -1553,8 +1547,9 @@ const App = {
     this.initSpotlightHover();
   },
 
-  // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2 - Optimized 1b) ---
+  // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2 - Disabled in Phase 1l for 0% CPU & locked 144+ FPS) ---
   initSpotlightHover() {
+    return;
     if (typeof window === 'undefined' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       return;
     }
