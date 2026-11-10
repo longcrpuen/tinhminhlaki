@@ -114,6 +114,7 @@ class LofiMusicPlayer {
     this.initAudioElement();
     this.setupFirstInteractionAutoPlay();
     this.initCyberDropdown();
+    this.syncVolumeSliders();
     this.updateUI();
   }
 
@@ -421,6 +422,29 @@ class LofiMusicPlayer {
     try {
       localStorage.setItem('mindsparks_lofi_volume', String(this.volume));
     } catch (_) {}
+    this.syncVolumeSliders();
+  }
+
+  syncVolumeSliders() {
+    if (typeof document === 'undefined') return;
+    const sliders = [
+      document.getElementById('setting-lofi-volume'),
+      document.getElementById('lofi-volume-slider'),
+      ...Array.from(document.querySelectorAll('.lofi-volume-slider') || [])
+    ].filter(Boolean);
+
+    const pct = Math.max(0, Math.min(100, this.volume * 100));
+    const pctStr = `${pct.toFixed(1)}%`;
+
+    sliders.forEach(slider => {
+      slider.style.setProperty('--slider-pct', pctStr);
+      slider.value = String(Math.round(pct));
+    });
+
+    const label = document.getElementById('lofi-volume-label');
+    if (label) {
+      label.textContent = `${Math.round(pct)}%`;
+    }
   }
 
   triggerUpload() {
@@ -631,6 +655,7 @@ class LofiMusicPlayer {
     }
 
     // Sync Settings elements if available
+    this.syncVolumeSliders();
     const setVol = document.getElementById('setting-lofi-volume');
     if (setVol) {
       setVol.value = Math.round(this.volume * 100);

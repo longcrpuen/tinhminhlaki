@@ -10187,6 +10187,1173 @@ body.is-scrolling .stat-card {
   contain: layout style paint !important;
 }
 
+/* ==========================================================================
+   PHASE 1Q: 1. NÚT XÓA BỘ THẺ LIQUID GLASS & POINTER-EVENTS
+   ========================================================================== */
+.deck-delete-btn {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+}
+
+/* ==========================================================================
+   PHASE 1Q: 4. CĂN CHỈNH THẲNG HÀNG TUYỆT ĐỐI CÁC LỰA CHỌN ĐÁP ÁN (.quiz-option-btn)
+      & PHÓNG TO RÕ NÉT HỘP GIẢI THÍCH Ở CẢ 3 THEME (CHỐNG TRÀN TEXT 100%)
+   ========================================================================== */
+
+/* 1. Căn giữa theo trục dọc (align-items: center) cho toàn bộ nút đáp án ở cả Quiz, Thi thử & Ngân hàng */
+html body #view-study .quiz-option-btn,
+html body #view-exam .quiz-option-btn,
+html body .quiz-option-btn {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important; /* Căn giữa hoàn hảo cả chữ 1 dòng lẫn phân số LaTeX */
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  min-height: 58px !important;
+  height: auto !important;
+  padding: 14px 20px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* Đồng bộ hoàn toàn cỡ chữ, line-height và xóa margin-top: 2px gây lệch của chữ cái A. B. C. D. */
+html body .quiz-option-btn .quiz-option-letter {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.02rem !important;
+  font-weight: 800 !important;
+  line-height: 1.5 !important;
+  min-width: 24px !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+}
+
+html body .quiz-option-btn .quiz-option-content {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.02rem !important;
+  line-height: 1.55 !important;
+  text-align: left !important;
+  align-self: center !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+}
+
+/* Căn chỉnh luôn các ô đáp án trong Ngân hàng câu hỏi (.bank-option-cell) */
+html body .bank-card-options-grid .bank-option-cell {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 16px !important;
+  font-size: 0.98rem !important;
+  line-height: 1.55 !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* 2. Phóng to chữ và công thức LaTeX trong Hộp Giải Thích (vượt qua độ ưu tiên của body.quiz-active) */
+html body #view-study #quiz-explanation-box.show,
+html body.quiz-active #quiz-explanation-box.show {
+  padding: 20px 24px !important;
+  border-radius: 16px !important;
+  margin-top: 18px !important;
+  gap: 10px !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+html body #view-study .quiz-explanation-title,
+html body.quiz-active .quiz-explanation-title {
+  font-size: 1.06rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 4px !important;
+}
+
+html body #view-study #quiz-explanation-box #quiz-explanation-text,
+html body.quiz-active #view-study #quiz-explanation-text,
+html body.quiz-active #quiz-explanation-text,
+html body #quiz-explanation-text {
+  font-size: 1.06rem !important;
+  line-height: 1.74 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  box-sizing: border-box !important;
+}
+
+html body #quiz-explanation-text .katex,
+html body.quiz-active #quiz-explanation-text .katex {
+  font-size: 1.22em !important;
+  white-space: normal !important;
+}
+
+/* ==========================================================================
+   PHASE 1R: 3. KHÓA CỨNG THANH TIẾN TRÌNH (#study-progress-fill)
+   ========================================================================== */
+html body .quiz-header-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+html body .quiz-progress-track {
+  flex: 1 1 auto !important;
+  height: 8px !important;
+  margin: 0 12px !important;
+  background: var(--bg-surface-elevated) !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+html body #study-progress-fill.quiz-progress-fill,
+html body.perf-compositor-anim #study-progress-fill.quiz-progress-fill {
+  display: block !important;
+  height: 100% !important;
+  margin: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  transform-origin: 0% 50% !important;
+  border-radius: 999px !important;
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* ==========================================================================
+   PHASE 1R: 4. THIẾT KẾ LẠI NÚT THOÁT CHẾ ĐỘ TẬP TRUNG (#btn-focus-exit)
+   ========================================================================== */
+html body #btn-focus-exit,
+html body .focus-exit-btn,
+html body #btn-focus-exit.focus-exit-btn {
+  position: fixed !important;
+  top: 14px !important;
+  right: 18px !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: max-content !important;
+  height: 30px !important; /* height: 34px !important; */
+  min-height: 30px !important;
+  max-height: 30px !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background: var(--glass-tint) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--lg-directional-bevel), var(--shadow-sm) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  z-index: 1100 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+}
+
+html body #btn-focus-exit:hover,
+html body .focus-exit-btn:hover {
+  color: var(--text-primary) !important;
+  border-color: var(--border-focus) !important;
+  background: var(--bg-surface-elevated) !important;
+  transform: scale(1.04) !important;
+}
+
+html body.focus-mode-active #btn-focus-exit,
+html body.focus-mode-active .focus-exit-btn,
+html body.focus-mode #btn-focus-exit {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Đồng thời làm nổi bật nút 🎯 (#btn-card-focus) ngay trong thẻ câu hỏi khi đang bật Focus Mode */
+html body.focus-mode-active #btn-card-focus {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: var(--bg-surface-elevated) !important;
+}
+
+/* Trên màn hình nhỏ / Mobile: chỉ hiện nút tròn 36x36px chứa icon thu nhỏ cực gọn */
+@media (max-width: 640px) {
+  html body #btn-focus-exit,
+  html body .focus-exit-btn,
+  html body #btn-focus-exit.focus-exit-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+  }
+  html body #btn-focus-exit span,
+  html body .focus-exit-btn span {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 1R: 5. THANH CÔNG CỤ VÀ NÚT ĐIỀU HƯỚNG CÂU HỎI (.btn-card-nav)
+   ========================================================================== */
+html body #view-study .card-actions-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-bottom: 10px !important;
+  gap: 8px !important;
+}
+
+html body #view-study .card-nav-actions-group,
+html body #view-study .card-utility-actions-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+html body #view-study .card-utility-actions-group {
+  margin-left: auto !important;
+}
+
+/* Nút Câu trước / Câu tiếp thiết kế đúng chuẩn ngôn ngữ .btn-card-action (cao 32px, bo góc 8px, kính mảnh) */
+html body #view-study .btn-card-action.btn-card-nav {
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 11px !important;
+  border-radius: var(--radius-sm, 8px) !important;
+  background: transparent !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 30 !important;
+  user-select: none !important;
+  transition: all var(--dur-fast) var(--ease-spring) !important;
+}
+
+html body #view-study .btn-card-action.btn-card-nav:hover {
+  background: var(--bg-surface-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-focus) !important;
+  transform: translateY(-1px) !important;
+}
+
+html body #view-study .btn-card-action.btn-card-nav:active {
+  transform: scale(0.95) !important;
+}
+
+/* Mở khóa hoàn toàn pointer-events cho .quiz-footer-actions và #btn-quiz-prev trên Desktop */
+@media (min-width: 769px) {
+  html body #view-study .quiz-footer-actions.show,
+  html body.quiz-active #view-study .quiz-footer-actions.show {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 48px !important;
+    height: auto !important;
+    margin-top: 16px !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 25 !important;
+  }
+
+  html body #view-study #btn-quiz-prev {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 18px !important;
+    border-radius: 999px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 30 !important;
+  }
+
+  html body #view-study #btn-quiz-next {
+    margin-left: auto !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
+}
+
+.btn-study-prev,
+.btn-quiz-prev {
+  transition: all var(--dur-fast) var(--ease-spring);
+}
+
+.btn-study-prev:hover,
+.btn-quiz-prev:hover {
+  transform: translateX(-2px);
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 1: HIỆU ỨNG FLOAT-UP MƯỢT MÀ & SKELETON LAZY REVEAL CHO NGÂN HÀNG CÂU HỎI
+   ========================================================================== */
+
+/* Gỡ bỏ content-visibility: auto & contain: paint gây nháy và cắt bóng đổ trên .bank-card-item */
+html body #view-bank .bank-card-item {
+  content-visibility: visible !important;
+  contain: none !important;
+}
+
+/* Trạng thái khởi đầu trước khi float lên */
+html body #view-bank .bank-card-item.bank-card-float-item {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0) scale(0.985);
+  transition:
+    opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1) var(--bank-float-delay, 0ms),
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1) var(--bank-float-delay, 0ms),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease !important;
+  will-change: transform, opacity;
+}
+
+/* Khi lướt vào khung nhìn hoặc mở tab: float mượt lên vị trí chuẩn */
+html body #view-bank .bank-card-item.bank-card-float-item.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+html body #view-bank .bank-card-item.bank-card-float-item.is-visible:hover {
+  transform: translate3d(0, -3px, 0) scale(1) !important;
+}
+
+/* Khung Skeleton Shimmer hiển thị khi người dùng kéo nhanh xuống dưới mà câu hỏi đang sinh ra */
+.bank-lazy-sentinel {
+  width: 100%;
+  padding: 4px 0 20px 0;
+}
+
+.bank-skeleton-card {
+  background: var(--glass-tint, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-card, 18px);
+  padding: 22px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bank-skeleton-row,
+.bank-skeleton-pill {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+html[data-theme="orange"] .bank-skeleton-row,
+html[data-theme="orange"] .bank-skeleton-pill,
+html[data-theme="white-orange"] .bank-skeleton-row,
+html[data-theme="white-orange"] .bank-skeleton-pill {
+  background: linear-gradient(
+    90deg,
+    rgba(234, 88, 12, 0.06) 25%,
+    rgba(234, 88, 12, 0.15) 50%,
+    rgba(234, 88, 12, 0.06) 75%
+  );
+  background-size: 200% 100%;
+}
+
+.bank-skeleton-row.short {
+  width: 38%;
+  height: 18px;
+  margin-bottom: 14px;
+}
+
+.bank-skeleton-row.long {
+  width: 82%;
+  height: 22px;
+  margin-bottom: 16px;
+}
+
+.bank-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.bank-skeleton-pill {
+  height: 40px;
+  border-radius: 10px;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 2: ĐỒNG BỘ MÀU SÓNG, ĐÁY SÓNG & VIỀN BUỒNG SÓNG 100% THEO 3 THEME
+   ========================================================================== */
+html body #theme-energy-chamber,
+html body .theme-energy-wave-chamber,
+html body .energy-wave-stage {
+  background: var(--wave-chamber-bg) !important;
+  border-color: var(--wave-chamber-border) !important;
+  box-shadow: var(--wave-chamber-bottom-glow) !important;
+}
+
+html body #theme-energy-chamber svg linearGradient stop:nth-child(1),
+html body .theme-energy-wave-chamber svg linearGradient stop:nth-child(1) {
+  stop-color: var(--wave-area-stop-top) !important;
+}
+html body #theme-energy-chamber svg linearGradient stop:nth-child(2),
+html body .theme-energy-wave-chamber svg linearGradient stop:nth-child(2) {
+  stop-color: var(--wave-area-stop-mid) !important;
+}
+html body #theme-energy-chamber svg linearGradient stop:nth-child(3),
+html body .theme-energy-wave-chamber svg linearGradient stop:nth-child(3) {
+  stop-color: var(--wave-area-stop-bot) !important;
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 3: THANH KÉO ÂM LƯỢNG & THANH KÉO SÓNG VỆT SÁNG ACTIVE BÊN PHẢI NÚT KÉO
+   ========================================================================== */
+html body #theme-energy-slider,
+html body .theme-energy-slider,
+html body #lofi-volume-slider,
+html body #setting-lofi-volume,
+html body .lofi-volume-slider,
+html body input[type="range"].lofi-volume-range,
+html body #view-settings input[type="range"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  outline: none !important;
+  cursor: pointer !important;
+  /* Chuẩn 100%: Phía bên trái nút kéo (0% -> --slider-pct) có màu sáng tượng trưng cho mức đang có;
+     phía bên phải nút kéo (--slider-pct -> 100%) là rãnh tối chưa kéo tới */
+  background: linear-gradient(
+    90deg,
+    var(--range-active-color) 0%,
+    var(--range-active-color) var(--slider-pct, 40%),
+    var(--range-inactive-bg) var(--slider-pct, 40%),
+    var(--range-inactive-bg) 100%
+  ) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+html body #theme-energy-slider::-webkit-slider-runnable-track,
+html body .theme-energy-slider::-webkit-slider-runnable-track,
+html body #lofi-volume-slider::-webkit-slider-runnable-track,
+html body #setting-lofi-volume::-webkit-slider-runnable-track,
+html body .lofi-volume-slider::-webkit-slider-runnable-track,
+html body #view-settings input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+html body #theme-energy-slider::-webkit-slider-thumb,
+html body .theme-energy-slider::-webkit-slider-thumb,
+html body #lofi-volume-slider::-webkit-slider-thumb,
+html body #setting-lofi-volume::-webkit-slider-thumb,
+html body .lofi-volume-slider::-webkit-slider-thumb,
+html body #view-settings input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin-top: -6px !important;
+  border-radius: 50% !important;
+  background: var(--range-thumb-bg) !important;
+  border: 2.5px solid var(--range-thumb-border) !important;
+  box-shadow: 0 0 12px var(--range-active-glow), 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+  cursor: grab !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+html body #theme-energy-slider::-webkit-slider-thumb:active,
+html body #lofi-volume-slider::-webkit-slider-thumb:active,
+html body #setting-lofi-volume::-webkit-slider-thumb:active,
+html body .lofi-volume-slider::-webkit-slider-thumb:active,
+html body #view-settings input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.15) !important;
+  cursor: grabbing !important;
+}
+
+html body #theme-energy-slider::-moz-range-track,
+html body .theme-energy-slider::-moz-range-track,
+html body #lofi-volume-slider::-moz-range-track,
+html body #setting-lofi-volume::-moz-range-track,
+html body .lofi-volume-slider::-moz-range-track,
+html body #view-settings input[type="range"]::-moz-range-track {
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+html body #theme-energy-slider::-moz-range-thumb,
+html body .theme-energy-slider::-moz-range-thumb,
+html body #lofi-volume-slider::-moz-range-thumb,
+html body #setting-lofi-volume::-moz-range-thumb,
+html body .lofi-volume-slider::-moz-range-thumb,
+html body #view-settings input[type="range"]::-moz-range-thumb {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: var(--range-thumb-bg) !important;
+  border: 2.5px solid var(--range-thumb-border) !important;
+  box-shadow: 0 0 12px var(--range-active-glow), 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+  cursor: grab !important;
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 4: SỬA DỨT ĐIỂM THANH TIẾN TRÌNH (#study-progress-fill) BỊ CỨNG Ở 100%
+   ========================================================================== */
+html body .quiz-progress-fill,
+html body #study-progress-fill.quiz-progress-fill,
+html body.perf-compositor-anim .quiz-progress-fill,
+html body.perf-compositor-anim #study-progress-fill.quiz-progress-fill {
+  display: block !important;
+  width: var(--study-progress-pct, 0%) !important;
+  height: 100% !important;
+  margin: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  transform-origin: 0% 50% !important;
+  border-radius: 999px !important;
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: width !important;
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 5A: BỐ CỤC BUỒNG SÓNG TRÊN MOBILE (TÁCH CHỮ HUD LÊN TRÊN, SÓNG THOÁNG 100%)
+   ========================================================================== */
+@media (max-width: 768px) {
+  html body #theme-energy-chamber,
+  html body .theme-energy-wave-chamber {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 12px !important;
+    gap: 10px !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* Đưa hộp chữ HUD ra khỏi position: absolute để KHÔNG BAO GIỜ đè lên mặt sóng trên Mobile */
+  html body .energy-wave-hud,
+  html body #theme-energy-chamber .energy-wave-hud,
+  html body .energy-wave-header {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    z-index: 2 !important;
+  }
+
+  /* Chữ tên Theme gọn gàng trên 1 dòng, rõ nét, không gãy thành 3 dòng */
+  html body .energy-wave-hud .energy-theme-name,
+  html body #energy-wave-theme-title,
+  html body #energy-wave-mode-title,
+  html body .energy-wave-title,
+  html body .energy-wave-hud > *:first-child {
+    font-size: 0.84rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  /* Badge thông số bước sóng gọn trên 1 dòng bên phải */
+  html body .energy-wave-hud .energy-spectrum-badge,
+  html body #energy-wave-spectrum-label,
+  html body #energy-wave-mode-badge,
+  html body .energy-wave-badge,
+  html body .energy-wave-hud > *:last-child {
+    font-size: 0.68rem !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Khung hiển thị sóng SVG nằm riêng bên dưới HUD, cao 84px thoáng đãng 100% không vướng chữ */
+  html body .energy-wave-stage,
+  html body .energy-wave-svg-wrap,
+  html body #theme-energy-chamber svg,
+  html body #energy-wave-svg {
+    position: relative !important;
+    width: 100% !important;
+    height: 84px !important;
+    min-height: 84px !important;
+    max-height: 84px !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 1S - ITEM 5B: TỐI ƯU HÓA CHUYỂN THEME 60FPS (html.theme-switching-lock)
+   ========================================================================== */
+html.theme-switching-lock *,
+html.theme-switching-lock *::before,
+html.theme-switching-lock *::after {
+  transition: none !important;
+}
+
+html.theme-switching-lock #theme-wave-transition-overlay,
+html.theme-switching-lock #theme-wave-transition-overlay * {
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.34s ease-out !important;
+}
+
+@media (max-width: 768px) {
+  html.theme-switching-lock .quiz-card,
+  html.theme-switching-lock .deck-card,
+  html.theme-switching-lock .hero-card,
+  html.theme-switching-lock .stat-card,
+  html.theme-switching-lock .bottom-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #theme-wave-transition-overlay {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mix-blend-mode: normal !important;
+    will-change: transform, opacity !important;
+    contain: strict !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 1T - ITEM 2: SIDEBAR KÍNH NHÁM XUYÊN THẤU + KHÚC XẠ LIQUID GLASS 135DEG
+   ========================================================================== */
+
+/* 1. THEME TÍM HỒNG (Violet Rose): Kính tím khói nhám xuyên thấu */
+:root .app-sidebar,
+html[data-theme="violet"] .app-sidebar,
+html[data-theme="purple"] .app-sidebar,
+html[data-theme="purple-pink"] .app-sidebar,
+html[data-theme="violet-rose"] .app-sidebar {
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(46, 30, 78, 0.44) 0%,
+    rgba(26, 16, 48, 0.34) 55%,
+    rgba(38, 22, 68, 0.40) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.38);
+  --sidebar-glass-border-left: rgba(233, 213, 255, 0.32);
+  --sidebar-glass-border-right: rgba(168, 85, 247, 0.16);
+  --sidebar-glass-border-bottom: rgba(168, 85, 247, 0.22);
+  --sidebar-glass-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.36),
+    inset -1px -1.5px 3px rgba(168, 85, 247, 0.18),
+    inset 0 12px 24px rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(8, 4, 20, 0.38);
+}
+
+/* 2. THEME TRẮNG ĐEN (Monochrome): Kính khói bạc nhám xuyên thấu */
+html[data-theme="bw"] .app-sidebar,
+html[data-theme="monochrome"] .app-sidebar,
+html[data-theme="bw-dark"] .app-sidebar {
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(42, 42, 48, 0.44) 0%,
+    rgba(20, 20, 24, 0.34) 55%,
+    rgba(34, 34, 40, 0.40) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.42);
+  --sidebar-glass-border-left: rgba(255, 255, 255, 0.32);
+  --sidebar-glass-border-right: rgba(255, 255, 255, 0.12);
+  --sidebar-glass-border-bottom: rgba(255, 255, 255, 0.18);
+  --sidebar-glass-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.40),
+    inset -1px -1.5px 3px rgba(255, 255, 255, 0.12),
+    inset 0 12px 24px rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.42);
+}
+
+/* 3. THEME TRẮNG CAM (White-Orange — image_911aab.png): Kính sương kem ấm xuyên thấu rõ nền gạch cam phía sau */
+html[data-theme="orange"] .app-sidebar,
+html[data-theme="white-orange"] .app-sidebar {
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 252, 248, 0.46) 0%,
+    rgba(255, 244, 232, 0.32) 52%,
+    rgba(255, 236, 216, 0.42) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.92);
+  --sidebar-glass-border-left: rgba(255, 255, 255, 0.85);
+  --sidebar-glass-border-right: rgba(249, 115, 22, 0.22);
+  --sidebar-glass-border-bottom: rgba(249, 115, 22, 0.26);
+  --sidebar-glass-bevel:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.88),
+    inset -1.5px -1.5px 3px rgba(249, 115, 22, 0.14),
+    inset 0 14px 28px rgba(255, 255, 255, 0.38),
+    0 12px 30px rgba(154, 52, 18, 0.10);
+}
+
+/* Áp dụng chất liệu Frosted Liquid Glass lên cả Sidebar mở rộng lẫn Sidebar thu gọn (.collapsed) */
+html body #app-sidebar.app-sidebar,
+html body #app-sidebar.app-sidebar.collapsed {
+  background: var(--sidebar-glass-bg) !important;
+  backdrop-filter: blur(20px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(185%) !important;
+  border-top: 1px solid var(--sidebar-glass-border-top) !important;
+  border-left: 1px solid var(--sidebar-glass-border-left) !important;
+  border-right: 1px solid var(--sidebar-glass-border-right) !important;
+  border-bottom: 1px solid var(--sidebar-glass-border-bottom) !important;
+  box-shadow: var(--sidebar-glass-bevel) !important;
+}
+
+/* Lớp phản quang bề mặt kính nhám (Frosted Specular Sheen) chạy dọc mép trên-trái của Sidebar */
+html body #app-sidebar.app-sidebar::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 32%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.08) 100%
+  ) !important;
+  z-index: 0 !important;
+}
+
+/* Các nút .nav-item bên trong Sidebar khi hover cũng mang hiệu ứng giọt kính trong suốt */
+html[data-theme="orange"] #app-sidebar .nav-item:not(.active) button:hover,
+html[data-theme="white-orange"] #app-sidebar .nav-item:not(.active) button:hover {
+  background: rgba(255, 255, 255, 0.42) !important;
+  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.85), 0 4px 12px rgba(234, 88, 12, 0.08) !important;
+}
+
+/* ==========================================================================
+   PHASE 1V - ITEM A1: KHÔI PHỤC DIỆN TÍCH HIỂN THỊ RỘNG THOÁNG TỐI ĐA NHƯ BẢN GỐC (image_76c862.jpg)
+   & CỐ ĐỊNH SIDEBAR THEO MÀN HÌNH KHI CUỘN (POSITION: FIXED)
+   ========================================================================== */
+
+@media (min-width: 841px) and (min-height: 551px) {
+  html body .app-container {
+    display: block !important; /* Không dùng flex đẩy kép khi sidebar đã là fixed */
+    width: 100% !important;
+    min-height: 100dvh !important;
+    position: relative !important;
+  }
+
+  /* Sidebar luôn cố định theo màn hình (Floating Fixed Glass Capsule) khi cuộn trang */
+  html body #app-sidebar.app-sidebar {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    bottom: 14px !important;
+    height: calc(100dvh - 28px) !important;
+    max-height: calc(100dvh - 28px) !important;
+    width: 244px !important;
+    min-width: 244px !important;
+    margin: 0 !important;
+    border-radius: 24px !important;
+    z-index: 200 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Khi thu gọn Sidebar (.collapsed): rộng 68px, vẫn giữ nguyên position: fixed */
+  html body #app-sidebar.app-sidebar.collapsed {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    bottom: 14px !important;
+    height: calc(100dvh - 28px) !important;
+    max-height: calc(100dvh - 28px) !important;
+    width: 68px !important;
+    min-width: 68px !important;
+    padding: 20px 10px !important;
+    border-radius: 999px !important;
+    z-index: 200 !important;
+  }
+
+  /* Khung màn hình chính (.app-main) khi Sidebar đang mở rộng (14px + 244px + 6px = 264px) */
+  html body:not(.focus-mode-active) .app-main:not(.sidebar-collapsed) {
+    margin-left: 264px !important;
+    margin-right: 0 !important;
+    width: calc(100% - 264px) !important;
+    max-width: calc(100% - 264px) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Khung màn hình chính (.app-main) khi Sidebar đang thu gọn (14px + 68px + 6px = 88px) */
+  html body:not(.focus-mode-active) .app-main.sidebar-collapsed {
+    margin-left: 88px !important;
+    margin-right: 0 !important;
+    width: calc(100% - 88px) !important;
+    max-width: calc(100% - 88px) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Mở rộng tối đa diện tích hiển thị của .content-wrapper và các view chính như image_76c862.jpg */
+  html body .app-main > .content-wrapper,
+  html body .content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 22px 56px 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  html body #view-dashboard,
+  html body #view-decks,
+  html body #view-bank > div,
+  html body #view-stats > div,
+  html body #view-import > div,
+  html body #view-import-lms > div {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 1V - ITEM A2, A3, A4: HỆ THỐNG LINH KIỆN LIQUID GLASS ĐỒNG BỘ 100%
+   VỚI SIDEBAR & POPUP + XÓA NÚT CÂU TRƯỚC THỪA Ở TRÊN QUIZ
+   ========================================================================== */
+
+/* Ẩn vĩnh viễn nút #btn-quiz-card-prev bị thừa ở phía trên câu hỏi Quiz */
+html body #btn-quiz-card-prev {
+  display: none !important;
+}
+
+/* Áp dụng chuẩn Viên Thuốc Kính Nhám Xuyên Thấu (Liquid Glass Pill) cho:
+   - Nút Câu trước (#btn-quiz-prev) ở chân thẻ Quiz
+   - Nút Câu trước & Câu tiếp (#btn-flashcard-prev, #btn-flashcard-next) ở Flashcard
+   - Nút Thoát & Đoán trước trên .quiz-header-bar
+   - Nút Thoát tập trung (#btn-focus-exit) */
+html body #view-study #btn-quiz-prev,
+html body #view-study #btn-flashcard-prev,
+html body #view-study #btn-flashcard-next,
+html body #view-study .lg-pill-btn,
+html body #view-study .quiz-header-bar > .btn-secondary,
+html body #view-study .blind-toggle-pill,
+html body #btn-focus-exit {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  background: var(--lg-ctrl-bg) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border-top: 1px solid var(--lg-ctrl-border-top) !important;
+  border-left: 1px solid var(--lg-ctrl-border-left) !important;
+  border-right: 1px solid var(--lg-ctrl-border-right) !important;
+  border-bottom: 1px solid var(--lg-ctrl-border-bottom) !important;
+  box-shadow: var(--lg-ctrl-bevel) !important;
+  color: var(--lg-ctrl-text) !important;
+  font-size: 0.84rem !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.01em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+html body #view-study #btn-quiz-prev:hover,
+html body #view-study #btn-flashcard-prev:hover,
+html body #view-study #btn-flashcard-next:hover,
+html body #view-study .lg-pill-btn:hover,
+html body #view-study .quiz-header-bar > .btn-secondary:hover,
+html body #view-study .blind-toggle-pill:hover,
+html body #btn-focus-exit:hover {
+  background: var(--lg-ctrl-hover-bg) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+html body #view-study #btn-quiz-prev:active,
+html body #view-study #btn-flashcard-prev:active,
+html body #view-study #btn-flashcard-next:active {
+  transform: scale(0.96) !important;
+}
+
+/* Đồng bộ luôn các nút icon [☆] [⚑] [✏️] [🎯] (.btn-card-action) sang chuẩn giọt kính Liquid Glass 34x34px */
+html body .btn-card-action {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  border-radius: 11px !important;
+  background: var(--lg-ctrl-bg) !important;
+  backdrop-filter: blur(16px) saturate(175%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(175%) !important;
+  border-top: 1px solid var(--lg-ctrl-border-top) !important;
+  border-left: 1px solid var(--lg-ctrl-border-left) !important;
+  border-right: 1px solid var(--lg-ctrl-border-right) !important;
+  border-bottom: 1px solid var(--lg-ctrl-border-bottom) !important;
+  box-shadow: var(--lg-ctrl-bevel) !important;
+  color: var(--lg-ctrl-text) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* ==========================================================================
+   PHASE 1V - ITEM A5: BUỒNG SÓNG LIỀN MẠCH, MASK MỀM 2 ĐẦU & CỔNG PHA 33.33% / 66.67%
+   ========================================================================== */
+
+/* Hợp nhất khối kính buồng sóng */
+html body #theme-energy-chamber,
+html body .theme-energy-wave-chamber {
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  padding: 16px 20px 20px 20px !important;
+  background: var(--card-frosted-bg, rgba(255, 255, 255, 0.05)) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+}
+
+/* Mặt nạ mềm mại ở 2 đầu trái/phải để quầng blur sóng không bao giờ lem ra mép khung */
+html body .energy-wave-stage {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%) !important;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%) !important;
+}
+
+/* Xóa bỏ đường nét đứt dọc dưới hạt sáng gây lem & xóa vạch notch trên dưới cổng pha */
+html body #wave-cursor-beam,
+html body .phase-gate-notch {
+  display: none !important;
+  content: none !important;
+}
+
+/* Header buồng sóng tinh tế */
+html body .energy-wave-hud {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  padding: 4px 6px 10px 6px !important;
+}
+
+html body .theme-live-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: var(--range-active-color) !important;
+  box-shadow: 0 0 8px var(--range-active-glow) !important;
+  display: inline-block !important;
+}
+
+html body .theme-subtitle {
+  font-size: 0.76rem !important;
+  opacity: 0.72 !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+html body .energy-level-pill {
+  height: 28px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  background: var(--lg-ctrl-bg) !important;
+  border: 1px solid var(--lg-ctrl-border-top) !important;
+  box-shadow: var(--lg-ctrl-bevel) !important;
+  font-family: inherit !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: var(--lg-ctrl-text) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Lõi Laser Phát Quang và các lớp sóng hài giao thoa */
+.wave-primary-glow {
+  stroke: var(--wave-primary-glow-color, rgba(192, 132, 252, 0.75)) !important;
+  stroke-width: 7px !important;
+  stroke-linecap: round !important;
+  opacity: 0.68 !important;
+  filter: url(#wave-laser-glow-filter) !important;
+}
+
+.wave-primary-core {
+  stroke: var(--wave-primary-stroke, #ffffff) !important;
+  stroke-width: 2.8px !important;
+  stroke-linecap: round !important;
+}
+
+.wave-harmonic-1 {
+  stroke: var(--wave-secondary-stroke, rgba(192, 132, 252, 0.65)) !important;
+  stroke-width: 2.2px !important;
+  stroke-linecap: round !important;
+}
+
+.wave-harmonic-2 {
+  stroke: var(--wave-tertiary-stroke, rgba(232, 121, 249, 0.40)) !important;
+  stroke-width: 1.8px !important;
+  stroke-linecap: round !important;
+}
+
+#wave-cursor-halo {
+  fill: var(--wave-primary-glow-color, rgba(192, 132, 252, 0.45)) !important;
+  opacity: 0.50 !important;
+  pointer-events: none !important;
+  transition: r 0.2s ease !important;
+}
+
+#wave-cursor-orb {
+  fill: var(--wave-orb-fill, #ffffff) !important;
+  stroke: var(--wave-orb-ring, #d8b4fe) !important;
+  stroke-width: 2px !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 0 6px var(--wave-primary-glow-color, rgba(192, 132, 252, 0.8))) !important;
+}
+
+/* Ẩn hoàn toàn các vạch dọc cũ nếu có */
+.energy-slider-control-wrap::before,
+.energy-slider-control-wrap::after,
+html body .threshold-tick,
+html body .energy-threshold-line,
+html body .wave-slider-tick {
+  display: none !important;
+  content: none !important;
+}
+
+html body .energy-slider-track-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 38px !important;
+  margin: 6px 0 10px 0 !important;
+}
+
+html body .energy-phase-gate {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Khung thoi tinh thể xoay 45 độ ôm lấy rãnh trượt với viền tách nền sạch sẽ */
+html body .energy-phase-gate .phase-gate-diamond {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 4px !important;
+  transform: rotate(45deg) !important;
+  background: var(--bg-surface-elevated, rgba(24, 24, 32, 0.96)) !important;
+  border: 2.5px solid var(--bg-surface-elevated, #100b1c) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+html[data-theme="orange"] .energy-phase-gate .phase-gate-diamond,
+html[data-theme="white-orange"] .energy-phase-gate .phase-gate-diamond {
+  background: #fff7ed !important;
+  border-color: #ffedd5 !important;
+  box-shadow: 0 2px 6px rgba(154, 52, 18, 0.16) !important;
+}
+
+/* Nhân tinh thể bên trong */
+html body .energy-phase-gate .phase-gate-core {
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 1.5px !important;
+  background: rgba(255, 255, 255, 0.30) !important;
+  transition: all 0.25s ease !important;
+}
+
+html[data-theme="orange"] .energy-phase-gate .phase-gate-core,
+html[data-theme="white-orange"] .energy-phase-gate .phase-gate-core {
+  background: rgba(234, 88, 12, 0.35) !important;
+}
+
+/* Trạng thái KÍCH HOẠT (.is-passed) khi thanh kéo đã vượt qua cổng pha */
+html body .energy-phase-gate.is-passed .phase-gate-diamond {
+  border-color: var(--range-active-color) !important;
+  box-shadow: 0 0 12px var(--range-active-glow), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  transform: rotate(45deg) scale(1.08) !important;
+}
+
+html body .energy-phase-gate.is-passed .phase-gate-core {
+  background: var(--range-active-color) !important;
+  box-shadow: 0 0 6px var(--range-active-glow) !important;
+}
+
+/* Nâng z-index của nút tròn đang kéo (Thumb) lên trên Cổng Tinh Thể để lướt qua mượt mà */
+html body #theme-energy-slider::-webkit-slider-thumb {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+
 
 
 

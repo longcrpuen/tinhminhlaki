@@ -81,6 +81,7 @@ const App = {
   },
 
   closeAllModals() {
+    const wasCompletionOpen = document.getElementById('modal-session-complete')?.classList.contains('show');
     document.querySelectorAll('.modal-overlay').forEach(m => {
       m.classList.remove('show', 'active');
       m.style.removeProperty('display');
@@ -89,6 +90,30 @@ const App = {
       m.style.removeProperty('pointer-events');
     });
     document.body.classList.remove('modal-open');
+    this._batteryAnimToken = (this._batteryAnimToken || 0) + 1;
+    if (this._batteryCountTimer) {
+      clearInterval(this._batteryCountTimer);
+      this._batteryCountTimer = null;
+    }
+    if (this._batterySegTimer) {
+      clearInterval(this._batterySegTimer);
+      this._batterySegTimer = null;
+    }
+    const resultContainer = document.getElementById('result-battery-container');
+    if (resultContainer) {
+      resultContainer.classList.remove('charged', 'overcharged');
+      const segments = resultContainer.querySelectorAll('.pixel-battery-segment');
+      segments.forEach(s => s.classList.remove('active', 'high', 'next-charging', 'unstable-pulse', 'reverse-wave'));
+    }
+    const modalBox = document.querySelector('#modal-session-complete .modal-box');
+    if (modalBox) {
+      modalBox.classList.remove('overcharged-pulse');
+    }
+    this._isCompletingSession = false;
+
+    if (wasCompletionOpen && this.currentView === 'study') {
+      this.navigateTo('decks');
+    }
   },
 
   getMonoSvg(key, customClass = 'mono-icon') {
@@ -316,11 +341,27 @@ const App = {
 
   // --- INITIALIZATION ---
   async init() {
+    // 0. Setup Navigation & Events FIRST (Fault-Tolerant: interface remains interactive even if async DB/render fails)
+    try {
+      this.setupEventListeners();
+    } catch (listenerErr) {
+      console.error('[App.init] Lỗi khi gắn event listener:', listenerErr);
+    }
+
     // 1. Setup DB
-    await db.init();
-    this.initHeroGlassMatrix();
-    this.initLiquidGlassLensFilter();
-    this.initScrollRevealObserver();
+    try {
+      await db.init();
+    } catch (dbErr) {
+      console.error('[App.init] Lỗi khi khởi tạo database:', dbErr);
+    }
+
+    try {
+      this.initHeroGlassMatrix();
+      this.initLiquidGlassLensFilter();
+      this.initScrollRevealObserver();
+    } catch (fxErr) {
+      console.warn('[App.init] Lỗi hiệu ứng đồ họa ban đầu:', fxErr);
+    }
 
     // Check migration notice (Section A)
     try {
@@ -346,10 +387,15 @@ const App = {
     } catch (themeErr) {
       console.error('[App.init] Lỗi khi nạp theme:', themeErr);
     }
-    // Load saved background with robust error handling (Stream 1)
+
+    // Load saved background with robust error handling (Stream 1 / Prompt 1v Item A6)
     try {
-      let savedBg = await db.getMeta('backgroundSrc', 'none');
-      if (savedBg === 'custom_blob') {
+      let savedBg = await db.getMeta('backgroundSrc', null);
+      if (savedBg === null || savedBg === undefined) {
+        savedBg = './backgrounds/bg-2.webp';
+        await db.setMeta('backgroundSrc', savedBg);
+        await this.setBackground(savedBg, true);
+      } else if (savedBg === 'custom_blob') {
         const blob = await db.getMeta('customBackgroundBlob', null);
         if (blob instanceof Blob) {
           await this.setBackground(blob, true);
@@ -375,66 +421,84 @@ const App = {
       console.error('[App.init] Lỗi khi nạp hình nền:', bgLoadErr);
     }
 
-    const soundEnabled = await db.getMeta('soundEnabled', true);
-    sounds.setEnabled(soundEnabled);
-    const soundToggle = document.getElementById('setting-sound');
-    if (soundToggle) soundToggle.checked = soundEnabled;
+    // 3. User settings
+    try {
+      const soundEnabled = await db.getMeta('soundEnabled', true);
+      sounds.setEnabled(soundEnabled);
+      const soundToggle = document.getElementById('setting-sound');
+      if (soundToggle) soundToggle.checked = soundEnabled;
 
-    const tabSoundEnabled = await db.getMeta('tabSoundEnabled', true);
-    sounds.setTabSoundEnabled(tabSoundEnabled);
-    const tabSoundToggle = document.getElementById('setting-tab-sound');
-    if (tabSoundToggle) tabSoundToggle.checked = tabSoundEnabled;
+      const tabSoundEnabled = await db.getMeta('tabSoundEnabled', true);
+      sounds.setTabSoundEnabled(tabSoundEnabled);
+      const tabSoundToggle = document.getElementById('setting-tab-sound');
+      if (tabSoundToggle) tabSoundToggle.checked = tabSoundEnabled;
 
-    const dailyGoal = await db.getMeta('dailyGoal', 20);
-    const goalInput = document.getElementById('setting-daily-goal');
-    if (goalInput) goalInput.value = dailyGoal;
+      const dailyGoal = await db.getMeta('dailyGoal', 20);
+      const goalInput = document.getElementById('setting-daily-goal');
+      if (goalInput) goalInput.value = dailyGoal;
 
-    const perQTimer = await db.getMeta('perQTimerEnabled', false);
-    const perQSec = await db.getMeta('perQSeconds', 30);
-    const perQToggle = document.getElementById('setting-per-q-timer');
-    const perQInput = document.getElementById('setting-per-q-seconds');
-    if (perQToggle) perQToggle.checked = perQTimer;
-    if (perQInput) perQInput.value = perQSec;
+      const perQTimer = await db.getMeta('perQTimerEnabled', false);
+      const perQSec = await db.getMeta('perQSeconds', 30);
+      const perQToggle = document.getElementById('setting-per-q-timer');
+      const perQInput = document.getElementById('setting-per-q-seconds');
+      if (perQToggle) perQToggle.checked = perQTimer;
+      if (perQInput) perQInput.value = perQSec;
 
-    // Load collapsed sidebar state
-    const sidebarCollapsed = await db.getMeta('sidebarCollapsed', false);
-    if (sidebarCollapsed) {
-      const sidebar = document.getElementById('app-sidebar');
-      const main = document.querySelector('.app-main');
-      if (sidebar) sidebar.classList.add('collapsed');
-      if (main) main.classList.add('sidebar-collapsed');
-      this._detachSidebarLabels();
+      // Load collapsed sidebar state
+      const sidebarCollapsed = await db.getMeta('sidebarCollapsed', false);
+      if (sidebarCollapsed) {
+        const sidebar = document.getElementById('app-sidebar');
+        const main = document.querySelector('.app-main');
+        if (sidebar) sidebar.classList.add('collapsed');
+        if (main) main.classList.add('sidebar-collapsed');
+        this._detachSidebarLabels();
+      }
+
+      // Check for saved session to restore (Section 5)
+      const savedSession = await db.getMeta('activeSessionBackup', null);
+      if (savedSession && savedSession.cardIds && savedSession.cardIds.length > 0) {
+        const banner = document.getElementById('session-restore-banner');
+        if (banner) banner.style.display = 'flex';
+      }
+    } catch (settingsErr) {
+      console.error('[App.init] Lỗi khi nạp cài đặt:', settingsErr);
     }
-
-    // Check for saved session to restore (Section 5)
-    const savedSession = await db.getMeta('activeSessionBackup', null);
-    if (savedSession && savedSession.cardIds && savedSession.cardIds.length > 0) {
-      const banner = document.getElementById('session-restore-banner');
-      if (banner) banner.style.display = 'flex';
-    }
-
-    // 3. Setup Navigation & Events
-    this.setupEventListeners();
 
     // 4. Setup PWA & Service Worker
-    this.setupPWA();
+    try {
+      this.setupPWA();
+    } catch (pwaErr) {
+      console.warn('[App.init] Lỗi setup PWA:', pwaErr);
+    }
 
     // Setup Performance Engine (Part B)
-    if (typeof PERF_CONFIG !== 'undefined') {
-      if (PERF_CONFIG.COMPOSITOR_ONLY_ANIM) {
-        document.body.classList.add('perf-compositor-anim');
+    try {
+      if (typeof PERF_CONFIG !== 'undefined') {
+        if (PERF_CONFIG.COMPOSITOR_ONLY_ANIM) {
+          document.body.classList.add('perf-compositor-anim');
+        }
+        if (PERF_CONFIG.CONTENT_VISIBILITY === false) {
+          document.body.classList.add('no-content-visibility');
+        }
       }
-      if (PERF_CONFIG.CONTENT_VISIBILITY === false) {
-        document.body.classList.add('no-content-visibility');
-      }
+      this.initWorker();
+      this.setupIdleAndVisibilityListeners();
+    } catch (perfErr) {
+      console.warn('[App.init] Lỗi setup Perf Engine:', perfErr);
     }
-    this.initWorker();
-    this.setupIdleAndVisibilityListeners();
 
-    // 5. Initial Render
-    this.updateHeroQuote();
-    await this.updateGlobalStats();
-    await this.renderDashboard();
+    // 5. Initial Render (BẮT BUỘC LUÔN CHẠY)
+    try {
+      if (this._renderedViewRevision) {
+        this._renderedViewRevision = { dashboard: 0, decks: 0, bank: 0, stats: 0 };
+      }
+      this.updateHeroQuote();
+      await this.updateGlobalStats();
+      await this.renderDashboard();
+    } catch (renderErr) {
+      console.error('[App.init] Lỗi render Dashboard:', renderErr);
+    }
+
     if (typeof window !== 'undefined' && window.LofiPlayer && typeof window.LofiPlayer.updateUI === 'function') {
       try { window.LofiPlayer.updateUI(); } catch (e) { console.warn('Lofi updateUI failed:', e); }
     }
@@ -560,11 +624,43 @@ const App = {
     }
   },
 
+  stripCitationArtifacts(text) {
+    if (!text || (typeof text === 'string' && text.indexOf('[') === -1 && text.indexOf('【') === -1)) {
+      return text || '';
+    }
+    if (typeof stripCitationArtifacts === 'function') {
+      return stripCitationArtifacts(text);
+    }
+    if (typeof text !== 'string') return text || '';
+    return text
+      .replace(/\[\s*cite(?:_start|_end)?\s*(?::[^\]]*)?\]/gi, '')
+      .replace(/【[^】]*】/g, '')
+      .replace(/\s+([.,;:?!])/g, '$1')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+  },
+
   // --- ROBUST MIXED LATEX & TEXT PARSER & RENDERER ---
   renderLatexText(text) {
     if (text === null || text === undefined) return '';
-    let str = String(text);
+    let str = this.stripCitationArtifacts(String(text));
     if (!str.trim()) return '';
+
+    // Fast-path non-math bypass
+    if (str.indexOf('$') === -1 && str.indexOf('\\(') === -1 && str.indexOf('\\[') === -1) {
+      if (str.indexOf('**') !== -1) {
+        return this._escapeHtml(str).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+      }
+      return this._escapeHtml(str);
+    }
+
+    // High-level full-string LRU cache (max 1500 entries)
+    if (typeof globalThis !== 'undefined') {
+      if (!globalThis._msFullLatexCache) globalThis._msFullLatexCache = new Map();
+      if (globalThis._msFullLatexCache.has(str)) {
+        return globalThis._msFullLatexCache.get(str);
+      }
+    }
 
     // Khôi phục các ký tự LaTeX bị JSON.parse nuốt biến thành ký tự điều khiển (Prompt 1i Mục 1.3)
     str = str.replace(/\x09heta/g, '\\theta')
@@ -684,6 +780,15 @@ const App = {
         }
       }
     }).join('');
+
+    if (typeof globalThis !== 'undefined' && globalThis._msFullLatexCache) {
+      if (globalThis._msFullLatexCache.size >= 1500) {
+        const firstKey = globalThis._msFullLatexCache.keys().next().value;
+        globalThis._msFullLatexCache.delete(firstKey);
+      }
+      globalThis._msFullLatexCache.set(str, result);
+    }
+    return result;
   },
 
   // --- KATEX MATH RENDERING ---
@@ -910,9 +1015,16 @@ const App = {
     const validThemes = ['violet-rose', 'monochrome', 'white-orange'];
     const theme = validThemes.includes(themeId) ? themeId : 'violet-rose';
 
-    // Bug 6: Disable heavy transitions during theme switch for 0ms instant transition
+    // Bug 6 & Phase 1s: Disable heavy transitions during theme switch for 0ms instant transition & 60FPS lock
     if (typeof document !== 'undefined' && document.documentElement) {
       document.documentElement.classList.add('theme-switching');
+      document.documentElement.classList.add('theme-switching-lock');
+      clearTimeout(this._themeLockTimer);
+      this._themeLockTimer = setTimeout(() => {
+        if (typeof document !== 'undefined' && document.documentElement) {
+          document.documentElement.classList.remove('theme-switching-lock');
+        }
+      }, 360);
     }
 
     document.documentElement.setAttribute('data-theme', theme);
@@ -975,7 +1087,16 @@ const App = {
     this.updateHeroQuote();
   },
 
-  // --- INTERACTIVE RESONANCE ENERGY WAVE TUNER (PHASE 1O & 1N) ---
+  // --- INTERACTIVE RESONANCE ENERGY WAVE TUNER (PHASE 1O, 1N & 1S) ---
+  syncRangeSliderVisual(sliderEl) {
+    if (!sliderEl) return;
+    const min = parseFloat(sliderEl.min) || 0;
+    const max = parseFloat(sliderEl.max) || 100;
+    const val = parseFloat(sliderEl.value) || 0;
+    const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+    sliderEl.style.setProperty('--slider-pct', `${pct.toFixed(1)}%`);
+  },
+
   syncThemeEnergyChamber(themeKey, options = {}) {
     const theme = (themeKey === 'purple-pink' || themeKey === 'violet-rose' || themeKey === 'dark') ? 'violet-rose'
                 : (themeKey === 'monochrome' || themeKey === 'bw-dark') ? 'monochrome'
@@ -1000,11 +1121,20 @@ const App = {
       sliderVal = parseFloat(slider.value) || sliderVal;
     }
 
+    if (slider) {
+      this.syncRangeSliderVisual(slider);
+    }
+
     this._updateEnergyWaveVisuals(sliderVal);
   },
 
   onThemeEnergySliderInput(rawVal) {
     const val = parseFloat(rawVal) || 0;
+    const slider = document.getElementById('theme-energy-slider');
+    if (slider) {
+      this.syncRangeSliderVisual(slider);
+    }
+
     this._pendingWaveVal = val;
     if (!this._waveRafPending) {
       this._waveRafPending = true;
@@ -1060,12 +1190,30 @@ const App = {
       const t = Math.min(1, (now - startTime) / duration);
       const eased = 1 - Math.pow(1 - t, 3);
       const cur = startVal + (targetVal - startVal) * eased;
-      if (slider) slider.value = String(cur);
+      if (slider) {
+        slider.value = String(cur);
+        this.syncRangeSliderVisual(slider);
+      }
       this._updateEnergyWaveVisuals(cur);
       if (t < 1) requestAnimationFrame(animateSlider);
     };
     requestAnimationFrame(animateSlider);
   },
+
+  _waveLUT: (() => {
+    const steps = 160;
+    const width = 800;
+    const u = new Float32Array(steps + 1);
+    const x = new Float32Array(steps + 1);
+    const baseEnv = new Float32Array(steps + 1);
+    for (let i = 0; i <= steps; i++) {
+      const ui = i / steps;
+      u[i] = ui;
+      x[i] = ui * width;
+      baseEnv[i] = Math.pow(Math.sin(Math.PI * ui), 0.65);
+    }
+    return { u, x, baseEnv, steps, width };
+  })(),
 
   _updateEnergyWaveVisuals(val) {
     const pct = Math.max(0, Math.min(100, parseFloat(val) || 0));
@@ -1074,49 +1222,102 @@ const App = {
     // cycles = 2.2 + t * 3.8 (Preserved continuous wave morphing equation)
     const cycles = 2.2 + t * 3.8;
 
-    const mainPath = document.getElementById('energy-wave-main-path');
-    const harmPath = document.getElementById('energy-wave-harmonic-path');
-    const bgPath = document.getElementById('energy-wave-bg-path');
+    const lut = this._waveLUT;
+    const width = lut.width;
+    const baseY = 82; // Hạ thấp trục sóng xuống nửa dưới buồng kính để HUD nổi sáng ở trên
+    const maxAmp = 32;
+    const steps = lut.steps; // 160 điểm mẫu siêu mịn (step = 5px)
+    const f = 2.4 + t * 4.2; // Tần số sóng tăng dần từ 2.4 đến 6.6 chu kỳ
+    const phase = t * Math.PI * 6; // Pha dịch chuyển mượt theo tay kéo
 
-    if (mainPath && harmPath && bgPath) {
-      const width = 900;
-      const baseY = 88; // Nằm gọn ở nửa dưới buồng kính, tách biệt hoàn toàn với chữ ở trên
-      const focalX = 60 + t * (width - 120); // Tâm hội tụ bó sóng ánh sáng đi theo đúng tay kéo!
-      const sigma = 210; // Độ rộng đường bao Gaussian của bó sóng ánh sáng
-      const k = 0.028 + t * 0.014; // Số sóng (bước sóng ánh sáng ngắn dần khi năng lượng tăng)
-      const phase = t * Math.PI * 6; // Pha dịch chuyển mượt như tia sáng trượt
-      const maxAmp = 28;
-      const steps = 48;
+    let dPrimary = '';
+    let dHarm1 = '';
+    let dHarm2 = '';
 
-      let dRay1 = '';
-      let dRay2 = '';
-      let dCaustic = '';
+    const uArr = lut.u;
+    const xArr = lut.x;
+    const envArr = lut.baseEnv;
 
-      for (let i = 0; i <= steps; i++) {
-        const ratio = i / steps;
-        const x = ratio * width;
-        const dx = x - focalX;
-        // Đường bao Gaussian của Bó sóng ánh sáng (cao nhất tại vị trí con trượt focalX, thuôn mượt về 2 bên)
-        const envelope = 0.22 + 0.78 * Math.exp(-(dx * dx) / (2 * sigma * sigma));
+    for (let i = 0; i <= steps; i++) {
+      const u = uArr[i];
+      const x = xArr[i];
+      const diff = u - t;
 
-        // Tia sáng chính (Chromatic Ray 1)
-        const y1 = baseY - Math.sin(x * k - phase) * (maxAmp * envelope);
-        // Tia sáng tán sắc bậc 2 (Chromatic Ray 2 lệch pha 120 độ)
-        const y2 = baseY - Math.sin(x * k * 1.18 - phase + 2.094) * (maxAmp * 0.68 * envelope);
-        // Quầng tán xạ ánh sáng nền (Optical Caustic Envelope)
-        const yBg = baseY - Math.abs(Math.cos(x * k * 0.5 - phase * 0.5)) * (maxAmp * 0.85 * envelope);
+      // Hàm bao hội tụ năng lượng Gauss (Cursor-Tracked Gaussian Wave Packet) with precomputed baseEnv
+      const envelope = envArr[i] * (0.42 + 0.58 * Math.exp(-(diff * diff) / 0.045));
 
-        const cmd = i === 0 ? 'M' : 'L';
-        dRay1 += `${cmd} ${x.toFixed(1)} ${y1.toFixed(1)} `;
-        dRay2 += `${cmd} ${x.toFixed(1)} ${y2.toFixed(1)} `;
-        dCaustic += `${cmd} ${x.toFixed(1)} ${yBg.toFixed(1)} `;
-      }
-      dCaustic += `L ${width} 136 L 0 136 Z`;
+      // Lớp sóng chính (Primary Laser Wave)
+      const y1 = baseY - Math.sin(2 * Math.PI * f * u - phase) * (maxAmp * envelope);
+      // Lớp sóng hài giao thoa bậc 1 (Chromatic Harmonic 1)
+      const y2 = baseY - Math.sin(2 * Math.PI * f * 1.18 * u - phase + 2.094) * (maxAmp * 0.68 * envelope);
+      // Lớp sóng hài giao thoa bậc 2 (Chromatic Harmonic 2)
+      const y3 = baseY - Math.sin(2 * Math.PI * f * 0.82 * u - phase - 1.57) * (maxAmp * 0.45 * envelope);
 
-      mainPath.setAttribute('d', dRay1.trim());
-      harmPath.setAttribute('d', dRay2.trim());
-      bgPath.setAttribute('d', dCaustic.trim());
-      harmPath.removeAttribute('stroke-dasharray'); // Để tia sáng thứ 2 liền mạch mượt mà như dải lụa quang học
+      const cmd = i === 0 ? 'M' : 'L';
+      dPrimary += `${cmd} ${x.toFixed(1)} ${y1.toFixed(1)} `;
+      dHarm1 += `${cmd} ${x.toFixed(1)} ${y2.toFixed(1)} `;
+      dHarm2 += `${cmd} ${x.toFixed(1)} ${y3.toFixed(1)} `;
+    }
+
+    const dAreaPrimary = `${dPrimary} L ${width} 135 L 0 135 Z`;
+    const dAreaSecondary = `${dHarm1} L ${width} 135 L 0 135 Z`;
+
+    // Cập nhật các lớp đường cong SVG
+    const corePath = document.getElementById('wave-primary-core') || document.getElementById('energy-wave-main-path');
+    const glowPath = document.getElementById('wave-primary-glow');
+    const harm1Path = document.getElementById('wave-harmonic-1') || document.getElementById('energy-wave-harmonic-path');
+    const harm2Path = document.getElementById('wave-harmonic-2');
+    const areaPriPath = document.getElementById('wave-area-primary') || document.getElementById('energy-wave-bg-path');
+    const areaSecPath = document.getElementById('wave-area-secondary');
+    const legacyMain = document.getElementById('energy-wave-main-path');
+    const legacyHarm = document.getElementById('energy-wave-harmonic-path');
+    const legacyBg = document.getElementById('energy-wave-bg-path');
+
+    if (corePath) corePath.setAttribute('d', dPrimary.trim());
+    if (glowPath) glowPath.setAttribute('d', dPrimary.trim());
+    if (harm1Path) harm1Path.setAttribute('d', dHarm1.trim());
+    if (harm2Path) harm2Path.setAttribute('d', dHarm2.trim());
+    if (areaPriPath) areaPriPath.setAttribute('d', dAreaPrimary.trim());
+    if (areaSecPath) areaSecPath.setAttribute('d', dAreaSecondary.trim());
+    if (legacyMain) legacyMain.setAttribute('d', dPrimary.trim());
+    if (legacyHarm) legacyHarm.setAttribute('d', dHarm1.trim());
+    if (legacyBg) legacyBg.setAttribute('d', dAreaPrimary.trim());
+
+    // Cập nhật Hạt Tâm Quang Năng trượt theo đỉnh sóng
+    const xc = t * width;
+    const clampedT = Math.max(0.001, Math.min(0.999, t));
+    const envC = Math.pow(Math.sin(Math.PI * clampedT), 0.65);
+    const yc = baseY - Math.sin(2 * Math.PI * f * t - phase) * (maxAmp * envC);
+
+    const cursorBeam = document.getElementById('wave-cursor-beam');
+    const cursorHalo = document.getElementById('wave-cursor-halo');
+    const cursorOrb = document.getElementById('wave-cursor-orb');
+    if (cursorBeam) {
+      cursorBeam.setAttribute('x1', xc.toFixed(1));
+      cursorBeam.setAttribute('y1', yc.toFixed(1));
+      cursorBeam.setAttribute('x2', xc.toFixed(1));
+      cursorBeam.setAttribute('y2', '135');
+    }
+    if (cursorHalo) {
+      cursorHalo.setAttribute('cx', xc.toFixed(1));
+      cursorHalo.setAttribute('cy', yc.toFixed(1));
+    }
+    if (cursorOrb) {
+      cursorOrb.setAttribute('cx', xc.toFixed(1));
+      cursorOrb.setAttribute('cy', yc.toFixed(1));
+    }
+
+    // Cập nhật 2 Cổng Pha Tinh Thể (Crystal Phase Gates at 33.333% & 66.667%)
+    const numericVal = pct;
+    const gate1 = document.getElementById('phase-gate-1');
+    const gate2 = document.getElementById('phase-gate-2');
+    if (gate1) {
+      gate1.classList.toggle('active', numericVal >= 33.333);
+      gate1.classList.toggle('is-passed', numericVal >= 33.333);
+    }
+    if (gate2) {
+      gate2.classList.toggle('active', numericVal >= 66.667);
+      gate2.classList.toggle('is-passed', numericVal >= 66.667);
     }
 
     // Nội suy màu quang phổ ánh sáng liên tục & cập nhật HUD
@@ -1124,39 +1325,70 @@ const App = {
     const stop2 = document.getElementById('ew-stop-2');
     const stop3 = document.getElementById('ew-stop-3');
     const areaTop = document.getElementById('ew-area-top');
+    const areaMid = document.getElementById('ew-area-mid');
+    const areaBot = document.getElementById('ew-area-bot');
     const badgeEl = document.getElementById('energy-wave-mode-badge');
-    const titleEl = document.getElementById('energy-wave-mode-title');
+    const titleEl = document.querySelector('.energy-wave-title') || document.getElementById('energy-wave-mode-title');
+    const subtitleEl = document.querySelector('.theme-subtitle') || document.getElementById('theme-subtitle');
+    const pillEl = document.querySelector('.energy-level-pill') || badgeEl;
+    const liveDot = document.querySelector('.theme-live-dot');
     const svgEl = document.getElementById('energy-wave-svg');
 
-    let glowColor = 'rgba(168, 85, 247, 0.45)';
+    if (pillEl) {
+      pillEl.textContent = `Năng lượng • ${Math.round(pct)}%`;
+    }
+
+    let themeName = '';
+    let themeSubtitle = '';
+    let dotColor = '#ec4899';
+    let glowColor = 'rgba(168, 85, 247, 0.55)';
 
     if (pct < 33.5) {
+      themeName = 'Tím Hồng (Cyber Violet)';
+      themeSubtitle = 'Kính tím khói mộng mơ';
+      dotColor = '#ec4899';
       if (stop1) stop1.setAttribute('stop-color', '#8b5cf6');
       if (stop2) stop2.setAttribute('stop-color', '#ec4899');
       if (stop3) stop3.setAttribute('stop-color', '#f472b6');
       if (areaTop) areaTop.setAttribute('stop-color', '#d946ef');
-      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 420nm (${Math.round(pct)}%)`;
-      if (titleEl) titleEl.textContent = 'Tím Hồng (Ultraviolet Rose Wave)';
-      glowColor = 'rgba(168, 85, 247, 0.45)';
+      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(126, 34, 206, 0.20)');
+      if (areaBot) areaBot.setAttribute('stop-color', '#100b1c');
+      glowColor = 'rgba(192, 132, 252, 0.65)';
     } else if (pct <= 66.5) {
-      if (stop1) stop1.setAttribute('stop-color', '#71717a');
-      if (stop2) stop2.setAttribute('stop-color', '#ffffff');
+      themeName = 'Trắng Đen (Monochrome Laser)';
+      themeSubtitle = 'Tối giản đơn sắc công nghệ';
+      dotColor = '#ffffff';
+      if (stop1) stop1.setAttribute('stop-color', '#ffffff');
+      if (stop2) stop2.setAttribute('stop-color', '#e4e4e7');
       if (stop3) stop3.setAttribute('stop-color', '#a1a1aa');
       if (areaTop) areaTop.setAttribute('stop-color', '#ffffff');
-      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 550nm (${Math.round(pct)}%)`;
-      if (titleEl) titleEl.textContent = 'Trắng Đen (Monochrome Laser Wave)';
-      glowColor = 'rgba(255, 255, 255, 0.35)';
+      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(161, 161, 170, 0.12)');
+      if (areaBot) areaBot.setAttribute('stop-color', '#09090b');
+      glowColor = 'rgba(255, 255, 255, 0.55)';
     } else {
-      if (stop1) stop1.setAttribute('stop-color', '#f59e0b');
-      if (stop2) stop2.setAttribute('stop-color', '#f97316');
+      themeName = 'Trắng Cam (Solar Amber)';
+      themeSubtitle = 'Ấm áp tràn đầy năng lượng';
+      dotColor = '#f97316';
+      if (stop1) stop1.setAttribute('stop-color', '#f97316');
+      if (stop2) stop2.setAttribute('stop-color', '#fb923c');
       if (stop3) stop3.setAttribute('stop-color', '#ea580c');
-      if (areaTop) areaTop.setAttribute('stop-color', '#fb923c');
-      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 620nm (${Math.round(pct)}%)`;
-      if (titleEl) titleEl.textContent = 'Trắng Cam (Solar Amber Wave)';
-      glowColor = 'rgba(249, 115, 22, 0.45)';
+      if (areaTop) areaTop.setAttribute('stop-color', '#f97316');
+      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(251, 146, 60, 0.20)');
+      if (areaBot) areaBot.setAttribute('stop-color', '#fff7ed');
+      glowColor = 'rgba(249, 115, 22, 0.75)';
     }
 
+    if (titleEl) titleEl.textContent = themeName;
+    if (subtitleEl) subtitleEl.textContent = themeSubtitle;
+    if (liveDot) liveDot.style.backgroundColor = dotColor;
+
     if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${glowColor})`;
+
+    const slider = document.getElementById('theme-energy-slider');
+    if (slider) {
+      slider.style.setProperty('--slider-pct', `${pct.toFixed(1)}%`);
+      slider.style.setProperty('--energy-clip-pct', `${pct.toFixed(1)}%`);
+    }
 
     const activeZone = pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange');
     document.querySelectorAll('.energy-node-btn').forEach((btn) => {
@@ -1432,21 +1664,21 @@ const App = {
       if (this.currentView !== viewName) return;
       const curRev = (typeof db !== 'undefined' && db.revision) ? db.revision : 1;
       if (viewName === 'dashboard') {
-        const needsRender = !this._viewRendered.dashboard || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.dashboard !== curRev);
+        const needsRender = !this._viewRendered.dashboard || (this._renderedViewRevision && this._renderedViewRevision.dashboard !== curRev);
         if (needsRender) {
           this.renderDashboard();
           this._viewRendered.dashboard = true;
           if (this._renderedViewRevision) this._renderedViewRevision.dashboard = curRev;
         }
       } else if (viewName === 'decks') {
-        const needsRender = !this._viewRendered.decks || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.decks !== curRev);
+        const needsRender = !this._viewRendered.decks || (this._renderedViewRevision && this._renderedViewRevision.decks !== curRev);
         if (needsRender) {
           this.renderDecks();
           this._viewRendered.decks = true;
           if (this._renderedViewRevision) this._renderedViewRevision.decks = curRev;
         }
       } else if (viewName === 'bank') {
-        const needsRender = !this._viewRendered.bank || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.bank !== curRev);
+        const needsRender = !this._viewRendered.bank || (this._renderedViewRevision && this._renderedViewRevision.bank !== curRev);
         if (needsRender) {
           this.renderQuestionBank();
           this._viewRendered.bank = true;
@@ -1457,7 +1689,7 @@ const App = {
       } else if (viewName === 'import-lms') {
         this.setupImportLmsView(params);
       } else if (viewName === 'stats') {
-        const needsRender = !this._viewRendered.stats || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.stats !== curRev);
+        const needsRender = !this._viewRendered.stats || (this._renderedViewRevision && this._renderedViewRevision.stats !== curRev);
         if (needsRender) {
           this.renderStatsView();
           this._viewRendered.stats = true;
@@ -1542,6 +1774,9 @@ const App = {
 
   // --- EVENT LISTENERS ---
   setupEventListeners() {
+    if (this._listenersInitialized) return;
+    this._listenersInitialized = true;
+
     // Navigation clicks
     document.querySelectorAll('[data-view]').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -1621,26 +1856,6 @@ const App = {
     // Close modal handlers (buttons and overlay backdrop click)
     const closeModal = () => {
       this.closeAllModals();
-      this._batteryAnimToken++;
-      if (this._batteryCountTimer) {
-        clearInterval(this._batteryCountTimer);
-        this._batteryCountTimer = null;
-      }
-      if (this._batterySegTimer) {
-        clearInterval(this._batterySegTimer);
-        this._batterySegTimer = null;
-      }
-      const resultContainer = document.getElementById('result-battery-container');
-      if (resultContainer) {
-        resultContainer.classList.remove('charged', 'overcharged');
-        const segments = resultContainer.querySelectorAll('.pixel-battery-segment');
-        segments.forEach(s => s.classList.remove('active', 'high', 'next-charging', 'unstable-pulse', 'reverse-wave'));
-      }
-      const modalBox = document.querySelector('#modal-session-complete .modal-box');
-      if (modalBox) {
-        modalBox.classList.remove('overcharged-pulse');
-      }
-      this._isCompletingSession = false;
     };
 
     document.querySelectorAll('.modal-close').forEach(btn => {
@@ -1659,50 +1874,38 @@ const App = {
       });
     });
 
-    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1m Mục 12 & 13)
+    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1m Mục 12 & 13, Prompt 1r Mục 2)
     document.addEventListener('click', (e) => {
-      const closeBtn = e.target.closest('.modal-close, [data-dismiss="modal"], .btn-cancel-modal');
+      const closeBtn = e.target.closest('.modal-close, [data-modal-close], [data-dismiss="modal"], .btn-cancel-modal');
       if (closeBtn) {
-        const parentModal = closeBtn.closest('.modal-overlay');
-        if (parentModal) {
-          this._closeModal(parentModal);
-        } else {
-          this.closeAllModals();
-        }
-
         const inlineOnClick = closeBtn.getAttribute('onclick') || '';
         if (inlineOnClick.includes("navigateTo('decks')") || inlineOnClick.includes('navigateTo("decks")')) {
           e.preventDefault();
           e.stopPropagation();
+          this.closeAllModals();
           this.navigateTo('decks');
           return;
         }
         if (inlineOnClick.includes("navigateTo('stats')") || inlineOnClick.includes('navigateTo("stats")')) {
           e.preventDefault();
           e.stopPropagation();
+          this.closeAllModals();
           this.navigateTo('stats');
           return;
         }
 
         // For regular modal close buttons without navigation onclick:
-        if (!inlineOnClick) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
+        e.preventDefault();
+        e.stopPropagation();
+        this.closeAllModals();
         return;
       }
-      if (e.target.classList && e.target.classList.contains('modal-overlay') && e.target.classList.contains('show')) {
+      if (e.target.classList && e.target.classList.contains('modal-overlay') && (e.target.classList.contains('show') || e.target.classList.contains('active'))) {
         const isCompletionModal = e.target.id === 'modal-session-complete';
-        this._closeModal(e.target);
+        this.closeAllModals();
         if (isCompletionModal) {
           this.navigateTo('decks');
         }
-      }
-    }, true);
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.closeAllModals();
       }
     }, true);
 
@@ -1784,28 +1987,102 @@ const App = {
       });
     }
 
+    // Capture-phase event delegation for Deck Delete Button (Prompt 1q Mục 1)
+    document.addEventListener('click', (e) => {
+      const delBtn = e.target.closest('.deck-delete-btn');
+      if (delBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = delBtn.closest('.deck-card');
+        const deckId = card?.dataset?.deckId || delBtn.dataset?.deckId;
+        if (deckId) {
+          this.confirmDeleteDeck(deckId, e);
+        }
+      }
+    }, true);
+
+    // Event delegation for Study navigation buttons (Prompt 1r Mục 5)
+    document.addEventListener('click', (e) => {
+      const prevBtn = e.target.closest('#btn-quiz-card-prev, #btn-quiz-prev, #btn-flashcard-prev');
+      if (prevBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.prevStudyQuestion(e);
+        return;
+      }
+      const fcNext = e.target.closest('#btn-flashcard-next');
+      if (fcNext) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.nextFlashcardReview(e);
+        return;
+      }
+    });
+
     window.addEventListener('keydown', (e) => {
-      // Exit completion modal, Focus mode, or Study screen on ESC (Prompt 1m Mục 9)
+      // Exit completion modal, Focus mode, or Study screen on ESC (Prompt 1m Mục 9 & Prompt 1r Mục 2)
       if (e.key === 'Escape') {
+        const openWrap = document.querySelector('.cyber-dropdown.open');
+        if (openWrap) {
+          e.preventDefault();
+          e.stopPropagation();
+          App.closeAllCyberDropdowns();
+          const trigger = openWrap.querySelector('.cyber-dropdown-trigger');
+          if (trigger) trigger.focus();
+          return;
+        }
         const completeModal = document.getElementById('modal-session-complete');
         if (completeModal && (completeModal.classList.contains('show') || completeModal.classList.contains('active'))) {
-          closeModal();
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeAllModals();
           this.navigateTo('decks');
           return;
         }
         const openModal = document.querySelector('.modal-overlay.show, .modal-overlay.active');
         if (openModal) {
-          this._closeModal(openModal);
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeAllModals();
           return;
         }
         if (document.body.classList.contains('focus-mode-active') || document.body.classList.contains('focus-mode')) {
+          e.preventDefault();
+          e.stopPropagation();
           this.toggleFocusMode();
           return;
         }
         if (this.currentView === 'study') {
           e.preventDefault();
+          e.stopPropagation();
           this.exitStudySession('dashboard');
           return;
+        }
+      }
+
+      // Keyboard navigation for Study session (ArrowLeft / ArrowRight) (Prompt 1r Mục 5 & Prompt 1q Mục 6)
+      const isInput = e.target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable);
+      if (!isInput && this.currentView === 'study' && !document.querySelector('.modal-overlay.show, .modal-overlay.active')) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          this.prevStudyQuestion();
+          return;
+        }
+        if (e.key === 'ArrowRight') {
+          if (this.activeSession?.mode === 'flashcard') {
+            const session = this.activeSession;
+            const canGoForward = session.currentIndex < (session.cards.length - 1) ||
+                                 (session.flashcardHistory && session.flashcardHistory[session.currentIndex] !== undefined);
+            if (canGoForward) {
+              e.preventDefault();
+              this.nextFlashcardReview();
+              return;
+            }
+          } else if (this.activeSession?.userAnswers?.[this.activeSession.currentIndex] !== undefined) {
+            e.preventDefault();
+            this.nextStudyQuestion();
+            return;
+          }
         }
       }
 
@@ -2082,8 +2359,34 @@ const App = {
     ]);
 
     const nowTs = Date.now();
-    const dueCards = allCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= nowTs);
-    await this.updateGlobalStats(streakData, dueCards.length);
+    let dueCardsCount = 0;
+    let masteredCount = 0;
+    let nonLapsedCount = 0;
+    let learnedCount = 0;
+    const cardsByDeckMap = new Map(); // deckId -> { count: number, due: number }
+
+    for (let i = 0; i < allCards.length; i++) {
+      const c = allCards[i];
+      const isDue = !c.srs?.dueDate || c.srs.dueDate <= nowTs;
+      if (isDue) dueCardsCount++;
+      if (c.srs?.state === 'mastered') masteredCount++;
+      if (c.srs && c.srs.repetitions > 0) {
+        learnedCount++;
+        if (c.srs.state !== 'lapsed') {
+          nonLapsedCount++;
+        }
+      }
+      if (c.deckId) {
+        let stat = cardsByDeckMap.get(c.deckId);
+        if (!stat) {
+          stat = { count: 0, due: 0 };
+          cardsByDeckMap.set(c.deckId, stat);
+        }
+        stat.count++;
+        if (isDue) stat.due++;
+      }
+    }
+    await this.updateGlobalStats(streakData, dueCardsCount);
 
     // Build subjects lookup map
     const subjectsMap = {};
@@ -2145,13 +2448,9 @@ const App = {
 
     // SM-2 Memory Retention Radar
     let retentionPct = 96;
-    if (allCards.length > 0) {
-      const nonLapsedCards = allCards.filter(c => c.srs && c.srs.state !== 'lapsed' && c.srs.repetitions > 0);
-      const learnedCards = allCards.filter(c => c.srs && c.srs.repetitions > 0);
-      if (learnedCards.length > 0) {
-        retentionPct = Math.round((nonLapsedCards.length / learnedCards.length) * 100);
-        retentionPct = Math.min(99, Math.max(75, retentionPct));
-      }
+    if (learnedCount > 0) {
+      retentionPct = Math.round((nonLapsedCount / learnedCount) * 100);
+      retentionPct = Math.min(99, Math.max(75, retentionPct));
     }
     const elRetentionPct = document.getElementById('dashboard-retention-pct');
     const elRetentionFill = document.getElementById('dashboard-retention-fill');
@@ -2189,10 +2488,9 @@ const App = {
     if (elTotalCards) elTotalCards.textContent = allCards.length;
 
     const elDueToday = document.getElementById('stat-due-today');
-    if (elDueToday) elDueToday.textContent = dueCards.length;
+    if (elDueToday) elDueToday.textContent = dueCardsCount;
 
     const elMastered = document.getElementById('stat-mastered-cards');
-    const masteredCount = allCards.filter(c => c.srs?.state === 'mastered').length;
     if (elMastered) elMastered.textContent = masteredCount;
 
     const elStreakDays = document.getElementById('stat-streak-days');
@@ -2261,10 +2559,9 @@ const App = {
         } else {
           let html = '';
           for (const deck of displayDecks) {
-            const deckCards = allCards.filter(c => c.deckId === deck.id);
-            const deckDue = deckCards.filter(c => !c.srs?.dueDate || c.srs.dueDate <= nowTs);
+            const stat = cardsByDeckMap.get(deck.id) || { count: 0, due: 0 };
             const subj = subjectsMap[deck.subjectId] || subjectsMap['subj_unassigned'] || { name: 'Chưa phân loại', icon: 'book', color: '#a855f7' };
-            html += this._createDeckCardHtml(deck, deckCards.length, deckDue.length, subj);
+            html += this._createDeckCardHtml(deck, stat.count, stat.due, subj);
           }
           grid.innerHTML = html;
         }
@@ -2284,7 +2581,7 @@ const App = {
             <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
               <span class="deck-subject-badge"><span class="deck-subject-icon">${this.renderSubjectIcon(subject?.icon)}</span> <span class="deck-subject-name">${this._escapeHtml(subjName)}</span></span>
               ${options.showDelete ? `
-                <button class="icon-btn deck-delete-btn" title="Xóa bộ thẻ" onclick="App.confirmDeleteDeck('${deck.id}')" aria-label="Xóa bộ thẻ">
+                <button class="icon-btn deck-delete-btn" title="Xóa bộ thẻ" onclick="event.stopPropagation(); App.confirmDeleteDeck('${deck.id}', event)" aria-label="Xóa bộ thẻ">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               ` : ''}
@@ -2529,6 +2826,75 @@ const App = {
     }
   },
 
+  async confirmDeleteDeck(deckId, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!deckId) return;
+    const deck = await db.getDeck(deckId);
+    if (!deck) {
+      this.showToast('Không tìm thấy bộ thẻ cần xóa.', 'warning');
+      return;
+    }
+
+    // Tạo hoặc mở Modal xác nhận xóa chuẩn Liquid Glass (thay cho window.confirm bị chặn)
+    let modal = document.getElementById('modal-confirm-delete-deck');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-confirm-delete-deck';
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-box" style="max-width: 440px; padding: 24px;">
+          <div class="modal-header" style="margin-bottom: 12px;">
+            <h3 class="modal-title" style="font-size: 1.15rem; font-weight: 800;">Xác nhận xóa bộ thẻ</h3>
+            <button type="button" class="icon-btn modal-close" onclick="App._closeModal(document.getElementById('modal-confirm-delete-deck'))">✕</button>
+          </div>
+          <div class="modal-body" style="padding: 8px 0 20px 0;">
+            <p id="confirm-delete-deck-msg" style="font-size: 0.96rem; line-height: 1.6; color: var(--text-secondary);"></p>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="App._closeModal(document.getElementById('modal-confirm-delete-deck'))">Hủy</button>
+            <button type="button" id="btn-execute-delete-deck" class="btn btn-primary" style="background: #ef4444 !important; border-color: #ef4444 !important; color: #ffffff !important;">Xóa vĩnh viễn</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    const msgEl = document.getElementById('confirm-delete-deck-msg');
+    if (msgEl) {
+      msgEl.innerHTML = `Bạn có chắc chắn muốn xóa bộ câu hỏi <b>"${this._escapeHtml(deck.name)}"</b> và toàn bộ các câu hỏi bên trong không? Hành động này không thể hoàn tác.`;
+    }
+
+    const execBtn = document.getElementById('btn-execute-delete-deck');
+    if (execBtn) {
+      execBtn.onclick = async () => {
+        this._closeModal(modal);
+        await this.executeDeleteDeck(deckId, deck.name);
+      };
+    }
+
+    this._showModal(modal);
+  },
+
+  async executeDeleteDeck(deckId, deckName = '') {
+    await db.deleteDeck(deckId);
+    db.revision = (db.revision || 1) + 1;
+    db.invalidateSubjectCache();
+    if (this._renderedViewRevision) {
+      this._renderedViewRevision = { dashboard: 0, decks: 0, bank: 0, stats: 0 };
+    }
+    // Xóa ngay thẻ trên DOM để phản hồi tức thì
+    document.querySelectorAll(`.deck-card[data-deck-id="${deckId}"]`).forEach(el => el.remove());
+    await Promise.all([
+      this.renderDecks(),
+      this.renderDashboard(),
+      this.updateGlobalStats()
+    ]);
+    this.showToast(`Đã xóa bộ thẻ "${deckName}" thành công.`, 'info');
+  },
+
   toggleSubjectCollapse(subjectId) {
     if (this.collapsedSubjectIds.has(subjectId)) {
       this.collapsedSubjectIds.delete(subjectId);
@@ -2710,6 +3076,34 @@ const App = {
     const counterEl = document.getElementById('study-counter');
     if (counterEl) counterEl.textContent = `${current} / ${total}`;
 
+    // Prev / Next button states (Prompt 1r Mục 5 & Prompt 1q Mục 6)
+    const canGoPrev = session.currentIndex > 0;
+    session.maxReachedIndex = Math.max(session.maxReachedIndex || 0, session.currentIndex);
+
+    ['btn-quiz-card-prev', 'btn-quiz-prev', 'btn-flashcard-prev'].forEach(btnId => {
+      const el = document.getElementById(btnId);
+      if (el) {
+        if (canGoPrev) {
+          el.style.setProperty('display', 'inline-flex', 'important');
+          el.style.pointerEvents = 'auto';
+          el.disabled = false;
+        } else {
+          el.style.setProperty('display', 'none', 'important');
+        }
+      }
+    });
+
+    const fcNextBtn = document.getElementById('btn-flashcard-next');
+    if (fcNextBtn) {
+      const canGoForward = session.currentIndex < (session.cards.length - 1);
+      if (canGoForward) {
+        fcNextBtn.style.setProperty('display', 'inline-flex', 'important');
+        fcNextBtn.style.pointerEvents = 'auto';
+      } else {
+        fcNextBtn.style.setProperty('display', 'none', 'important');
+      }
+    }
+
     // Auto reset scroll position to top (only for quiz mode, avoid disorienting user in flashcard mode)
     if (session.mode !== 'flashcard') {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -2717,11 +3111,14 @@ const App = {
       if (mainEl) mainEl.scrollTop = 0;
     }
 
+    // Study progress bar (Prompt 1s Item 4: current / total with !important and --study-progress-pct)
     const progressFill = document.getElementById('study-progress-fill');
-    const ratio = total > 0 ? Math.max(0, Math.min(1, (current - 1) / total)) : 0;
+    const ratio = total > 0 ? Math.max(0, Math.min(1, current / total)) : 0;
+    const pctStr = `${(ratio * 100).toFixed(2)}%`;
     if (progressFill) {
-      progressFill.style.width = `${ratio * 100}%`;
-      progressFill.style.transform = `scaleX(${ratio})`;
+      progressFill.style.setProperty('--study-progress-pct', pctStr);
+      progressFill.style.setProperty('width', pctStr, 'important');
+      progressFill.style.removeProperty('transform');
     }
     this.preloadNextCardMath(session);
 
@@ -2941,11 +3338,17 @@ const App = {
       }
 
       if (footerActions) {
-        footerActions.classList.remove('show');
-        if (isBlindUnrevealed) {
-          footerActions.style.setProperty('display', 'none', 'important');
-        } else {
+        const canGoPrev = (this.activeSession?.currentIndex || 0) > 0;
+        if (canGoPrev && !isBlindUnrevealed) {
+          footerActions.classList.add('show');
           footerActions.style.removeProperty('display');
+        } else {
+          footerActions.classList.remove('show');
+          if (isBlindUnrevealed) {
+            footerActions.style.setProperty('display', 'none', 'important');
+          } else {
+            footerActions.style.removeProperty('display');
+          }
         }
       }
 
@@ -3493,6 +3896,52 @@ const App = {
     }
   },
 
+  prevStudyQuestion(event) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    const now = Date.now();
+    if (this._lastPrevClick && now - this._lastPrevClick < 150) return;
+    this._lastPrevClick = now;
+
+    const session = this.activeSession;
+    if (!session || !Array.isArray(session.cards) || session.currentIndex <= 0) {
+      return;
+    }
+
+    this.clearPerQuestionTimer();
+    session.currentIndex = Math.max(0, session.currentIndex - 1);
+    session.blindRevealed = true; // Khi lùi lại câu đã qua thì mở luôn không che Blind Veil
+
+    // Reset trạng thái blind-active khi chuyển câu
+    const quizArea = document.getElementById('study-quiz-area');
+    if (quizArea) {
+      quizArea.scrollTop = 0;
+      quizArea.classList.remove('blind-active');
+    }
+    const quizCard = document.querySelector('#study-quiz-area .quiz-card');
+    if (quizCard) quizCard.classList.remove('blind-active');
+    document.body.classList.remove('quiz-blind-active');
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const mainEl = document.querySelector('.app-main');
+    if (mainEl) mainEl.scrollTop = 0;
+
+    this.renderActiveStudyCard();
+  },
+
+  nextFlashcardReview(event) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    const session = this.activeSession;
+    if (!session || !Array.isArray(session.cards)) return;
+    if (session.currentIndex < session.cards.length - 1) {
+      session.currentIndex++;
+      this.renderActiveStudyCard();
+    }
+  },
+
   // 3D Flashcard Renderer
   _renderFlashcardContent(card) {
     const fastNextBtn = document.getElementById('btn-quiz-fast-next');
@@ -3635,7 +4084,18 @@ const App = {
     const card = session.cards[session.currentIndex];
     if (!card) return;
 
+    // Deduplicate score counting if card is reviewed again via Previous button (Prompt 1q Mục 6)
+    session.flashcardHistory = session.flashcardHistory || {};
+    const prevRating = session.flashcardHistory[session.currentIndex];
     const isCorrect = rating >= 3;
+
+    if (prevRating !== undefined) {
+      const wasCorrect = prevRating >= 3;
+      if (wasCorrect) session.correctCount = Math.max(0, session.correctCount - 1);
+      else session.incorrectCount = Math.max(0, session.incorrectCount - 1);
+    }
+    session.flashcardHistory[session.currentIndex] = rating;
+
     if (isCorrect) {
       sounds.playCorrect();
       session.correctCount++;
@@ -5535,9 +5995,11 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   // --- STATS VIEW ---
   async renderStatsView() {
-    const allCards = await db.getAllCards();
-    const logs = await db.getRecentLogs(500);
-    const streak = await db.getMeta('streak', { count: 0, history: [] });
+    const [allCards, logs, streak] = await Promise.all([
+      db.getAllCards(),
+      db.getRecentLogs(500),
+      db.getMeta('streak', { count: 0, history: [] })
+    ]);
 
     // States breakdown & accuracy calculation
     let states = null;
@@ -6723,14 +7185,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       }
 
       if (q) {
-        const inQ = (c.question || '').toLowerCase().includes(q);
-        const inExp = (c.explanation || '').toLowerCase().includes(q);
-        const inNum = c.type === 'numeric' && String(c.correct_answer || '').toLowerCase().includes(q);
-        const inOpts = (c.options || []).some(opt => {
-          const optText = typeof opt === 'string' ? opt : (opt?.text || '');
-          return optText.toLowerCase().includes(q);
-        });
-        if (!inQ && !inExp && !inOpts && !inNum) return false;
+        const blob = this._getCardSearchBlob(c);
+        if (!blob.includes(q)) return false;
       }
       return true;
     });
@@ -6751,32 +7207,137 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       return;
     }
 
-    const CHUNK_SIZE = 15;
-    listContainer.innerHTML = '';
+    // Hủy observer cũ nếu đang tồn tại từ lần lọc trước
+    if (this._bankScrollObserver) {
+      this._bankScrollObserver.disconnect();
+      this._bankScrollObserver = null;
+    }
+    if (this._bankCardRevealObserver) {
+      this._bankCardRevealObserver.disconnect();
+      this._bankCardRevealObserver = null;
+    }
 
-    for (let i = 0; i < filtered.length; i += CHUNK_SIZE) {
-      if (i > 0) {
-        await this.yieldToMain();
-        if (this.currentView !== 'bank' || this.currentFilteredBankCards !== filtered) {
-          return;
+    const INITIAL_BATCH = 8;
+    const SCROLL_BATCH = 8;
+    let renderedCount = 0;
+
+    // Observer kích hoạt hiệu ứng float-up mượt mà khi từng thẻ lướt vào vùng nhìn
+    if (typeof IntersectionObserver !== 'undefined') {
+      this._bankCardRevealObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            el.classList.add('is-visible');
+            obs.unobserve(el);
+          }
+        });
+      }, { root: null, rootMargin: '60px 0px', threshold: 0.05 });
+    }
+
+    const appendNextBankBatch = (batchSize, isInitial = false) => {
+      if (renderedCount >= filtered.length) return;
+      const slice = filtered.slice(renderedCount, renderedCount + batchSize);
+      renderedCount += slice.length;
+
+      const fragment = document.createDocumentFragment();
+      const tempWrap = document.createElement('div');
+      tempWrap.innerHTML = slice.map((card, idx) =>
+        this._generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged, isInitial ? idx : idx % 4)
+      ).join('');
+
+      const newCards = Array.from(tempWrap.children);
+      newCards.forEach((cardEl, localIdx) => {
+        const delayMs = isInitial ? Math.min(localIdx * 42, 260) : Math.min(localIdx * 35, 160);
+        cardEl.style.setProperty('--bank-float-delay', `${delayMs}ms`);
+        cardEl.classList.add('bank-card-float-item');
+        if (isInitial) {
+          // Các thẻ đầu tiên trong màn hình float lên ngay lập tức như các block ở tab khác
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => {
+              cardEl.classList.add('is-visible');
+            });
+          } else {
+            cardEl.classList.add('is-visible');
+          }
+        } else if (this._bankCardRevealObserver) {
+          this._bankCardRevealObserver.observe(cardEl);
+        } else {
+          cardEl.classList.add('is-visible');
         }
-      }
-      const chunk = filtered.slice(i, i + CHUNK_SIZE);
-      let chunkHtml = '';
-      chunk.forEach(card => {
-        chunkHtml += this._generateBankCardHtml(card, decksMap, isCardBookmarked, isCardFlagged);
+
+        const grid = cardEl.querySelector('.bank-card-options-grid');
+        if (grid && grid.querySelector('.katex-inline-wrap, .katex')) {
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => this.adaptOptionsLayout(grid));
+          } else {
+            this.adaptOptionsLayout(grid);
+          }
+        }
+        fragment.appendChild(cardEl);
       });
-      listContainer.insertAdjacentHTML('beforeend', chunkHtml);
+
+      const sentinel = listContainer.querySelector('.bank-lazy-sentinel');
+      if (sentinel) {
+        listContainer.insertBefore(fragment, sentinel);
+      } else {
+        listContainer.appendChild(fragment);
+      }
+    };
+
+    // 1. Xóa danh sách cũ và render ngay 8 thẻ đầu tiên trong 1 thao tác DOM duy nhất (Zero Flicker)
+    listContainer.innerHTML = '';
+    appendNextBankBatch(INITIAL_BATCH, true);
+
+    // 2. Nếu còn câu hỏi phía dưới, gắn khung Skeleton Shimmer tối ưu và nạp dần khi kéo xuống
+    if (renderedCount < filtered.length) {
+      const sentinel = document.createElement('div');
+      sentinel.className = 'bank-lazy-sentinel';
+      sentinel.innerHTML = `
+        <div class="bank-skeleton-card">
+          <div class="bank-skeleton-row short"></div>
+          <div class="bank-skeleton-row long"></div>
+          <div class="bank-skeleton-grid">
+            <div class="bank-skeleton-pill"></div>
+            <div class="bank-skeleton-pill"></div>
+            <div class="bank-skeleton-pill"></div>
+            <div class="bank-skeleton-pill"></div>
+          </div>
+        </div>
+      `;
+      listContainer.appendChild(sentinel);
+
+      if (typeof IntersectionObserver !== 'undefined') {
+        this._bankScrollObserver = new IntersectionObserver((entries) => {
+          const entry = entries[0];
+          if (!entry || !entry.isIntersecting) return;
+          if (this.currentView !== 'bank' || this.currentFilteredBankCards !== filtered) return;
+
+          // Hiệu ứng nạp mượt khi cuộn xuống
+          const runAppend = () => {
+            appendNextBankBatch(SCROLL_BATCH, false);
+            if (renderedCount >= filtered.length) {
+              if (this._bankScrollObserver) {
+                this._bankScrollObserver.disconnect();
+                this._bankScrollObserver = null;
+              }
+              sentinel.remove();
+            }
+          };
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(runAppend);
+          } else {
+            runAppend();
+          }
+        }, { root: null, rootMargin: '320px 0px', threshold: 0.01 });
+
+        this._bankScrollObserver.observe(sentinel);
+      } else {
+        // Fallback nếu môi trường test không có IntersectionObserver
+        appendNextBankBatch(filtered.length - renderedCount, false);
+        sentinel.remove();
+      }
     }
 
-    // Only run layout measurement on first few visible cards to prevent layout thrashing
-    const firstGrids = listContainer.querySelectorAll('.bank-card-options-grid');
-    for (let i = 0; i < Math.min(6, firstGrids.length); i++) {
-      const grid = firstGrids[i];
-      if (grid && grid.querySelector('.katex-inline-wrap, .katex')) {
-        this.adaptOptionsLayout(grid);
-      }
-    }
     this.observeUnrevealedItems();
   },
 
@@ -6996,6 +7557,30 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.renderQuestionBank();
   },
 
+  _getCardSearchBlob(card) {
+    if (!card) return '';
+    if (typeof card._searchBlob === 'string') return card._searchBlob;
+    const parts = [
+      card.question || '',
+      card.correct_answer !== undefined && card.correct_answer !== null ? String(card.correct_answer) : '',
+      card.explanation || '',
+      (card.options || []).map(o => typeof o === 'object' ? (o?.text || '') : (o || '')).join(' '),
+      typeof card.topic === 'string' ? card.topic : (card.tag || '')
+    ];
+    const blob = parts.join(' ').toLowerCase();
+    try {
+      Object.defineProperty(card, '_searchBlob', {
+        value: blob,
+        writable: true,
+        enumerable: false,
+        configurable: true
+      });
+    } catch (_) {
+      card._searchBlob = blob;
+    }
+    return blob;
+  },
+
   _bankFilterDebounceTimer: null,
   onBankFilterChange(immediate = false) {
     if (this._bankFilterDebounceTimer) {
@@ -7020,7 +7605,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (immediate) {
       applyFilter();
     } else {
-      this._bankFilterDebounceTimer = setTimeout(applyFilter, 200);
+      this._bankFilterDebounceTimer = setTimeout(applyFilter, 90);
     }
   },
 
@@ -7108,7 +7693,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
 
     const payload = {
-      role_instruction: "Bạn là chuyên gia giáo dục. Các câu hỏi trắc nghiệm sau đây do người học đánh dấu vì 'diễn đạt chưa rõ ràng, tối nghĩa hoặc gây hiểu nhầm'. Hãy viết lại câu hỏi, các phương án lựa chọn và lời giải thích cho thật mạch lạc, chính xác sư phạm, giữ nguyên công thức LaTeX trong dấu $...$ hoặc $$...$$.",
+      role_instruction: "Bạn là chuyên gia giáo dục. Các câu hỏi trắc nghiệm sau đây do người học đánh dấu vì 'diễn đạt chưa rõ ràng, tối nghĩa hoặc gây hiểu nhầm'. Hãy viết lại câu hỏi, các phương án lựa chọn và lời giải thích cho thật mạch lạc, chính xác sư phạm, giữ nguyên công thức LaTeX trong dấu $...$ hoặc $$...$$. CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn tài liệu hoặc đánh dấu trang/đoạn (như [cite: ...], [cite_start], [cite_end], [1], 【...】) vào câu hỏi, các lựa chọn trả lời hay lời giải thích. Tuyệt đối không để lộ dấu vết dẫn chứng ở đáp án đúng!",
       output_format: "Trả về JSON chuẩn TinhMinhLaKey có cấu trúc { quiz_title, questions: [...] } để dán trực tiếp vào app. Trường 'topic' bắt buộc phân loại theo Chương ('Chương 1: ...', 'Chương 2: ...') đồng nhất.",
       questions_to_improve: flagged.map(c => ({
         id: c.id,
@@ -7202,12 +7787,67 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         this.showToast(`Khôi phục thành công ${res.decksCount} bộ thẻ và ${res.cardsCount} câu hỏi!`, 'success');
         this.updateGlobalStats();
         this.renderDashboard();
+
+        // Kiểm tra thông minh môn học trùng lặp khi gộp dữ liệu Backup (Prompt 1q Mục 3)
+        const dupGroups = await db.findDuplicateSubjectGroups();
+        if (dupGroups && dupGroups.length > 0) {
+          this.showDuplicateSubjectsModal(dupGroups);
+        }
       } catch (err) {
         alert('Lỗi đọc file backup: ' + err.message);
       }
     };
     reader.readAsText(file);
     e.target.value = ''; // Reset input
+  },
+
+  showDuplicateSubjectsModal(dupGroups) {
+    if (!dupGroups || dupGroups.length === 0) return;
+    let modal = document.getElementById('modal-suggest-merge-subjects');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-suggest-merge-subjects';
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-box" style="max-width: 480px; padding: 24px;">
+          <div class="modal-header" style="margin-bottom: 12px;">
+            <h3 class="modal-title" style="font-size: 1.15rem; font-weight: 800;">Gợi ý gộp môn học trùng tên</h3>
+            <button type="button" class="icon-btn modal-close" onclick="App._closeModal(document.getElementById('modal-suggest-merge-subjects'))">✕</button>
+          </div>
+          <div class="modal-body" style="padding: 8px 0 20px 0;">
+            <p id="suggest-merge-subjects-msg" style="font-size: 0.96rem; line-height: 1.6; color: var(--text-secondary);"></p>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="App._closeModal(document.getElementById('modal-suggest-merge-subjects'))">Để riêng</button>
+            <button type="button" id="btn-execute-merge-duplicate-subjects" class="btn btn-primary">Gộp ngay các môn trùng tên</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    const msgEl = document.getElementById('suggest-merge-subjects-msg');
+    if (msgEl) {
+      const names = dupGroups.map(g => `"${this._escapeHtml(g.name)}"`).join(', ');
+      msgEl.innerHTML = `Phát hiện <b>${dupGroups.length} nhóm môn học có tên viết giống hệt nhau</b> sau khi gộp dữ liệu Backup: <b>${names}</b>.<br><br>Bạn có muốn tự động gộp các môn trùng tên này lại để các bộ thẻ nằm chung trong 1 môn học duy nhất không?`;
+    }
+
+    const execBtn = document.getElementById('btn-execute-merge-duplicate-subjects');
+    if (execBtn) {
+      execBtn.onclick = async () => {
+        this._closeModal(modal);
+        const count = await db.mergeDuplicateSubjectGroups(dupGroups);
+        await Promise.all([
+          this.renderDashboard(),
+          this.renderDecks(),
+          this.renderQuestionBank(),
+          this.renderStats()
+        ]);
+        this.showToast(`Đã gộp thành công ${count} môn học trùng tên!`, 'success');
+      };
+    }
+
+    this._showModal(modal);
   },
 
   // --- TOAST NOTIFICATIONS ---

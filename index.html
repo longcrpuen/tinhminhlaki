@@ -45,8 +45,11 @@
   <div id="tab-wave-curtain" class="tab-wave-curtain" aria-hidden="true"><div class="wave-sweep-layer"></div></div>
 
   <!-- Focus Mode Floating Exit Button -->
-  <button id="btn-focus-exit" class="btn btn-secondary focus-exit-btn focus-exit-floating-btn" onclick="App.toggleFocusMode()">
-    ✕ Thoát Chế Độ Tập Trung (Focus Mode)
+  <button id="btn-focus-exit" type="button" class="btn-card-action focus-exit-btn focus-exit-floating-btn" onclick="App.toggleFocusMode()" title="Thoát tập trung (ESC)" aria-label="Thoát tập trung">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+    </svg>
+    <span>Thoát</span>
   </button>
 
   <div class="app-container">
@@ -65,45 +68,45 @@
       </div>
 
       <ul class="nav-list">
-        <li class="nav-item active" data-view="dashboard">
-          <button type="button" title="Tổng quan" data-tooltip="Tổng quan">
+        <li class="nav-item active" data-view="dashboard" onclick="App.navigateTo('dashboard')">
+          <button type="button" title="Tổng quan" data-tooltip="Tổng quan" onclick="App.navigateTo('dashboard')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span class="nav-label">Tổng quan</span>
             
           </button>
         </li>
-        <li class="nav-item" data-view="decks">
-          <button type="button" title="Thư viện thẻ" data-tooltip="Thư viện thẻ">
+        <li class="nav-item" data-view="decks" onclick="App.navigateTo('decks')">
+          <button type="button" title="Thư viện thẻ" data-tooltip="Thư viện thẻ" onclick="App.navigateTo('decks')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="8" height="18" x="3" y="3" rx="1"/><rect width="8" height="18" x="13" y="3" rx="1"/></svg>
             <span class="nav-label">Thư viện thẻ</span>
           </button>
         </li>
-        <li class="nav-item" data-view="bank">
-          <button type="button" title="Ngân hàng câu hỏi" data-tooltip="Ngân hàng câu hỏi">
+        <li class="nav-item" data-view="bank" onclick="App.navigateTo('bank')">
+          <button type="button" title="Ngân hàng câu hỏi" data-tooltip="Ngân hàng câu hỏi" onclick="App.navigateTo('bank')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
             <span class="nav-label">Ngân hàng câu hỏi</span>
           </button>
         </li>
-        <li class="nav-item" data-view="import">
-          <button type="button" title="Dán câu hỏi AI" data-tooltip="Dán câu hỏi AI">
+        <li class="nav-item" data-view="import" onclick="App.navigateTo('import')">
+          <button type="button" title="Dán câu hỏi AI" data-tooltip="Dán câu hỏi AI" onclick="App.navigateTo('import')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             <span class="nav-label">Dán câu hỏi AI</span>
           </button>
         </li>
-        <li class="nav-item" data-view="import-lms">
-          <button type="button" title="Nhập từ LMS" data-tooltip="Nhập từ LMS">
+        <li class="nav-item" data-view="import-lms" onclick="App.navigateTo('import-lms')">
+          <button type="button" title="Nhập từ LMS" data-tooltip="Nhập từ LMS" onclick="App.navigateTo('import-lms')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>
             <span class="nav-label">Nhập từ LMS</span>
           </button>
         </li>
-        <li class="nav-item" data-view="stats">
-          <button type="button" title="Thống kê" data-tooltip="Thống kê">
+        <li class="nav-item" data-view="stats" onclick="App.navigateTo('stats')">
+          <button type="button" title="Thống kê" data-tooltip="Thống kê" onclick="App.navigateTo('stats')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <span class="nav-label">Thống kê</span>
           </button>
         </li>
-        <li class="nav-item" data-view="settings">
-          <button type="button" title="Cài đặt & Sao lưu" data-tooltip="Cài đặt & Sao lưu">
+        <li class="nav-item" data-view="settings" onclick="App.navigateTo('settings')">
+          <button type="button" title="Cài đặt & Sao lưu" data-tooltip="Cài đặt & Sao lưu" onclick="App.navigateTo('settings')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="nav-label">Cài đặt & Sao lưu</span>
           </button>
@@ -706,12 +709,14 @@
                   </button>
                 </div>
 
-                <!-- Secondary Action Toolbar (Star, Flag, Edit, Target aligned to the left) -->
+                <!-- Secondary Action Toolbar (Star, Flag, Edit, Focus aligned to the right) -->
                 <div class="card-actions-toolbar">
-                  <button id="btn-card-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
-                  <button id="btn-card-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
-                  <button id="btn-card-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-                  <button id="btn-card-focus" class="btn-card-action" title="Bật/Tắt Chế độ tập trung" onclick="App.toggleFocusMode()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></button>
+                  <div class="card-utility-actions-group" style="margin-left: auto;">
+                    <button id="btn-card-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+                    <button id="btn-card-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
+                    <button id="btn-card-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
+                    <button id="btn-card-focus" class="btn-card-action" title="Bật/Tắt Chế độ tập trung" onclick="App.toggleFocusMode()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></button>
+                  </div>
                 </div>
                 <h3 id="quiz-card-question" class="quiz-question-text">Câu hỏi đang tải...</h3>
 
@@ -746,12 +751,16 @@
                 <!-- Explanation Box (Pre-allocated space to prevent layout shift) -->
                 <div id="quiz-explanation-box" class="quiz-explanation-box p-4 space-y-2 mt-4">
                   <div class="quiz-explanation-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Giải thích chi tiết</div>
-                  <div id="quiz-explanation-text" class="text-sm leading-relaxed" style="font-size: 0.875rem; line-height: 1.625; color: var(--text-secondary);"></div>
+                  <div id="quiz-explanation-text" class="text-sm leading-relaxed" style="color: var(--text-secondary);"></div>
                 </div>
 
                 <!-- Footer Actions with fixed height to prevent layout shift -->
-                <div class="quiz-footer-actions">
-                  <button id="btn-quiz-next" class="btn btn-primary btn-quiz-next" onclick="App.nextStudyQuestion()">
+                <div class="quiz-footer-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                  <button id="btn-quiz-prev" type="button" class="btn btn-secondary lg-pill-btn btn-quiz-prev" onclick="event.stopPropagation(); App.prevStudyQuestion(event)" style="display: none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Câu trước</span>
+                  </button>
+                  <button id="btn-quiz-next" class="btn btn-primary btn-quiz-next" onclick="event.stopPropagation(); App.nextStudyQuestion(event)" style="margin-left: auto;">
                     Câu tiếp theo
                   </button>
                 </div>
@@ -760,11 +769,23 @@
 
             <!-- MODE B: Clean Self-Contained Flashcard Area -->
             <div id="study-flashcard-area" class="flashcard-player-container" style="display: none;">
-              <!-- Flashcard Secondary Action Toolbar (Bookmark, Flag, Edit) -->
-              <div class="card-actions-toolbar flashcard-actions-toolbar" style="margin-bottom: 8px; justify-content: flex-end;">
-                <button id="btn-flashcard-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="event.stopPropagation(); App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
-                <button id="btn-flashcard-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="event.stopPropagation(); App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
-                <button id="btn-flashcard-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="event.stopPropagation(); App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
+              <!-- Flashcard Secondary Action Toolbar (Bookmark, Flag, Edit, Prev, Next) -->
+              <div class="card-actions-toolbar flashcard-actions-toolbar" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="card-nav-actions-group">
+                  <button id="btn-flashcard-prev" type="button" class="btn-card-action btn-card-nav lg-pill-btn" title="Quay lại thẻ trước (Phím ←)" onclick="event.stopPropagation(); App.prevStudyQuestion(event)" style="display: none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Câu trước</span>
+                  </button>
+                  <button id="btn-flashcard-next" type="button" class="btn-card-action btn-card-nav lg-pill-btn" title="Sang thẻ tiếp theo (Phím →)" onclick="event.stopPropagation(); App.nextFlashcardReview(event)" style="display: none;">
+                    <span>Câu tiếp</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </div>
+                <div class="card-utility-actions-group">
+                  <button id="btn-flashcard-bookmark" class="btn-card-action" title="Lưu thẻ quan trọng" onclick="event.stopPropagation(); App.toggleCurrentCardBookmark()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+                  <button id="btn-flashcard-flag" class="btn-card-action" title="Đánh dấu câu hỏi diễn đạt chưa rõ" onclick="event.stopPropagation(); App.toggleCurrentCardFlag()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>
+                  <button id="btn-flashcard-edit" class="btn-card-action" title="Sửa nhanh nội dung câu hỏi" onclick="event.stopPropagation(); App.openEditCurrentCardModal()"><svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
+                </div>
               </div>
 
               <!-- Flashcard Interactive Stage (3D Perspective) -->
@@ -1376,47 +1397,89 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                 <div class="theme-energy-wave-chamber" id="theme-energy-chamber">
                   <!-- Màn hình Sóng Năng Lượng SVG (100% GPU Transform, 0% lag) -->
                   <div class="energy-wave-stage" id="energy-wave-stage">
-                    <!-- Thông tin Tần số Theme hiện tại nổi trên mặt kính ở tầng trên -->
+                    <!-- Thông tin Theme & Mức Năng lượng Tinh Tế Chuẩn Liquid Glass (Prompt 1v Item A5) -->
                     <div class="energy-wave-hud">
-                      <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng (Dreamy Liquid Glass)</strong>
-                      <span class="energy-wave-badge" id="energy-wave-mode-badge">NEBULA WAVE // 16%</span>
+                      <div class="theme-title-group" style="display: flex; align-items: center; gap: 8px;">
+                        <span class="theme-live-dot" id="theme-live-dot"></span>
+                        <div style="display: flex; align-items: baseline; gap: 6px;">
+                          <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng</strong>
+                          <span class="theme-subtitle" id="theme-subtitle">Kính tím khói mộng mơ</span>
+                        </div>
+                      </div>
+                      <div class="energy-level-pill" id="energy-wave-mode-badge">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 12h3l3-8 4 16 4-8h6"/></svg>
+                        <span id="energy-wave-badge-text">Năng lượng • 16%</span>
+                      </div>
                     </div>
 
-                    <svg class="energy-wave-svg" id="energy-wave-svg" viewBox="0 0 900 135" preserveAspectRatio="none" aria-hidden="true">
+                    <svg class="energy-wave-svg" id="energy-wave-svg" viewBox="0 0 800 135" preserveAspectRatio="none" aria-hidden="true">
                       <defs>
+                        <!-- Filter blur cho lõi laser phát quang -->
+                        <filter id="wave-laser-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="glow" />
+                          <feMerge>
+                            <feMergeNode in="glow" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
                         <linearGradient id="energy-wave-grad-primary" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop id="ew-stop-1" offset="0%" stop-color="#a855f7" />
-                          <stop id="ew-stop-2" offset="50%" stop-color="#ec4899" />
-                          <stop id="ew-stop-3" offset="100%" stop-color="#f472b6" />
+                          <stop id="ew-stop-1" offset="0%" stop-color="var(--wave-primary-stroke, #a855f7)" />
+                          <stop id="ew-stop-2" offset="50%" stop-color="var(--wave-secondary-stroke, #ec4899)" />
+                          <stop id="ew-stop-3" offset="100%" stop-color="var(--wave-tertiary-stroke, #f472b6)" />
                         </linearGradient>
                         <linearGradient id="energy-wave-area-fill" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop id="ew-area-top" offset="0%" stop-color="#c084fc" stop-opacity="0.38" />
-                          <stop id="ew-area-bot" offset="100%" stop-color="#c084fc" stop-opacity="0.0" />
+                          <stop id="ew-area-top" offset="0%" stop-color="var(--wave-area-stop-top, #c084fc)" stop-opacity="0.48" />
+                          <stop id="ew-area-mid" offset="65%" stop-color="var(--wave-area-stop-mid, rgba(168, 85, 247, 0.20))" stop-opacity="0.20" />
+                          <stop id="ew-area-bot" offset="100%" stop-color="var(--wave-area-stop-bot, transparent)" stop-opacity="0.0" />
+                        </linearGradient>
+                        <linearGradient id="energy-wave-area-fill-secondary" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="var(--wave-secondary-stroke, #c084fc)" stop-opacity="0.22" />
+                          <stop offset="100%" stop-color="var(--wave-area-stop-bot, transparent)" stop-opacity="0.0" />
                         </linearGradient>
                       </defs>
-                      <!-- Lớp sóng nền hài bậc 2 -->
-                      <path id="energy-wave-bg-path" class="energy-wave-path-secondary"
-                            d="M 0 82 Q 112 50, 225 82 T 450 82 T 675 82 T 900 82 L 900 135 L 0 135 Z"
-                            fill="url(#energy-wave-area-fill)" />
-                      <!-- Dải sóng năng lượng được thắp sáng theo vị trí kéo (--energy-clip-pct) -->
-                      <g id="energy-wave-active-group">
-                        <path id="energy-wave-main-path" class="energy-wave-path-main"
-                              d="M 0 82 C 90 40, 180 120, 270 82 C 360 40, 450 120, 540 82 C 630 40, 720 120, 810 82 C 855 60, 880 75, 900 82"
-                              fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="3.5" stroke-linecap="round" />
-                        <path id="energy-wave-harmonic-path" class="energy-wave-path-harmonic"
-                              d="M 0 82 C 110 115, 200 45, 310 82 C 420 115, 510 45, 620 82 C 730 115, 820 45, 900 82"
-                              fill="none" stroke="url(#energy-wave-grad-primary)" stroke-width="1.6" stroke-dasharray="6 6" opacity="0.7" />
+
+                      <!-- Lớp 1: Dải Cực Quang Đáy Sóng Kép -->
+                      <path id="wave-area-secondary" class="wave-area-secondary" d="" fill="url(#energy-wave-area-fill-secondary)" />
+                      <path id="wave-area-primary" class="wave-area-primary energy-wave-path-secondary" d="" fill="url(#energy-wave-area-fill)" />
+                      <path id="energy-wave-bg-path" class="energy-wave-bg-path-legacy" d="" fill="none" style="display:none;" />
+
+                      <!-- Lớp 2: Hai Sóng Giao Thoa Lệch Pha -->
+                      <path id="wave-harmonic-2" class="wave-harmonic-2" d="" fill="none" stroke="var(--wave-tertiary-stroke, rgba(232, 121, 249, 0.40))" stroke-width="1.8" stroke-linecap="round" />
+                      <path id="wave-harmonic-1" class="wave-harmonic-1 energy-wave-path-harmonic" d="" fill="none" stroke="var(--wave-secondary-stroke, rgba(192, 132, 252, 0.65))" stroke-width="2.2" stroke-linecap="round" />
+                      <path id="energy-wave-harmonic-path" class="energy-wave-harmonic-path-legacy" d="" fill="none" style="display:none;" />
+
+                      <!-- Lớp 3: Lõi Laser Phát Quang (#wave-primary-glow dày 7px + #wave-primary-core dày 2.8px) -->
+                      <path id="wave-primary-glow" class="wave-primary-glow" d="" fill="none" stroke="var(--wave-primary-glow-color, rgba(192, 132, 252, 0.75))" stroke-width="7" stroke-linecap="round" opacity="0.65" filter="url(#wave-laser-glow-filter)" />
+                      <path id="wave-primary-core" class="wave-primary-core energy-wave-path-main" d="" fill="none" stroke="var(--wave-primary-stroke, #ffffff)" stroke-width="2.8" stroke-linecap="round" />
+                      <path id="energy-wave-main-path" class="energy-wave-main-path-legacy" d="" fill="none" style="display:none;" />
+
+                      <!-- Lớp 4: Tâm Quang Năng Cộng Hưởng (Không còn tia gióng dọc gây lem) -->
+                      <g id="wave-resonance-orb">
+                        <circle id="wave-cursor-halo" cx="0" cy="0" r="11" fill="var(--wave-primary-glow-color, rgba(192, 132, 252, 0.45))" opacity="0.5" />
+                        <circle id="wave-cursor-orb" cx="0" cy="0" r="4.5" fill="var(--wave-orb-fill, #ffffff)" stroke="var(--wave-orb-ring, #d8b4fe)" stroke-width="2" />
                       </g>
                     </svg>
                   </div>
 
-                  <!-- Thanh kéo Năng lượng liên tục (Kéo đến đâu sóng lan & đổi màu Theme đến đấy!) -->
+                  <!-- Thanh kéo Năng lượng liên tục & 2 Cổng Pha Tinh Thể (Crystal Phase Gates) -->
                   <div class="energy-slider-control-wrap">
-                    <input type="range" id="theme-energy-slider" class="theme-energy-slider"
-                           min="0" max="100" value="16" step="0.5"
-                           aria-label="Kéo để chuyển đổi sóng năng lượng giao diện"
-                           oninput="App.onThemeEnergySliderInput(this.value)"
-                           onchange="App.onThemeEnergySliderCommit(this.value)">
+                    <div class="energy-slider-track-wrap" style="position: relative; display: flex; align-items: center; height: 38px; margin: 6px 0 10px 0;">
+                      <!-- Thanh kéo sóng -->
+                      <input type="range" id="theme-energy-slider" class="theme-energy-slider" min="0" max="100" step="0.5" value="16"
+                             oninput="App.onThemeEnergySliderInput(this.value)"
+                             onchange="App.onThemeEnergySliderCommit(this.value)"
+                             aria-label="Điều chỉnh bước sóng năng lượng giao diện">
+
+                      <!-- Cổng Pha 1 (33.33%: Ranh giới Tím Hồng <-> Trắng Đen) -->
+                      <div class="energy-phase-gate" id="phase-gate-1" style="left: 33.333%;" title="Ngưỡng chuyển pha I (33.33%): Tím Hồng ↔ Trắng Đen">
+                        <span class="phase-gate-diamond"><span class="phase-gate-core"></span></span>
+                      </div>
+
+                      <!-- Cổng Pha 2 (66.67%: Ranh giới Trắng Đen <-> Trắng Cam) -->
+                      <div class="energy-phase-gate" id="phase-gate-2" style="left: 66.667%;" title="Ngưỡng chuyển pha II (66.67%): Trắng Đen ↔ Trắng Cam">
+                        <span class="phase-gate-diamond"><span class="phase-gate-core"></span></span>
+                      </div>
+                    </div>
                     <div class="energy-nodes-row">
                       <button type="button" class="energy-node-btn" data-theme-opt="purple-pink" data-theme-choice="violet-rose" onclick="App.selectThemeViaEnergyWave('purple-pink')">
                         <span class="energy-node-dot dot-purple"></span>
@@ -1616,32 +1679,32 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
   <!-- Mobile Bottom Navigation -->
   <nav class="bottom-nav" id="mobile-bottom-nav">
-    <button type="button" class="bottom-nav-item active" data-view="dashboard">
+    <button type="button" class="bottom-nav-item active" data-view="dashboard" onclick="App.navigateTo('dashboard')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
       <span>Trang chủ</span>
     </button>
-    <button type="button" class="bottom-nav-item" data-view="decks">
+    <button type="button" class="bottom-nav-item" data-view="decks" onclick="App.navigateTo('decks')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h6v16H4z"/><path d="M14 4h6v16h-6z"/></svg>
       <span>Bộ thẻ</span>
     </button>
-    <button type="button" class="bottom-nav-item" data-view="bank">
+    <button type="button" class="bottom-nav-item" data-view="bank" onclick="App.navigateTo('bank')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M4 9h16"/><path d="M9 21V9"/></svg>
       <span>Ngân hàng</span>
     </button>
     <!-- Hidden on mobile bottom-nav: accessible via Thư viện thẻ (view-decks) -->
-    <button type="button" class="bottom-nav-item bottom-nav-hidden" data-view="import" style="display: none !important;" aria-hidden="true">
+    <button type="button" class="bottom-nav-item bottom-nav-hidden" data-view="import" style="display: none !important;" aria-hidden="true" onclick="App.navigateTo('import')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
       <span>Dán AI</span>
     </button>
-    <button type="button" class="bottom-nav-item bottom-nav-hidden" data-view="import-lms" style="display: none !important;" aria-hidden="true" title="Nhập từ LMS">
+    <button type="button" class="bottom-nav-item bottom-nav-hidden" data-view="import-lms" style="display: none !important;" aria-hidden="true" title="Nhập từ LMS" onclick="App.navigateTo('import-lms')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>
       <span>Nhập LMS</span>
     </button>
-    <button type="button" class="bottom-nav-item" data-view="stats">
+    <button type="button" class="bottom-nav-item" data-view="stats" onclick="App.navigateTo('stats')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
       <span>Thống kê</span>
     </button>
-    <button type="button" class="bottom-nav-item" data-view="settings">
+    <button type="button" class="bottom-nav-item" data-view="settings" onclick="App.navigateTo('settings')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
       <span>Cài đặt</span>
     </button>
@@ -2193,6 +2256,40 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
       <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
         <button class="btn btn-secondary modal-close">Hủy</button>
         <button class="btn btn-primary" onclick="App.applyBulkReassignDecks()">Áp Dụng Chuyển Môn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Xác nhận xóa bộ thẻ (Liquid Glass) -->
+  <div id="modal-confirm-delete-deck" class="modal-overlay">
+    <div class="modal-box" style="max-width: 440px; padding: 24px;">
+      <div class="modal-header" style="margin-bottom: 12px;">
+        <h3 class="modal-title" style="font-size: 1.15rem; font-weight: 800;">Xác nhận xóa bộ thẻ</h3>
+        <button type="button" class="icon-btn modal-close" onclick="App._closeModal(document.getElementById('modal-confirm-delete-deck'))" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 8px 0 20px 0;">
+        <p id="confirm-delete-deck-msg" style="font-size: 0.96rem; line-height: 1.6; color: var(--text-secondary);"></p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary modal-close" onclick="App._closeModal(document.getElementById('modal-confirm-delete-deck'))">Hủy</button>
+        <button type="button" id="btn-execute-delete-deck" class="btn btn-primary" style="background: #ef4444 !important; border-color: #ef4444 !important; color: #ffffff !important;">Xóa vĩnh viễn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Gợi ý gộp môn học trùng tên khi khôi phục backup (Liquid Glass) -->
+  <div id="modal-suggest-merge-subjects" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px; padding: 24px;">
+      <div class="modal-header" style="margin-bottom: 12px;">
+        <h3 class="modal-title" style="font-size: 1.15rem; font-weight: 800;">Gợi ý gộp môn học trùng tên</h3>
+        <button type="button" class="icon-btn modal-close" onclick="App._closeModal(document.getElementById('modal-suggest-merge-subjects'))" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 8px 0 20px 0;">
+        <p id="suggest-merge-subjects-msg" style="font-size: 0.96rem; line-height: 1.6; color: var(--text-secondary);"></p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary modal-close" onclick="App._closeModal(document.getElementById('modal-suggest-merge-subjects'))">Để riêng</button>
+        <button type="button" id="btn-execute-merge-duplicate-subjects" class="btn btn-primary">Gộp ngay các môn trùng tên</button>
       </div>
     </div>
   </div>

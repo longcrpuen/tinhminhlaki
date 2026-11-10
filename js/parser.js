@@ -1,10 +1,31 @@
 /**
+ * Pure function: Loại bỏ triệt để các ký hiệu trích dẫn AI ([cite: ...], [cite_start], [cite_end], 【...】)
+ * để tránh làm lộ đáp án và làm sạch giao diện hiển thị câu hỏi.
+ */
+function stripCitationArtifacts(text) {
+  if (!text || typeof text !== 'string') return text || '';
+  if (text.indexOf('[') === -1 && text.indexOf('【') === -1) return text;
+  return text
+    // 1. Xóa mọi biến thể [cite: 1, 2, 3], [cite_start], [cite_end], [cite: ...]
+    .replace(/\[\s*cite(?:_start|_end)?\s*(?::[^\]]*)?\]/gi, '')
+    // 2. Xóa trích dẫn kiểu NotebookLM / OpenAI 【4:0†source】, 【1†...】
+    .replace(/【[^】]*】/g, '')
+    // 3. Xóa khoảng trắng thừa trước dấu câu sinh ra sau khi cắt [cite]
+    .replace(/\s+([.,;:?!])/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
+/**
  * Smart AI Parser for MindSparks
  * Supports the Standard JSON Format (with LaTeX Math $...$ and $$...$$),
  * robust per-question validation without crashing the whole file,
  * and backwards-compatible plaintext/Markdown format.
  */
 const AIParser = {
+  stripCitationArtifacts(text) {
+    return stripCitationArtifacts(text);
+  },
   /**
    * Main parse function. Detects format and validates items.
    * @param {string} rawInput 
@@ -133,6 +154,7 @@ const AIParser = {
           return;
         }
 
+        optText = this.stripCitationArtifacts(optText);
         optionIds.add(optId);
         normalizedOptions.push({ id: optId, text: optText });
       }
@@ -175,13 +197,14 @@ const AIParser = {
       const answerIndex = normalizedOptions.findIndex(o => o.id === correctId);
 
       // 4. Extract optional fields (topic, difficulty, explanation)
-      const topic = (q.topic || q.category || q.tag || 'Chung').trim();
+      const topic = this.stripCitationArtifacts((q.topic || q.category || q.tag || 'Chung').trim());
       let difficulty = (q.difficulty || 'medium').trim().toLowerCase();
       if (!['easy', 'medium', 'hard'].includes(difficulty)) {
         difficulty = 'medium';
       }
 
-      const explanation = (q.explanation || q.explain || q.note || '').trim();
+      const explanation = this.stripCitationArtifacts((q.explanation || q.explain || q.note || '').trim());
+      const cleanQuestion = this.stripCitationArtifacts(q.question.trim());
 
       // Convert options for display: normalize to single clean "A. Text"
       const displayOptions = normalizedOptions.map((opt, idx) => {
@@ -201,7 +224,7 @@ const AIParser = {
 
       validCards.push({
         id: qId,
-        question: q.question.trim(),
+        question: cleanQuestion,
         options: displayOptions,
         rawOptions: normalizedOptions,
         answerIndex: answerIndex,
@@ -241,17 +264,18 @@ const AIParser = {
           if (idx >= 0 && idx < currentCard.options.length) answerIndex = idx;
         }
 
+        const cleanedOpts = currentCard.options.map(t => this.stripCitationArtifacts(t));
         cards.push({
           id: `q${cards.length + 1}`,
-          question: currentCard.question.trim(),
-          options: currentCard.options,
-          rawOptions: currentCard.options.map((t, i) => ({ id: defaultLetters[i], text: t })),
+          question: this.stripCitationArtifacts(currentCard.question.trim()),
+          options: cleanedOpts,
+          rawOptions: cleanedOpts.map((t, i) => ({ id: defaultLetters[i], text: t })),
           answerIndex: answerIndex,
           correctOptionId: defaultLetters[answerIndex],
-          explanation: (currentCard.explanation || '').trim(),
-          topic: (currentCard.topic || 'Chung').trim(),
+          explanation: this.stripCitationArtifacts((currentCard.explanation || '').trim()),
+          topic: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
           difficulty: 'medium',
-          tag: (currentCard.topic || 'Chung').trim()
+          tag: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim())
         });
       }
       currentCard = null;
@@ -370,7 +394,8 @@ Quy tắc bắt buộc:
 - "topic" chỉ ghi theo cấp độ Chương (VD: "Chương 1: ...", "Chương 2: ..."), đồng nhất giữa các câu cùng chương.
 - "options" phải có ít nhất 2 lựa chọn (khuyến nghị 4 lựa chọn có id từ "a" đến "d").
 - "correct_option_id" BẮT BUỘC phải khớp với một trong các "id" trong "options".
-- "difficulty" nhận một trong ba giá trị: "easy", "medium", hoặc "hard".`;
+- "difficulty" nhận một trong ba giá trị: "easy", "medium", hoặc "hard".
+- CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn tài liệu hoặc đánh dấu trang/đoạn (như [cite: 1, 2], [cite_start], [cite_end], [1], [2], [source], 【1†source】) vào trong nội dung câu hỏi ("question"), các lựa chọn trả lời ("options"), hay lời giải thích ("explanation"). Mọi lựa chọn A, B, C, D phải có văn phong đồng nhất 100%, tuyệt đối không để lộ dấu vết dẫn chứng ở đáp án đúng!`;
   }
 };
 
@@ -529,8 +554,8 @@ function parseQuestions(cleanedText) {
     // Gộp câu hỏi nhiều dòng, ngăn cách bằng khoảng trắng
     let questionText = questionLines.join(' ').trim();
 
-    // Cắt bỏ tiền tố "Câu <số> " (hoặc "Câu <số>: ")
-    questionText = questionText.replace(/^Câu\s+\d+[\s.:-]\s*/i, '').trim();
+    // Cắt bỏ tiền tố "Câu <số> " (hoặc "Câu <số>: ") và làm sạch trích dẫn
+    questionText = stripCitationArtifacts(questionText.replace(/^Câu\s+\d+[\s.:-]\s*/i, '').trim());
 
     if (!questionText) {
       console.warn(`[LMSParser] Bỏ qua khối câu hỏi số ${blockNumber}: Không tìm thấy nội dung câu hỏi.`);
@@ -585,6 +610,13 @@ function parseQuestions(cleanedText) {
         }
       }
     }
+
+    // Làm sạch trích dẫn trong các phương án lựa chọn
+    options.forEach(opt => {
+      if (opt && opt.text) {
+        opt.text = stripCitationArtifacts(opt.text);
+      }
+    });
 
     // Kiểm tra câu hỏi điền số (numeric) nếu không có phương án a/b/c/d
     if (options.length === 0) {
@@ -745,18 +777,21 @@ if (typeof window !== 'undefined') {
   window.LMSParser = LMSParser;
   window.cleanRawText = cleanRawText;
   window.parseQuestions = parseQuestions;
+  window.stripCitationArtifacts = stripCitationArtifacts;
 }
 if (typeof self !== 'undefined') {
   self.AIParser = AIParser;
   self.LMSParser = LMSParser;
   self.cleanRawText = cleanRawText;
   self.parseQuestions = parseQuestions;
+  self.stripCitationArtifacts = stripCitationArtifacts;
 }
 if (typeof global !== 'undefined') {
   global.LMSParser = LMSParser;
   global.cleanRawText = cleanRawText;
   global.parseQuestions = parseQuestions;
+  global.stripCitationArtifacts = stripCitationArtifacts;
 }
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { AIParser, LMSParser, cleanRawText, parseQuestions };
+  module.exports = { AIParser, LMSParser, cleanRawText, parseQuestions, stripCitationArtifacts };
 }

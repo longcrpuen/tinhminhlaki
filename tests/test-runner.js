@@ -1460,6 +1460,232 @@ console.log('\n=== TEST SUITE 21: Phase 1o Free Wave Threshold Switching, Lofi T
   assert(styleCss.includes('.srs-ratings-bar') && styleCss.includes('grid-template-columns: repeat(4, minmax(0, 1fr)) !important;'), 'SRS buttons laid out in 1 row 4 columns for landscape');
 }
 
+console.log('\n=== TEST SUITE 22: Phase 1q 6 Core Features & Fixes (Deck Deletion, Citation Strip, Duplicate Subjects, Options Align, Focus Exit, Study Rewind) ===');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const { AIParser, stripCitationArtifacts } = require('../js/parser.js');
+
+  // Item 1: Deck Deletion Modal & Event Delegation
+  assert(appJs.includes('confirmDeleteDeck(deckId') && appJs.includes('executeDeleteDeck(deckId'), 'app.js implements confirmDeleteDeck and executeDeleteDeck');
+  assert(indexHtml.includes('id="modal-confirm-delete-deck"'), 'index.html contains modal-confirm-delete-deck template');
+  assert(appJs.includes('App.confirmDeleteDeck') && appJs.includes('event.stopPropagation()'), 'Deck card delete button triggers App.confirmDeleteDeck with stopPropagation');
+  assert(styleCss.includes('.deck-delete-btn') && styleCss.includes('pointer-events: auto !important;'), 'style.css ensures pointer-events: auto on deck-delete-btn');
+
+  // Item 2: Citation Artifacts Stripping & AI Prompt Prohibition
+  assert(typeof stripCitationArtifacts === 'function', 'stripCitationArtifacts function exported from parser.js');
+  const sampleWithCitations = 'Khẳng định nào đúng? [cite: 1, 2, 3] Phương án: 【4:0†source】 đúng [cite_start] [cite_end].';
+  const cleaned = stripCitationArtifacts(sampleWithCitations);
+  assert(!cleaned.includes('[cite') && !cleaned.includes('【') && !cleaned.includes('†source】'), 'stripCitationArtifacts removes all cite and notebooklm brackets');
+  assert(cleaned === 'Khẳng định nào đúng? Phương án: đúng.', 'stripCitationArtifacts normalizes whitespace and punctuation');
+
+  const promptTemplate = AIParser.generateAIPromptTemplate({ topic: 'Kiểm thử' });
+  assert(promptTemplate.includes('CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn') && promptTemplate.includes('[cite: 1, 2]'), 'AI prompt template strictly prohibits citations');
+  assert(appJs.includes('stripCitationArtifacts') && appJs.includes('let str = this.stripCitationArtifacts(String(text));'), 'App.renderLatexText sanitizes citation artifacts at line 1');
+  assert(dbJs.includes('stripCitations') && dbJs.includes('ensureDataIntegrity'), 'db.ensureDataIntegrity cleans citation artifacts from stored cards');
+
+  // Item 3: Smart Duplicate Subjects Detection & Merge Modal
+  assert(dbJs.includes('findDuplicateSubjectGroups') && dbJs.includes('mergeDuplicateSubjectGroups'), 'db.js implements findDuplicateSubjectGroups and mergeDuplicateSubjectGroups');
+  assert(appJs.includes('findDuplicateSubjectGroups()') && appJs.includes('showDuplicateSubjectsModal'), 'handleBackupFileChosen detects duplicate subjects and triggers modal');
+  assert(indexHtml.includes('id="modal-suggest-merge-subjects"'), 'index.html contains modal-suggest-merge-subjects template');
+
+  // Item 4: Vertical Alignment of Options & Enlarged Explanation Box
+  assert(styleCss.includes('align-items: center !important; /* Căn giữa hoàn hảo cả chữ 1 dòng lẫn phân số LaTeX */'), 'style.css centers quiz option items vertically');
+  assert(styleCss.includes('.quiz-option-btn .quiz-option-letter') && styleCss.includes('margin: 0 !important;'), 'quiz-option-letter has zero margin to prevent baseline misalignment');
+  assert(styleCss.includes('.quiz-option-btn .quiz-option-content') && styleCss.includes('font-size: 1.02rem !important;'), 'quiz-option-content synchronizes font size to 1.02rem');
+  assert(styleCss.includes('#quiz-explanation-text') && styleCss.includes('font-size: 1.06rem !important;') && styleCss.includes('overflow-wrap: break-word !important;'), 'style.css enlarges explanation font size and breaks word overflow');
+  assert(!indexHtml.includes('id="quiz-explanation-text" class="text-sm leading-relaxed" style="font-size: 0.875rem;'), 'index.html removes inline 0.875rem font size from quiz-explanation-text');
+
+  // Item 5: Compact Focus Mode Exit Button
+  assert(indexHtml.includes('id="btn-focus-exit"') && indexHtml.includes('Thoát tập trung') && indexHtml.includes('focus-exit-floating-btn'), 'Focus exit button is compact with SVG and Thoát tập trung label');
+  assert(styleCss.includes('#btn-focus-exit.focus-exit-btn') && styleCss.includes('height: 34px !important;'), 'style.css enforces 34px height for focus exit button');
+  assert(styleCss.includes('@media (max-width: 640px)') && styleCss.includes('width: 36px !important;'), 'Mobile media query shrinks focus exit button to 36px circular icon');
+
+  // Item 6: Study Session Navigation (Previous Question) in Quiz & Flashcard
+  assert(indexHtml.includes('id="btn-quiz-prev"') || indexHtml.includes('id="btn-study-prev"'), 'index.html includes previous question navigation');
+  assert(indexHtml.includes('id="btn-quiz-prev"'), 'index.html includes btn-quiz-prev in quiz footer actions');
+  assert(indexHtml.includes('id="btn-flashcard-prev"') && indexHtml.includes('id="btn-flashcard-next"'), 'index.html includes flashcard previous and next buttons');
+  assert(appJs.includes('prevStudyQuestion') && appJs.includes('nextFlashcardReview'), 'app.js implements prevStudyQuestion and nextFlashcardReview');
+  assert(appJs.includes('flashcardHistory') && appJs.includes('session.correctCount = Math.max(0, session.correctCount - 1)'), 'rateFlashcard deduplicates score adjustments on rewind');
+  assert(appJs.includes("e.key === 'ArrowLeft'") && appJs.includes('prevStudyQuestion'), 'ArrowLeft shortcut triggers prevStudyQuestion');
+
+  // ==========================================
+  // TEST SUITE 23: PHASE 1R (SYSTEM IMPACT & REGRESSION RESILIENCE)
+  // ==========================================
+  console.log('\n--- Test Suite 23: Phase 1r System Impact & Regression Protocol ---');
+
+  // 0 & 1. Data polymorphism & App.init bootstrap resilience
+  assert(dbJs.includes('_cleanCitationText') && dbJs.includes('typeof opt ===') && dbJs.includes('opt.text'), 'db.js handles polymorphic options in _cleanCitationText');
+  assert(appJs.indexOf('this.setupEventListeners()') < appJs.indexOf('await db.init()'), 'App.init registers setupEventListeners before db.init');
+  assert(indexHtml.includes('data-view="dashboard" onclick="App.navigateTo(\'dashboard\')"'), 'Sidebar contains direct onclick navigation fallback');
+  assert(indexHtml.includes('class="bottom-nav-item active" data-view="dashboard" onclick="App.navigateTo(\'dashboard\')"'), 'Bottom nav contains direct onclick navigation fallback');
+
+  // 2. Comprehensive closeAllModals & ESC delegation
+  assert(appJs.includes('closeAllModals()') && appJs.includes('_batteryAnimToken') && appJs.includes('this._isCompletingSession = false'), 'closeAllModals performs thorough cleanup of modals and battery animation');
+  assert(appJs.includes("closest('.modal-close, [data-modal-close]"), 'Global delegation handles modal closing');
+
+  // 3. Progress bar left-aligned ratio calculation
+  assert(appJs.includes('current / total') && appJs.includes("progressFill.style.removeProperty('transform')"), 'renderActiveStudyCard sets progress bar ratio with current/total and removes transform');
+  assert(styleCss.includes('#study-progress-fill.quiz-progress-fill') && styleCss.includes('transform: none !important;'), 'style.css sets transform: none !important on quiz progress fill');
+
+  // 4. Focus exit button native chip styling
+  assert(indexHtml.includes('id="btn-focus-exit"') && indexHtml.includes('focus-exit-btn'), 'Focus exit button adopts focus-exit-btn styling');
+  assert(styleCss.includes('#btn-focus-exit') && styleCss.includes('height: 30px !important;'), 'style.css constrains focus exit button height to 30px');
+
+  // 5. Study navigation buttons & shortcuts
+  assert(indexHtml.includes('id="btn-quiz-prev"') && !indexHtml.includes('id="btn-quiz-card-prev"'), 'Quiz navigation uses single bottom btn-quiz-prev without redundant top button');
+  assert(indexHtml.includes('id="btn-flashcard-prev"') && indexHtml.includes('btn-card-action btn-card-nav'), 'Flashcard toolbar contains btn-flashcard-prev with btn-card-nav');
+  assert(indexHtml.includes('id="btn-flashcard-next"') && indexHtml.includes('btn-card-action btn-card-nav'), 'Flashcard toolbar contains btn-flashcard-next with btn-card-nav');
+  assert(appJs.includes('shuffleArray(arr)') || appJs.includes('shuffleArray(array)'), 'App implements shuffleArray alias');
+  assert(appJs.includes('prevStudyQuestion(event)') && appJs.includes('nextFlashcardReview(event)'), 'app.js prevStudyQuestion and nextFlashcardReview accept event parameter');
+}
+
+// === TEST SUITE 24: Phase 1s Float-Up Bank Cards, 0% Purple Wave, Active Range Sliders, Study Progress Fill, Mobile 60FPS Lock ===
+console.log('\n--- Test Suite 24: Phase 1s Float-Up Bank Cards, 0% Purple Wave, Active Range Sliders, Study Progress Fill, Mobile 60FPS Lock ---');
+{
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const lofiJs = fs.readFileSync(path.join(__dirname, '../js/lofi-music.js'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // 1. Question Bank Float-Up & Lazy Scroll Reveal with Skeleton
+  assert(appJs.includes('INITIAL_BATCH = 8') && appJs.includes('SCROLL_BATCH = 8'), 'renderQuestionBank implements INITIAL_BATCH = 8 and SCROLL_BATCH = 8');
+  assert(appJs.includes('bank-lazy-sentinel') && appJs.includes('bank-skeleton-card'), 'renderQuestionBank creates skeleton shimmer sentinel on pending batches');
+  assert(styleCss.includes('#view-bank .bank-card-item') && styleCss.includes('content-visibility: visible !important;') && styleCss.includes('contain: none !important;'), 'style.css removes content-visibility: auto and contain: paint from #view-bank .bank-card-item');
+  assert(styleCss.includes('.bank-card-float-item') && styleCss.includes('.bank-card-float-item.is-visible'), 'style.css defines float-up and visible transition for bank cards');
+  assert(styleCss.includes('.bank-skeleton-card') && styleCss.includes('skeletonShimmer'), 'style.css defines skeleton shimmer placeholder animation');
+
+  // 2. Wave Chamber & 0% Purple in Monochrome & Orange Themes
+  assert(themeCss.includes('--wave-chamber-bg:') && themeCss.includes('--wave-chamber-border:') && themeCss.includes('--wave-chamber-bottom-glow:'), 'theme.css defines wave chamber background, border and glow tokens');
+  assert(themeCss.includes('--wave-area-stop-top:') && themeCss.includes('--wave-area-stop-bot:'), 'theme.css defines wave area gradient stops');
+  assert(indexHtml.includes('var(--wave-area-stop-top') && indexHtml.includes('var(--wave-area-stop-bot'), 'index.html SVG gradient references theme wave stop variables');
+  assert(appJs.includes("areaTop.setAttribute('stop-color', '#ffffff')") && appJs.includes("areaBot.setAttribute('stop-color', '#09090b')"), 'app.js updates monochrome wave gradient without purple');
+  assert(appJs.includes("areaTop.setAttribute('stop-color', '#f97316')") && appJs.includes("areaBot.setAttribute('stop-color', '#fff7ed')"), 'app.js updates white-orange wave gradient without purple');
+
+  // 3. Volume Slider & Wave Slider Active Bar (0% -> --slider-pct)
+  assert(themeCss.includes('--range-active-color:') && themeCss.includes('--range-inactive-bg:') && themeCss.includes('--range-thumb-border:'), 'theme.css defines range slider active, inactive and thumb tokens');
+  assert(styleCss.includes('--range-active-color) 0%') && styleCss.includes('--range-active-color) var(--slider-pct') && styleCss.includes('--range-inactive-bg) 100%'), 'style.css styles range slider active bar from 0% to --slider-pct');
+  assert(lofiJs.includes('syncVolumeSliders()') && lofiJs.includes('--slider-pct'), 'lofi-music.js implements syncVolumeSliders updating --slider-pct');
+  assert(appJs.includes('syncRangeSliderVisual(sliderEl)') && appJs.includes('--slider-pct'), 'app.js implements syncRangeSliderVisual updating --slider-pct');
+
+  // 4. Progress bar #study-progress-fill override
+  assert(appJs.includes("progressFill.style.setProperty('--study-progress-pct', pctStr)") && appJs.includes("progressFill.style.setProperty('width', pctStr, 'important')"), 'renderActiveStudyCard sets --study-progress-pct and width with important flag');
+  assert(styleCss.includes('width: var(--study-progress-pct, 0%) !important;') && styleCss.includes('.quiz-progress-fill'), 'style.css sets width: var(--study-progress-pct, 0%) !important on quiz-progress-fill');
+
+  // 5. Mobile Theme Transition 60FPS & Wave HUD
+  assert(styleCss.includes('@media (max-width: 768px)') && styleCss.includes('.theme-energy-wave-chamber') && styleCss.includes('flex-direction: column !important;'), 'style.css separates mobile wave chamber into column flex layout');
+  assert(styleCss.includes('html.theme-switching-lock *') && styleCss.includes('transition: none !important;'), 'style.css defines html.theme-switching-lock zero-transition freeze');
+  assert(appJs.includes("classList.add('theme-switching-lock')") && appJs.includes("classList.remove('theme-switching-lock')"), 'app.js setTheme toggles theme-switching-lock with timer');
+}
+
+// === TEST SUITE 25: Phase 1t Standard Slider Track Fill (0% -> val%) & Frosted Translucent Liquid Glass Sidebar ===
+console.log('\n--- Test Suite 25: Phase 1t Standard Slider Track Fill (0% -> val%) & Frosted Translucent Liquid Glass Sidebar ---');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+
+  // 1. Slider Track Fill Direction: 0% -> --slider-pct active, --slider-pct -> 100% inactive
+  assert(
+    styleCss.includes('var(--range-active-color) 0%') &&
+    styleCss.includes('var(--range-active-color) var(--slider-pct') &&
+    styleCss.includes('var(--range-inactive-bg) var(--slider-pct') &&
+    styleCss.includes('var(--range-inactive-bg) 100%'),
+    'style.css styles range slider active fill from 0% to --slider-pct and inactive track to 100%'
+  );
+
+  // 2. Sidebar Frosted Translucent Liquid Glass & 135deg Bevel
+  assert(themeCss.includes('--sidebar-glass-bg:') && themeCss.includes('--sidebar-glass-bevel:'), 'theme.css defines --sidebar-glass-bg and --sidebar-glass-bevel tokens');
+  assert(themeCss.includes('--sidebar-glass-border-top:') && themeCss.includes('--sidebar-glass-border-left:'), 'theme.css defines 135deg asymmetric sidebar glass borders');
+  assert(styleCss.includes('#app-sidebar.app-sidebar') && styleCss.includes('backdrop-filter: blur(20px) saturate(185%) !important;'), 'style.css applies 20px blur and 185% saturation to app-sidebar');
+  assert(styleCss.includes('#app-sidebar.app-sidebar') && styleCss.includes('box-shadow: var(--sidebar-glass-bevel) !important;'), 'style.css applies --sidebar-glass-bevel box-shadow to app-sidebar');
+  assert(styleCss.includes('#app-sidebar.app-sidebar::after'), 'style.css defines specular sheen pseudo-element on app-sidebar');
+}
+
+// === TEST SUITE 26: Phase 1u Fixed Floating Sidebar, Layout Centering, Quantum Laser Interferometer & Crystal Phase Gates ===
+console.log('\n--- Test Suite 26: Phase 1u Fixed Floating Sidebar, Layout Centering, Quantum Laser Interferometer & Crystal Phase Gates ---');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // 1. Sidebar Fixed Positioning & Double-Offset Layout Fix
+  assert(styleCss.includes('html body .app-container') && styleCss.includes('display: block !important;'), 'style.css sets display: block !important on desktop app-container');
+  assert(styleCss.includes('html body #app-sidebar.app-sidebar') && styleCss.includes('position: fixed !important;'), 'style.css locks fixed position on app-sidebar');
+  assert(styleCss.includes('html body #app-sidebar.app-sidebar.collapsed'), 'style.css styles collapsed sidebar fixed capsule');
+  assert(styleCss.includes('margin-left: 264px !important;') && styleCss.includes('width: calc(100% - 264px) !important;'), 'style.css synchronizes app-main margin and width for expanded sidebar');
+  assert(styleCss.includes('margin-left: 88px !important;') && styleCss.includes('width: calc(100% - 88px) !important;'), 'style.css synchronizes app-main margin and width for collapsed sidebar');
+  assert(styleCss.includes('.app-main > .content-wrapper') && styleCss.includes('max-width: 100% !important;'), 'style.css expands content-wrapper to full width');
+
+  // 2. Quantum Laser Interferometer Wave (Resolution, Gaussian Envelope, 4 Layers & Resonance Orb)
+  assert(appJs.includes('steps = 160') || (appJs.includes('_waveLUT') && appJs.includes('steps = 160')), 'app.js implements 160-point ultra-smooth wave sampling');
+  assert(appJs.includes('0.42 + 0.58 * Math.exp('), 'app.js computes cursor-tracked Gaussian wave-packet envelope');
+  assert(indexHtml.includes('id="wave-primary-glow"') && indexHtml.includes('id="wave-primary-core"'), 'index.html contains laser glow and core paths');
+  assert(indexHtml.includes('id="wave-cursor-orb"'), 'index.html contains resonance orb element');
+  assert(styleCss.includes('.wave-primary-glow') && styleCss.includes('stroke-width: 7px !important;'), 'style.css defines 7px laser glow stroke');
+  assert(styleCss.includes('.wave-primary-core') && styleCss.includes('stroke-width: 2.8px !important;'), 'style.css defines 2.8px sharp laser core stroke');
+  assert(themeCss.includes('--wave-primary-glow-color:') && themeCss.includes('--wave-orb-fill:') && themeCss.includes('--wave-orb-ring:'), 'theme.css defines laser glow and orb tokens');
+
+  // 3. Crystal Phase Gates at 33.333% & 66.667%
+  assert(indexHtml.includes('id="phase-gate-1"') && indexHtml.includes('id="phase-gate-2"'), 'index.html contains phase-gate-1 and phase-gate-2');
+  assert(indexHtml.includes('phase-gate-diamond') && indexHtml.includes('phase-gate-core'), 'index.html contains crystal gate sub-elements');
+  assert(styleCss.includes('.energy-phase-gate') && styleCss.includes('transform: rotate(45deg)'), 'style.css rotates phase-gate-diamond by 45 degrees');
+  assert(styleCss.includes('.energy-phase-gate.is-passed .phase-gate-diamond') || styleCss.includes('.phase-gate-diamond'), 'style.css styles active is-passed state for crystal gates');
+  assert(appJs.includes("numericVal >= 33.333") && appJs.includes("numericVal >= 66.667"), 'app.js activates phase gates dynamically at 33.333% and 66.667%');
+}
+
+// === TEST SUITE 27: Phase 1v Full-Width Responsive Layout, Liquid Glass Controls & 120FPS Algorithmic Engine ===
+console.log('\n--- Test Suite 27: Phase 1v Full-Width Responsive Layout, Liquid Glass Controls & 120FPS Algorithmic Engine ---');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+
+  // 1. Full-Width Responsive Layout (244px, 68px, 264px, 88px, max-width: 100% !important)
+  assert(styleCss.includes('width: 244px !important;') && styleCss.includes('margin-left: 264px !important;'), 'style.css sets 244px sidebar and 264px main margin');
+  assert(styleCss.includes('width: 68px !important;') && styleCss.includes('margin-left: 88px !important;'), 'style.css sets 68px collapsed sidebar and 88px main margin');
+  assert(styleCss.includes('max-width: 100% !important;') && styleCss.includes('padding: 16px 22px 56px 14px !important;'), 'style.css expands content-wrapper to full width 100%');
+
+  // 2. Quiz Navigation & Redundant Button Removal
+  assert(!indexHtml.includes('id="btn-quiz-card-prev"'), 'index.html completely removes redundant #btn-quiz-card-prev');
+  assert(indexHtml.includes('id="btn-quiz-prev"') && indexHtml.includes('lg-pill-btn'), 'index.html retains #btn-quiz-prev with .lg-pill-btn class');
+
+  // 3. Unified Liquid Glass Control Tokens (--lg-ctrl-*)
+  assert(themeCss.includes('--lg-ctrl-bg:') && themeCss.includes('--lg-ctrl-hover-bg:') && themeCss.includes('--lg-ctrl-bevel:'), 'theme.css defines unified --lg-ctrl-* tokens');
+  assert(styleCss.includes('.lg-pill-btn') && styleCss.includes('border-radius: 999px !important;'), 'style.css defines .lg-pill-btn glass capsules');
+  assert(styleCss.includes('.btn-card-action') && styleCss.includes('width: 34px !important;') && styleCss.includes('height: 34px !important;'), 'style.css defines .btn-card-action 34x34px rounded droplets');
+
+  // 4. Parser & LaTeX Fast-Path
+  assert(parserJs.includes("text.indexOf('[') === -1 && text.indexOf('【') === -1"), 'parser.js implements fast-path bypass in stripCitationArtifacts');
+  assert(appJs.includes("text.indexOf('[') === -1 && text.indexOf('【') === -1"), 'app.js implements fast-path bypass in stripCitationArtifacts');
+  assert(appJs.includes("str.indexOf('$') === -1") && appJs.includes("this._escapeHtml(str)"), 'app.js implements non-math fast bypass in renderLatexText');
+  assert(appJs.includes('_msFullLatexCache'), 'app.js uses high-level full-string LRU cache _msFullLatexCache');
+
+  // 5. In-Memory Revision Cache (_memCache) & Single-Pass Map in db.js
+  assert(dbJs.includes('this._memCache = { revision: this.revision }') || dbJs.includes('this._memCache = null'), 'db.js initializes and manages _memCache');
+  assert(dbJs.includes('cardsByTopic = new Map()'), 'db.js implements single-pass Map grouping in getSprintCards');
+
+  // 6. Precomputed _waveLUT in app.js
+  assert(appJs.includes('_waveLUT:') && appJs.includes('new Float32Array(steps + 1)'), 'app.js precomputes _waveLUT Float32Array look-up table');
+
+  // 7. Default Background Restoration in App.init()
+  assert(appJs.includes("savedBg = './backgrounds/bg-2.webp'") && appJs.includes("db.setMeta('backgroundSrc', savedBg)"), 'app.js defaults to bg-2.webp when backgroundSrc is null/undefined');
+
+  // 8. Clean Wave Chamber & Crystal Phase Gates at 33.333% & 66.667%
+  assert(indexHtml.includes('left: 33.333%') && indexHtml.includes('left: 66.667%'), 'index.html positions phase gates cleanly at 33.333% and 66.667%');
+  assert(!indexHtml.includes('id="wave-cursor-beam"'), 'index.html removes #wave-cursor-beam');
+  assert(!indexHtml.includes('phase-gate-notch'), 'index.html removes phase-gate-notch');
+  assert(indexHtml.includes('class="energy-level-pill"'), 'index.html contains energy-level-pill HUD');
+  assert(styleCss.includes('-webkit-mask-image: linear-gradient(90deg'), 'style.css applies edge-fading mask gradient to energy-wave-stage');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

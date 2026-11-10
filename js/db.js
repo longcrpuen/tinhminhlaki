@@ -14,10 +14,18 @@ class QuizDatabase {
     this._decksCache = null;
     this._subjectsCache = null;
     this.revision = 1;
+    this._memCache = {
+      revision: -1,
+      cards: null,
+      decks: null,
+      subjects: null,
+      metaMap: null
+    };
   }
 
   _bumpRevision() {
     this.revision = (this.revision || 1) + 1;
+    if (this._memCache) this._memCache.revision = -1;
   }
 
   async init() {
@@ -292,6 +300,9 @@ class QuizDatabase {
   }
 
   async getAllSubjects() {
+    if (this._memCache && this._memCache.revision === this.revision && this._memCache.subjects) {
+      return [...this._memCache.subjects];
+    }
     if (this._subjectsCache) return [...this._subjectsCache];
     await this.init();
     const tx = this._tx('subjects', 'readonly');
@@ -303,6 +314,9 @@ class QuizDatabase {
     }
     subjects.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || (a.createdAt || 0) - (b.createdAt || 0));
     this._subjectsCache = subjects;
+    if (!this._memCache) this._memCache = { revision: this.revision };
+    this._memCache.subjects = subjects;
+    this._memCache.revision = this.revision;
     return [...subjects];
   }
 
@@ -436,6 +450,13 @@ class QuizDatabase {
     this._decksCache = null;
     this._subjectsCache = null;
     this.revision = (this.revision || 1) + 1;
+    this._memCache = {
+      revision: this.revision,
+      cards: null,
+      decks: null,
+      subjects: null,
+      metaMap: null
+    };
   }
 
   invalidateAllCaches() {
@@ -452,28 +473,60 @@ class QuizDatabase {
 
   async getSubjectSummaries() {
     await this.init();
-    if (this._subjectCache && (Date.now() - this._subjectCache.timestamp < 10000)) {
+    if (this._subjectCache && this._subjectCache.revision === this.revision && (Date.now() - this._subjectCache.timestamp < 10000)) {
       return this._subjectCache.data;
     }
 
-    const subjects = await this.getAllSubjects();
+    const [subjects, decks, cards] = await Promise.all([
+      this.getAllSubjects(),
+      this.getAllDecks(),
+      this.getAllCards()
+    ]);
     const now = Date.now();
-    const summaries = [];
 
-    for (const s of subjects) {
-      const decks = await this.getDecksBySubject(s.id);
-      const cards = await this.getCardsBySubject(s.id);
+    // Map decks by deckId in O(N)
+    const deckStatsMap = new Map();
+    for (let i = 0; i < decks.length; i++) {
+      const d = decks[i];
+      deckStatsMap.set(d.id, {
+        deck: d,
+        subjectId: d.subjectId || 'subj_unassigned',
+        count: 0,
+        due: 0
+      });
+    }
+
+    // Single pass over cards in O(N)
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      const isDue = !c.srs?.dueDate || c.srs.dueDate <= now;
+      const dStat = deckStatsMap.get(c.deckId);
+      if (dStat) {
+        dStat.count++;
+        if (isDue) dStat.due++;
+      }
+    }
+
+    // Group decks by subjectId
+    const subjectDecksMap = new Map();
+    deckStatsMap.forEach((dStat) => {
+      let arr = subjectDecksMap.get(dStat.subjectId);
+      if (!arr) {
+        arr = [];
+        subjectDecksMap.set(dStat.subjectId, arr);
+      }
+      arr.push(dStat);
+    });
+
+    const summaries = [];
+    for (let i = 0; i < subjects.length; i++) {
+      const s = subjects[i];
+      const sDecks = subjectDecksMap.get(s.id) || [];
+      let totalCards = 0;
       let dueCards = 0;
-      const deckMap = new Map();
-      decks.forEach(d => deckMap.set(d.id, { deck: d, count: 0, due: 0 }));
-      for (const c of cards) {
-        const isDue = !c.srs?.dueDate || c.srs.dueDate <= now;
-        if (isDue) dueCards++;
-        const dStat = deckMap.get(c.deckId);
-        if (dStat) {
-          dStat.count++;
-          if (isDue) dStat.due++;
-        }
+      for (let j = 0; j < sDecks.length; j++) {
+        totalCards += sDecks[j].count;
+        dueCards += sDecks[j].due;
       }
       summaries.push({
         id: s.id,
@@ -481,15 +534,16 @@ class QuizDatabase {
         icon: s.icon || '📚',
         color: s.color || '#8b5cf6',
         order: s.order ?? 9999,
-        decksCount: decks.length,
-        totalCards: cards.length,
+        decksCount: sDecks.length,
+        totalCards: totalCards,
         dueCards: dueCards,
-        decks: Array.from(deckMap.values())
+        decks: sDecks
       });
     }
 
     this._subjectCache = {
       timestamp: Date.now(),
+      revision: this.revision,
       data: summaries
     };
     return summaries;
@@ -497,12 +551,18 @@ class QuizDatabase {
 
   // --- DECKS ---
   async getAllDecks() {
+    if (this._memCache && this._memCache.revision === this.revision && this._memCache.decks) {
+      return [...this._memCache.decks];
+    }
     if (this._decksCache) return [...this._decksCache];
     await this.init();
     const tx = this._tx('decks', 'readonly');
     const store = tx.objectStore('decks');
     const decks = await this._promisify(store.getAll());
     this._decksCache = decks;
+    if (!this._memCache) this._memCache = { revision: this.revision };
+    this._memCache.decks = decks;
+    this._memCache.revision = this.revision;
     return [...decks];
   }
 
@@ -563,6 +623,7 @@ class QuizDatabase {
       cardStore.delete(card.id);
     }
 
+    this.revision = (this.revision || 1) + 1;
     this.invalidateSubjectCache();
     return new Promise((resolve) => {
       tx.oncomplete = () => resolve(true);
@@ -571,12 +632,18 @@ class QuizDatabase {
 
   // --- CARDS ---
   async getAllCards() {
+    if (this._memCache && this._memCache.revision === this.revision && this._memCache.cards) {
+      return [...this._memCache.cards];
+    }
     if (this._cardsCache) return [...this._cardsCache];
     await this.init();
     const tx = this._tx('cards', 'readonly');
     const store = tx.objectStore('cards');
     const cards = await this._promisify(store.getAll());
     this._cardsCache = cards;
+    if (!this._memCache) this._memCache = { revision: this.revision };
+    this._memCache.cards = cards;
+    this._memCache.revision = this.revision;
     return [...cards];
   }
 
@@ -873,12 +940,23 @@ class QuizDatabase {
     const sprintCards = [];
     const addedIds = new Set();
 
+    // Group cards by topic once in O(N) pass
+    const cardsByTopic = new Map();
+    for (let i = 0; i < all.length; i++) {
+      const c = all[i];
+      const t = (c.topic || c.tag || 'Chung').trim();
+      let arr = cardsByTopic.get(t);
+      if (!arr) {
+        arr = [];
+        cardsByTopic.set(t, arr);
+      }
+      arr.push(c);
+    }
+
     // Pick cards from weakest topics first
     for (const top of topics) {
-      const topicCards = all.filter(c => {
-        const t = (c.topic || c.tag || 'Chung').trim();
-        return t === top.topic && !addedIds.has(c.id);
-      });
+      const topicList = cardsByTopic.get(top.topic) || [];
+      const topicCards = topicList.filter(c => !addedIds.has(c.id));
 
       // In each topic, prioritize hard questions or mistaken questions
       topicCards.sort((a, b) => {
@@ -1263,6 +1341,62 @@ class QuizDatabase {
     return orphaned.length;
   }
 
+  // --- DUPLICATE SUBJECTS DETECTION & MERGING (PHASE 1Q) ---
+  async findDuplicateSubjectGroups() {
+    await this.init();
+    const subjects = await this.getAllSubjects();
+    const byName = new Map();
+
+    for (const s of subjects) {
+      if (!s || !s.name) continue;
+      // So khớp tên môn học đã cắt khoảng trắng 2 đầu
+      const key = s.name.trim();
+      if (!byName.has(key)) byName.set(key, []);
+      byName.get(key).push(s);
+    }
+
+    const duplicateGroups = [];
+    for (const [name, list] of byName.entries()) {
+      if (list.length > 1) {
+        // Ưu tiên giữ lại môn được tạo sớm nhất làm môn gốc (primary)
+        list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        duplicateGroups.push({
+          name,
+          primary: list[0],
+          duplicates: list.slice(1)
+        });
+      }
+    }
+    return duplicateGroups;
+  }
+
+  async mergeDuplicateSubjectGroups(groups = null) {
+    const dupGroups = groups || await this.findDuplicateSubjectGroups();
+    if (!dupGroups || dupGroups.length === 0) return 0;
+
+    let mergedCount = 0;
+    for (const group of dupGroups) {
+      const targetId = group.primary.id;
+      for (const dup of group.duplicates) {
+        await this.mergeSubjects(dup.id, targetId);
+        mergedCount++;
+      }
+    }
+    this.revision = (this.revision || 1) + 1;
+    this.invalidateSubjectCache();
+    return mergedCount;
+  }
+
+  _cleanCitationText(text) {
+    if (!text || typeof text !== 'string') return text;
+    return text
+      .replace(/\[\s*cite(?:_start|_end)?\s*(?::[^\]]*)?\]/gi, '')
+      .replace(/【[^】]*】/g, '')
+      .replace(/\s+([.,;:?!])/g, '$1')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+  }
+
   async ensureDataIntegrity() {
     await this.init();
     const defaultSubject = await this.ensureDefaultSubject();
@@ -1280,20 +1414,67 @@ class QuizDatabase {
     // 1. Recover orphaned cards if any
     await this.recoverOrphanedCards();
 
+    // 2. Fix cards subjectId and clean citation artifacts ([cite: 1, 2], 【...】) safely
+    const stripCitations = (text) => this._cleanCitationText(text);
     const allCards = await this.getAllCards();
-    const cardsToFix = [];
-    for (const c of allCards) {
-      const expectedSubj = deckSubjMap.get(c.deckId) || defaultSubject.id;
-      if (c.subjectId !== expectedSubj) {
-        c.subjectId = expectedSubj;
-        cardsToFix.push(c);
+
+    try {
+      const hasCiteRegex = /\[\s*cite|【[^】]*】/i;
+      const cardsToFix = [];
+
+      for (const c of allCards) {
+        if (!c || typeof c !== 'object') continue;
+        let changed = false;
+        const expectedSubj = deckSubjMap.get(c.deckId) || defaultSubject.id;
+        if (c.subjectId !== expectedSubj) {
+          c.subjectId = expectedSubj;
+          changed = true;
+        }
+
+        if (typeof c.question === 'string' && hasCiteRegex.test(c.question)) {
+          c.question = this._cleanCitationText(c.question);
+          changed = true;
+        }
+        if (typeof c.explanation === 'string' && hasCiteRegex.test(c.explanation)) {
+          c.explanation = this._cleanCitationText(c.explanation);
+          changed = true;
+        }
+        if (typeof c.topic === 'string' && hasCiteRegex.test(c.topic)) {
+          c.topic = this._cleanCitationText(c.topic);
+          changed = true;
+        }
+        if (Array.isArray(c.options)) {
+          c.options = c.options.map(opt => {
+            if (typeof opt === 'string') {
+              if (hasCiteRegex.test(opt)) {
+                changed = true;
+                return this._cleanCitationText(opt);
+              }
+              return opt;
+            } else if (opt && typeof opt === 'object' && typeof opt.text === 'string') {
+              if (hasCiteRegex.test(opt.text)) {
+                changed = true;
+                return { ...opt, text: this._cleanCitationText(opt.text) };
+              }
+              return opt;
+            }
+            return opt;
+          });
+        }
+
+        if (changed) {
+          cardsToFix.push(c);
+        }
       }
-    }
-    if (cardsToFix.length > 0) {
-      await this.saveCardsBatch(cardsToFix, { forceNew: false });
+
+      if (cardsToFix.length > 0) {
+        await this.saveCardsBatch(cardsToFix, { forceNew: false });
+      }
+    } catch (citeCleanErr) {
+      console.warn('[DB] Bỏ qua bước làm sạch citation tự động:', citeCleanErr);
     }
 
-    // 2. If decks exist but total cards is 0 (or default deck is empty), auto heal
+    // 3. If decks exist but total cards is 0 (or default deck is empty), auto heal
     if (decks.length > 0 && allCards.length === 0) {
       console.warn('[DB] Phát hiện dữ liệu bị rỗng ruột (0 câu hỏi). Bắt đầu kích hoạt cơ chế tự phục hồi...');
       try {

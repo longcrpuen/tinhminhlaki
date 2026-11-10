@@ -2369,15 +2369,13 @@ html[data-theme="white-orange"] .modal-overlay .modal-header::after {
 }
 
 /* 6. XÓA BỎ MẢNG OVERLAY TRẮNG TRÀN RA NGOÀI RÌA TRÁI QUA SIDEBAR */
-.app-sidebar::before,
-.app-sidebar::after {
+.app-sidebar::before {
   display: none !important;
   content: none !important;
 }
 
 .app-sidebar,
 .app-sidebar:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.22) !important;
   overflow: hidden !important;
 }
 
@@ -2792,33 +2790,181 @@ html[data-theme="dark"],
 html[data-theme="purple-pink"],
 body[data-theme="purple-pink"],
 html[data-color-mode="purple-pink"],
-html[data-theme="violet-rose"] {
+html[data-theme="violet-rose"],
+html[data-theme="violet"],
+html[data-theme="purple"] {
   --range-track-bg: rgba(255, 255, 255, 0.12);
   --range-fill-color: #c084fc;
-  --range-thumb-bg: #f472b6;
-  --range-thumb-border: #ffffff;
+  --range-active-color: #c084fc;
+  --range-active-glow: rgba(192, 132, 252, 0.55);
+  --range-inactive-bg: rgba(255, 255, 255, 0.12);
+  --range-thumb-bg: #f3e8ff;
+  --range-thumb-border: #a855f7;
   --range-thumb-glow: rgba(232, 121, 249, 0.55);
+
+  --wave-chamber-bg:
+    radial-gradient(120% 90% at var(--slider-pct, 25%) 65%, rgba(168, 85, 247, 0.24) 0%, transparent 65%),
+    linear-gradient(180deg, #0d0818 0%, #1a0f30 60%, #241342 100%);
+  --wave-chamber-border: rgba(168, 85, 247, 0.28);
+  --wave-chamber-bottom-glow: inset 0 -16px 28px rgba(139, 92, 246, 0.16);
+  --wave-grid-line: rgba(192, 132, 252, 0.08);
+  --wave-primary-stroke: #f3e8ff;
+  --wave-primary-glow-color: #c084fc;
+  --wave-secondary-stroke: rgba(192, 132, 252, 0.65);
+  --wave-tertiary-stroke: rgba(232, 121, 249, 0.40);
+  --wave-area-stop-top: rgba(168, 85, 247, 0.48);
+  --wave-area-stop-mid: rgba(126, 34, 206, 0.20);
+  --wave-area-stop-bot: rgba(13, 8, 24, 0.0);
+  --wave-stroke-glow: drop-shadow(0 0 10px rgba(192, 132, 252, 0.55));
+  --wave-orb-fill: #ffffff;
+  --wave-orb-ring: #d8b4fe;
+
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(46, 30, 78, 0.44) 0%,
+    rgba(26, 16, 48, 0.34) 55%,
+    rgba(38, 22, 68, 0.40) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.38);
+  --sidebar-glass-border-left: rgba(233, 213, 255, 0.32);
+  --sidebar-glass-border-right: rgba(168, 85, 247, 0.16);
+  --sidebar-glass-border-bottom: rgba(168, 85, 247, 0.22);
+  --sidebar-glass-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.36),
+    inset -1px -1.5px 3px rgba(168, 85, 247, 0.18),
+    inset 0 12px 24px rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(8, 4, 20, 0.38);
+
+  --lg-ctrl-bg: linear-gradient(135deg, rgba(64, 44, 104, 0.52) 0%, rgba(36, 22, 64, 0.42) 100%);
+  --lg-ctrl-hover-bg: linear-gradient(135deg, rgba(82, 56, 132, 0.66) 0%, rgba(48, 30, 84, 0.54) 100%);
+  --lg-ctrl-border-top: rgba(255, 255, 255, 0.42);
+  --lg-ctrl-border-left: rgba(233, 213, 255, 0.34);
+  --lg-ctrl-border-right: rgba(168, 85, 247, 0.18);
+  --lg-ctrl-border-bottom: rgba(168, 85, 247, 0.24);
+  --lg-ctrl-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.38),
+    inset -1px -1px 2px rgba(168, 85, 247, 0.20),
+    0 6px 18px rgba(10, 5, 24, 0.32);
+  --lg-ctrl-text: #f3e8ff;
 }
 
 html[data-theme="monochrome"],
 body[data-theme="monochrome"],
 html[data-color-mode="bw-dark"],
-html[data-theme="bw-dark"] {
+html[data-theme="bw-dark"],
+html[data-theme="bw"] {
   --range-track-bg: rgba(255, 255, 255, 0.14);
   --range-fill-color: #ffffff;
+  --range-active-color: #ffffff;
+  --range-active-glow: rgba(255, 255, 255, 0.50);
+  --range-inactive-bg: rgba(255, 255, 255, 0.14);
   --range-thumb-bg: #ffffff;
-  --range-thumb-border: #27272a;
+  --range-thumb-border: #71717a;
   --range-thumb-glow: rgba(255, 255, 255, 0.50);
+
+  --wave-chamber-bg:
+    radial-gradient(120% 90% at var(--slider-pct, 50%) 65%, rgba(255, 255, 255, 0.14) 0%, transparent 65%),
+    linear-gradient(180deg, #070709 0%, #111115 60%, #18181d 100%);
+  --wave-chamber-border: rgba(255, 255, 255, 0.20);
+  --wave-chamber-bottom-glow: inset 0 -16px 28px rgba(255, 255, 255, 0.06);
+  --wave-grid-line: rgba(255, 255, 255, 0.07);
+  --wave-primary-stroke: #ffffff;
+  --wave-primary-glow-color: rgba(255, 255, 255, 0.85);
+  --wave-secondary-stroke: rgba(228, 228, 231, 0.58);
+  --wave-tertiary-stroke: rgba(161, 161, 170, 0.36);
+  --wave-area-stop-top: rgba(255, 255, 255, 0.34);
+  --wave-area-stop-mid: rgba(161, 161, 170, 0.12);
+  --wave-area-stop-bot: rgba(7, 7, 9, 0.0);
+  --wave-stroke-glow: drop-shadow(0 0 10px rgba(255, 255, 255, 0.45));
+  --wave-orb-fill: #ffffff;
+  --wave-orb-ring: #e4e4e7;
+
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(42, 42, 48, 0.44) 0%,
+    rgba(20, 20, 24, 0.34) 55%,
+    rgba(34, 34, 40, 0.40) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.42);
+  --sidebar-glass-border-left: rgba(255, 255, 255, 0.32);
+  --sidebar-glass-border-right: rgba(255, 255, 255, 0.12);
+  --sidebar-glass-border-bottom: rgba(255, 255, 255, 0.18);
+  --sidebar-glass-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.40),
+    inset -1px -1.5px 3px rgba(255, 255, 255, 0.12),
+    inset 0 12px 24px rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.42);
+
+  --lg-ctrl-bg: linear-gradient(135deg, rgba(52, 52, 60, 0.54) 0%, rgba(28, 28, 34, 0.42) 100%);
+  --lg-ctrl-hover-bg: linear-gradient(135deg, rgba(72, 72, 82, 0.68) 0%, rgba(38, 38, 46, 0.56) 100%);
+  --lg-ctrl-border-top: rgba(255, 255, 255, 0.46);
+  --lg-ctrl-border-left: rgba(255, 255, 255, 0.34);
+  --lg-ctrl-border-right: rgba(255, 255, 255, 0.14);
+  --lg-ctrl-border-bottom: rgba(255, 255, 255, 0.20);
+  --lg-ctrl-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.42),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.12),
+    0 6px 18px rgba(0, 0, 0, 0.38);
+  --lg-ctrl-text: #fafafa;
 }
 
 html[data-theme="white-orange"],
 body[data-theme="white-orange"],
-html[data-color-mode="white-orange"] {
+html[data-color-mode="white-orange"],
+html[data-theme="orange"] {
   --range-track-bg: rgba(154, 52, 18, 0.14);
   --range-fill-color: #f97316;
-  --range-thumb-bg: #ea580c;
-  --range-thumb-border: #ffffff;
+  --range-active-color: #f97316;
+  --range-active-glow: rgba(249, 115, 22, 0.45);
+  --range-inactive-bg: rgba(234, 88, 12, 0.16);
+  --range-thumb-bg: #ffffff;
+  --range-thumb-border: #ea580c;
   --range-thumb-glow: rgba(249, 115, 22, 0.45);
+
+  --wave-chamber-bg:
+    radial-gradient(120% 90% at var(--slider-pct, 84%) 65%, rgba(249, 115, 22, 0.25) 0%, transparent 65%),
+    linear-gradient(180deg, #fff9f2 0%, #ffedd5 58%, #fed7aa 100%);
+  --wave-chamber-border: rgba(249, 115, 22, 0.30);
+  --wave-chamber-bottom-glow: inset 0 -16px 28px rgba(249, 115, 22, 0.12);
+  --wave-grid-line: rgba(194, 65, 12, 0.08);
+  --wave-primary-stroke: #ea580c;
+  --wave-primary-glow-color: rgba(249, 115, 22, 0.75);
+  --wave-secondary-stroke: rgba(234, 88, 12, 0.62);
+  --wave-tertiary-stroke: rgba(251, 146, 60, 0.45);
+  --wave-area-stop-top: rgba(249, 115, 22, 0.44);
+  --wave-area-stop-mid: rgba(251, 146, 60, 0.20);
+  --wave-area-stop-bot: rgba(255, 237, 213, 0.0);
+  --wave-stroke-glow: drop-shadow(0 0 10px rgba(249, 115, 22, 0.50));
+  --wave-orb-fill: #ffffff;
+  --wave-orb-ring: #ea580c;
+
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 252, 248, 0.46) 0%,
+    rgba(255, 244, 232, 0.32) 52%,
+    rgba(255, 236, 216, 0.42) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.92);
+  --sidebar-glass-border-left: rgba(255, 255, 255, 0.85);
+  --sidebar-glass-border-right: rgba(249, 115, 22, 0.22);
+  --sidebar-glass-border-bottom: rgba(249, 115, 22, 0.26);
+  --sidebar-glass-bevel:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.88),
+    inset -1.5px -1.5px 3px rgba(249, 115, 22, 0.14),
+    inset 0 14px 28px rgba(255, 255, 255, 0.38),
+    0 12px 30px rgba(154, 52, 18, 0.10);
+
+  --lg-ctrl-bg: linear-gradient(135deg, rgba(255, 253, 250, 0.62) 0%, rgba(255, 243, 230, 0.46) 100%);
+  --lg-ctrl-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 237, 213, 0.68) 100%);
+  --lg-ctrl-border-top: rgba(255, 255, 255, 0.95);
+  --lg-ctrl-border-left: rgba(255, 255, 255, 0.88);
+  --lg-ctrl-border-right: rgba(249, 115, 22, 0.22);
+  --lg-ctrl-border-bottom: rgba(249, 115, 22, 0.28);
+  --lg-ctrl-bevel:
+    inset 1.5px 1.5px 2.5px rgba(255, 255, 255, 0.92),
+    inset -1px -1px 2px rgba(249, 115, 22, 0.14),
+    0 6px 16px rgba(154, 52, 18, 0.10);
+  --lg-ctrl-text: #271206;
 }
 
 input[type="range"].lofi-volume-slider,
