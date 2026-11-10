@@ -487,7 +487,10 @@ class LofiMusicPlayer {
       this.synthLoopTimer = null;
     }
     if (this.vinylNode) {
-      try { this.vinylNode.stop(); } catch (_) {}
+      try {
+        this.vinylNode.stop();
+        this.vinylNode.disconnect();
+      } catch (_) {}
       this.vinylNode = null;
     }
   }
@@ -552,6 +555,19 @@ class LofiMusicPlayer {
       filter.connect(gain);
       gain.connect(this.masterGainNode);
 
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+        } catch (_) {}
+      };
+      oscTri.onended = () => {
+        try {
+          oscTri.disconnect();
+        } catch (_) {}
+      };
+
       osc.start(startTime);
       oscTri.start(startTime);
       osc.stop(startTime + duration);
@@ -578,6 +594,14 @@ class LofiMusicPlayer {
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(this.masterGainNode);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        filter.disconnect();
+        gain.disconnect();
+      } catch (_) {}
+    };
 
     osc.start(startTime);
     osc.stop(startTime + duration);

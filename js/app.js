@@ -20,12 +20,15 @@ const App = {
   lastUsedSubjectId: null,
   collapsedSubjectIds: new Set(),
   _viewRendered: { dashboard: false, decks: false, bank: false, stats: false },
+  _renderedViewRevision: { dashboard: 0, decks: 0, bank: 0, stats: 0 },
+  _katexCache: new Map(),
   _dbDirty: true,
   _scrollObserver: null,
 
   markDbDirty() {
     this._dbDirty = true;
     this._viewRendered = { dashboard: false, decks: false, bank: false, stats: false };
+    this._renderedViewRevision = { dashboard: 0, decks: 0, bank: 0, stats: 0 };
     if (typeof db !== 'undefined' && db && typeof db.invalidateSubjectCache === 'function') {
       db.invalidateSubjectCache();
     }
@@ -641,16 +644,18 @@ const App = {
           return `<span class="katex-inline-wrap inline-block align-middle mx-1 font-mono">${escapeHtml(code)}</span>`;
         }
         try {
-          // KaTeX LRU Map cache to eliminate redundant renderToString overhead
+          // KaTeX LRU Map cache (_katexCache) to eliminate redundant renderToString overhead (max 2500 entries)
           const cacheKey = (isBlock ? 'B:' : 'I:') + code;
           let rendered = null;
-          let cache = null;
-          try {
-            if (typeof globalThis !== 'undefined') {
-              if (!globalThis._msKatexCache) globalThis._msKatexCache = new Map();
-              cache = globalThis._msKatexCache;
-            }
-          } catch (_) {}
+          let cache = (typeof this !== 'undefined' && this && this._katexCache) || (typeof App !== 'undefined' && App && App._katexCache) || null;
+          if (!cache) {
+            try {
+              if (typeof globalThis !== 'undefined') {
+                if (!globalThis._msKatexCache) globalThis._msKatexCache = new Map();
+                cache = globalThis._msKatexCache;
+              }
+            } catch (_) {}
+          }
 
           if (cache && cache.has(cacheKey)) {
             rendered = cache.get(cacheKey);
@@ -661,7 +666,7 @@ const App = {
               throwOnError: false
             });
             if (cache) {
-              if (cache.size >= 2000) {
+              if (cache.size >= 2500) {
                 const firstKey = cache.keys().next().value;
                 cache.delete(firstKey);
               }
@@ -905,6 +910,11 @@ const App = {
     const validThemes = ['violet-rose', 'monochrome', 'white-orange'];
     const theme = validThemes.includes(themeId) ? themeId : 'violet-rose';
 
+    // Bug 6: Disable heavy transitions during theme switch for 0ms instant transition
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.classList.add('theme-switching');
+    }
+
     document.documentElement.setAttribute('data-theme', theme);
     document.body.dataset.theme = theme;
     const colorModeMap = {
@@ -917,6 +927,16 @@ const App = {
     const colorMode = colorModeMap[theme] || theme;
     document.documentElement.setAttribute('data-color-mode', colorMode);
     document.body.dataset.colorMode = colorMode;
+
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.classList.remove('theme-switching');
+          }
+        });
+      });
+    }
 
     try {
       localStorage.setItem('mindsparks_theme', theme);
@@ -985,7 +1005,16 @@ const App = {
 
   onThemeEnergySliderInput(rawVal) {
     const val = parseFloat(rawVal) || 0;
-    this._updateEnergyWaveVisuals(val);
+    this._pendingWaveVal = val;
+    if (!this._waveRafPending) {
+      this._waveRafPending = true;
+      requestAnimationFrame(() => {
+        this._waveRafPending = false;
+        if (this._pendingWaveVal !== undefined) {
+          this._updateEnergyWaveVisuals(this._pendingWaveVal);
+        }
+      });
+    }
 
     // Xác định vùng năng lượng theo 2 ngưỡng Threshold: 33.5% và 66.5%
     const targetTheme = val < 33.5 ? 'violet-rose' : (val <= 66.5 ? 'monochrome' : 'white-orange');
@@ -1042,113 +1071,101 @@ const App = {
     const pct = Math.max(0, Math.min(100, parseFloat(val) || 0));
     const t = pct / 100; // 0.0 -> 1.0
 
-    // 1. Biến đổi hình thái sóng liên tục (Frequency, Amplitude & Phase Morphing)
+    // cycles = 2.2 + t * 3.8 (Preserved continuous wave morphing equation)
+    const cycles = 2.2 + t * 3.8;
+
     const mainPath = document.getElementById('energy-wave-main-path');
     const harmPath = document.getElementById('energy-wave-harmonic-path');
     const bgPath = document.getElementById('energy-wave-bg-path');
 
     if (mainPath && harmPath && bgPath) {
-      // Tần số tăng dần từ 2.2 chu kỳ (mộng mơ) -> 4.0 chu kỳ (tối giản) -> 6.0 chu kỳ (năng lượng cao)
-      const cycles = 2.2 + t * 3.8;
-      const phase = t * Math.PI * 4.5;
-      const ampMain = 22 + Math.sin(t * Math.PI) * 8 + (t > 0.665 ? 8 : 0);
-      const baseY = 82; // Đặt ở nửa dưới buồng kính để KHÔNG BAO GIỜ chạm vào chữ ở trên!
       const width = 900;
-      const steps = 60;
+      const baseY = 88; // Nằm gọn ở nửa dưới buồng kính, tách biệt hoàn toàn với chữ ở trên
+      const focalX = 60 + t * (width - 120); // Tâm hội tụ bó sóng ánh sáng đi theo đúng tay kéo!
+      const sigma = 210; // Độ rộng đường bao Gaussian của bó sóng ánh sáng
+      const k = 0.028 + t * 0.014; // Số sóng (bước sóng ánh sáng ngắn dần khi năng lượng tăng)
+      const phase = t * Math.PI * 6; // Pha dịch chuyển mượt như tia sáng trượt
+      const maxAmp = 28;
+      const steps = 48;
 
-      let dMain = '';
-      let dHarm = '';
-      let dBg = '';
+      let dRay1 = '';
+      let dRay2 = '';
+      let dCaustic = '';
 
       for (let i = 0; i <= steps; i++) {
         const ratio = i / steps;
-        const x = (ratio * width).toFixed(1);
-        const angle = ratio * cycles * Math.PI * 2 + phase;
-        // Pha trộn sóng cơ bản và sóng hài bậc 2, bậc 3 theo vị trí kéo t
-        const yMain = (
-          baseY +
-          Math.sin(angle) * ampMain * (0.75 + 0.25 * Math.cos(ratio * Math.PI)) +
-          Math.cos(angle * 1.5 - phase * 0.6) * (t * 9)
-        ).toFixed(1);
+        const x = ratio * width;
+        const dx = x - focalX;
+        // Đường bao Gaussian của Bó sóng ánh sáng (cao nhất tại vị trí con trượt focalX, thuôn mượt về 2 bên)
+        const envelope = 0.22 + 0.78 * Math.exp(-(dx * dx) / (2 * sigma * sigma));
 
-        const yHarm = (
-          baseY -
-          Math.sin(angle * 1.25 - 0.8) * (ampMain * 0.72) +
-          Math.sin(angle * 2.5) * (t * 6)
-        ).toFixed(1);
-
-        const yBg = (
-          baseY +
-          Math.cos(angle * 0.8 + 0.5) * (ampMain * 0.65)
-        ).toFixed(1);
+        // Tia sáng chính (Chromatic Ray 1)
+        const y1 = baseY - Math.sin(x * k - phase) * (maxAmp * envelope);
+        // Tia sáng tán sắc bậc 2 (Chromatic Ray 2 lệch pha 120 độ)
+        const y2 = baseY - Math.sin(x * k * 1.18 - phase + 2.094) * (maxAmp * 0.68 * envelope);
+        // Quầng tán xạ ánh sáng nền (Optical Caustic Envelope)
+        const yBg = baseY - Math.abs(Math.cos(x * k * 0.5 - phase * 0.5)) * (maxAmp * 0.85 * envelope);
 
         const cmd = i === 0 ? 'M' : 'L';
-        dMain += `${cmd} ${x} ${yMain} `;
-        dHarm += `${cmd} ${x} ${yHarm} `;
-        dBg += `${cmd} ${x} ${yBg} `;
+        dRay1 += `${cmd} ${x.toFixed(1)} ${y1.toFixed(1)} `;
+        dRay2 += `${cmd} ${x.toFixed(1)} ${y2.toFixed(1)} `;
+        dCaustic += `${cmd} ${x.toFixed(1)} ${yBg.toFixed(1)} `;
       }
-      dBg += `L ${width} 135 L 0 135 Z`;
+      dCaustic += `L ${width} 136 L 0 136 Z`;
 
-      mainPath.setAttribute('d', dMain.trim());
-      harmPath.setAttribute('d', dHarm.trim());
-      bgPath.setAttribute('d', dBg.trim());
-      mainPath.style.strokeWidth = `${3.2 + (pct / 100) * 1.5}`;
+      mainPath.setAttribute('d', dRay1.trim());
+      harmPath.setAttribute('d', dRay2.trim());
+      bgPath.setAttribute('d', dCaustic.trim());
+      harmPath.removeAttribute('stroke-dasharray'); // Để tia sáng thứ 2 liền mạch mượt mà như dải lụa quang học
     }
 
-    // 2. Nội suy màu sắc sóng mượt mà theo vùng và cập nhật HUD
+    // Nội suy màu quang phổ ánh sáng liên tục & cập nhật HUD
     const stop1 = document.getElementById('ew-stop-1');
     const stop2 = document.getElementById('ew-stop-2');
     const stop3 = document.getElementById('ew-stop-3');
     const areaTop = document.getElementById('ew-area-top');
-    const areaBot = document.getElementById('ew-area-bot');
     const badgeEl = document.getElementById('energy-wave-mode-badge');
     const titleEl = document.getElementById('energy-wave-mode-title');
     const svgEl = document.getElementById('energy-wave-svg');
 
     let glowColor = 'rgba(168, 85, 247, 0.45)';
-    let activeZone = 'purple-pink';
 
     if (pct < 33.5) {
-      if (stop1) stop1.setAttribute('stop-color', '#a855f7');
+      if (stop1) stop1.setAttribute('stop-color', '#8b5cf6');
       if (stop2) stop2.setAttribute('stop-color', '#ec4899');
       if (stop3) stop3.setAttribute('stop-color', '#f472b6');
-      if (areaTop) areaTop.setAttribute('stop-color', '#c084fc');
-      if (areaBot) areaBot.setAttribute('stop-color', '#c084fc');
-      if (badgeEl) badgeEl.textContent = `NEBULA WAVE // ${Math.round(pct)}%`;
-      if (titleEl) titleEl.textContent = 'Tím Hồng (Dreamy Liquid Glass)';
+      if (areaTop) areaTop.setAttribute('stop-color', '#d946ef');
+      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 420nm (${Math.round(pct)}%)`;
+      if (titleEl) titleEl.textContent = 'Tím Hồng (Ultraviolet Rose Wave)';
       glowColor = 'rgba(168, 85, 247, 0.45)';
-      activeZone = 'purple-pink';
     } else if (pct <= 66.5) {
       if (stop1) stop1.setAttribute('stop-color', '#71717a');
-      if (stop2) stop2.setAttribute('stop-color', '#e4e4e7');
-      if (stop3) stop3.setAttribute('stop-color', '#ffffff');
+      if (stop2) stop2.setAttribute('stop-color', '#ffffff');
+      if (stop3) stop3.setAttribute('stop-color', '#a1a1aa');
       if (areaTop) areaTop.setAttribute('stop-color', '#ffffff');
-      if (areaBot) areaBot.setAttribute('stop-color', '#ffffff');
-      if (badgeEl) badgeEl.textContent = `CYBER NOIR // ${Math.round(pct)}%`;
-      if (titleEl) titleEl.textContent = 'Trắng Đen (Monochrome Eclipse)';
+      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 550nm (${Math.round(pct)}%)`;
+      if (titleEl) titleEl.textContent = 'Trắng Đen (Monochrome Laser Wave)';
       glowColor = 'rgba(255, 255, 255, 0.35)';
-      activeZone = 'monochrome';
     } else {
-      if (stop1) stop1.setAttribute('stop-color', '#fb923c');
+      if (stop1) stop1.setAttribute('stop-color', '#f59e0b');
       if (stop2) stop2.setAttribute('stop-color', '#f97316');
       if (stop3) stop3.setAttribute('stop-color', '#ea580c');
-      if (areaTop) areaTop.setAttribute('stop-color', '#f97316');
-      if (areaBot) areaBot.setAttribute('stop-color', '#f97316');
-      if (badgeEl) badgeEl.textContent = `SOLAR FLARE // ${Math.round(pct)}%`;
-      if (titleEl) titleEl.textContent = 'Trắng Cam (Warm Solar Glass)';
+      if (areaTop) areaTop.setAttribute('stop-color', '#fb923c');
+      if (badgeEl) badgeEl.textContent = `LIGHT SPECTRUM // 620nm (${Math.round(pct)}%)`;
+      if (titleEl) titleEl.textContent = 'Trắng Cam (Solar Amber Wave)';
       glowColor = 'rgba(249, 115, 22, 0.45)';
-      activeZone = 'white-orange';
     }
 
     if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${glowColor})`;
 
-    // Đánh dấu nút mốc tương ứng
+    const activeZone = pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange');
     document.querySelectorAll('.energy-node-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeZone);
     });
   },
 
   triggerThemeWaveTransition(targetTheme) {
+    if (typeof window !== 'undefined' && window.innerWidth <= 840) return;
     let ripple = document.getElementById('theme-wave-transition-overlay');
     if (!ripple) {
       ripple = document.createElement('div');
@@ -1413,29 +1430,38 @@ const App = {
     // View specific lifecycle (0ms transition, preserves DOM if data has not changed)
     const renderTargetView = () => {
       if (this.currentView !== viewName) return;
+      const curRev = (typeof db !== 'undefined' && db.revision) ? db.revision : 1;
       if (viewName === 'dashboard') {
-        if (!this._viewRendered.dashboard || this._dbDirty) {
+        const needsRender = !this._viewRendered.dashboard || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.dashboard !== curRev);
+        if (needsRender) {
           this.renderDashboard();
           this._viewRendered.dashboard = true;
+          if (this._renderedViewRevision) this._renderedViewRevision.dashboard = curRev;
         }
       } else if (viewName === 'decks') {
-        if (!this._viewRendered.decks || this._dbDirty) {
+        const needsRender = !this._viewRendered.decks || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.decks !== curRev);
+        if (needsRender) {
           this.renderDecks();
           this._viewRendered.decks = true;
+          if (this._renderedViewRevision) this._renderedViewRevision.decks = curRev;
         }
       } else if (viewName === 'bank') {
-        if (!this._viewRendered.bank || this._dbDirty) {
+        const needsRender = !this._viewRendered.bank || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.bank !== curRev);
+        if (needsRender) {
           this.renderQuestionBank();
           this._viewRendered.bank = true;
+          if (this._renderedViewRevision) this._renderedViewRevision.bank = curRev;
         }
       } else if (viewName === 'import') {
         this.setupImportView(params);
       } else if (viewName === 'import-lms') {
         this.setupImportLmsView(params);
       } else if (viewName === 'stats') {
-        if (!this._viewRendered.stats || this._dbDirty) {
+        const needsRender = !this._viewRendered.stats || this._dbDirty || (this._renderedViewRevision && this._renderedViewRevision.stats !== curRev);
+        if (needsRender) {
           this.renderStatsView();
           this._viewRendered.stats = true;
+          if (this._renderedViewRevision) this._renderedViewRevision.stats = curRev;
         }
       } else if (viewName === 'settings') {
         this.renderSettingsView();
@@ -4347,6 +4373,7 @@ const App = {
         btn.className = 'quiz-option-btn';
         if (session.userAnswers[session.currentIndex] === idx) {
           btn.classList.add('selected');
+          btn.classList.add('exam-option-selected');
         }
 
         const letter = String.fromCharCode(65 + idx);
@@ -4402,7 +4429,7 @@ const App = {
       palette.innerHTML = session.cards.map((c, idx) => {
         const isAnswered = session.userAnswers[idx] !== undefined && session.userAnswers[idx] !== '';
         return `
-          <button type="button" class="exam-palette-btn ${isAnswered ? 'answered' : ''}" id="exam-palette-btn-${idx}" onclick="document.getElementById('exam-q-item-${idx}')?.scrollIntoView({ behavior: 'smooth', block: 'center' })">
+          <button type="button" class="exam-palette-btn ${isAnswered ? 'answered' : ''}" id="exam-palette-btn-${idx}" data-qidx="${idx}" onclick="document.getElementById('exam-q-item-${idx}')?.scrollIntoView({ behavior: 'smooth', block: 'center' })">
             ${idx + 1}
           </button>
         `;
@@ -4454,7 +4481,7 @@ const App = {
             const isSelected = userAns === optIdx;
             const letter = String.fromCharCode(65 + optIdx);
             html += `
-              <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
+              <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected exam-option-selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
                 <span class="quiz-option-letter">${letter}</span>
                 <span class="quiz-option-text">${this.renderLatexText(opt.text)}</span>
               </button>
@@ -4478,7 +4505,9 @@ const App = {
           const optsBox = document.getElementById(`exam-lms-options-${cardIdx}`);
           if (optsBox) {
             optsBox.querySelectorAll('.exam-lms-opt-btn').forEach(b => {
-              b.classList.toggle('selected', b === btn);
+              const isMatch = b === btn;
+              b.classList.toggle('selected', isMatch);
+              b.classList.toggle('exam-option-selected', isMatch);
             });
           }
 
@@ -4587,6 +4616,10 @@ const App = {
     if (subjLabel) {
       subjLabel.textContent = curSubjObj ? `${this._escapeHtml(curSubjObj.name)}` : 'Chọn môn học...';
     }
+    const subjIcon = document.getElementById('import-subject-dropdown-icon');
+    if (subjIcon && curSubjObj) {
+      subjIcon.innerHTML = this.renderSubjectIcon(curSubjObj.icon);
+    }
 
     const subjMenu = document.getElementById('import-subject-dropdown-menu');
     if (subjMenu) {
@@ -4594,7 +4627,7 @@ const App = {
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectImportSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -4618,8 +4651,15 @@ const App = {
   async selectImportSubject(subjectId, subjectLabelText) {
     const subjSelect = document.getElementById('import-subject-select');
     if (subjSelect) subjSelect.value = subjectId;
+    const subjects = await db.getAllSubjects();
+    const curSubj = subjects.find(s => s.id === subjectId);
+    const cleanLabel = curSubj ? curSubj.name : (subjectLabelText ? subjectLabelText.replace(/^(brain|code|math|ruler|flask|dna|globe|landmark|scale|palette|music|pulse|chart|rocket|zap|flame|bulb|target|trophy|star|book|folder)\s+/i, '').trim() : '');
     const label = document.getElementById('import-subject-dropdown-label');
-    if (label) label.textContent = subjectLabelText;
+    if (label) label.textContent = cleanLabel || subjectLabelText;
+    const iconEl = document.getElementById('import-subject-dropdown-icon');
+    if (iconEl && curSubj) {
+      iconEl.innerHTML = this.renderSubjectIcon(curSubj.icon);
+    }
     const menu = document.getElementById('import-subject-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -4877,12 +4917,16 @@ const App = {
     if (subjLabel) {
       subjLabel.textContent = curSubjObj ? `${this._escapeHtml(curSubjObj.name)}` : 'Chọn môn học...';
     }
+    const subjIcon = document.getElementById('lms-subject-dropdown-icon');
+    if (subjIcon && curSubjObj) {
+      subjIcon.innerHTML = this.renderSubjectIcon(curSubjObj.icon);
+    }
     if (subjMenu) {
       let menuHtml = '';
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectLmsSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -4906,8 +4950,15 @@ const App = {
   async selectLmsSubject(subjectId, subjectLabelText) {
     const select = document.getElementById('lms-subject-select');
     if (select) select.value = subjectId;
+    const subjects = await db.getAllSubjects();
+    const curSubj = subjects.find(s => s.id === subjectId);
+    const cleanLabel = curSubj ? curSubj.name : (subjectLabelText ? subjectLabelText.replace(/^(brain|code|math|ruler|flask|dna|globe|landmark|scale|palette|music|pulse|chart|rocket|zap|flame|bulb|target|trophy|star|book|folder)\s+/i, '').trim() : '');
     const label = document.getElementById('lms-subject-dropdown-label');
-    if (label) label.textContent = subjectLabelText;
+    if (label) label.textContent = cleanLabel || subjectLabelText;
+    const iconEl = document.getElementById('lms-subject-dropdown-icon');
+    if (iconEl && curSubj) {
+      iconEl.innerHTML = this.renderSubjectIcon(curSubj.icon);
+    }
     const menu = document.getElementById('lms-subject-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -5731,12 +5782,16 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (subjLabel) {
       subjLabel.textContent = curSubj ? `${this._escapeHtml(curSubj.name)}` : 'Chọn môn học...';
     }
+    const subjIcon = document.getElementById('edit-card-subject-dropdown-icon');
+    if (subjIcon && curSubj) {
+      subjIcon.innerHTML = this.renderSubjectIcon(curSubj.icon);
+    }
     if (subjMenu) {
       let menuHtml = '';
       subjects.forEach(s => {
         const isActive = s.id === currentSubjectId;
         menuHtml += `
-          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${(s.icon || 'book')} ${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
+          <button type="button" class="cyber-dropdown-item ${isActive ? 'active' : ''}" onclick="App.selectEditCardSubject('${s.id}', '${this._escapeHtml(s.name).replace(/'/g, "\\'")}')">
             <span>${this.renderSubjectIcon(s.icon)} ${this._escapeHtml(s.name)}</span>
           </button>
         `;
@@ -5820,8 +5875,15 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   async selectEditCardSubject(subjectId, subjectLabelText) {
     const select = document.getElementById('edit-card-subject-select');
     if (select) select.value = subjectId;
+    const subjects = await db.getAllSubjects();
+    const curSubj = subjects.find(s => s.id === subjectId);
+    const cleanLabel = curSubj ? curSubj.name : (subjectLabelText ? subjectLabelText.replace(/^(brain|code|math|ruler|flask|dna|globe|landmark|scale|palette|music|pulse|chart|rocket|zap|flame|bulb|target|trophy|star|book|folder)\s+/i, '').trim() : '');
     const label = document.getElementById('edit-card-subject-dropdown-label');
-    if (label) label.textContent = subjectLabelText;
+    if (label) label.textContent = cleanLabel || subjectLabelText;
+    const iconEl = document.getElementById('edit-card-subject-dropdown-icon');
+    if (iconEl && curSubj) {
+      iconEl.innerHTML = this.renderSubjectIcon(curSubj.icon);
+    }
     const menu = document.getElementById('edit-card-subject-dropdown-menu');
     if (menu) {
       menu.querySelectorAll('.cyber-dropdown-item').forEach(item => {
@@ -7297,41 +7359,39 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   
   renderSubjectPickerControls(mode) {
-    const grid = document.getElementById(`${mode}-subject-icon-grid`);
+    const grid = document.getElementById(`${mode}-subject-icon-grid`) || document.getElementById(`${mode}-subject-emoji-grid`);
     const iconInput = document.getElementById(`${mode}-subject-icon`);
     const currentIcon = iconInput ? (iconInput.value || 'book') : 'book';
 
     if (grid) {
       grid.innerHTML = this.SUBJECT_ICON_PRESETS.map(preset => {
         const isActive = preset.key === currentIcon;
-        return `<button type="button" class="btn btn-secondary subject-icon-btn ${isActive ? 'active' : ''}" style="height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; ${isActive ? 'background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--accent);' : ''}" data-icon-key="${preset.key}" onclick="App.selectSubjectIcon('${mode}', '${preset.key}')" title="${preset.name}">${this.getMonoSvg(preset.key)}</button>`;
+        return `<button type="button" class="btn btn-secondary subject-icon-btn emoji-preset-btn ${isActive ? 'active selected' : ''}" style="height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px;" data-icon-key="${preset.key}" data-emoji="${preset.key}" aria-pressed="${isActive ? 'true' : 'false'}" onclick="App.selectSubjectIcon('${mode}', '${preset.key}', this)" title="${preset.name}">${this.getMonoSvg(preset.key)}</button>`;
       }).join('');
     }
   },
 
-  selectSubjectIcon(mode, iconKey) {
+  selectSubjectIcon(mode, iconKey, clickedBtn) {
     const iconInput = document.getElementById(`${mode}-subject-icon`);
     if (iconInput) iconInput.value = iconKey;
-    const grid = document.getElementById(`${mode}-subject-icon-grid`);
-    if (grid) {
-      grid.querySelectorAll('button[data-icon-key]').forEach(btn => {
-        const isMatch = btn.getAttribute('data-icon-key') === iconKey;
+    const gridId = `${mode}-subject-icon-grid`;
+    const altGridId = `${mode}-subject-emoji-grid`;
+    const modalId = `modal-${mode}-subject`;
+    const container = document.getElementById(gridId) || document.getElementById(altGridId) || document.getElementById(modalId);
+    if (container) {
+      const allIconBtns = container.querySelectorAll('.emoji-preset-btn, .subject-icon-btn, [data-icon-key], [data-emoji]');
+      allIconBtns.forEach((btn) => {
+        const btnVal = btn.getAttribute('data-icon-key') || btn.getAttribute('data-emoji') || btn.dataset.icon || '';
+        const isMatch = clickedBtn ? (btn === clickedBtn) : (btnVal === String(iconKey));
         btn.classList.toggle('active', isMatch);
-        if (isMatch) {
-          btn.style.background = 'var(--btn-primary-bg)';
-          btn.style.color = 'var(--btn-primary-text)';
-          btn.style.borderColor = 'var(--accent)';
-        } else {
-          btn.style.background = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
-        }
+        btn.classList.toggle('selected', isMatch);
+        btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
       });
     }
   },
 
-  selectSubjectEmoji(mode, iconKey) {
-    this.selectSubjectIcon(mode, iconKey);
+  selectSubjectEmoji(mode, iconKey, clickedBtn) {
+    this.selectSubjectIcon(mode, iconKey, clickedBtn);
   },
 
   selectSubjectColor(mode, hexColor) {
@@ -7389,7 +7449,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       await this.setupImportLmsView({ subjectId: created.id });
     } else if (ctx === 'edit-card') {
       await this.openAddCardModal();
-      await this.selectEditCardSubject(created.id, `${created.icon} ${created.name}`);
+      await this.selectEditCardSubject(created.id, created.name);
     } else if (ctx === 'bank') {
       this.currentBankSubjectId = created.id;
       await this.renderQuestionBank();

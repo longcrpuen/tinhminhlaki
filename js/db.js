@@ -13,6 +13,11 @@ class QuizDatabase {
     this._cardsCache = null;
     this._decksCache = null;
     this._subjectsCache = null;
+    this.revision = 1;
+  }
+
+  _bumpRevision() {
+    this.revision = (this.revision || 1) + 1;
   }
 
   async init() {
@@ -430,10 +435,19 @@ class QuizDatabase {
     this._cardsCache = null;
     this._decksCache = null;
     this._subjectsCache = null;
+    this.revision = (this.revision || 1) + 1;
   }
 
   invalidateAllCaches() {
     this.invalidateSubjectCache();
+  }
+
+  async updateCardSRS(card) {
+    return this.saveCard(card);
+  }
+
+  async logStudySession(sessionData) {
+    return this.logReview(sessionData);
   }
 
   async getSubjectSummaries() {
@@ -1047,6 +1061,7 @@ class QuizDatabase {
       timestamp: Date.now()
     };
     await this._promisify(store.add(entry));
+    this.revision = (this.revision || 1) + 1;
     await this.updateStreak();
     return entry;
   }

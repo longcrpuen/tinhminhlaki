@@ -9544,7 +9544,7 @@ html[data-theme="white-orange"] .energy-slider-control-wrap::after {
 }
 
 /* ==========================================================================
-   PHASE 1o - ITEM 6: MOBILE BOTTOM NAV (PORTRAIT) — LỚP NỀN MÀU TĨNH DƯỚI LAYER STROKE RÕ NÉT
+   PHASE 1p - BUG 5 & ITEM 6: MOBILE BOTTOM NAV (PORTRAIT) — VIÊN THUỐC LIQUID GLASS BO TRÒN 999PX NHƯ SIDEBAR DESKTOP
    ========================================================================== */
 @media (max-width: 840px) and (orientation: portrait) {
   :root,
@@ -9581,83 +9581,164 @@ html[data-theme="white-orange"] .energy-slider-control-wrap::after {
     --bnav-active-shadow: 0 6px 16px rgba(249, 115, 22, 0.40);
   }
 
-  .bottom-nav,
-  #mobile-bottom-nav {
+  html body #mobile-bottom-nav.bottom-nav,
+  html body .bottom-nav {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 6px !important;
+    gap: 2px !important;
     position: fixed !important;
-    bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
     left: 12px !important;
     right: 12px !important;
     width: calc(100% - 24px) !important;
-    max-width: 460px !important;
+    max-width: 440px !important;
     margin: 0 auto !important;
     height: 64px !important;
     padding: 6px 8px !important;
-    border-radius: 20px !important;
-    background: var(--bnav-shell-bg) !important;
-    border: 1.5px solid var(--bnav-shell-border) !important;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 999px !important; /* Bo cong viên thuốc Liquid Glass giống hệt Sidebar Desktop */
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
     z-index: 1000 !important;
   }
 
-  /* Mỗi nút đều có lớp nền tĩnh (idle-bg) ở dưới layer stroke để làm nổi bật nét vẽ */
-  .bottom-nav .bottom-nav-item,
-  #mobile-bottom-nav .bottom-nav-item {
+  /* 1. Mode Tím Hồng */
+  :root body #mobile-bottom-nav.bottom-nav,
+  html[data-theme="dark"] body #mobile-bottom-nav.bottom-nav,
+  html[data-theme="purple-pink"] body #mobile-bottom-nav.bottom-nav {
+    background: linear-gradient(145deg, rgba(36, 24, 64, 0.86) 0%, rgba(20, 14, 38, 0.80) 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.38) !important;
+    border-left: 1px solid rgba(233, 213, 255, 0.26) !important;
+    border-right: 1px solid rgba(233, 213, 255, 0.10) !important;
+    border-bottom: 1px solid rgba(216, 180, 254, 0.20) !important;
+    box-shadow:
+      inset 1px 1.5px 2px rgba(255, 255, 255, 0.35),
+      0 16px 36px rgba(4, 2, 12, 0.65) !important;
+  }
+
+  /* 2. Mode Trắng Đen */
+  html[data-theme="monochrome"] body #mobile-bottom-nav.bottom-nav {
+    background: linear-gradient(145deg, rgba(36, 36, 42, 0.88) 0%, rgba(18, 18, 22, 0.82) 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.42) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow:
+      inset 1px 1.5px 2px rgba(255, 255, 255, 0.42),
+      0 16px 36px rgba(0, 0, 0, 0.75) !important;
+  }
+
+  /* 3. Mode Trắng Cam */
+  html[data-theme="white-orange"] body #mobile-bottom-nav.bottom-nav {
+    background: linear-gradient(145deg, rgba(255, 252, 248, 0.86) 0%, rgba(255, 240, 226, 0.78) 100%) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.96) !important;
+    border-left: 1.5px solid rgba(255, 255, 255, 0.82) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.38) !important;
+    border-bottom: 1px solid rgba(251, 146, 60, 0.32) !important;
+    box-shadow:
+      inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.98),
+      0 14px 34px -4px rgba(154, 52, 18, 0.20) !important;
+  }
+
+  /* Các mục bên trong thanh Bottom Nav: Phẳng gọn trong suốt khi chưa chọn, không cắt chữ */
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item,
+  html body .bottom-nav .bottom-nav-item {
     flex: 1 1 0% !important;
     min-width: 0 !important;
+    max-width: none !important;
     height: 50px !important;
     min-height: 48px !important;
-    padding: 5px 4px !important;
-    border-radius: 14px !important;
+    padding: 4px 2px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 3px !important;
-    background: var(--bnav-idle-bg) !important;
-    color: var(--bnav-idle-stroke) !important;
-    border: 1px solid transparent !important;
-    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease !important;
+    gap: 2px !important;
+    transform: none !important;
   }
 
-  /* Khi nút ĐANG CHỌN (.active): Đổ màu nền tĩnh đặc rực rỡ dưới layer stroke! */
-  .bottom-nav .bottom-nav-item.active,
-  #mobile-bottom-nav .bottom-nav-item.active {
-    background: var(--bnav-active-bg) !important;
-    color: var(--bnav-active-stroke) !important;
-    box-shadow: var(--bnav-active-shadow) !important;
-    transform: translateY(-2px) !important;
+  /* Chữ dưới icon hiển thị ĐẦY ĐỦ 100% ("Ngân hàng"), tuyệt đối không bị cắt "..." */
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item span,
+  html body .bottom-nav .bottom-nav-item span {
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    width: auto !important;
+    color: inherit !important;
   }
 
-  .bottom-nav .bottom-nav-item svg,
-  .bottom-nav .bottom-nav-item svg * {
+  /* Màu chữ & icon khi CHƯA CHỌN */
+  :root body #mobile-bottom-nav.bottom-nav .bottom-nav-item,
+  html[data-theme="dark"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item,
+  html[data-theme="purple-pink"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item {
+    color: #d8b4fe !important;
+  }
+  html[data-theme="monochrome"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item {
+    color: #a1a1aa !important;
+  }
+  html[data-theme="white-orange"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item {
+    color: #44403c !important;
+  }
+
+  /* Mục ĐANG CHỌN (.active): Giống hệt nút Active trên Sidebar Desktop — Rõ nét 100%! */
+  :root body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active,
+  html[data-theme="dark"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active,
+  html[data-theme="purple-pink"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active {
+    background: linear-gradient(135deg, #9333ea 0%, #c026d3 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(147, 51, 234, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  }
+
+  html[data-theme="monochrome"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active {
+    background: #ffffff !important;
+    color: #09090b !important;
+    border: 1px solid #ffffff !important;
+    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.30) !important;
+  }
+
+  html[data-theme="white-orange"] body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+  }
+
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item svg,
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item svg *,
+  html body .bottom-nav .bottom-nav-item svg,
+  html body .bottom-nav .bottom-nav-item svg * {
     width: 20px !important;
     height: 20px !important;
     fill: none !important;
     stroke: currentColor !important;
-    stroke-width: 1.95 !important;
+    stroke-width: 2 !important;
     background: transparent !important;
   }
 
-  .bottom-nav .bottom-nav-item.active svg,
-  .bottom-nav .bottom-nav-item.active svg * {
-    stroke: var(--bnav-active-stroke) !important;
-    stroke-width: 2.35 !important; /* Nét stroke dày sắc sảo trên nền màu tĩnh */
-  }
-
-  .bottom-nav .bottom-nav-item span {
-    font-size: 0.68rem !important;
-    font-weight: 600 !important;
-    line-height: 1.1 !important;
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active svg,
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active svg *,
+  html body .bottom-nav .bottom-nav-item.active svg,
+  html body .bottom-nav .bottom-nav-item.active svg *,
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active span,
+  html body .bottom-nav .bottom-nav-item.active span {
     color: inherit !important;
+    stroke: currentColor !important;
+    font-weight: 700 !important;
+    stroke-width: 2.35 !important;
   }
-  .bottom-nav .bottom-nav-item.active span {
-    font-weight: 800 !important;
-    color: var(--bnav-active-stroke) !important;
+  html body #mobile-bottom-nav.bottom-nav .bottom-nav-item.active span,
+  html body .bottom-nav .bottom-nav-item.active span {
+    stroke: none !important;
   }
 }
 
@@ -9897,6 +9978,215 @@ html[data-theme="white-orange"] .energy-slider-control-wrap::after {
     line-height: 1.1 !important;
   }
 }
+
+/* ==========================================================================
+   PHASE 1P: BUG 1 — BASE LIQUID GLASS STYLING FOR EXAM PALETTE BAR
+   ========================================================================== */
+#exam-palette-bar,
+.exam-palette-bar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-radius: 18px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 20px !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.exam-palette-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+/* ==========================================================================
+   PHASE 1P: BUG 2 — HIỆU ỨNG ĐÁNH DẤU (ACTIVE MARK) RÕ NÉT KHI CHỌN ICON MÔN HỌC MỚI
+   ========================================================================== */
+#modal-create-subject .emoji-preset-btn.active,
+#modal-create-subject .emoji-preset-btn.selected,
+#modal-create-subject .subject-icon-btn.active,
+#modal-create-subject [data-icon-key].active,
+#modal-manage-subject .emoji-preset-btn.active,
+#modal-manage-subject .emoji-preset-btn.selected,
+#modal-manage-subject .subject-icon-btn.active,
+#modal-manage-subject [data-icon-key].active {
+  transform: translateY(-2px) scale(1.05) !important;
+  position: relative !important;
+}
+
+/* Mode Tím Hồng */
+:root #modal-create-subject .emoji-preset-btn.active,
+html[data-theme="purple-pink"] #modal-create-subject .emoji-preset-btn.active,
+:root #modal-create-subject [data-icon-key].active,
+html[data-theme="purple-pink"] #modal-create-subject [data-icon-key].active,
+:root #modal-manage-subject .emoji-preset-btn.active,
+html[data-theme="purple-pink"] #modal-manage-subject [data-icon-key].active {
+  background: #9333ea !important;
+  color: #ffffff !important;
+  border: 2px solid #f472b6 !important;
+  box-shadow: 0 6px 16px rgba(147, 51, 234, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Mode Trắng Đen */
+html[data-theme="monochrome"] #modal-create-subject .emoji-preset-btn.active,
+html[data-theme="monochrome"] #modal-create-subject [data-icon-key].active,
+html[data-theme="monochrome"] #modal-manage-subject .emoji-preset-btn.active,
+html[data-theme="monochrome"] #modal-manage-subject [data-icon-key].active {
+  background: #ffffff !important;
+  color: #09090b !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Mode Trắng Cam */
+html[data-theme="white-orange"] #modal-create-subject .emoji-preset-btn.active,
+html[data-theme="white-orange"] #modal-create-subject [data-icon-key].active,
+html[data-theme="white-orange"] #modal-manage-subject .emoji-preset-btn.active,
+html[data-theme="white-orange"] #modal-manage-subject [data-icon-key].active {
+  background: #f97316 !important;
+  color: #ffffff !important;
+  border: 2px solid #ea580c !important;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.42), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Đảm bảo nét vẽ SVG bên trong nút đang chọn đổi sang đúng màu tương phản */
+#modal-create-subject .active svg,
+#modal-create-subject .active svg *,
+#modal-manage-subject .active svg,
+#modal-manage-subject .active svg * {
+  stroke: currentColor !important;
+  color: inherit !important;
+}
+
+/* ==========================================================================
+   PHASE 1P: BUG 4 — HIỆU ỨNG ĐÁNH DẤU ĐÁP ÁN ĐANG CHỌN TRONG CHẾ ĐỘ THI THỬ (#view-exam)
+   ========================================================================== */
+#view-exam .quiz-option-btn.exam-option-selected,
+#view-exam .quiz-option-btn.selected,
+#view-exam .quiz-option-btn.correct {
+  transform: translateX(4px) !important;
+  font-weight: 700 !important;
+}
+
+/* 1. Mode Tím Hồng */
+:root #view-exam .quiz-option-btn.exam-option-selected,
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.exam-option-selected,
+:root #view-exam .quiz-option-btn.selected,
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected,
+:root #view-exam .quiz-option-btn.correct,
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.correct {
+  background: rgba(147, 51, 234, 0.32) !important;
+  border: 2px solid #e879f9 !important;
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.32), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+}
+:root #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+  color: #f472b6 !important;
+  font-weight: 900 !important;
+}
+
+/* 2. Mode Trắng Đen */
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.exam-option-selected,
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected,
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.correct {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
+  color: #ffffff !important;
+}
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+  color: #ffffff !important;
+  text-decoration: underline !important;
+}
+
+/* 3. Mode Trắng Cam */
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.exam-option-selected,
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected,
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.correct {
+  background: rgba(251, 146, 60, 0.24) !important;
+  border: 2px solid #ea580c !important;
+  box-shadow: 0 8px 20px -4px rgba(234, 88, 12, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+  color: #1c1917 !important;
+}
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+  color: #ea580c !important;
+  font-weight: 900 !important;
+}
+
+/* ==========================================================================
+   PHASE 1P: BUG 6 — TẠM KHÓA TRANSITION NẶNG KHI CHUYỂN ĐỔI HỆ MÀU THEME
+   ========================================================================== */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+  animation-duration: 0.01ms !important;
+}
+
+/* ==========================================================================
+   PHASE 1P: OPT 1 (HẠNG MỤC 8) — TRIỆT TIÊU GPU BLUR OVERDRAW & KHÓA HOVER KHI CUỘN
+   ========================================================================== */
+.hero-card .stat-card,
+#view-dashboard .stats-grid > div,
+#view-dashboard .stat-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#view-dashboard .study-mode-card,
+#dashboard-decks-grid .deck-card,
+#view-decks .deck-card,
+.subject-group .decks-grid .deck-card,
+.deck-card,
+.study-mode-card {
+  backdrop-filter: blur(12px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(165%) !important;
+  contain: layout paint style !important;
+}
+
+.glass-card::after,
+.card-base::after {
+  animation: none !important;
+  display: none !important;
+  content: none !important;
+}
+
+body.is-scrolling .deck-card,
+body.is-scrolling .study-mode-card,
+body.is-scrolling .bank-card-item,
+body.is-scrolling .stat-card {
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+/* ==========================================================================
+   PHASE 1P: OPT 3 (HẠNG MỤC 10) — ẢO HÓA DANH SÁCH LỚN (CONTENT-VISIBILITY: AUTO)
+   ========================================================================== */
+#bank-cards-list .bank-card-item,
+#exam-all-questions-list .exam-lms-item {
+  content-visibility: auto !important;
+  contain-intrinsic-size: auto 190px !important;
+  contain: layout style paint !important;
+}
+
 
 
 

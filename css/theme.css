@@ -1926,19 +1926,6 @@ html[data-theme="white-orange"] .hero-title .hero-title-accent {
 }
 
 /* MỤC 10: SỬA DỨT ĐIỂM THANH ĐIỀU HƯỚNG DƯỚI CÙNG TRÊN MOBILE */
-#mobile-bottom-nav .bottom-nav-item,
-#mobile-bottom-nav .bottom-nav-item.active {
-  color: var(--text-secondary) !important;
-  background: transparent !important;
-}
-#mobile-bottom-nav .bottom-nav-item.active {
-  background: var(--accent-soft) !important;
-  color: var(--text-primary) !important;
-}
-html[data-theme="white-orange"] #mobile-bottom-nav .bottom-nav-item.active {
-  background: rgba(234, 88, 12, 0.16) !important;
-  color: #ea580c !important;
-}
 #mobile-bottom-nav .bnav-svg,
 #mobile-bottom-nav .bnav-svg * {
   fill: none !important;
@@ -3042,6 +3029,100 @@ html[data-theme="white-orange"] .lms-sample-line.q-line      { color: #1c1917 !i
 html[data-theme="white-orange"] .lms-sample-line.opt-line    { color: #d97706 !important; }
 html[data-theme="white-orange"] .lms-sample-line.choice-line { color: #57534e !important; }
 html[data-theme="white-orange"] #lms-raw-input::placeholder  { color: rgba(87, 83, 78, 0.68) !important; }
+
+/* ==========================================================================
+   BUG 1: ĐỒNG BỘ THANH CÂU HỎI CHẾ ĐỘ THI THỬ (.exam-palette-bar) THEO 3 THEME
+   ========================================================================== */
+#exam-palette-bar,
+.exam-palette-bar {
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-radius: 18px !important;
+  padding: 10px 14px !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* 1. Mode Tím Hồng */
+:root #exam-palette-bar,
+html[data-theme="dark"] #exam-palette-bar,
+html[data-theme="purple-pink"] #exam-palette-bar,
+:root .exam-palette-bar,
+html[data-theme="purple-pink"] .exam-palette-bar {
+  background: linear-gradient(145deg, rgba(42, 28, 74, 0.72) 0%, rgba(24, 16, 44, 0.62) 100%) !important;
+  border: 1px solid rgba(216, 180, 254, 0.26) !important;
+  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.24), 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+}
+:root .exam-palette-btn,
+html[data-theme="purple-pink"] .exam-palette-btn {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #e9d5ff !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+:root .exam-palette-btn.answered,
+:root .exam-palette-btn.active,
+html[data-theme="purple-pink"] .exam-palette-btn.answered,
+html[data-theme="purple-pink"] .exam-palette-btn.active {
+  background: #9333ea !important;
+  color: #ffffff !important;
+  border-color: #f472b6 !important;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.45) !important;
+}
+
+/* 2. Mode Trắng Đen (Monochrome — 0% Tím!) */
+html[data-theme="monochrome"] #exam-palette-bar,
+body[data-theme="monochrome"] #exam-palette-bar,
+html[data-theme="monochrome"] .exam-palette-bar {
+  background: linear-gradient(145deg, rgba(38, 38, 44, 0.76) 0%, rgba(20, 20, 24, 0.66) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.30), 0 10px 24px rgba(0, 0, 0, 0.50) !important;
+}
+html[data-theme="monochrome"] .exam-palette-btn,
+body[data-theme="monochrome"] .exam-palette-btn {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #e4e4e7 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+html[data-theme="monochrome"] .exam-palette-btn.answered,
+html[data-theme="monochrome"] .exam-palette-btn.active,
+body[data-theme="monochrome"] .exam-palette-btn.answered {
+  background: #ffffff !important;
+  color: #09090b !important;
+  border-color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.28) !important;
+}
+
+/* 3. Mode Trắng Cam (White-Orange — Kính sáng kem ấm, 0% Tím!) */
+html[data-theme="white-orange"] #exam-palette-bar,
+body[data-theme="white-orange"] #exam-palette-bar,
+html[data-theme="white-orange"] .exam-palette-bar {
+  background: linear-gradient(145deg, rgba(255, 252, 248, 0.78) 0%, rgba(255, 240, 226, 0.66) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.98),
+    0 10px 24px -6px rgba(154, 52, 18, 0.12) !important;
+}
+html[data-theme="white-orange"] .exam-palette-btn,
+body[data-theme="white-orange"] .exam-palette-btn {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #44403c !important;
+  border: 1px solid rgba(234, 88, 12, 0.24) !important;
+  font-weight: 700 !important;
+}
+html[data-theme="white-orange"] .exam-palette-btn:hover {
+  background: rgba(255, 237, 213, 0.95) !important;
+  color: #ea580c !important;
+  border-color: rgba(249, 115, 22, 0.55) !important;
+}
+html[data-theme="white-orange"] .exam-palette-btn.answered,
+html[data-theme="white-orange"] .exam-palette-btn.active,
+body[data-theme="white-orange"] .exam-palette-btn.answered {
+  background: #f97316 !important;
+  color: #ffffff !important;
+  border-color: #ea580c !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35) !important;
+}
+
 
 
 
