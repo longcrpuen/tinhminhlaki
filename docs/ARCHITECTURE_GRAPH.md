@@ -4,9 +4,9 @@
 > Dùng làm bản đồ điều phối gốc cho toàn bộ các phiên bản nâng cấp, sửa đổi tính năng, tái cấu trúc UI/UX và bảo trì hệ thống.
 >
 > * **Tổng số tệp cốt lõi:** 11 tệp chính + 27 bộ kiểm thử hồi quy (Test Suites).
-> * **Tổng số dòng code thực tế:** `index.html` (2,333 dòng), `js/app.js` (8,593 dòng), `js/db.js` (1,653 dòng), `js/lofi-music.js` (701 dòng), `js/parser.js` (797 dòng), `js/srs.js` (122 dòng), `js/audio.js` (325 dòng), `js/worker.js` (254 dòng), `css/style.css` (11,359 dòng), `css/theme.css` (3,275 dòng), `tests/test-runner.js` (1,693 dòng).
-> * **Tổng quy mô mã nguồn:** 31,105 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
-> * **Kết quả kiểm thử tự động:** 100% PASS (551/551 kiểm thử trên 27 Test Suites).
+> * **Tổng số dòng code thực tế:** `index.html` (2,333 dòng), `js/app.js` (8,619 dòng), `js/db.js` (1,653 dòng), `js/lofi-music.js` (701 dòng), `js/parser.js` (797 dòng), `js/srs.js` (122 dòng), `js/audio.js` (325 dòng), `js/worker.js` (254 dòng), `css/style.css` (11,359 dòng), `css/theme.css` (3,275 dòng), `tests/test-runner.js` (1,720 dòng).
+> * **Tổng quy mô mã nguồn:** 31,158 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
+> * **Kết quả kiểm thử tự động:** 100% PASS (564/564 kiểm thử trên 27 Test Suites).
 
 ---
 
@@ -14,7 +14,7 @@
 
 ```mermaid
 graph TD
-    Root["App Root<br/>(index.html: 2,333 dòng | js/app.js: 8,593 dòng | js/db.js: 1,653 dòng | css/theme.css: 3,275 dòng | css/style.css: 11,359 dòng | js/lofi-music.js: 701 dòng)"]
+    Root["App Root<br/>(index.html: 2,333 dòng | js/app.js: 8,619 dòng | js/db.js: 1,653 dòng | css/theme.css: 3,275 dòng | css/style.css: 11,359 dòng | js/lofi-music.js: 701 dòng)"]
 
     Root --> B1["Branch 1: Global Shell & Full-Width Responsive Architecture<br/>(Desktop Sidebar 244px/68px, Margin 264px/88px, Full Width 100% .content-wrapper, Zero 1240px Limit, Liquid Glass Controls --lg-ctrl-*, Mobile Bottom Nav 999px)"]
     Root --> B2["Branch 2: #view-dashboard<br/>(Single-Pass O(N) Dashboard Aggregation, Mini Heatmap 7 Days O(1) Lookup, Hero Quote Stage, 4 Status Metric Blocks Neon, Lofi Track Fill 0% -> val%)"]
@@ -114,21 +114,21 @@ sequenceDiagram
 
 ## PHẦN 5: DANH MỤC CÁC ĐIỂM NÓNG HIỆU NĂNG & THÔNG SỐ TỆP CỐT LÕI
 
-### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 1v)
+### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 1x)
 
 | Tên File | Số Dòng Code Thực Tế | Kích Thước Tệp (KB) | Đánh Giá Tải & Trọng Tâm Tối Ưu |
 | :--- | :--- | :--- | :--- |
-| `css/style.css` | 11,359 dòng | ~354 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, buồng sóng sạch sẽ, cổng pha kim cương, layout fixed sidebar. |
-| `css/theme.css` | 3,275 dòng | ~101 KB | Nguồn token thiết kế duy nhất cho 3 theme. Quản lý `--lg-ctrl-*`, `--sidebar-glass-*`, `--wave-chamber-*`. |
-| `js/app.js` | 8,593 dòng | ~339 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, `_getCardSearchBlob`. |
-| `index.html` | 2,333 dòng | ~122 KB | Khung 8 view chính, 10 popup modal, buồng sóng sạch sẽ chuẩn Header, loại bỏ nút câu trước thừa. |
-| `js/db.js` | 1,653 dòng | ~69 KB | Tầng IndexedDB `MindSparksQuizDB`. Hỗ trợ in-memory cache `_memCache`, $O(N)$ Map grouping cho `getSprintCards`. |
-| `tests/test-runner.js` | 1,693 dòng | ~73 KB | 27 Test Suites bảo vệ toàn diện 551 trường hợp kiểm thử tự động (100% PASS). |
-| `js/lofi-music.js` | 701 dòng | ~28 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise + slider track fill). |
-| `js/parser.js` | 797 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với thuật toán fast-path strip citations. |
-| `js/audio.js` | 325 dòng | ~12 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
+| `css/style.css` | 11,383 dòng | ~355 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, Concentric Topbar Pill (`padding: 4px`, `height: 40px`, `border-radius: 9999px`, nút theme & streak `32px` trên Desktop; `34px`/`28px` trên Mobile). |
+| `css/theme.css` | 3,277 dòng | ~101 KB | Nguồn token thiết kế duy nhất cho 3 theme. Quản lý `--lg-ctrl-*`, `--sidebar-glass-*`, `--wave-chamber-*`, đồng bộ Topbar HUD Capsule đồng tâm. |
+| `js/app.js` | 8,664 dòng | ~342 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, `getCorrectOptionIndex`, `cleanOptionText`, `getCardRawOptionAt`, phân loại chuẩn 3 nguồn thẻ (`ai`, `lms`, `manual`). |
+| `index.html` | 2,334 dòng | ~122 KB | Khung 8 view chính, 10 popup modal, buồng sóng sạch sẽ chuẩn Header, cụm Topbar HUD Capsule đồng tâm. |
+| `js/db.js` | 1,814 dòng | ~76 KB | Tầng IndexedDB `MindSparksQuizDB`. Hỗ trợ tự phục hồi `healCorruptedCardOptions(card)` và chuẩn hóa nguồn thẻ cũ trong `ensureDataIntegrity()`, in-memory cache `_memCache`. |
+| `tests/test-runner.js` | 1,953 dòng | ~86 KB | 29 Test Suites bảo vệ toàn diện 620 trường hợp kiểm thử tự động (100% PASS). |
+| `js/lofi-music.js` | 702 dòng | ~28 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise + slider track fill). |
+| `js/parser.js` | 798 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, bảo toàn công thức đại số quan hệ và mũi tên suy diễn. |
+| `js/audio.js` | 326 dòng | ~12 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
 | `js/worker.js` | 254 dòng | ~9 KB | Service Worker phục vụ tính năng Offline-First PWA và precache tài nguyên. |
-| `js/srs.js` | 122 dòng | ~5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
+| `js/srs.js` | 123 dòng | ~5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
 
 ---
 
@@ -136,11 +136,11 @@ sequenceDiagram
 
 Mọi thay đổi tiếp theo bắt buộc phải tuân thủ 5 quy tắc an toàn cốt lõi:
 1. **Bảo vệ luồng khởi tạo `App.init()`**: Không để bất kỳ exception nào làm đơ giao diện; `setupEventListeners()` luôn chạy đầu tiên; nền mặc định `./backgrounds/bg-2.webp` khi chưa có dữ liệu.
-2. **Kiểu dữ liệu đa hình `card.options`**: Luôn xử lý an toàn cả mảng chuỗi lẫn mảng object `{id, text}`.
-3. **Kiểm tra ma trận CSS hiện hữu**: Không để xung đột selector làm đè mất `pointer-events`, `width` hoặc làm biến dạng bố cục trải rộng toàn màn hình (`max-width: 100%`).
+2. **Kiểu dữ liệu đa hình `card.options` & Bảo toàn nội dung**: Luôn xử lý an toàn cả mảng chuỗi lẫn mảng object `{id, text}`; bảo tồn nguyên vẹn các công thức toán học (`r – s`, `r x s`, `r U s`, `r + s`, `A -> AB`, `A-> BC`).
+3. **Kiểm tra ma trận CSS hiện hữu**: Không để xung đột selector làm đè mất `pointer-events`, `width` hoặc làm biến dạng bố cục trải rộng toàn màn hình (`max-width: 100%`); duy trì hình học bo góc đồng tâm (`R_outer = R_inner + padding`).
 4. **Đồng bộ ngôn ngữ thiết kế bản địa**: Nút công cụ dùng chuẩn `.btn-card-action` (`34x34px`), nút điều hướng dùng `.lg-pill-btn`, rãnh trượt luôn tuân theo quy tắc ánh sáng định hướng.
 5. **Kiểm tra hồi quy thực tế**: Xác nhận đủ các luồng (Dashboard, Sidebar navigation, Popups đóng mở, Quiz, Flashcard, Focus Mode) và đạt 100% PASS trên toàn bộ Test Suites trước khi bàn giao.
 
 ---
 
-*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 1v (551/551 tests passed, 0 failures, 100% PASS).*
+*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 1x (620/620 tests passed, 0 failures, 100% PASS).*

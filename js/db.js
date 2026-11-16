@@ -1397,6 +1397,145 @@ class QuizDatabase {
       .trim();
   }
 
+  /**
+   * Tự động phát hiện và khôi phục các phương án đáp án (options) đã bị vòng lặp regex cũ
+   * trong parser.js cắt hỏng ("R. – s", "X. s", "U. s", "R. + s", "A. > AB", "A. > BC", "> B"...).
+   * Giữ nguyên 100% tiến độ học SRS và thống kê của thẻ.
+   * @param {Object} card
+   * @returns {boolean} true nếu thẻ vừa được sửa và cần lưu lại vào IndexedDB
+   */
+  healCorruptedCardOptions(card) {
+    if (!card || card.type === 'numeric' || !Array.isArray(card.options) || card.options.length === 0) {
+      return false;
+    }
+
+    const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    const lowerLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    let mutated = false;
+
+    // Bước 1: Giải quyết index đáp án đúng chuẩn xác từ correct_option_id / correctOptionId / answerIndex
+    let resolvedAnswerIdx = typeof card.answerIndex === 'number' && card.answerIndex >= 0 ? card.answerIndex : 0;
+    const rawCid = card.correct_option_id ?? card.correctOptionId ?? null;
+    if (rawCid !== null && rawCid !== undefined && String(rawCid).trim() !== '') {
+      const cid = String(rawCid).trim().toLowerCase();
+      const letterIdx = lowerLetters.indexOf(cid);
+      if (letterIdx !== -1 && letterIdx < card.options.length) {
+        resolvedAnswerIdx = letterIdx;
+      }
+    }
+    if (card.answerIndex !== resolvedAnswerIdx) {
+      card.answerIndex = resolvedAnswerIdx;
+      mutated = true;
+    }
+    const expectedCid = lowerLetters[resolvedAnswerIdx] || 'a';
+    if (card.correct_option_id !== expectedCid) {
+      card.correct_option_id = expectedCid;
+      mutated = true;
+    }
+    if (card.correctOptionId !== expectedCid) {
+      card.correctOptionId = expectedCid;
+      mutated = true;
+    }
+
+    // Helper: Làm sạch tiền tố hợp lệ duy nhất (A. / B) / C:) mà không bao giờ ăn vào nội dung
+    const normalizeSingleText = (rawStr) => {
+      let s = String(rawStr ?? '').trim();
+      const m = s.match(/^(?:[A-Da-d])[\.\)\:]\s+(.*)$/s);
+      if (m && m[1].trim().length > 0) {
+        s = m[1].trim();
+      }
+      return s;
+    };
+
+    // Helper: Kiểm tra xem một chuỗi rawOption có còn nguyên vẹn (không bị dính lỗi "> " hay "X. s") hay không
+    const isCleanRawText = (txt) => {
+      if (!txt || typeof txt !== 'string') return false;
+      const t = txt.trim();
+      if (/^(?:[A-Za-z]\.\s*)?>\s*\S/.test(t)) return false;
+      if (/^(?:R\.\s*[–\-+]\s*s|X\.\s*s|U\.\s*s)$/i.test(t)) return false;
+      return true;
+    };
+
+    // Bước 2: Khôi phục ưu tiên từ card.rawOptions (nơi lưu nguyên bản opt.text từ JSON lúc import)
+    if (Array.isArray(card.rawOptions) && card.rawOptions.length === card.options.length) {
+      const rawTexts = card.rawOptions.map(ro => (typeof ro === 'object' && ro !== null) ? String(ro.text ?? '').trim() : String(ro ?? '').trim());
+      if (rawTexts.every(isCleanRawText)) {
+        const rebuiltOptions = rawTexts.map((rt, idx) => {
+          const clean = normalizeSingleText(rt);
+          const letter = defaultLetters[idx] || `${idx + 1}`;
+          return `${letter}. ${clean}`;
+        });
+
+        const currentJoined = JSON.stringify(card.options);
+        const rebuiltJoined = JSON.stringify(rebuiltOptions);
+        if (currentJoined !== rebuiltJoined) {
+          card.options = rebuiltOptions;
+          mutated = true;
+        }
+        return mutated;
+      }
+    }
+
+    // Bước 3: Cơ chế khôi phục dự phòng (Fallback Heuristics) nếu thẻ không có rawOptions hoặc rawOptions bị ghi đè
+    // Trích xuất đáp án đúng từ câu giải thích (VD: "... phương án chính xác là: r x s." hoặc "... phương án chính xác là: A-> BC.")
+    let expAnswerHint = '';
+    if (typeof card.explanation === 'string' && card.explanation.includes('phương án chính xác là:')) {
+      const parts = card.explanation.split('phương án chính xác là:');
+      expAnswerHint = parts[parts.length - 1].trim().replace(/\.$/, '').trim();
+    }
+
+    // Nhận diện quy luật mũi tên trong câu hỏi ("A->" hay "A ->")
+    const qText = String(card.question || '');
+    const prefersSpacedArrow = /([A-Za-z])\s+->/.test(qText) || /([A-Za-z])\s+->/.test(expAnswerHint);
+    const defaultArrowPrefix = prefersSpacedArrow ? 'A -> ' : 'A-> ';
+
+    const healedTexts = card.options.map((opt, idx) => {
+      let raw = (typeof opt === 'object' && opt !== null) ? String(opt.text ?? '').trim() : String(opt ?? '').trim();
+
+      // 3.1. Khôi phục bộ câu hỏi đại số quan hệ bị biến thành "R. – s", "X. s", "U. s", "R. + s"
+      const strippedLead = raw.replace(/^[A-Da-d]\.\s+/, '').trim();
+      if (/^R\.\s*[–\-]\s*s$/i.test(strippedLead)) return 'r – s';
+      if (/^X\.\s*s$/i.test(strippedLead)) return 'r x s';
+      if (/^U\.\s*s$/i.test(strippedLead)) return 'r U s';
+      if (/^R\.\s*\+\s*s$/i.test(strippedLead)) return 'r + s';
+
+      // 3.2. Khôi phục các đáp án phụ thuộc hàm bị cắt mất "A -" / "A-" thành "> AB", "A. > BC", "> B và A-> C"
+      const brokenArrowMatch = strippedLead.match(/^(?:[A-Za-z]\.\s*)?>\s*(.+)$/);
+      if (brokenArrowMatch) {
+        const rhs = brokenArrowMatch[1].trim();
+        // Nếu đây là phương án đúng và trong explanation có ghi rõ đáp án gốc, lấy chính xác từ explanation
+        if (idx === resolvedAnswerIdx && expAnswerHint && expAnswerHint.endsWith(rhs)) {
+          return expAnswerHint;
+        }
+        return `${defaultArrowPrefix}${rhs}`;
+      }
+
+      // 3.3. Nếu đây là phương án đúng và bị lệch với expAnswerHint do cắt nhầm ký tự đầu
+      const clean = normalizeSingleText(strippedLead);
+      if (idx === resolvedAnswerIdx && expAnswerHint && clean !== expAnswerHint && expAnswerHint.endsWith(clean)) {
+        return expAnswerHint;
+      }
+
+      return clean;
+    });
+
+    const finalOptions = healedTexts.map((clean, idx) => {
+      const letter = defaultLetters[idx] || `${idx + 1}`;
+      return `${letter}. ${clean}`;
+    });
+
+    if (JSON.stringify(card.options) !== JSON.stringify(finalOptions)) {
+      card.options = finalOptions;
+      card.rawOptions = healedTexts.map((clean, idx) => ({
+        id: lowerLetters[idx] || `${idx + 1}`,
+        text: clean
+      }));
+      mutated = true;
+    }
+
+    return mutated;
+  }
+
   async ensureDataIntegrity() {
     await this.init();
     const defaultSubject = await this.ensureDefaultSubject();
@@ -1460,6 +1599,27 @@ class QuizDatabase {
             }
             return opt;
           });
+        }
+
+        // Tự động khôi phục các đáp án bị cắt hỏng trong IndexedDB ("R. – s", "X. s", "> BC"...)
+        if (this.healCorruptedCardOptions(c)) {
+          changed = true;
+        }
+
+        // Chuẩn hóa source cho các thẻ cũ chưa có source (hoặc id bắt đầu bằng 'lms_')
+        if (typeof c.id === 'string' && c.id.startsWith('lms_')) {
+          if (c.source !== 'lms') {
+            c.source = 'lms';
+            changed = true;
+          }
+        } else if (!c.source) {
+          const isSystemSample = typeof c.id === 'string' && (c.id.startsWith('card_active_constraint_') || c.id.startsWith('card_ridge_regression_'));
+          if (!isSystemSample && ((Array.isArray(c.rawOptions) && c.rawOptions.length > 0) || c.correctOptionId)) {
+            c.source = 'ai';
+          } else {
+            c.source = 'manual';
+          }
+          changed = true;
         }
 
         if (changed) {

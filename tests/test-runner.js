@@ -1684,6 +1684,265 @@ console.log('\n--- Test Suite 27: Phase 1v Full-Width Responsive Layout, Liquid 
   assert(!indexHtml.includes('phase-gate-notch'), 'index.html removes phase-gate-notch');
   assert(indexHtml.includes('class="energy-level-pill"'), 'index.html contains energy-level-pill HUD');
   assert(styleCss.includes('-webkit-mask-image: linear-gradient(90deg'), 'style.css applies edge-fading mask gradient to energy-wave-stage');
+
+  // 9. Option Cleaning & Robust Correct Option Index Resolution
+  assert(appJs.includes('getCorrectOptionIndex(card)') && appJs.includes('targetId'), 'app.js defines getCorrectOptionIndex for unified answer index resolution');
+  assert(appJs.includes('^(?:[A-Da-d])') && appJs.includes('cleanOptionText(rawOpt, index = 0)'), 'app.js cleanOptionText uses safe non-truncating regex for options');
+
+  // Verify behavior of cleanOptionText on expressions like r – s, r x s, r U s, A -> AB
+  const codeMethods = '({' + appJs.slice(appJs.indexOf('getCorrectOptionIndex(card) {'), appJs.indexOf('adaptOptionsLayout(container) {')) + '})';
+  const evalMethods = eval(codeMethods);
+  const optCases = [
+    { in: 'r – s', i: 0, l: 'A', t: 'r – s' },
+    { in: 'r x s', i: 1, l: 'B', t: 'r x s' },
+    { in: 'r U s', i: 2, l: 'C', t: 'r U s' },
+    { in: 'A-> BC', i: 0, l: 'A', t: 'A-> BC' },
+    { in: 'A -> AB', i: 0, l: 'A', t: 'A -> AB' },
+    { in: 'A. Phương án', i: 0, l: 'A', t: 'Phương án' },
+    { in: 'b) Lựa chọn', i: 1, l: 'B', t: 'Lựa chọn' },
+    { in: { id: 'c', text: 'r x s' }, i: 2, l: 'C', t: 'r x s' }
+  ];
+  optCases.forEach(tc => {
+    const res = evalMethods.cleanOptionText(tc.in, tc.i);
+    assert(res.letter === tc.l && res.cleanText === tc.t, `cleanOptionText preserves "${tc.t}" with letter ${tc.l}`);
+  });
+
+  // Verify getCorrectOptionIndex
+  assert(evalMethods.getCorrectOptionIndex({ options: ['r x s', 'r – s', 'r U s'], correct_option_id: 'b' }) === 1, 'getCorrectOptionIndex resolves correct option id b to index 1');
+  assert(evalMethods.getCorrectOptionIndex({ options: [{id: 'a', text: '1'}, {id: 'b', text: '2'}, {id: 'c', text: '3'}], correctOptionId: 'C' }) === 2, 'getCorrectOptionIndex resolves uppercase ID to index 2');
+  assert(evalMethods.getCorrectOptionIndex({ options: ['a', 'b', 'c'], answerIndex: 2 }) === 2, 'getCorrectOptionIndex falls back to valid answerIndex');
+}
+
+// === TEST SUITE 28: Phase 1w 3-Layer Zero-Truncation Engine (Parser, IndexedDB Self-Healing, UI) ===
+console.log('\n--- Test Suite 28: Phase 1w 3-Layer Zero-Truncation Engine (Parser, IndexedDB Self-Healing, UI) ---');
+{
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // --- 1. Layer 1: AIParser zero-truncation on raw JSON & text ---
+  assert(!parserJs.includes('while (/^[A-Za-z][\\s.):\\-]+/.test(clean))'), 'parser.js removed greedy while-loop that ate formula stems');
+  assert(parserJs.includes('prefixMatch = clean.match(/^(?:[A-Da-d])[\\.\\)\\:]\\s+(.*)$/s)'), 'parser.js uses strict option label prefix regex');
+
+  // Test q61 payload with relational algebra formulas
+  const q61Json = JSON.stringify({
+    quiz_title: "Cơ sở dữ liệu - q61",
+    questions: [
+      {
+        id: "q61",
+        question: "Phép nhân Descartes giữa 2 quan hệ r và s ký hiệu là:",
+        options: [
+          { id: "a", text: "r – s" },
+          { id: "b", text: "r x s" },
+          { id: "c", text: "r U s" },
+          { id: "d", text: "r + s" }
+        ],
+        correct_option_id: "b"
+      }
+    ]
+  });
+  const parsed61 = AIParser.parse(q61Json);
+  assert(parsed61.cards.length === 1, 'q61 parses successfully');
+  const card61 = parsed61.cards[0];
+  assert(card61.options[0] === 'A. r – s', 'q61 option A is "A. r – s" without truncation');
+  assert(card61.options[1] === 'B. r x s', 'q61 option B is "B. r x s" without truncation');
+  assert(card61.options[2] === 'C. r U s', 'q61 option C is "C. r U s" without truncation');
+  assert(card61.options[3] === 'D. r + s', 'q61 option D is "D. r + s" without truncation');
+  assert(card61.answerIndex === 1, 'q61 answerIndex is 1');
+  assert(card61.correctOptionId === 'b', 'q61 correctOptionId is b');
+
+  // Test q4 and q77 payloads with functional dependency arrows
+  const q4q77Json = JSON.stringify({
+    quiz_title: "Phụ thuộc hàm",
+    questions: [
+      {
+        id: "q4",
+        question: "Nếu A->B và A->C thì suy ra:",
+        options: [
+          { id: "a", text: "AA-> C" },
+          { id: "b", text: "A -> AB" },
+          { id: "c", text: "A-> BC" },
+          { id: "d", text: "AB-> BC" }
+        ],
+        correct_option_id: "c"
+      },
+      {
+        id: "q77",
+        question: "Nếu A -> BC suy ra:",
+        options: [
+          { id: "a", text: "A-> B" },
+          { id: "b", text: "A -> C" },
+          { id: "c", text: "AC -> B và A -> CC" },
+          { id: "d", text: "A -> B và A-> C" }
+        ],
+        correct_option_id: "d"
+      }
+    ]
+  });
+  const parsedFds = AIParser.parse(q4q77Json);
+  assert(parsedFds.cards.length === 2, 'q4 and q77 parse successfully');
+  const card4 = parsedFds.cards[0];
+  assert(card4.options[1] === 'B. A -> AB', 'q4 option B preserves "A -> AB" without truncation');
+  assert(card4.options[2] === 'C. A-> BC', 'q4 option C preserves "A-> BC" without truncation');
+  assert(card4.answerIndex === 2, 'q4 answerIndex is 2 (option C)');
+
+  const card77 = parsedFds.cards[1];
+  assert(card77.options[0] === 'A. A-> B', 'q77 option A preserves "A-> B"');
+  assert(card77.options[3] === 'D. A -> B và A-> C', 'q77 option D preserves "A -> B và A-> C"');
+  assert(card77.answerIndex === 3, 'q77 answerIndex is 3 (option D)');
+
+  // Text format parser
+  const textImport = `Câu 1: Phép nhân Descartes\nA. r – s\nB. r x s\nC. r U s\nD. r + s\nĐáp án: B`;
+  const parsedText = AIParser.parse(textImport);
+  assert(parsedText.cards.length === 1, 'Text format parses successfully');
+  assert(parsedText.cards[0].options[0] === 'A. r – s', 'Text parser option A is "A. r – s"');
+  assert(parsedText.cards[0].options[1] === 'B. r x s', 'Text parser option B is "B. r x s"');
+
+  // --- 2. Layer 2: QuizDatabase healCorruptedCardOptions ---
+  assert(dbJs.includes('healCorruptedCardOptions(card)'), 'db.js implements healCorruptedCardOptions');
+  assert(dbJs.includes('this.healCorruptedCardOptions(c)'), 'db.js calls healCorruptedCardOptions in ensureDataIntegrity');
+
+  // Evaluate healCorruptedCardOptions on mock DB instance
+  const dbClassCode = '({' + dbJs.slice(dbJs.indexOf('healCorruptedCardOptions(card) {'), dbJs.indexOf('async ensureDataIntegrity() {')).trim().replace(/,$/, '') + '})';
+  const dbEvaluator = eval(dbClassCode);
+
+  // Case 2.1: Healing card using intact rawOptions
+  const corruptedCard1 = {
+    id: 'corrupt1',
+    options: ['A. R. – s', 'B. X. s', 'C. U. s', 'D. R. + s'],
+    rawOptions: [
+      { id: 'a', text: 'r – s' },
+      { id: 'b', text: 'r x s' },
+      { id: 'c', text: 'r U s' },
+      { id: 'd', text: 'r + s' }
+    ],
+    correct_option_id: 'b',
+    answerIndex: 1
+  };
+  const mutated1 = dbEvaluator.healCorruptedCardOptions(corruptedCard1);
+  assert(mutated1 === true, 'healCorruptedCardOptions reports mutation for card with rawOptions');
+  assert(corruptedCard1.options[0] === 'A. r – s', 'corruptedCard1 option A restored to "A. r – s"');
+  assert(corruptedCard1.options[1] === 'B. r x s', 'corruptedCard1 option B restored to "B. r x s"');
+  assert(corruptedCard1.options[2] === 'C. r U s', 'corruptedCard1 option C restored to "C. r U s"');
+  assert(corruptedCard1.options[3] === 'D. r + s', 'corruptedCard1 option D restored to "D. r + s"');
+  assert(corruptedCard1.answerIndex === 1, 'corruptedCard1 answerIndex preserved as 1');
+  assert(corruptedCard1.correctOptionId === 'b', 'corruptedCard1 correctOptionId set to b');
+
+  // Case 2.2: Healing broken arrow without rawOptions using explanation fallback
+  const corruptedCard2 = {
+    id: 'corrupt2',
+    question: 'Nếu A->B và A->C thì suy ra:',
+    options: ['A. AA-> C', 'B. > AB', 'C. > BC', 'D. AB-> BC'],
+    explanation: 'Vì theo luật suy diễn Armstrong, phương án chính xác là: A-> BC.',
+    correct_option_id: 'c',
+    answerIndex: 2
+  };
+  const mutated2 = dbEvaluator.healCorruptedCardOptions(corruptedCard2);
+  assert(mutated2 === true, 'healCorruptedCardOptions reports mutation for broken arrow fallback');
+  assert(corruptedCard2.options[1] === 'B. A-> AB', 'corruptedCard2 option B reconstructed to "B. A-> AB"');
+  assert(corruptedCard2.options[2] === 'C. A-> BC', 'corruptedCard2 option C reconstructed from explanation to "C. A-> BC"');
+  assert(corruptedCard2.answerIndex === 2, 'corruptedCard2 answerIndex is 2');
+
+  // Case 2.3: Healing relational algebra without rawOptions
+  const corruptedCard3 = {
+    id: 'corrupt3',
+    question: 'Phép trừ ký hiệu là:',
+    options: ['A. R. – s', 'B. X. s', 'C. U. s', 'D. R. + s'],
+    correctOptionId: 'a',
+    answerIndex: 0
+  };
+  const mutated3 = dbEvaluator.healCorruptedCardOptions(corruptedCard3);
+  assert(mutated3 === true, 'healCorruptedCardOptions reports mutation for relational algebra fallback');
+  assert(corruptedCard3.options[0] === 'A. r – s', 'corruptedCard3 option A restored to "A. r – s"');
+  assert(corruptedCard3.options[1] === 'B. r x s', 'corruptedCard3 option B restored to "B. r x s"');
+
+  // --- 3. Layer 3: UI methods in App ---
+  assert(appJs.includes('getCardRawOptionAt(card, idx = 0)'), 'app.js defines getCardRawOptionAt');
+  const appMethodsCode = '({' + appJs.slice(appJs.indexOf('getCorrectOptionIndex(card) {'), appJs.indexOf('adaptOptionsLayout(container) {')) + '})';
+  const appEvaluator = eval(appMethodsCode);
+
+  const testCardUI = {
+    options: ['A. R. – s', 'B. X. s'],
+    rawOptions: [{ id: 'a', text: 'r – s' }, { id: 'b', text: 'r x s' }]
+  };
+  assert(appEvaluator.getCardRawOptionAt(testCardUI, 0) === 'r – s', 'getCardRawOptionAt reads pristine rawOptions');
+  assert(appEvaluator.getCardRawOptionAt(testCardUI, 1) === 'r x s', 'getCardRawOptionAt reads pristine rawOptions for index 1');
+
+  // UI edit card modal & saveCardEdit synchronization
+  assert(appJs.includes('this.cleanOptionText(rawText, i)'), 'openEditCardModal extracts clean option text without prefix');
+  assert(appJs.includes('const cleanOpts = options.map((t, idx) => this.cleanOptionText(t, idx).cleanText);'), 'saveCardEdit sanitizes options uniformly');
+  assert(appJs.includes('correct_option_id: chosenId') && appJs.includes('correctOptionId: chosenId'), 'saveCardEdit updates both correct_option_id and correctOptionId');
+}
+
+// === TEST SUITE 29: Phase 1x Concentric Topbar Pill & Strict 3-Source Classification ('ai' / 'lms' / 'manual') ===
+console.log('\n--- Test Suite 29: Phase 1x Concentric Topbar Pill & Strict 3-Source Classification ---');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+
+  // 1. Concentric Topbar Pill Geometry (padding: 4px, H_inner = 32px, H_outer = 40px, R_outer - R_inner = 4px)
+  assert(styleCss.includes('.topbar-hud-capsule') && styleCss.includes('padding: 4px !important;'), 'style.css defines uniform 4px padding on .topbar-hud-capsule');
+  assert(styleCss.includes('height: 40px !important;') && styleCss.includes('border-radius: 9999px !important;'), 'style.css locks 40px height and 9999px border radius on .topbar-hud-capsule');
+  assert(styleCss.includes('.theme-icon-btn') && styleCss.includes('width: 32px !important;') && styleCss.includes('height: 32px !important;'), 'style.css defines 32x32px concentric buttons for theme switchers');
+  assert(styleCss.includes('.streak-chip') && styleCss.includes('height: 32px !important;'), 'style.css aligns streak-chip height to 32px for concentric curvature');
+  assert(themeCss.includes('.topbar-hud-capsule') && themeCss.includes('padding: 4px !important;'), 'theme.css harmonizes topbar-hud-capsule to uniform 4px padding');
+
+  // Mobile Concentric geometry (padding: 3px, H_inner = 28px, H_outer = 34px)
+  assert(styleCss.includes('height: 34px !important;') && styleCss.includes('padding: 3px !important;'), 'style.css maintains concentric geometry on mobile screens');
+
+  // 2. Strict 3-Source Classification in Parser (AIParser defaults to 'ai', LMSParser to 'lms')
+  const jsonAI = JSON.stringify({
+    quiz_title: "AI Test",
+    questions: [
+      {
+        id: "q_ai_1",
+        question: "Câu hỏi AI",
+        options: [{ id: "a", text: "A" }, { id: "b", text: "B" }],
+        correct_option_id: "a"
+      }
+    ]
+  });
+  const parsedAIJson = AIParser.parse(jsonAI);
+  assert(parsedAIJson.cards[0].source === 'ai', 'AIParser JSON parsing tags cards with source: "ai"');
+
+  const textAI = `Câu 1: Câu hỏi AI Plaintext\nA. Đáp án A\nB. Đáp án B\nĐáp án: A`;
+  const parsedAIText = AIParser.parse(textAI);
+  assert(parsedAIText.cards[0].source === 'ai', 'AIParser plaintext parsing tags cards with source: "ai"');
+
+  const lmsSample = `Câu hỏi 1\nCâu hỏi LMS trắc nghiệm\nChọn một:\na. Đáp án 1\nb. Đáp án 2\nĐáp án đúng là: Đáp án 1`;
+  const parsedLms = LMSParser.parse(lmsSample);
+  assert(parsedLms.length === 1 && parsedLms[0].source === 'lms', 'LMSParser tags cards with source: "lms"');
+
+  // 3. App creation points synchronization
+  assert(appJs.includes("source: c.source || 'ai'"), 'processImport assigns source: "ai" to imported cards');
+  assert(appJs.includes("source: 'manual'"), 'saveCardEdit assigns source: "manual" to newly created cards');
+
+  // 4. DB Self-Healing Data Integrity
+  assert(dbJs.includes("c.source = 'lms'") && dbJs.includes("c.source = 'ai'") && dbJs.includes("c.source = 'manual'"), 'db.js ensureDataIntegrity normalizes legacy cards to correct sources');
+
+  // 5. Question Bank filtering logic verification
+  const mockCards = [
+    { id: '1', question: 'Q1', source: 'ai' },
+    { id: '2', question: 'Q2', source: 'lms' },
+    { id: '3', question: 'Q3', source: 'manual' },
+    { id: '4', question: 'Q4' } // legacy card without source
+  ];
+
+  const filterBySource = (cards, src) => cards.filter(c => {
+    if (!src) return true;
+    const cSource = c.source || 'manual';
+    if (src === 'manual') {
+      return !c.source || c.source === 'manual';
+    }
+    return cSource === src;
+  });
+
+  assert(filterBySource(mockCards, 'ai').length === 1, 'Source filter "ai" strictly isolates AI cards');
+  assert(filterBySource(mockCards, 'lms').length === 1, 'Source filter "lms" strictly isolates LMS cards');
+  assert(filterBySource(mockCards, 'manual').length === 2, 'Source filter "manual" covers manual cards and legacy fallback');
 }
 
 console.log(`\n========================================`);

@@ -7868,23 +7868,25 @@ body.app-hidden * {
 
 /* 3.1: TOPBAR HUD CAPSULE (THEME + STREAK IN 1 GLASS PILL) */
 .topbar-hud-capsule {
-  height: 38px;
-  padding: 3px 8px;
-  border-radius: 999px;
+  height: 40px !important;
+  padding: 4px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
   background: var(--surface-hud);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-specular), var(--shadow-xs);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 .hud-divider {
-  width: 1px;
-  height: 18px;
-  background: var(--glass-border);
-  flex-shrink: 0;
+  width: 1px !important;
+  height: 18px !important;
+  background: var(--glass-border) !important;
+  margin: 0 2px !important;
+  flex-shrink: 0 !important;
 }
 .theme-icon-switcher {
   display: inline-flex !important;
@@ -7898,17 +7900,19 @@ body.app-hidden * {
   -webkit-backdrop-filter: none !important;
 }
 .theme-icon-btn {
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9999px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  flex-shrink: 0 !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   color: var(--text-secondary) !important;
   cursor: pointer !important;
   padding: 0 !important;
+  box-sizing: border-box !important;
   transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.28s ease, color 0.28s ease !important;
 }
 .theme-icon-btn:hover {
@@ -7930,13 +7934,21 @@ body.app-hidden * {
   transform: rotate(360deg) scale(1.15) !important;
 }
 .streak-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  padding: 0 4px;
+  height: 32px !important;
+  padding: 0 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  background: transparent;
+  border: none;
+  flex-shrink: 0 !important;
 }
 .hud-flame-icon {
   color: var(--streak-color, #f59e0b);
@@ -8505,9 +8517,20 @@ body.quiz-active .quiz-footer-actions.show {
 /* GROUP 5: MOBILE ERGONOMICS (Max-width 767px to protect test-round39 exact lastIndexOf match) */
 @media (max-width: 767px) {
   .topbar-hud-capsule {
-    padding: 3px 8px !important;
-    height: 36px !important;
+    padding: 3px !important;
+    height: 34px !important;
+    border-radius: 9999px !important;
+    gap: 4px !important;
     font-size: 0.8rem !important;
+  }
+  .topbar-hud-capsule .theme-icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .topbar-hud-capsule .streak-chip {
+    height: 28px !important;
+    padding: 0 8px !important;
+    font-size: 0.78rem !important;
   }
   .bottom-nav {
     background: var(--surface-hud) !important;

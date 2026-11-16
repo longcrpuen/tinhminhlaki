@@ -171,13 +171,14 @@ const AIParser = {
           if (optionIds.has(cleanAns)) {
             correctId = cleanAns;
           } else {
-            // Match letter A, B, C, D
-            const letterMatch = cleanAns.match(/^([a-d])/i);
+            // Match letter A, B, C, D (chỉ match nhãn đơn hoặc có dấu phân cách rõ ràng)
+            const letterMatch = cleanAns.match(/^([a-d])(?:[\.\)\:]\s*|$)/i);
             if (letterMatch && optionIds.has(letterMatch[1].toLowerCase())) {
               correctId = letterMatch[1].toLowerCase();
             } else {
-              // Try matching text
-              const found = normalizedOptions.find(o => o.text.toLowerCase().includes(cleanAns));
+              // Try matching text: ưu tiên khớp chính xác trước
+              const exactFound = normalizedOptions.find(o => o.text.trim().toLowerCase() === cleanAns);
+              const found = exactFound || normalizedOptions.find(o => o.text.toLowerCase().includes(cleanAns));
               if (found) correctId = found.id;
             }
           }
@@ -208,16 +209,13 @@ const AIParser = {
 
       // Convert options for display: normalize to single clean "A. Text"
       const displayOptions = normalizedOptions.map((opt, idx) => {
-        let clean = opt.text;
-        let letter = (defaultLetters[idx] || `${idx + 1}`).toUpperCase();
-        while (/^[A-Za-z][\s.):\-]+/.test(clean)) {
-          const m = clean.match(/^([A-Za-z])[\s.):\-]+(.*)$/);
-          if (m) {
-            letter = m[1].toUpperCase();
-            clean = m[2].trim();
-          } else {
-            break;
-          }
+        let clean = String(opt.text ?? '').trim();
+        const letter = (defaultLetters[idx] || `${idx + 1}`).toUpperCase();
+        // Chỉ bóc tiền tố nếu chuỗi thực sự chứa định dạng trắc nghiệm rõ ràng: "A. ", "b) ", "C: "
+        // Tuyệt đối không dùng while hay regex nuốt biến đơn như "r x s", "r – s" hay mũi tên "A -> BC"
+        const prefixMatch = clean.match(/^(?:[A-Da-d])[\.\)\:]\s+(.*)$/s);
+        if (prefixMatch && prefixMatch[1].trim().length > 0) {
+          clean = prefixMatch[1].trim();
         }
         return `${letter}. ${clean}`;
       });
@@ -232,7 +230,8 @@ const AIParser = {
         explanation: explanation,
         topic: topic,
         difficulty: difficulty,
-        tag: topic // alias for UI compatibility
+        tag: topic, // alias for UI compatibility
+        source: (q.source && ['ai', 'lms', 'manual'].includes(q.source)) ? q.source : 'ai'
       });
     });
 
@@ -275,14 +274,15 @@ const AIParser = {
           explanation: this.stripCitationArtifacts((currentCard.explanation || '').trim()),
           topic: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
           difficulty: 'medium',
-          tag: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim())
+          tag: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
+          source: 'ai'
         });
       }
       currentCard = null;
     };
 
     const qRegex = /^(?:#{1,6}\s*)?(?:Câu\s*\d+[\s:.-]*|\d+[\s:.-]+)\s*(.*)/i;
-    const optRegex = /^\s*([A-Da-d])[\s.):-]+\s*(.*)/;
+    const optRegex = /^\s*([A-Da-d])[\.\)\:]\s+(.*)/;
     const ansRegex = /^\s*(?:Đáp án|Đ\/A|Answer|Correct|Key)[\s:.-]+\s*(.*)/i;
     const expRegex = /^\s*(?:Giải thích|Explain|Lý do|Note)[\s:.-]+\s*(.*)/i;
     const tagRegex = /^\s*(?:Tag|Topic|Chủ đề|Chủ điểm|Category)[\s:.-]+\s*(.*)/i;

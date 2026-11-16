@@ -3367,17 +3367,70 @@ const App = {
   },
 
   // --- UNIFIED OPTION CLEANING & ADAPTIVE 2x2 LAYOUT ---
+  // Single Source of Truth để xác định index đáp án đúng (0 = A, 1 = B, 2 = C, 3 = D)
+  getCorrectOptionIndex(card) {
+    if (!card || card.type === 'numeric') return -1;
+    const opts = card.options || card.rawOptions || [];
+    const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+
+    const rawId = card.correct_option_id ?? card.correctOptionId ?? null;
+    if (rawId !== null && rawId !== undefined && String(rawId).trim() !== '') {
+      const targetId = String(rawId).trim().toLowerCase();
+      const byObjId = opts.findIndex((o, idx) => {
+        if (typeof o === 'object' && o !== null && o.id !== undefined) {
+          return String(o.id).trim().toLowerCase() === targetId;
+        }
+        return letters[idx] === targetId;
+      });
+      if (byObjId !== -1) return byObjId;
+
+      const letterIdx = letters.indexOf(targetId);
+      if (letterIdx !== -1 && letterIdx < opts.length) return letterIdx;
+    }
+
+    if (typeof card.answerIndex === 'number' && card.answerIndex >= 0 && card.answerIndex < opts.length) {
+      return card.answerIndex;
+    }
+
+    return 0;
+  },
+
+  // Normalize option text: strip leading "A. ", "B) ", "C: " ONLY when followed by whitespace
+  // Never strip single-letter variables ("r – s", "r x s", "r U s") or functional dependency arrows ("A -> BC", "A-> B")
   cleanOptionText(rawOpt, index = 0) {
     const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    let letter = defaultLetters[index] || String.fromCharCode(65 + index);
-    let cleanText = typeof rawOpt === 'string' ? rawOpt.trim() : (rawOpt?.text?.trim() || '');
-    while (true) {
-      const m = cleanText.match(/^([A-Za-z])[\s.):\-]+(.*)$/s);
-      if (!m) break;
-      letter = m[1].toUpperCase();
-      cleanText = m[2].trim();
+    const fallbackLetter = defaultLetters[index] || String.fromCharCode(65 + index);
+
+    if (rawOpt === null || rawOpt === undefined) {
+      return { letter: fallbackLetter, cleanText: '' };
     }
-    return { letter, cleanText };
+
+    let text = '';
+    if (typeof rawOpt === 'object') {
+      text = String(rawOpt.text ?? rawOpt.content ?? rawOpt.value ?? '').trim();
+    } else {
+      text = String(rawOpt).trim();
+    }
+
+    // CHỈ bóc tiền tố nhãn trắc nghiệm nếu là chữ cái A-D theo sau bởi '.', ')' hoặc ':' VÀ khoảng trắng
+    const prefixMatch = text.match(/^(?:[A-Da-d])[\.\)\:]\s+(.*)$/s);
+    if (prefixMatch && prefixMatch[1].trim().length > 0) {
+      text = prefixMatch[1].trim();
+    }
+
+    return { letter: fallbackLetter, cleanText: text };
+  },
+
+  // Lấy nội dung phương án thứ idx của card, ưu tiên lấy từ card.rawOptions (nếu sạch) để miễn nhiễm với lỗi cắt chuỗi cũ
+  getCardRawOptionAt(card, idx = 0) {
+    if (!card) return '';
+    if (Array.isArray(card.rawOptions) && card.rawOptions[idx] !== undefined) {
+      const ro = card.rawOptions[idx];
+      const txt = (typeof ro === 'object' && ro !== null) ? String(ro.text ?? '').trim() : String(ro ?? '').trim();
+      if (txt) return txt;
+    }
+    const opt = card.options?.[idx];
+    return (typeof opt === 'object' && opt !== null) ? String(opt.text ?? '').trim() : String(opt ?? '').trim();
   },
 
   adaptOptionsLayout(container) {
@@ -3453,24 +3506,19 @@ const App = {
       shuffledList = session.cardShuffledOptions[session.currentIndex];
     } else {
       const originalOptions = card.options || [];
-      const correctIdx = card.answerIndex !== undefined ? card.answerIndex : 0;
+      const correctIdx = this.getCorrectOptionIndex(card);
       const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 
-      const prepared = originalOptions.map((optText, idx) => {
-        let optId = letters[idx];
-        let rawText = optText;
-        if (typeof optText === 'object' && optText !== null) {
-          optId = optText.id || letters[idx];
-          rawText = optText.text || '';
-        }
-        const isCorrect = (card.correct_option_id && optId === card.correct_option_id) ||
-                          (card.correctOptionId && optId === card.correctOptionId) ||
-                          (idx === correctIdx);
+      const prepared = originalOptions.map((optItem, idx) => {
+        const rawText = this.getCardRawOptionAt(card, idx);
+        const optId = (typeof optItem === 'object' && optItem !== null && optItem.id)
+          ? String(optItem.id).trim().toLowerCase()
+          : letters[idx];
         return {
           id: optId,
           text: rawText,
           originalIdx: idx,
-          isCorrect: Boolean(isCorrect)
+          isCorrect: idx === correctIdx
         };
       });
 
@@ -3757,7 +3805,7 @@ const App = {
       const foundIdx = optList.findIndex(o => o.isCorrect);
       actualCorrectDisplayIdx = foundIdx !== -1 ? foundIdx : 0;
     } else {
-      const targetNum = typeof correctIdx === 'number' ? correctIdx : (card.answerIndex || 0);
+      const targetNum = typeof correctIdx === 'number' ? correctIdx : this.getCorrectOptionIndex(card);
       isCorrect = selectedIdx === targetNum;
       actualCorrectDisplayIdx = targetNum;
     }
@@ -4000,7 +4048,10 @@ const App = {
     if (card.type === 'numeric') {
       correctOpt = (card.correct_answer !== undefined ? card.correct_answer : '');
     } else {
-      correctOpt = card.options?.[card.answerIndex] || 'Đáp án';
+      const cIdx = this.getCorrectOptionIndex(card);
+      const rawAns = this.getCardRawOptionAt(card, cIdx);
+      const { letter, cleanText } = this.cleanOptionText(rawAns, cIdx);
+      correctOpt = `${letter}. ${cleanText}`;
     }
     const ansEl = document.getElementById('flashcard-answer-text');
     if (ansEl) ansEl.innerHTML = this.renderLatexText(correctOpt);
@@ -4818,10 +4869,11 @@ const App = {
       session.cardShuffledOptions = session.cardShuffledOptions || {};
       let shuffledList = session.cardShuffledOptions[session.currentIndex];
       if (!shuffledList) {
+        const correctIdx = this.getCorrectOptionIndex(card);
         shuffledList = (card.options || []).map((text, idx) => ({
           text: typeof text === 'string' ? text : (text?.text || ''),
           origIdx: idx,
-          isCorrect: idx === card.answerIndex
+          isCorrect: idx === correctIdx
         }));
         this._shuffleArray(shuffledList);
         session.cardShuffledOptions[session.currentIndex] = shuffledList;
@@ -4836,10 +4888,10 @@ const App = {
           btn.classList.add('exam-option-selected');
         }
 
-        const letter = String.fromCharCode(65 + idx);
+        const { letter, cleanText } = this.cleanOptionText(opt.text, idx);
         btn.innerHTML = `
           <span class="quiz-option-letter">${letter}</span>
-          <span class="quiz-option-text">${this.renderLatexText(opt.text)}</span>
+          <span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>
         `;
         btn.onclick = () => {
           session.userAnswers[session.currentIndex] = idx;
@@ -4927,10 +4979,11 @@ const App = {
         } else {
           let shuffledList = session.cardShuffledOptions[idx];
           if (!shuffledList) {
+            const correctIdx = this.getCorrectOptionIndex(card);
             shuffledList = (card.options || []).map((text, origIdx) => ({
               text: typeof text === 'string' ? text : (text?.text || ''),
               origIdx: origIdx,
-              isCorrect: origIdx === card.answerIndex
+              isCorrect: origIdx === correctIdx
             }));
             this._shuffleArray(shuffledList);
             session.cardShuffledOptions[idx] = shuffledList;
@@ -4939,11 +4992,11 @@ const App = {
           html += `<div class="quiz-options-list" id="exam-lms-options-${idx}">`;
           shuffledList.forEach((opt, optIdx) => {
             const isSelected = userAns === optIdx;
-            const letter = String.fromCharCode(65 + optIdx);
+            const { letter, cleanText } = this.cleanOptionText(opt.text, optIdx);
             html += `
               <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected exam-option-selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
                 <span class="quiz-option-letter">${letter}</span>
-                <span class="quiz-option-text">${this.renderLatexText(opt.text)}</span>
+                <span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>
               </button>
             `;
           });
@@ -5034,7 +5087,7 @@ const App = {
         if (shuffledList && ans !== undefined) {
           isCorrect = Boolean(shuffledList[ans]?.isCorrect);
         } else {
-          isCorrect = ans === card.answerIndex;
+          isCorrect = ans === this.getCorrectOptionIndex(card);
         }
       }
 
@@ -5309,7 +5362,8 @@ const App = {
         ...c,
         id: db.generateUniqueCardId(),
         deckId: targetDeckId,
-        subjectId: targetSubjectId
+        subjectId: targetSubjectId,
+        source: c.source || 'ai'
       }));
 
       // Create snapshot backup before saving
@@ -6312,13 +6366,18 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.selectEditCardDifficulty(card.difficulty || 'medium');
     document.getElementById('edit-card-question').value = card.question || '';
 
-    document.getElementById('edit-card-opt-a').value = card.options?.[0] || '';
-    document.getElementById('edit-card-opt-b').value = card.options?.[1] || '';
-    document.getElementById('edit-card-opt-c').value = card.options?.[2] || '';
-    document.getElementById('edit-card-opt-d').value = card.options?.[3] || '';
+    ['a', 'b', 'c', 'd'].forEach((letterKey, i) => {
+      const el = document.getElementById(`edit-card-opt-${letterKey}`);
+      if (el) {
+        const rawText = this.getCardRawOptionAt(card, i);
+        const { cleanText } = this.cleanOptionText(rawText, i);
+        el.value = cleanText;
+      }
+    });
 
     const letters = ['a', 'b', 'c', 'd'];
-    const curCorrect = letters[card.answerIndex] || 'a';
+    const ansIdx = this.getCorrectOptionIndex(card);
+    const curCorrect = letters[ansIdx] || 'a';
     this.selectEditCardCorrect(curCorrect);
 
     document.getElementById('edit-card-explanation').value = card.explanation || '';
@@ -6535,6 +6594,12 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const explanation = document.getElementById('edit-card-explanation').value.trim();
 
+    const defaultLetters = ['a', 'b', 'c', 'd'];
+    const cleanOpts = options.map((t, idx) => this.cleanOptionText(t, idx).cleanText);
+    const formattedOpts = cleanOpts.map((t, idx) => `${defaultLetters[idx].toUpperCase()}. ${t}`);
+    const rawOpts = cleanOpts.map((t, idx) => ({ id: defaultLetters[idx], text: t }));
+    const chosenId = defaultLetters[answerIndex] || 'a';
+
     if (cardId) {
       // 1. UPDATE EXISTING CARD
       const updates = {
@@ -6542,8 +6607,11 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         tag: topic,
         difficulty,
         question,
-        options,
+        options: formattedOpts,
+        rawOptions: rawOpts,
         answerIndex,
+        correct_option_id: chosenId,
+        correctOptionId: chosenId,
         explanation,
         needsReview: false
       };
@@ -6578,20 +6646,21 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         }
       }
 
-      const defaultLetters = ['a', 'b', 'c', 'd'];
       const newCard = {
         id: db.generateUniqueCardId(),
         deckId: targetDeckId,
         subjectId: targetSubjectId,
         question,
-        options,
-        rawOptions: options.map((t, idx) => ({ id: defaultLetters[idx], text: t })),
+        options: formattedOpts,
+        rawOptions: rawOpts,
         answerIndex,
-        correctOptionId: defaultLetters[answerIndex] || 'a',
+        correct_option_id: chosenId,
+        correctOptionId: chosenId,
         explanation,
         topic,
         tag: topic,
         difficulty,
+        source: 'manual',
         createdAt: Date.now(),
         updatedAt: Date.now(),
         srs: {
@@ -7349,7 +7418,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const deckName = decksMap[card.deckId] || 'Bộ thẻ';
     const diff = this.normalizeDifficulty(card.difficulty);
     const diffLabel = diff === 'easy' ? 'Dễ' : diff === 'hard' ? 'Khó' : 'Vừa';
-    const ansIdx = card.answerIndex || 0;
+    const ansIdx = this.getCorrectOptionIndex(card);
 
     let cardTopic = card.topic || card.tag;
     if (typeof cardTopic === 'object' && cardTopic !== null) {
@@ -7416,7 +7485,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         ` : `
           <div class="bank-card-options-grid">
             ${(card.options || []).map((opt, i) => {
-              const { letter, cleanText } = this.cleanOptionText(opt, i);
+              const rawText = this.getCardRawOptionAt(card, i);
+              const { letter, cleanText } = this.cleanOptionText(rawText, i);
               return `
               <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
                 <b>${letter}.</b> ${this.renderLatexText(cleanText)} ${i === ansIdx ? '✓' : ''}

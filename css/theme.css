@@ -1038,10 +1038,11 @@ html[data-theme="white-orange"] .modal-overlay {
 .floating-top-right-hud {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  height: 44px !important;
-  padding: 4px 8px !important;
-  border-radius: 999px !important;
+  gap: 6px !important;
+  height: 40px !important;
+  padding: 4px !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
   background: var(--bg-glass-hud) !important;
   backdrop-filter: blur(20px) saturate(160%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
