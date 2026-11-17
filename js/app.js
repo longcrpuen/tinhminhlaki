@@ -877,6 +877,232 @@ const App = {
     });
   },
 
+  // --- WEBP IMAGE COMPRESSION & LIGHTBOX ENGINE (Prompt 2c) ---
+  /**
+   * Nén ảnh sang WebP data-URL (~25-60KB) với tỷ lệ giữ nguyên (width <= maxWidth)
+   * Tối đa 880px cho câu hỏi, 640px cho đáp án
+   * @param {File|Blob|string} fileOrBlob
+   * @param {number} maxWidth
+   * @param {number} quality
+   * @returns {Promise<string>} data:image/webp;base64,...
+   */
+  async compressImageToWebP(fileOrBlob, maxWidth = 880, quality = 0.78) {
+    if (!fileOrBlob) return null;
+
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    return new Promise((resolve, reject) => {
+      const renderToCanvas = (sourceObj, origWidth, origHeight, cleanupFn) => {
+        try {
+          let w = origWidth;
+          let h = origHeight;
+          if (w > maxWidth) {
+            h = Math.round((h * maxWidth) / w);
+            w = maxWidth;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            if (cleanupFn) cleanupFn();
+            return reject(new Error('Canvas 2D context không khả dụng'));
+          }
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(sourceObj, 0, 0, w, h);
+
+          let dataUrl = canvas.toDataURL('image/webp', quality);
+          if (!dataUrl || !dataUrl.startsWith('data:image/webp')) {
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          if (cleanupFn) cleanupFn();
+          resolve(dataUrl);
+        } catch (err) {
+          if (cleanupFn) cleanupFn();
+          reject(err);
+        }
+      };
+
+      if (typeof fileOrBlob === 'string') {
+        const img = new Image();
+        img.onload = () => renderToCanvas(img, img.naturalWidth || img.width, img.naturalHeight || img.height, null);
+        img.onerror = () => reject(new Error('Không thể tải ảnh từ URL string'));
+        img.src = fileOrBlob;
+        return;
+      }
+
+      if (typeof createImageBitmap === 'function') {
+        createImageBitmap(fileOrBlob).then(bitmap => {
+          renderToCanvas(bitmap, bitmap.width, bitmap.height, () => {
+            if (typeof bitmap.close === 'function') bitmap.close();
+          });
+        }).catch(() => {
+          const objectUrl = URL.createObjectURL(fileOrBlob);
+          const img = new Image();
+          img.onload = () => renderToCanvas(img, img.naturalWidth || img.width, img.naturalHeight || img.height, () => URL.revokeObjectURL(objectUrl));
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Không thể tải ảnh qua Image fallback'));
+          };
+          img.src = objectUrl;
+        });
+      } else {
+        const objectUrl = URL.createObjectURL(fileOrBlob);
+        const img = new Image();
+        img.onload = () => renderToCanvas(img, img.naturalWidth || img.width, img.naturalHeight || img.height, () => URL.revokeObjectURL(objectUrl));
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('Không thể tải ảnh'));
+        };
+        img.src = objectUrl;
+      }
+    });
+  },
+
+  /**
+   * Helper render HTML ảnh câu hỏi hoặc phương án lựa chọn (Lazy-load & Async)
+   * @param {string} src
+   * @param {string} alt
+   * @param {boolean} compact
+   * @returns {string} HTML string
+   */
+  renderCardImageHtml(src, alt = 'Hình minh họa', compact = false) {
+    if (!src || typeof src !== 'string' || !src.trim()) return '';
+    const cleanSrc = src.trim();
+    const cleanAlt = this._escapeHtml(alt || 'Hình minh họa');
+    const compactClass = compact ? ' card-media-compact' : '';
+    return `<div class="card-media-wrap${compactClass}"><img src="${this._escapeHtml(cleanSrc)}" alt="${cleanAlt}" loading="lazy" decoding="async" onclick="event.stopPropagation(); App.openImageLightbox(this.src)" title="Bấm để phóng to"></div>`;
+  },
+
+  openImageLightbox(src) {
+    if (!src) return;
+    const modal = document.getElementById('modal-lightbox');
+    const img = document.getElementById('lightbox-image');
+    if (modal && img) {
+      img.src = src;
+      this._showModal(modal);
+    }
+  },
+
+  closeImageLightbox(e) {
+    if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('.lightbox-content') && !e.target.closest('.lightbox-close')) {
+      return;
+    }
+    const modal = document.getElementById('modal-lightbox');
+    if (modal) {
+      this._closeModal(modal);
+      const img = document.getElementById('lightbox-image');
+      if (img) img.src = '';
+    }
+  },
+
+  _editCardImages: { question: null, a: null, b: null, c: null, d: null },
+
+  setEditCardImage(key, dataUrl) {
+    if (!this._editCardImages) {
+      this._editCardImages = { question: null, a: null, b: null, c: null, d: null };
+    }
+    this._editCardImages[key] = dataUrl || null;
+
+    const previewSlot = document.getElementById(`edit-card-img-preview-${key}`);
+    const promptSlot = document.getElementById(`edit-card-img-prompt-${key}`);
+    if (previewSlot && promptSlot) {
+      if (dataUrl) {
+        const thumb = previewSlot.querySelector('.card-image-preview-thumb');
+        if (thumb) thumb.src = dataUrl;
+        previewSlot.style.display = 'flex';
+        promptSlot.style.display = 'none';
+      } else {
+        const thumb = previewSlot.querySelector('.card-image-preview-thumb');
+        if (thumb) thumb.src = '';
+        previewSlot.style.display = 'none';
+        promptSlot.style.display = 'flex';
+      }
+    }
+  },
+
+  async onCardImageFileSelect(event, key) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+    try {
+      const maxWidth = key === 'question' ? 880 : 640;
+      const dataUrl = await this.compressImageToWebP(file, maxWidth, 0.78);
+      this.setEditCardImage(key, dataUrl);
+      this.showToast(`Đã thêm ảnh cho ${key === 'question' ? 'câu hỏi' : 'đáp án ' + key.toUpperCase()}!`, 'success');
+    } catch (err) {
+      console.error('Lỗi khi nén ảnh:', err);
+      this.showToast('Không thể xử lý file ảnh đã chọn.', 'error');
+    } finally {
+      if (event?.target) event.target.value = '';
+    }
+  },
+
+  initCardEditImagePaste() {
+    const keys = ['question', 'a', 'b', 'c', 'd'];
+    keys.forEach(k => {
+      const inputEl = k === 'question' ? document.getElementById('edit-card-question') : document.getElementById(`edit-card-opt-${k}`);
+      const zoneEl = document.getElementById(`edit-card-img-zone-${k}`);
+
+      const handlePaste = async (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.startsWith('image/')) {
+            const file = items[i].getAsFile();
+            if (file) {
+              e.preventDefault();
+              try {
+                const maxWidth = k === 'question' ? 880 : 640;
+                const dataUrl = await this.compressImageToWebP(file, maxWidth, 0.78);
+                this.setEditCardImage(k, dataUrl);
+                this.showToast(`Đã dán ảnh cho ${k === 'question' ? 'câu hỏi' : 'đáp án ' + k.toUpperCase()}!`, 'success');
+              } catch (err) {
+                console.error('Lỗi dán ảnh:', err);
+                this.showToast('Không thể dán ảnh từ clipboard.', 'error');
+              }
+              break;
+            }
+          }
+        }
+      };
+
+      if (inputEl) {
+        inputEl.addEventListener('paste', handlePaste);
+      }
+      if (zoneEl) {
+        zoneEl.addEventListener('paste', handlePaste);
+        zoneEl.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zoneEl.classList.add('drag-over');
+        });
+        zoneEl.addEventListener('dragleave', () => {
+          zoneEl.classList.remove('drag-over');
+        });
+        zoneEl.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          zoneEl.classList.remove('drag-over');
+          const file = e.dataTransfer?.files?.[0];
+          if (file && file.type && file.type.startsWith('image/')) {
+            try {
+              const maxWidth = k === 'question' ? 880 : 640;
+              const dataUrl = await this.compressImageToWebP(file, maxWidth, 0.78);
+              this.setEditCardImage(k, dataUrl);
+              this.showToast(`Đã thêm ảnh cho ${k === 'question' ? 'câu hỏi' : 'đáp án ' + k.toUpperCase()}!`, 'success');
+            } catch (err) {
+              console.error('Lỗi thả ảnh:', err);
+              this.showToast('Không thể xử lý file ảnh thả vào.', 'error');
+            }
+          }
+        });
+      }
+    });
+  },
+
   async setBackground(src, skipSave) {
     try {
       if (typeof src === 'string' && src.startsWith('./backgrounds/') && /\.(jpg|jpeg|png)$/i.test(src)) {
@@ -2137,6 +2363,9 @@ const App = {
 
     // Initialize desktop spotlight hover tracking (Stream 2)
     this.initSpotlightHover();
+
+    // Initialize image paste handlers for card editing (Prompt 2c)
+    this.initCardEditImagePaste();
   },
 
   // --- DYNAMIC SPOTLIGHT HOVER ENGINE (Stream 2 - Disabled in Phase 1l for 0% CPU & locked 144+ FPS) ---
@@ -3186,6 +3415,17 @@ const App = {
       qTextEl.innerHTML = this.renderLatexText(card.question);
     }
 
+    const qImgEl = document.getElementById('quiz-card-image');
+    if (qImgEl) {
+      if (card.image) {
+        qImgEl.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', false);
+        qImgEl.style.display = 'block';
+      } else {
+        qImgEl.innerHTML = '';
+        qImgEl.style.display = 'none';
+      }
+    }
+
     const answeredState = this.activeSession?.userAnswers?.[this.activeSession.currentIndex];
     const isAnswered = Boolean(answeredState);
 
@@ -3514,9 +3754,12 @@ const App = {
         const optId = (typeof optItem === 'object' && optItem !== null && optItem.id)
           ? String(optItem.id).trim().toLowerCase()
           : letters[idx];
+        const rawOpt = card.rawOptions && card.rawOptions[idx];
+        const optImg = (rawOpt && rawOpt.image) || (typeof optItem === 'object' && optItem !== null ? optItem.image : null) || null;
         return {
           id: optId,
           text: rawText,
+          image: optImg,
           originalIdx: idx,
           isCorrect: idx === correctIdx
         };
@@ -3540,10 +3783,14 @@ const App = {
 
       const { letter, cleanText } = this.cleanOptionText(optObj.text, displayIdx);
       const displayLetter = defaultLetters[displayIdx] || letter;
+      const optImgHtml = optObj.image ? this.renderCardImageHtml(optObj.image, 'Đáp án ' + displayLetter, true) : '';
 
       btn.innerHTML = `
         <span class="quiz-option-letter select-none">${displayLetter}.</span>
-        <div class="quiz-option-content">${this.renderLatexText(cleanText)}</div>
+        <div class="quiz-option-content">
+          ${cleanText ? `<div class="quiz-option-text">${this.renderLatexText(cleanText)}</div>` : ''}
+          ${optImgHtml}
+        </div>
       `;
 
       if (isAnswered) {
@@ -4043,18 +4290,43 @@ const App = {
     const qEl = document.getElementById('flashcard-question-text');
     if (qEl) qEl.innerHTML = this.renderLatexText(card.question);
 
+    const frontImgEl = document.getElementById('flashcard-front-image');
+    if (frontImgEl) {
+      if (card.image) {
+        frontImgEl.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', true);
+        frontImgEl.style.display = 'block';
+      } else {
+        frontImgEl.innerHTML = '';
+        frontImgEl.style.display = 'none';
+      }
+    }
+
     // Back content
     let correctOpt;
+    let correctOptImg = null;
     if (card.type === 'numeric') {
       correctOpt = (card.correct_answer !== undefined ? card.correct_answer : '');
     } else {
       const cIdx = this.getCorrectOptionIndex(card);
       const rawAns = this.getCardRawOptionAt(card, cIdx);
       const { letter, cleanText } = this.cleanOptionText(rawAns, cIdx);
-      correctOpt = `${letter}. ${cleanText}`;
+      correctOpt = cleanText ? `${letter}. ${cleanText}` : `${letter}.`;
+      const rawOpt = card.rawOptions && card.rawOptions[cIdx];
+      correctOptImg = (rawOpt && rawOpt.image) || (card.options && card.options[cIdx] && card.options[cIdx].image) || null;
     }
     const ansEl = document.getElementById('flashcard-answer-text');
     if (ansEl) ansEl.innerHTML = this.renderLatexText(correctOpt);
+
+    const backImgEl = document.getElementById('flashcard-back-image');
+    if (backImgEl) {
+      if (correctOptImg) {
+        backImgEl.innerHTML = this.renderCardImageHtml(correctOptImg, 'Hình đáp án đúng', true);
+        backImgEl.style.display = 'block';
+      } else {
+        backImgEl.innerHTML = '';
+        backImgEl.style.display = 'none';
+      }
+    }
 
     const expWrap = document.getElementById('flashcard-explanation-wrap');
     const expEl = document.getElementById('flashcard-explanation-text');
@@ -4847,6 +5119,17 @@ const App = {
     const examQText = document.getElementById('exam-q-text');
     if (examQText) examQText.innerHTML = this.renderLatexText(card.question);
 
+    const examImgWrap = document.getElementById('exam-q-image-wrap');
+    if (examImgWrap) {
+      if (card.image) {
+        examImgWrap.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', false);
+        examImgWrap.style.display = 'block';
+      } else {
+        examImgWrap.innerHTML = '';
+        examImgWrap.style.display = 'none';
+      }
+    }
+
     const optContainer = document.getElementById('exam-options-container');
     const numericContainer = document.getElementById('exam-numeric-container');
     const numericInput = document.getElementById('exam-numeric-input');
@@ -4870,11 +5153,16 @@ const App = {
       let shuffledList = session.cardShuffledOptions[session.currentIndex];
       if (!shuffledList) {
         const correctIdx = this.getCorrectOptionIndex(card);
-        shuffledList = (card.options || []).map((text, idx) => ({
-          text: typeof text === 'string' ? text : (text?.text || ''),
-          origIdx: idx,
-          isCorrect: idx === correctIdx
-        }));
+        shuffledList = (card.options || []).map((text, idx) => {
+          const rawOpt = card.rawOptions && card.rawOptions[idx];
+          const optImg = (rawOpt && rawOpt.image) || (typeof text === 'object' && text !== null ? text.image : null) || null;
+          return {
+            text: typeof text === 'string' ? text : (text?.text || ''),
+            image: optImg,
+            origIdx: idx,
+            isCorrect: idx === correctIdx
+          };
+        });
         this._shuffleArray(shuffledList);
         session.cardShuffledOptions[session.currentIndex] = shuffledList;
       }
@@ -4889,9 +5177,15 @@ const App = {
         }
 
         const { letter, cleanText } = this.cleanOptionText(opt.text, idx);
+        const optImg = opt.image || (card.rawOptions && card.rawOptions[opt.origIdx]?.image) || null;
+        const optImgHtml = optImg ? this.renderCardImageHtml(optImg, 'Đáp án ' + letter, true) : '';
+
         btn.innerHTML = `
           <span class="quiz-option-letter">${letter}</span>
-          <span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>
+          <div class="quiz-option-content">
+            ${cleanText ? `<span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>` : ''}
+            ${optImgHtml}
+          </div>
         `;
         btn.onclick = () => {
           session.userAnswers[session.currentIndex] = idx;
@@ -4965,6 +5259,7 @@ const App = {
             <h3 class="quiz-question-text" style="font-size: 1.05rem; margin-bottom: 16px;">
               ${this.renderLatexText(card.question)}
             </h3>
+            ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', false) : ''}
         `;
 
         if (card.type === 'numeric') {
@@ -4980,11 +5275,16 @@ const App = {
           let shuffledList = session.cardShuffledOptions[idx];
           if (!shuffledList) {
             const correctIdx = this.getCorrectOptionIndex(card);
-            shuffledList = (card.options || []).map((text, origIdx) => ({
-              text: typeof text === 'string' ? text : (text?.text || ''),
-              origIdx: origIdx,
-              isCorrect: origIdx === correctIdx
-            }));
+            shuffledList = (card.options || []).map((text, origIdx) => {
+              const rawOpt = card.rawOptions && card.rawOptions[origIdx];
+              const optImg = (rawOpt && rawOpt.image) || (typeof text === 'object' && text !== null ? text.image : null) || null;
+              return {
+                text: typeof text === 'string' ? text : (text?.text || ''),
+                image: optImg,
+                origIdx: origIdx,
+                isCorrect: origIdx === correctIdx
+              };
+            });
             this._shuffleArray(shuffledList);
             session.cardShuffledOptions[idx] = shuffledList;
           }
@@ -4993,10 +5293,15 @@ const App = {
           shuffledList.forEach((opt, optIdx) => {
             const isSelected = userAns === optIdx;
             const { letter, cleanText } = this.cleanOptionText(opt.text, optIdx);
+            const optImg = opt.image || (card.rawOptions && card.rawOptions[opt.origIdx]?.image) || null;
+            const optImgHtml = optImg ? this.renderCardImageHtml(optImg, 'Đáp án ' + letter, true) : '';
             html += `
               <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected exam-option-selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
                 <span class="quiz-option-letter">${letter}</span>
-                <span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>
+                <div class="quiz-option-content">
+                  ${cleanText ? `<span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>` : ''}
+                  ${optImgHtml}
+                </div>
               </button>
             `;
           });
@@ -6345,6 +6650,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.selectEditCardCorrect('a');
     document.getElementById('edit-card-explanation').value = '';
 
+    // Reset images for all fields
+    this.setEditCardImage('question', null);
+    ['a', 'b', 'c', 'd'].forEach(k => this.setEditCardImage(k, null));
+
     const previewBox = document.getElementById('edit-card-preview-box');
     if (previewBox) previewBox.style.display = 'none';
 
@@ -6381,6 +6690,14 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     this.selectEditCardCorrect(curCorrect);
 
     document.getElementById('edit-card-explanation').value = card.explanation || '';
+
+    // Load question and option images into edit modal
+    this.setEditCardImage('question', card.image || null);
+    ['a', 'b', 'c', 'd'].forEach((letterKey, i) => {
+      const rawOpt = card.rawOptions && card.rawOptions[i];
+      const optImg = (rawOpt && rawOpt.image) || (card.options && card.options[i] && card.options[i].image) || null;
+      this.setEditCardImage(letterKey, optImg);
+    });
 
     const previewBox = document.getElementById('edit-card-preview-box');
     if (previewBox) previewBox.style.display = 'none';
@@ -6543,15 +6860,24 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const exp = document.getElementById('edit-card-explanation').value;
     const correct = document.getElementById('edit-card-correct').value.toUpperCase();
 
+    const qImg = this._editCardImages?.['question'];
+    const aImg = this._editCardImages?.['a'];
+    const bImg = this._editCardImages?.['b'];
+    const cImg = this._editCardImages?.['c'];
+    const dImg = this._editCardImages?.['d'];
+
     previewContent.innerHTML = `
       <div style="font-weight: 700; margin-bottom: 6px;">Câu hỏi:</div>
-      <div style="margin-bottom: 12px; font-size: 1rem;">${this._escapeHtml(q)}</div>
+      <div style="margin-bottom: 12px; font-size: 1rem;">
+        ${this._escapeHtml(q)}
+        ${qImg ? this.renderCardImageHtml(qImg, 'Ảnh câu hỏi', true) : ''}
+      </div>
       <div style="font-weight: 700; margin-bottom: 6px;">Các lựa chọn:</div>
       <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;">
-        <div><b>A:</b> ${this._escapeHtml(a)} ${correct === 'A' ? '✓' : ''}</div>
-        <div><b>B:</b> ${this._escapeHtml(b)} ${correct === 'B' ? '✓' : ''}</div>
-        ${c ? `<div><b>C:</b> ${this._escapeHtml(c)} ${correct === 'C' ? '✓' : ''}</div>` : ''}
-        ${d ? `<div><b>D:</b> ${this._escapeHtml(d)} ${correct === 'D' ? '✓' : ''}</div>` : ''}
+        <div><b>A:</b> ${this._escapeHtml(a)} ${correct === 'A' ? '✓' : ''} ${aImg ? this.renderCardImageHtml(aImg, 'Ảnh A', true) : ''}</div>
+        <div><b>B:</b> ${this._escapeHtml(b)} ${correct === 'B' ? '✓' : ''} ${bImg ? this.renderCardImageHtml(bImg, 'Ảnh B', true) : ''}</div>
+        ${c || cImg ? `<div><b>C:</b> ${this._escapeHtml(c)} ${correct === 'C' ? '✓' : ''} ${cImg ? this.renderCardImageHtml(cImg, 'Ảnh C', true) : ''}</div>` : ''}
+        ${d || dImg ? `<div><b>D:</b> ${this._escapeHtml(d)} ${correct === 'D' ? '✓' : ''} ${dImg ? this.renderCardImageHtml(dImg, 'Ảnh D', true) : ''}</div>` : ''}
       </div>
       <div style="font-weight: 700; margin-bottom: 6px;">Giải thích:</div>
       <div>${this._escapeHtml(exp)}</div>
@@ -6573,14 +6899,20 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     const optC = document.getElementById('edit-card-opt-c').value.trim();
     const optD = document.getElementById('edit-card-opt-d').value.trim();
 
+    const questionImage = this._editCardImages?.['question'] || null;
+    const imgA = this._editCardImages?.['a'] || null;
+    const imgB = this._editCardImages?.['b'] || null;
+    const imgC = this._editCardImages?.['c'] || null;
+    const imgD = this._editCardImages?.['d'] || null;
+
     if (!question) {
       alert('Vui lòng nhập nội dung câu hỏi.');
       return;
     }
 
     const options = [optA, optB];
-    if (optC) options.push(optC);
-    if (optD) options.push(optD);
+    if (optC || imgC) options.push(optC);
+    if (optD || imgD) options.push(optD);
 
     if (options.length < 2) {
       alert('Cần ít nhất 2 lựa chọn A và B.');
@@ -6596,8 +6928,16 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
     const defaultLetters = ['a', 'b', 'c', 'd'];
     const cleanOpts = options.map((t, idx) => this.cleanOptionText(t, idx).cleanText);
-    const formattedOpts = cleanOpts.map((t, idx) => `${defaultLetters[idx].toUpperCase()}. ${t}`);
-    const rawOpts = cleanOpts.map((t, idx) => ({ id: defaultLetters[idx], text: t }));
+    const formattedOpts = cleanOpts.map((t, idx) => {
+      const letter = defaultLetters[idx].toUpperCase();
+      return t ? `${letter}. ${t}` : `${letter}.`;
+    });
+    const rawOpts = cleanOpts.map((t, idx) => {
+      const optImage = (idx === 0 ? imgA : (idx === 1 ? imgB : (idx === 2 ? imgC : imgD)));
+      const entry = { id: defaultLetters[idx], text: t };
+      if (optImage) entry.image = optImage;
+      return entry;
+    });
     const chosenId = defaultLetters[answerIndex] || 'a';
 
     if (cardId) {
@@ -6607,6 +6947,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         tag: topic,
         difficulty,
         question,
+        image: questionImage,
         options: formattedOpts,
         rawOptions: rawOpts,
         answerIndex,
@@ -6651,6 +6992,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         deckId: targetDeckId,
         subjectId: targetSubjectId,
         question,
+        image: questionImage,
         options: formattedOpts,
         rawOptions: rawOpts,
         answerIndex,
@@ -7477,6 +7819,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
           ${this.renderLatexText(card.question)}
         </div>
+        ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', true) : ''}
 
         ${card.type === 'numeric' ? `
           <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
@@ -7487,9 +7830,12 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
             ${(card.options || []).map((opt, i) => {
               const rawText = this.getCardRawOptionAt(card, i);
               const { letter, cleanText } = this.cleanOptionText(rawText, i);
+              const rawOpt = card.rawOptions && card.rawOptions[i];
+              const optImg = (rawOpt && rawOpt.image) || (typeof opt === 'object' && opt !== null ? opt.image : null) || null;
               return `
               <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <b>${letter}.</b> ${this.renderLatexText(cleanText)} ${i === ansIdx ? '✓' : ''}
+                <b>${letter}.</b> ${cleanText ? this.renderLatexText(cleanText) : ''} ${i === ansIdx ? '✓' : ''}
+                ${optImg ? this.renderCardImageHtml(optImg, 'Hình đáp án ' + letter, true) : ''}
               </div>
             `;
             }).join('')}

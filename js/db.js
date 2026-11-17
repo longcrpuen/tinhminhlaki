@@ -1034,6 +1034,7 @@ class QuizDatabase {
     if (!card) throw new Error('Không tìm thấy câu hỏi để cập nhật.');
 
     if (updated.question !== undefined) card.question = updated.question;
+    if (updated.image !== undefined) card.image = updated.image;
     if (updated.options !== undefined) card.options = updated.options;
     if (updated.rawOptions !== undefined) card.rawOptions = updated.rawOptions;
     if (updated.answerIndex !== undefined) card.answerIndex = updated.answerIndex;
@@ -1046,6 +1047,29 @@ class QuizDatabase {
     if (updated.difficulty !== undefined) card.difficulty = updated.difficulty;
 
     await this.saveCard(card);
+    return card;
+  }
+
+  /**
+   * Đồng bộ options hiển thị từ rawOptions, bảo toàn card.image và rawOptions[].image
+   * @param {Object} card
+   * @returns {Object} card
+   */
+  syncOptionsFromRaw(card) {
+    if (!card || !Array.isArray(card.rawOptions) || card.rawOptions.length === 0) {
+      return card;
+    }
+    const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    card.options = card.rawOptions.map((opt, idx) => {
+      const text = typeof opt === 'object' && opt !== null ? (opt.text ?? '') : String(opt ?? '');
+      const letter = defaultLetters[idx] || `${idx + 1}`;
+      let clean = String(text).trim();
+      const prefixMatch = clean.match(/^(?:[A-Da-d])[\.\)\:]\s+(.*)$/s);
+      if (prefixMatch && prefixMatch[1].trim().length > 0) {
+        clean = prefixMatch[1].trim();
+      }
+      return clean ? `${letter}. ${clean}` : `${letter}.`;
+    });
     return card;
   }
 
@@ -1526,10 +1550,15 @@ class QuizDatabase {
 
     if (JSON.stringify(card.options) !== JSON.stringify(finalOptions)) {
       card.options = finalOptions;
-      card.rawOptions = healedTexts.map((clean, idx) => ({
-        id: lowerLetters[idx] || `${idx + 1}`,
-        text: clean
-      }));
+      card.rawOptions = healedTexts.map((clean, idx) => {
+        const existingImg = (card.rawOptions && card.rawOptions[idx] && card.rawOptions[idx].image) || null;
+        const entry = {
+          id: lowerLetters[idx] || `${idx + 1}`,
+          text: clean
+        };
+        if (existingImg) entry.image = existingImg;
+        return entry;
+      });
       mutated = true;
     }
 

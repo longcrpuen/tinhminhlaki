@@ -719,6 +719,7 @@
                   </div>
                 </div>
                 <h3 id="quiz-card-question" class="quiz-question-text">Câu hỏi đang tải...</h3>
+                <div id="quiz-card-image" class="card-question-image-wrap" style="display: none;"></div>
 
                 <!-- Blind Active Recall Box -->
                 <div id="quiz-blind-veil" class="blind-recall-box" style="display: none;">
@@ -803,6 +804,7 @@
                     <!-- Core Question Content -->
                     <div class="flashcard-content-wrap">
                       <h3 id="flashcard-question-text" class="flashcard-question-text quiz-question-text">Câu hỏi Flashcard...</h3>
+                      <div id="flashcard-front-image" class="card-question-image-wrap" style="display: none;"></div>
                     </div>
 
                     <!-- Bottom Face Hint -->
@@ -820,6 +822,7 @@
                     <div class="flashcard-content-wrap">
                       <div class="flashcard-answer-label">ĐÁP ÁN ĐÚNG</div>
                       <h3 id="flashcard-answer-text" class="flashcard-answer-text">Đáp án</h3>
+                      <div id="flashcard-back-image" class="card-question-image-wrap" style="display: none;"></div>
                       <div id="flashcard-explanation-wrap" class="flashcard-explanation-box" style="display: none;">
                         <div class="flashcard-explanation-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Giải thích chi tiết:</div>
                         <p id="flashcard-explanation-text" class="flashcard-explanation-text">Giải thích</p>
@@ -887,6 +890,7 @@
             <div id="exam-single-card-wrap">
               <div class="quiz-card">
                 <h3 id="exam-q-text" class="quiz-question-text">Đang tải câu hỏi thi...</h3>
+                <div id="exam-q-image-wrap" class="card-question-image-wrap" style="display: none;"></div>
                 <div id="exam-options-container" class="quiz-options-list"></div>
                 
                 <!-- Exam Numeric Answer Box -->
@@ -2035,27 +2039,93 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
           <label class="form-label" for="edit-card-question">
             Nội dung câu hỏi: <span style="font-size: 0.78rem; color: var(--text-muted);">(Hỗ trợ công thức LaTeX $...$)</span>
           </label>
-          <textarea id="edit-card-question" class="form-control" rows="3" placeholder="Nhập câu hỏi..."></textarea>
+          <textarea id="edit-card-question" class="form-control" rows="3" placeholder="Nhập câu hỏi... (Có thể dán Ctrl+V ảnh tại đây)"></textarea>
+          <div id="edit-card-img-zone-question" class="card-image-upload-zone" tabindex="0">
+            <input type="file" id="edit-card-img-file-question" accept="image/*" style="display: none;" onchange="App.onCardImageFileSelect(event, 'question')">
+            <div id="edit-card-img-preview-question" class="card-image-preview-slot" style="display: none;">
+              <img src="" alt="Ảnh câu hỏi" class="card-image-preview-thumb" onclick="App.openImageLightbox(this.src)" title="Bấm để phóng to">
+              <button type="button" class="btn-remove-card-image" onclick="App.setEditCardImage('question', null)">✕ Xóa ảnh</button>
+            </div>
+            <div id="edit-card-img-prompt-question" class="card-image-prompt-slot">
+              <button type="button" class="btn btn-secondary" style="padding: 3px 10px; font-size: 0.78rem;" onclick="document.getElementById('edit-card-img-file-question').click()">🖼️ Chọn ảnh</button>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">hoặc bấm ô rồi nhấn <b>Ctrl+V</b> để dán ảnh</span>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">Các lựa chọn trả lời:</label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; width: 24px;">A:</span>
-              <input type="text" id="edit-card-opt-a" class="form-control" placeholder="Đáp án A (LaTeX $...$)">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="edit-card-opt-row" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; width: 24px;">A:</span>
+                <input type="text" id="edit-card-opt-a" class="form-control" placeholder="Đáp án A (LaTeX $...$, dán Ctrl+V ảnh)">
+              </div>
+              <div id="edit-card-img-zone-a" class="card-image-upload-zone card-image-upload-zone-opt" tabindex="0">
+                <input type="file" id="edit-card-img-file-a" accept="image/*" style="display: none;" onchange="App.onCardImageFileSelect(event, 'a')">
+                <div id="edit-card-img-preview-a" class="card-image-preview-slot" style="display: none;">
+                  <img src="" alt="Ảnh đáp án A" class="card-image-preview-thumb" onclick="App.openImageLightbox(this.src)" title="Bấm để phóng to">
+                  <button type="button" class="btn-remove-card-image" onclick="App.setEditCardImage('a', null)">✕ Xóa ảnh</button>
+                </div>
+                <div id="edit-card-img-prompt-a" class="card-image-prompt-slot">
+                  <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.74rem;" onclick="document.getElementById('edit-card-img-file-a').click()">🖼️ Chọn ảnh A</button>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">hoặc bấm ô rồi nhấn Ctrl+V dán ảnh</span>
+                </div>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; width: 24px;">B:</span>
-              <input type="text" id="edit-card-opt-b" class="form-control" placeholder="Đáp án B (LaTeX $...$)">
+
+            <div class="edit-card-opt-row" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; width: 24px;">B:</span>
+                <input type="text" id="edit-card-opt-b" class="form-control" placeholder="Đáp án B (LaTeX $...$, dán Ctrl+V ảnh)">
+              </div>
+              <div id="edit-card-img-zone-b" class="card-image-upload-zone card-image-upload-zone-opt" tabindex="0">
+                <input type="file" id="edit-card-img-file-b" accept="image/*" style="display: none;" onchange="App.onCardImageFileSelect(event, 'b')">
+                <div id="edit-card-img-preview-b" class="card-image-preview-slot" style="display: none;">
+                  <img src="" alt="Ảnh đáp án B" class="card-image-preview-thumb" onclick="App.openImageLightbox(this.src)" title="Bấm để phóng to">
+                  <button type="button" class="btn-remove-card-image" onclick="App.setEditCardImage('b', null)">✕ Xóa ảnh</button>
+                </div>
+                <div id="edit-card-img-prompt-b" class="card-image-prompt-slot">
+                  <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.74rem;" onclick="document.getElementById('edit-card-img-file-b').click()">🖼️ Chọn ảnh B</button>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">hoặc bấm ô rồi nhấn Ctrl+V dán ảnh</span>
+                </div>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; width: 24px;">C:</span>
-              <input type="text" id="edit-card-opt-c" class="form-control" placeholder="Đáp án C (LaTeX $...$)">
+
+            <div class="edit-card-opt-row" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; width: 24px;">C:</span>
+                <input type="text" id="edit-card-opt-c" class="form-control" placeholder="Đáp án C (LaTeX $...$, dán Ctrl+V ảnh)">
+              </div>
+              <div id="edit-card-img-zone-c" class="card-image-upload-zone card-image-upload-zone-opt" tabindex="0">
+                <input type="file" id="edit-card-img-file-c" accept="image/*" style="display: none;" onchange="App.onCardImageFileSelect(event, 'c')">
+                <div id="edit-card-img-preview-c" class="card-image-preview-slot" style="display: none;">
+                  <img src="" alt="Ảnh đáp án C" class="card-image-preview-thumb" onclick="App.openImageLightbox(this.src)" title="Bấm để phóng to">
+                  <button type="button" class="btn-remove-card-image" onclick="App.setEditCardImage('c', null)">✕ Xóa ảnh</button>
+                </div>
+                <div id="edit-card-img-prompt-c" class="card-image-prompt-slot">
+                  <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.74rem;" onclick="document.getElementById('edit-card-img-file-c').click()">🖼️ Chọn ảnh C</button>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">hoặc bấm ô rồi nhấn Ctrl+V dán ảnh</span>
+                </div>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; width: 24px;">D:</span>
-              <input type="text" id="edit-card-opt-d" class="form-control" placeholder="Đáp án D (LaTeX $...$)">
+
+            <div class="edit-card-opt-row" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; width: 24px;">D:</span>
+                <input type="text" id="edit-card-opt-d" class="form-control" placeholder="Đáp án D (LaTeX $...$, dán Ctrl+V ảnh)">
+              </div>
+              <div id="edit-card-img-zone-d" class="card-image-upload-zone card-image-upload-zone-opt" tabindex="0">
+                <input type="file" id="edit-card-img-file-d" accept="image/*" style="display: none;" onchange="App.onCardImageFileSelect(event, 'd')">
+                <div id="edit-card-img-preview-d" class="card-image-preview-slot" style="display: none;">
+                  <img src="" alt="Ảnh đáp án D" class="card-image-preview-thumb" onclick="App.openImageLightbox(this.src)" title="Bấm để phóng to">
+                  <button type="button" class="btn-remove-card-image" onclick="App.setEditCardImage('d', null)">✕ Xóa ảnh</button>
+                </div>
+                <div id="edit-card-img-prompt-d" class="card-image-prompt-slot">
+                  <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.74rem;" onclick="document.getElementById('edit-card-img-file-d').click()">🖼️ Chọn ảnh D</button>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">hoặc bấm ô rồi nhấn Ctrl+V dán ảnh</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2291,6 +2361,14 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
         <button type="button" class="btn btn-secondary modal-close" onclick="App._closeModal(document.getElementById('modal-suggest-merge-subjects'))">Để riêng</button>
         <button type="button" id="btn-execute-merge-duplicate-subjects" class="btn btn-primary">Gộp ngay các môn trùng tên</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Lightbox phóng to ảnh (Prompt 2c) -->
+  <div id="modal-lightbox" class="modal-overlay modal-lightbox" onclick="App.closeImageLightbox(event)">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <button type="button" class="icon-btn lightbox-close" onclick="App.closeImageLightbox()" title="Đóng (Esc)">✕</button>
+      <img id="lightbox-image" src="" alt="Ảnh phóng to" class="lightbox-img">
     </div>
   </div>
 

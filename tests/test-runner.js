@@ -1280,7 +1280,7 @@ console.log('\n=== TEST SUITE 18: Phase 1l Unified Liquid Glass, 3D Meniscus Bev
   assert(themeCss.includes('transform: translateZ(0) !important;') && themeCss.includes('contain: layout paint !important;'), 'theme.css isolates compositor layers on scroll containers');
   assert(themeCss.includes('body.is-scrolling'), 'theme.css defines body.is-scrolling pointer freeze');
   assert(appJs.includes("document.body.classList.contains('is-scrolling')"), 'app.js implements passive scroll pointer freeze');
-  assert(appJs.includes('initSpotlightHover() {\n    return;'), 'initSpotlightHover returns immediately to guarantee 0% CPU');
+  assert(appJs.replace(/\r\n/g, '\n').includes('initSpotlightHover() {\n    return;'), 'initSpotlightHover returns immediately to guarantee 0% CPU');
 }
 
 console.log('\n=== TEST SUITE 19: Phase 1m 14 UI/UX Refinements, Liquid Glass, Focus Preservation & Modal Fixes ===');
@@ -1974,6 +1974,251 @@ console.log('\n--- Test Suite 30: Phase 2b AI Prompt Template & Pedagogical Expl
 
   // 3. App.copyAIPrompt verification
   assert(appJs.includes('copyAIPrompt()') && appJs.includes('AIParser.generateAIPromptTemplate'), 'App.copyAIPrompt calls AIParser.generateAIPromptTemplate');
+}
+
+// === TEST SUITE 31: Phase 2c Lightweight WebP Images, Ctrl+V Paste, Lightbox & Hybrid Prompt ===
+console.log('\n--- Test Suite 31: Phase 2c Lightweight WebP Images, Ctrl+V Paste, Lightbox & Hybrid Prompt ---');
+{
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+
+  // 1. Parser JSON with Question Image and Option Images
+  const jsonWithImages = JSON.stringify({
+    quiz_title: "Đề thi Cơ sở dữ liệu có ảnh",
+    questions: [
+      {
+        id: "q_img_1",
+        question: "Sơ đồ ER dưới đây mô tả mối quan hệ nào?",
+        image: "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoBAAEAAkA4JaQAA3AA/vuUAAA=",
+        options: [
+          { id: "a", text: "1 - 1", image: "" },
+          { id: "b", text: "1 - N", image: "" },
+          { id: "c", text: "N - N", image: "" },
+          { id: "d", text: "Tự kết nối", image: "" }
+        ],
+        correct_option_id: "b",
+        explanation: "Sơ đồ có đường nối đôi và mũi tên đơn chỉ quan hệ 1-N."
+      },
+      {
+        id: "q_img_2",
+        question: "Đâu là biểu đồ miền nghiệm của bất phương trình $x + y \\le 4$?",
+        img: "data:image/webp;base64,Q_IMG_DATA",
+        options: [
+          { id: "a", text: "", image: "data:image/webp;base64,OPT_A_IMG" },
+          { id: "b", text: "", image: "data:image/webp;base64,OPT_B_IMG" },
+          { id: "c", text: "", image: "data:image/webp;base64,OPT_C_IMG" },
+          { id: "d", text: "", image: "data:image/webp;base64,OPT_D_IMG" }
+        ],
+        correct_option_id: "a",
+        explanation: "Miền nghiệm nằm phía dưới đường thẳng $x + y = 4$."
+      }
+    ]
+  });
+
+  const parsedImages = AIParser.parse(jsonWithImages);
+  assert(parsedImages.cards.length === 2, 'Parsed 2 cards with images successfully');
+  assert(parsedImages.errors.length === 0, 'Zero errors when options have image and empty text');
+  assert(parsedImages.cards[0].image && parsedImages.cards[0].image.startsWith('data:image/webp'), 'Card 1 question image extracted');
+  assert(parsedImages.cards[1].image === 'data:image/webp;base64,Q_IMG_DATA', 'Card 2 img alias extracted');
+  assert(parsedImages.cards[1].rawOptions[0].image === 'data:image/webp;base64,OPT_A_IMG', 'Card 2 option A image extracted into rawOptions');
+  assert(parsedImages.cards[1].options[0] === 'A.', 'Option with empty text formatted as "A."');
+  assert(parsedImages.cards[1].answerIndex === 0, 'Card 2 correct answer index resolved to 0');
+
+  // 2. Hybrid AI Prompt Strategy
+  const promptTemplate = AIParser.generateAIPromptTemplate({ topic: 'Hệ quản trị CSDL' });
+  assert(promptTemplate.includes('Chiến lược Hybrid xử lý đề thi có hình ảnh:'), 'Prompt template includes Hybrid Image Strategy header');
+  assert(promptTemplate.includes('Bắt buộc OCR và chuyển toàn bộ sang Text + LaTeX'), 'Prompt template requires OCR to LaTeX for formulas & tables');
+  assert(promptTemplate.includes('Ảnh sơ đồ (ER, UML, mạch điện) hoặc đồ thị hình học: KHÔNG diễn giải thay thế bằng văn bản'), 'Prompt template forbids verbal slop for ER/geometry diagrams');
+  assert(promptTemplate.includes('"image": ""'), 'Prompt template includes image field in JSON structure');
+
+  // 3. App Helper: renderCardImageHtml
+  assert(appJs.includes('renderCardImageHtml(src, alt = \'Hình minh họa\', compact = false)'), 'App defines renderCardImageHtml helper');
+  assert(appJs.includes('loading="lazy"') && appJs.includes('decoding="async"'), 'renderCardImageHtml uses lazy loading and async decoding');
+  assert(appJs.includes('App.openImageLightbox(this.src)'), 'renderCardImageHtml wires click to openImageLightbox');
+
+  // Eval test renderCardImageHtml in isolation
+  const dummyApp = {
+    _escapeHtml: (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'),
+    renderCardImageHtml: null
+  };
+  const renderCardImgCode = appJs.slice(appJs.indexOf('renderCardImageHtml(src,'), appJs.indexOf('openImageLightbox(src) {'));
+  dummyApp.renderCardImageHtml = new Function('src', 'alt = "Hình minh họa"', 'compact = false', renderCardImgCode.slice(renderCardImgCode.indexOf('{') + 1, renderCardImgCode.lastIndexOf('}')));
+  
+  const imgHtmlNormal = dummyApp.renderCardImageHtml('test.webp', 'Đề bài', false);
+  assert(imgHtmlNormal.includes('class="card-media-wrap"') && imgHtmlNormal.includes('src="test.webp"'), 'renderCardImageHtml outputs normal wrap');
+  const imgHtmlCompact = dummyApp.renderCardImageHtml('test_thumb.webp', 'Đáp án A', true);
+  assert(imgHtmlCompact.includes('class="card-media-wrap card-media-compact"'), 'renderCardImageHtml outputs compact wrap');
+  assert(dummyApp.renderCardImageHtml('') === '' && dummyApp.renderCardImageHtml(null) === '', 'renderCardImageHtml returns empty string on null/empty src');
+
+  // 4. compressImageToWebP
+  assert(appJs.includes('compressImageToWebP(fileOrBlob, maxWidth = 880, quality = 0.78)'), 'App defines compressImageToWebP with correct defaults');
+  assert(appJs.includes('canvas.toDataURL(\'image/webp\'') || appJs.includes('toDataURL("image/webp"'), 'compressImageToWebP uses image/webp');
+
+  // 5. DB syncOptionsFromRaw & updateCardContent
+  assert(dbJs.includes('syncOptionsFromRaw(card)'), 'db.js defines syncOptionsFromRaw');
+  const dbSyncCode = '({' + dbJs.slice(dbJs.indexOf('syncOptionsFromRaw(card) {'), dbJs.indexOf('async resetDeckProgress(')).trim().replace(/,$/, '') + '})';
+  const dbSyncEvaluator = eval(dbSyncCode);
+  const mockCardWithImg = {
+    id: 'test_card_img',
+    image: 'data:image/webp;base64,Q_IMG',
+    options: ['Old A', 'Old B'],
+    rawOptions: [
+      { id: 'a', text: 'Sơ đồ A', image: 'data:image/webp;base64,OPT_A' },
+      { id: 'b', text: 'Sơ đồ B', image: 'data:image/webp;base64,OPT_B' }
+    ]
+  };
+  const syncedCard = dbSyncEvaluator.syncOptionsFromRaw(mockCardWithImg);
+  assert(syncedCard.image === 'data:image/webp;base64,Q_IMG', 'syncOptionsFromRaw preserves card.image');
+  assert(syncedCard.rawOptions[0].image === 'data:image/webp;base64,OPT_A', 'syncOptionsFromRaw preserves rawOptions[0].image');
+  assert(syncedCard.options[0] === 'A. Sơ đồ A' && syncedCard.options[1] === 'B. Sơ đồ B', 'syncOptionsFromRaw correctly regenerates options');
+
+  // 6. UI & Modals: Lightbox & Edit Card Paste Zone
+  assert(indexHtml.includes('id="modal-lightbox"') && indexHtml.includes('class="modal-overlay modal-lightbox"'), 'index.html defines #modal-lightbox');
+  assert(indexHtml.includes('id="lightbox-image"'), 'index.html defines #lightbox-image');
+  assert(indexHtml.includes('id="quiz-card-image"'), 'index.html defines #quiz-card-image');
+  assert(indexHtml.includes('id="exam-q-image-wrap"'), 'index.html defines #exam-q-image-wrap');
+  assert(indexHtml.includes('id="flashcard-front-image"'), 'index.html defines #flashcard-front-image');
+  assert(indexHtml.includes('id="flashcard-back-image"'), 'index.html defines #flashcard-back-image');
+  assert(indexHtml.includes('id="edit-card-img-zone-question"'), 'index.html defines question image upload/paste zone');
+  assert(indexHtml.includes('id="edit-card-img-zone-a"'), 'index.html defines option A image upload/paste zone');
+  assert(indexHtml.includes('id="edit-card-img-zone-b"'), 'index.html defines option B image upload/paste zone');
+  assert(indexHtml.includes('id="edit-card-img-zone-c"'), 'index.html defines option C image upload/paste zone');
+  assert(indexHtml.includes('id="edit-card-img-zone-d"'), 'index.html defines option D image upload/paste zone');
+
+  // 7. CSS styling
+  assert(styleCss.includes('.card-media-wrap'), 'style.css defines .card-media-wrap');
+  assert(styleCss.includes('.card-media-compact'), 'style.css defines .card-media-compact');
+  assert(styleCss.includes('.modal-lightbox'), 'style.css defines .modal-lightbox');
+  assert(styleCss.includes('.card-image-upload-zone'), 'style.css defines .card-image-upload-zone');
+  assert(styleCss.includes('.btn-remove-card-image'), 'style.css defines .btn-remove-card-image');
+
+  // 8. Backward Compatibility: Old deck without images
+  const oldDeckJson = JSON.stringify({
+    quiz_title: "Bộ đề cũ không có ảnh",
+    questions: [
+      {
+        id: "q_old_1",
+        question: "Thủ đô của Việt Nam là gì?",
+        options: ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Huế"],
+        answer: 0,
+        explanation: "Hà Nội là thủ đô của Việt Nam."
+      }
+    ]
+  });
+  const parsedOld = AIParser.parse(oldDeckJson);
+  assert(parsedOld.cards[0].image === null, 'Old card image is null without error');
+  assert(parsedOld.cards[0].rawOptions[0].image === undefined, 'Old rawOption image is undefined');
+  assert(!JSON.stringify(parsedOld.cards[0]).includes('undefined'), 'Card serialization contains no undefined strings');
+}
+
+// === TEST SUITE 32: Phase 2e Self-Healing JSON Parser, Multi-Block & Enhanced AI Prompt ===
+console.log('\n--- Test Suite 32: Phase 2e Self-Healing JSON Parser, Multi-Block & Enhanced AI Prompt ---');
+{
+  // 1. Case (a): chuỗi " + " ở explanation và trailing comma
+  const sampleConcatAndTrailingComma = `{
+    "quiz_title": "Toán Đại Số - Tự Sửa Lỗi",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Biểu thức 1 + 1 có giá trị là bao nhiêu?",
+        "options": [
+          { "id": "a", "text": "2" },
+          { "id": "b", "text": "3" },
+        ],
+        "correct_option_id": "a",
+        "explanation": "Vì 1 + 1 = 2 theo " + "định nghĩa phép toán số học cơ bản."
+      },
+    ]
+  }`;
+
+  const parsedA = AIParser.parse(sampleConcatAndTrailingComma);
+  assert(parsedA.cards.length === 1, 'Case (a) parses 1 card successfully');
+  assert(parsedA.cards[0].explanation === 'Vì 1 + 1 = 2 theo định nghĩa phép toán số học cơ bản.', 'Case (a) auto-concatenates " + " without syntax error');
+  assert(parsedA.cards[0].question.includes('1 + 1'), 'Question text containing + is preserved intact');
+
+  // 1.1 Raw newline inside string literal
+  const sampleRawNewline = `{
+    "quiz_title": "Xuống Dòng Thô",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Câu hỏi test",
+        "options": [
+          { "id": "a", "text": "A" },
+          { "id": "b", "text": "B" }
+        ],
+        "correct_option_id": "a",
+        "explanation": "Dòng 1
+Dòng 2 raw newline"
+      }
+    ]
+  }`;
+  const parsedNewline = AIParser.parse(sampleRawNewline);
+  assert(parsedNewline.cards.length === 1, 'Raw newline inside string literal is auto-repaired to \\n');
+  assert(parsedNewline.cards[0].explanation.includes('Dòng 1') && parsedNewline.cards[0].explanation.includes('Dòng 2'), 'Explanation with repaired newline is intact');
+
+  // 2. Case (b): JSON bị cắt cụt giữa câu q10 rồi nối tiếp block ```json thứ hai bên dưới
+  const sampleQ10CutOff = `\`\`\`json
+{
+  "quiz_title": "Bộ đề thi cắt cụt",
+  "questions": [
+    ${Array.from({ length: 9 }, (_, i) => `{"id": "q${i+1}", "question": "Câu hỏi số ${i+1}?", "options": [{"id":"a", "text":"Đúng"}, {"id":"b", "text":"Sai"}], "correct_option_id":"a"}`).join(',\n    ')},
+    {"id": "q10", "question": "Câu 10 bị cụt dở dang do chạm token...
+\`\`\`
+AI xin lỗi vì bị đứt đoạn, tôi xin hoàn thành lại từ câu 1:
+\`\`\`json
+{
+  "quiz_title": "Bộ đề thi cắt cụt",
+  "questions": [
+    ${Array.from({ length: 9 }, (_, i) => `{"id": "q${i+1}", "question": "Câu hỏi số ${i+1}?", "options": [{"id":"a", "text":"Đúng"}, {"id":"b", "text":"Sai"}], "correct_option_id":"a"}`).join(',\n    ')},
+    {"id": "q10", "question": "Câu hỏi số 10 hoàn chỉnh?", "options": [{"id":"a", "text":"Đúng"}, {"id":"b", "text":"Sai"}], "correct_option_id":"a", "explanation": "Giải thích chi tiết 10"},
+    {"id": "q11", "question": "Câu hỏi số 11?", "options": [{"id":"a", "text":"Đúng"}, {"id":"b", "text":"Sai"}], "correct_option_id":"a"}
+  ]
+}
+\`\`\``;
+
+  const parsedB = AIParser.parse(sampleQ10CutOff);
+  assert(parsedB.cards.length === 11, 'Case (b) rescues truncated block 1 and deduplicates to 11 cards');
+  assert(parsedB.cards[9].question === 'Câu hỏi số 10 hoàn chỉnh?', 'Case (b) prioritizes more complete question 10 from block 2');
+  assert(parsedB.cards[10].id === 'q11', 'Case (b) appends new question 11 with sequential id');
+  assert(parsedB.cards[0].id === 'q1' && parsedB.cards[8].id === 'q9', 'Case (b) cleanly renumbers q1..qN');
+
+  // 3. Case (c): Multi-block nối tiếp 1–20 và 21–40
+  const sampleMultiBlock = `\`\`\`json
+{
+  "quiz_title": "Ngân hàng 40 câu - Phần 1",
+  "questions": [
+    ${Array.from({ length: 20 }, (_, i) => `{"id": "q${i+1}", "question": "Bài tập phần 1 số ${i+1}?", "options": [{"id":"a", "text":"A"}, {"id":"b", "text":"B"}], "correct_option_id":"a"}`).join(',\n    ')}
+  ]
+}
+\`\`\`
+Tiếp tục phần 2:
+\`\`\`json
+{
+  "quiz_title": "Ngân hàng 40 câu - Phần 2",
+  "questions": [
+    ${Array.from({ length: 20 }, (_, i) => `{"id": "q${i+1}", "question": "Bài tập phần 2 số ${i+21}?", "options": [{"id":"a", "text":"A"}, {"id":"b", "text":"B"}], "correct_option_id":"a"}`).join(',\n    ')}
+  ]
+}
+\`\`\``;
+
+  const parsedC = AIParser.parse(sampleMultiBlock);
+  assert(parsedC.cards.length === 40, 'Case (c) merges two 20-question blocks into exactly 40 cards');
+  assert(parsedC.cards[0].id === 'q1' && parsedC.cards[0].question.includes('phần 1 số 1'), 'Case (c) card 1 is correctly indexed');
+  assert(parsedC.cards[20].id === 'q21' && parsedC.cards[20].question.includes('phần 2 số 21'), 'Case (c) card 21 renumbered from block 2 q1 to q21');
+  assert(parsedC.cards[39].id === 'q40' && parsedC.cards[39].question.includes('phần 2 số 40'), 'Case (c) card 40 renumbered from block 2 q20 to q40');
+
+  // 4. Enhanced AI Prompt Template Checks
+  const template = AIParser.generateAIPromptTemplate({ topic: 'Cơ sở dữ liệu nâng cao', count: 25 });
+  assert(template.includes('CẤM TUYỆT ĐỐI: nối chuỗi kiểu code (" + ", \' + \')'), 'Prompt template strictly forbids " + " string concatenation');
+  assert(template.includes('xuống dòng thô trong chuỗi JSON (mọi xuống dòng phải dùng \\n)'), 'Prompt template strictly forbids raw newline');
+  assert(template.includes('hoặc tự ngắt để viết lại từ q1 giữa chừng'), 'Prompt template forbids self-resetting to q1');
+  assert(template.includes('Chỉ xuất tiếp ở lượt sau nếu chạm giới hạn độ dài của model'), 'Prompt template specifies continuation only on model token limit');
+  assert(template.includes('tuyệt đối không lặp lại câu cũ'), 'Prompt template forbids repeating old questions on continuation');
+  assert(template.includes('"image": ""'), 'Prompt template retains "image": "" schema');
 }
 
 console.log(`\n========================================`);
