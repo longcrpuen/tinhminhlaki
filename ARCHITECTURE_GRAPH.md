@@ -123,9 +123,9 @@ sequenceDiagram
 | `js/app.js` | 8,664 dòng | ~342 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, `getCorrectOptionIndex`, `cleanOptionText`, `getCardRawOptionAt`, phân loại chuẩn 3 nguồn thẻ (`ai`, `lms`, `manual`). |
 | `index.html` | 2,334 dòng | ~122 KB | Khung 8 view chính, 10 popup modal, buồng sóng sạch sẽ chuẩn Header, cụm Topbar HUD Capsule đồng tâm. |
 | `js/db.js` | 1,814 dòng | ~76 KB | Tầng IndexedDB `MindSparksQuizDB`. Hỗ trợ tự phục hồi `healCorruptedCardOptions(card)` và chuẩn hóa nguồn thẻ cũ trong `ensureDataIntegrity()`, in-memory cache `_memCache`. |
-| `tests/test-runner.js` | 1,953 dòng | ~86 KB | 29 Test Suites bảo vệ toàn diện 620 trường hợp kiểm thử tự động (100% PASS). |
+| `tests/test-runner.js` | 1,984 dòng | ~88 KB | 30 Test Suites bảo vệ toàn diện 633 trường hợp kiểm thử tự động (100% PASS). |
 | `js/lofi-music.js` | 702 dòng | ~28 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise + slider track fill). |
-| `js/parser.js` | 798 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, bảo toàn công thức đại số quan hệ và mũi tên suy diễn. |
+| `js/parser.js` | 801 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, prompt template chuẩn sư phạm cho trường `explanation`. |
 | `js/audio.js` | 326 dòng | ~12 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
 | `js/worker.js` | 254 dòng | ~9 KB | Service Worker phục vụ tính năng Offline-First PWA và precache tài nguyên. |
 | `js/srs.js` | 123 dòng | ~5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
@@ -143,4 +143,4 @@ Mọi thay đổi tiếp theo bắt buộc phải tuân thủ 5 quy tắc an to�
 
 ---
 
-*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 1x (620/620 tests passed, 0 failures, 100% PASS).*
+*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 2b (633/633 tests passed, 0 failures, 100% PASS).*

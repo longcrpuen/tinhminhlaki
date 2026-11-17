@@ -1945,6 +1945,37 @@ console.log('\n--- Test Suite 29: Phase 1x Concentric Topbar Pill & Strict 3-Sou
   assert(filterBySource(mockCards, 'manual').length === 2, 'Source filter "manual" covers manual cards and legacy fallback');
 }
 
+// === TEST SUITE 30: Phase 2b AI Prompt Template & Pedagogical Explanation Standards ===
+console.log('\n--- Test Suite 30: Phase 2b AI Prompt Template & Pedagogical Explanation Standards ---');
+{
+  const parserJs = fs.readFileSync(path.join(__dirname, '../js/parser.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // 1. Check prompt template generation rules
+  const template = AIParser.generateAIPromptTemplate({ topic: 'Đại số quan hệ', count: 10, difficulty: 'hard' });
+  assert(typeof template === 'string' && template.includes('Đại số quan hệ'), 'generateAIPromptTemplate incorporates topic');
+  assert(template.includes('10 câu hỏi'), 'generateAIPromptTemplate incorporates question count');
+  assert(template.includes('"difficulty": "hard"'), 'generateAIPromptTemplate incorporates difficulty');
+
+  // Pedagogical explanation enforcement
+  assert(template.includes('Quy tắc BẮT BUỘC cho trường "explanation"'), 'Prompt template defines mandatory explanation section');
+  assert(template.includes('Nêu rõ TẠI SAO đáp án đúng là đúng'), 'Prompt template requires justifying correct answer');
+  assert(template.includes('Nêu rõ TẠI SAO các phương án nhiễu còn lại sai'), 'Prompt template requires explaining why distractors are wrong');
+  assert(template.includes('CẤM TUYỆT ĐỐI viết câu mẫu sáo rỗng'), 'Prompt template strictly forbids hollow repetitive boilerplate');
+  assert(template.includes('CHỐNG LƯỜI KHI SINH NHIỀU CÂU'), 'Prompt template requires unique context-bound explanations');
+
+  // 2. Parse sample JSON from inside the template
+  const jsonMatch = template.match(/```json\s*([\s\S]*?)\s*```/);
+  assert(jsonMatch && jsonMatch[1], 'Prompt template embeds valid json code block');
+  const parsedTemplateDeck = AIParser.parse(jsonMatch[1]);
+  assert(parsedTemplateDeck.cards.length === 1, 'Template sample JSON parses cleanly into 1 card');
+  assert(parsedTemplateDeck.errors.length === 0, 'Template sample JSON has 0 parse errors');
+  assert(parsedTemplateDeck.cards[0].explanation.includes('Loại B vì') && parsedTemplateDeck.cards[0].explanation.includes('loại C vì'), 'Template sample explanation demonstrates standard pedagogical analysis');
+
+  // 3. App.copyAIPrompt verification
+  assert(appJs.includes('copyAIPrompt()') && appJs.includes('AIParser.generateAIPromptTemplate'), 'App.copyAIPrompt calls AIParser.generateAIPromptTemplate');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

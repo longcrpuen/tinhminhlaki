@@ -1,12 +1,12 @@
 # TinhMinhLaKey — Bản Đồ Kiến Trúc Toàn Bộ Ứng Dụng (Architecture Graph)
 
-> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Phase 1v — Bố Cục Trải Rộng Toàn Màn Hình Chuẩn Bản Gốc, Hệ Thống Điều Khiển Liquid Glass Controls, Tinh Chỉnh Buồng Sóng Sạch Sẽ & Cỗ Máy Thuật Toán Max Ping 120FPS)**  
+> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Phase 1z — Nâng Cấp Preset Cây Thông Noel 3D ASCII Chu Kỳ 4 Pha Cinematic Loop, Selective Glow 2 Pass, Làn Sóng Quét Bloom & Hạt Tan Biến Mờ Dần, 24 FPS & 0 Lag UI)**  
 > Dùng làm bản đồ điều phối gốc cho toàn bộ các phiên bản nâng cấp, sửa đổi tính năng, tái cấu trúc UI/UX và bảo trì hệ thống.
 >
-> * **Tổng số tệp cốt lõi:** 11 tệp chính + 27 bộ kiểm thử hồi quy (Test Suites).
-> * **Tổng số dòng code thực tế:** `index.html` (2,333 dòng), `js/app.js` (8,619 dòng), `js/db.js` (1,653 dòng), `js/lofi-music.js` (701 dòng), `js/parser.js` (797 dòng), `js/srs.js` (122 dòng), `js/audio.js` (325 dòng), `js/worker.js` (254 dòng), `css/style.css` (11,359 dòng), `css/theme.css` (3,275 dòng), `tests/test-runner.js` (1,720 dòng).
-> * **Tổng quy mô mã nguồn:** 31,158 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
-> * **Kết quả kiểm thử tự động:** 100% PASS (564/564 kiểm thử trên 27 Test Suites).
+> * **Tổng số tệp cốt lõi:** 12 tệp chính + 30 bộ kiểm thử hồi quy (Test Suites).
+> * **Tổng số dòng code thực tế:** `index.html` (2,397 dòng), `js/app.js` (8,784 dòng), `js/db.js` (1,814 dòng), `js/ascii-bg.js` (645 dòng), `js/lofi-music.js` (702 dòng), `js/parser.js` (798 dòng), `js/srs.js` (123 dòng), `js/audio.js` (326 dòng), `js/worker.js` (254 dòng), `css/style.css` (11,555 dòng), `css/theme.css` (3,537 dòng), `tests/test-runner.js` (2,049 dòng).
+> * **Tổng quy mô mã nguồn:** 32,984 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
+> * **Kết quả kiểm thử tự động:** 100% PASS (675/675 kiểm thử trên 30 Test Suites).
 
 ---
 
@@ -14,17 +14,18 @@
 
 ```mermaid
 graph TD
-    Root["App Root<br/>(index.html: 2,333 dòng | js/app.js: 8,619 dòng | js/db.js: 1,653 dòng | css/theme.css: 3,275 dòng | css/style.css: 11,359 dòng | js/lofi-music.js: 701 dòng)"]
+    Root["App Root<br/>(index.html: 2,397 dòng | js/app.js: 8,784 dòng | js/ascii-bg.js: 645 dòng | js/db.js: 1,814 dòng | css/theme.css: 3,537 dòng | css/style.css: 11,555 dòng)"]
 
-    Root --> B1["Branch 1: Global Shell & Full-Width Responsive Architecture<br/>(Desktop Sidebar 244px/68px, Margin 264px/88px, Full Width 100% .content-wrapper, Zero 1240px Limit, Liquid Glass Controls --lg-ctrl-*, Mobile Bottom Nav 999px)"]
+    Root --> B1["Branch 1: Global Shell & Full-Width Responsive Architecture<br/>(Desktop Sidebar 244px/68px, Margin 264px/88px, Full Width 100% .content-wrapper, Concentric Topbar Pill 4 Themes, Liquid Glass Controls)"]
     Root --> B2["Branch 2: #view-dashboard<br/>(Single-Pass O(N) Dashboard Aggregation, Mini Heatmap 7 Days O(1) Lookup, Hero Quote Stage, 4 Status Metric Blocks Neon, Lofi Track Fill 0% -> val%)"]
     Root --> B3["Branch 3: #view-decks<br/>(Deck Delete Liquid Glass Modal #modal-confirm-delete-deck, db.revision Fast Invalidation, Subject Filter Pills, Subject Groups Bevel 18px)"]
     Root --> B4["Branch 4: #view-bank<br/>(Hidden _searchBlob Index + 90ms Debounce, INITIAL_BATCH = 8 Float-Up Entrance, IntersectionObserver Lazy Scroll Reveal, Skeleton Shimmer Sentinel, 4 CyberDropdowns)"]
     Root --> B5["Branch 5: #view-study<br/>(Single Bottom #btn-quiz-prev in .quiz-footer-actions, .lg-pill-btn & .btn-card-action 34x34px, Full-String KaTeX LRU Cache, Fast-Path Strip Citations, LaTeX Explanation Box)"]
-    Root --> B6["Branch 6: #view-exam<br/>(#exam-palette-bar 3 Theme Liquid Glass, .exam-option-selected Highlight, Single & All Questions LMS Scroll + Sticky Palette)"]
+    Root --> B6["Branch 6: #view-exam<br/>(#exam-palette-bar 4 Theme Liquid Glass, .exam-option-selected Highlight, Single & All Questions LMS Scroll + Sticky Palette)"]
     Root --> B7["Branch 7: #view-import & #view-import-lms<br/>(Fast-Path stripCitationArtifacts, Cấm AI Sinh Dẫn Chứng Lộ Đáp Án, AI Paste Parser, Moodle LMS Parser)"]
-    Root --> B8["Branch 8: #view-stats & #view-settings<br/>(Clean Wave Chamber Console, Precomputed _waveLUT 144Hz Float32Array, Phase Gates at 33.333% & 66.667%, Live Dot + Theme Subtitle + .energy-level-pill, 365-day Heatmap)"]
-    Root --> B9["Branch 9: Modal System (10 Modals) Independent Liquid Glass<br/>(#modal-confirm-delete-deck, #modal-suggest-merge-subjects, closeAllModals Bất Tử Qua Delegation, Purple-Pink / Monochrome / White-Orange Glass)"]
+    Root --> B8["Branch 8: #view-stats & #view-settings<br/>(Clean Wave Chamber Console, Precomputed _waveLUT 144Hz Float32Array, Phase Gates at 33.333% & 66.667%, Extended ASCII Settings Panel #ascii-settings-panel)"]
+    Root --> B9["Branch 9: Modal System (10 Modals) Independent Liquid Glass<br/>(#modal-confirm-delete-deck, #modal-suggest-merge-subjects, closeAllModals Bất Tử Qua Delegation)"]
+    Root --> B10["Branch 10: ASCII Background Engine (js/ascii-bg.js)<br/>(Cinematic 4-Phase Loop 11s, Selective Glow 2 Pass, 5-Tier Cone Z-Buffer, Double Helix Garland, Luminous Scan Wave, Floating Embers Disintegration, Auto-Pause)"]
 ```
 
 ### Danh Mục 9 Nhánh Kiến Trúc (9 Architectural Branches) & Tọa Độ Code Thực Tế (Phase 1v)
@@ -114,18 +115,19 @@ sequenceDiagram
 
 ## PHẦN 5: DANH MỤC CÁC ĐIỂM NÓNG HIỆU NĂNG & THÔNG SỐ TỆP CỐT LÕI
 
-### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 1x)
+### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 1y)
 
 | Tên File | Số Dòng Code Thực Tế | Kích Thước Tệp (KB) | Đánh Giá Tải & Trọng Tâm Tối Ưu |
 | :--- | :--- | :--- | :--- |
-| `css/style.css` | 11,383 dòng | ~355 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, Concentric Topbar Pill (`padding: 4px`, `height: 40px`, `border-radius: 9999px`, nút theme & streak `32px` trên Desktop; `34px`/`28px` trên Mobile). |
-| `css/theme.css` | 3,277 dòng | ~101 KB | Nguồn token thiết kế duy nhất cho 3 theme. Quản lý `--lg-ctrl-*`, `--sidebar-glass-*`, `--wave-chamber-*`, đồng bộ Topbar HUD Capsule đồng tâm. |
-| `js/app.js` | 8,664 dòng | ~342 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, `getCorrectOptionIndex`, `cleanOptionText`, `getCardRawOptionAt`, phân loại chuẩn 3 nguồn thẻ (`ai`, `lms`, `manual`). |
-| `index.html` | 2,334 dòng | ~122 KB | Khung 8 view chính, 10 popup modal, buồng sóng sạch sẽ chuẩn Header, cụm Topbar HUD Capsule đồng tâm. |
-| `js/db.js` | 1,814 dòng | ~76 KB | Tầng IndexedDB `MindSparksQuizDB`. Hỗ trợ tự phục hồi `healCorruptedCardOptions(card)` và chuẩn hóa nguồn thẻ cũ trong `ensureDataIntegrity()`, in-memory cache `_memCache`. |
-| `tests/test-runner.js` | 1,953 dòng | ~86 KB | 29 Test Suites bảo vệ toàn diện 620 trường hợp kiểm thử tự động (100% PASS). |
+| `css/style.css` | 11,555 dòng | ~362 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, Concentric Topbar Pill (4 theme buttons `32px`), styles cho `#ascii-bg-canvas`, `#bg-layer.ascii-active`, `#ascii-settings-panel`, `.ascii-preset-grid`. |
+| `css/theme.css` | 3,537 dòng | ~109 KB | Nguồn token thiết kế duy nhất cho 4 theme. Quản lý Theme 4 `ascii` Midnight Pine / Obsidian (`#070b0f`, `#34d399`, `#10b981`), range slider tokens, exam palette bar. |
+| `js/app.js` | 8,784 dòng | ~348 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, tích hợp `AsciiBgEngine` (`selectAsciiPreset`, `onAsciiOpacityChange`, `onAsciiSnowToggle`). |
+| `index.html` | 2,397 dòng | ~126 KB | Khung 8 view chính, 10 popup modal, Topbar HUD Capsule 4 theme, `#ascii-settings-panel` với grid presets & controls. |
+| `js/ascii-bg.js` | 645 dòng | ~24 KB | Module Engine ASCII Động chạy 24 FPS trên Canvas. Preset Cây Thông Noel 3D Cinematic 4 pha (~11s loop), Selective Glow 2 pass (`shadowBlur = 12`), đèn xoắn ốc kép, sóng quét bùng sáng & tan biến. |
+| `js/db.js` | 1,814 dòng | ~76 KB | Tầng IndexedDB `MindSparksQuizDB`. Tự phục hồi `healCorruptedCardOptions(card)`, chuẩn hóa nguồn thẻ cũ, lưu trữ meta `asciiPreset`, `asciiOpacity`, `asciiSnow`. |
+| `tests/test-runner.js` | 1,984 dòng | ~88 KB | 30 Test Suites bảo vệ toàn diện 633 trường hợp kiểm thử tự động (100% PASS). |
 | `js/lofi-music.js` | 702 dòng | ~28 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise + slider track fill). |
-| `js/parser.js` | 798 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, bảo toàn công thức đại số quan hệ và mũi tên suy diễn. |
+| `js/parser.js` | 801 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, prompt template chuẩn sư phạm cho trường `explanation`. |
 | `js/audio.js` | 326 dòng | ~12 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
 | `js/worker.js` | 254 dòng | ~9 KB | Service Worker phục vụ tính năng Offline-First PWA và precache tài nguyên. |
 | `js/srs.js` | 123 dòng | ~5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
@@ -143,4 +145,4 @@ Mọi thay đổi tiếp theo bắt buộc phải tuân thủ 5 quy tắc an to�
 
 ---
 
-*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 1x (620/620 tests passed, 0 failures, 100% PASS).*
+*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 2b (633/633 tests passed, 0 failures, 100% PASS).*
