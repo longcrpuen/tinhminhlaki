@@ -145,26 +145,42 @@ const AIParser = {
     return null;
   },
 
+  _isQuizJsonData(data) {
+    if (!data || typeof data !== 'object') return false;
+    if (Array.isArray(data)) return data.length > 0;
+    return Boolean(
+      (Array.isArray(data.questions) && data.questions.length > 0) ||
+      (Array.isArray(data.cards) && data.cards.length > 0) ||
+      (data.quiz_title && (Array.isArray(data.questions) || Array.isArray(data.cards))) ||
+      (data.deckName && (Array.isArray(data.questions) || Array.isArray(data.cards)))
+    );
+  },
+
   /**
    * 3. Tách các block JSON từ rawInput (hỗ trợ nhiều block ```json hoặc nhiều object { "quiz_title": ... })
+   * Tuyệt đối không match nhầm các khối code ```c, ```text, ```python bên trong chuỗi JSON.
    */
   _extractJsonBlocks(rawInput) {
     if (!rawInput || typeof rawInput !== 'string') return [];
     const trimmed = rawInput.trim();
 
+    // 1. Tách các block markdown code fence nếu có
     if (trimmed.includes('```')) {
       const blocks = [];
-      const regex = /```(?:json)?\s*([\s\S]*?)(?:```|$)/gi;
+      // Chỉ match opening fence là ```json/```jsonc hoặc ``` đứng một mình trên một dòng
+      // Tuyệt đối không match ```c, ```text, ```python, ```cpp, v.v.
+      const fenceRegex = /(?:^|\r?\n)```(?:(?:json|jsonc)\s*|[ \t]*\r?\n)\s*([\s\S]*?)(?:\r?\n```\s*(?:\r?\n|$)|$)/gi;
       let m;
-      while ((m = regex.exec(trimmed)) !== null) {
+      while ((m = fenceRegex.exec(trimmed)) !== null) {
         const content = m[1].trim();
-        if (content && (content.includes('{') || content.includes('['))) {
+        if (content && (content.startsWith('{') || content.startsWith('['))) {
           blocks.push(content);
         }
       }
       if (blocks.length > 0) return blocks;
     }
 
+    // 2. Tách các object JSON đứng liền nhau không có code fence (ví dụ: { ... }\n{ ... })
     const objectSplitRegex = /(?<=\})\s*(?=\{\s*"(?:quiz_title|questions|id)")/g;
     if (objectSplitRegex.test(trimmed)) {
       const parts = trimmed.split(objectSplitRegex);
@@ -304,25 +320,58 @@ const AIParser = {
 
     const trimmed = rawInput.trim();
 
-    // 1. Phân tích các khối JSON (tự sửa lỗi cú pháp, tự cứu block bị cụt, gộp multi-block & khử trùng lặp)
+    // =========================================================================
+    // FAST-PATH 1: Thử parse trực tiếp input gốc bằng JSON.parse chuẩn
+    // Tuyệt đối không can thiệp chuỗi, không qua regex hay tách block nếu JSON đã chuẩn
+    // =========================================================================
+    try {
+      const directParsed = JSON.parse(trimmed);
+      if (this._isQuizJsonData(directParsed)) {
+        return this._normalizeJsonData(directParsed);
+      }
+    } catch (_) {}
+
+    // =========================================================================
+    // FAST-PATH 2: Nếu toàn bộ input được bọc trong cặp ```json ... ``` ngoài cùng
+    // Chỉ bóc cặp code fence ở đầu/cuối tuyệt đối (anchor ^ và $), không dùng regex global
+    // =========================================================================
+    if (trimmed.startsWith('```')) {
+      const outerFenceMatch = trimmed.match(/^```(?:json)?\s*\r?\n([\s\S]*?)\r?\n```\s*$/i);
+      if (outerFenceMatch) {
+        const unboxed = outerFenceMatch[1].trim();
+        try {
+          const directUnboxed = JSON.parse(unboxed);
+          if (this._isQuizJsonData(directUnboxed)) {
+            return this._normalizeJsonData(directUnboxed);
+          }
+        } catch (_) {}
+      }
+    }
+
+    // =========================================================================
+    // FALLBACK 1 & 2: Khi JSON.parse trực tiếp thất bại
+    // Tách các khối JSON (tự sửa lỗi cú pháp, tự cứu block bị cụt, gộp multi-block & khử trùng lặp)
+    // =========================================================================
     const jsonBlocks = this._extractJsonBlocks(trimmed);
     const parsedDataList = [];
 
     for (let i = 0; i < jsonBlocks.length; i++) {
       const repaired = this._tryRepairAndParseJson(jsonBlocks[i]);
-      if (repaired) {
+      if (this._isQuizJsonData(repaired)) {
         parsedDataList.push(repaired);
       }
     }
 
     if (parsedDataList.length > 0) {
       const mergedJson = this._mergeParsedJsonBlocks(parsedDataList);
-      if (mergedJson && (Array.isArray(mergedJson.questions) || Array.isArray(mergedJson.cards) || Array.isArray(mergedJson))) {
+      if (this._isQuizJsonData(mergedJson)) {
         return this._normalizeJsonData(mergedJson);
       }
     }
 
-    // 2. Try parsing as Markdown / Text format
+    // =========================================================================
+    // FALLBACK 3: Thử phân tích định dạng Markdown / Text format (Câu 1: ... A. ... B. ...)
+    // =========================================================================
     const textCards = this._parseTextFormat(trimmed);
     if (textCards && textCards.length > 0) {
       return {
@@ -334,7 +383,9 @@ const AIParser = {
       };
     }
 
-    // 3. Fallback error
+    // =========================================================================
+    // FALLBACK 4: Báo lỗi nếu không nhận diện được định dạng nào
+    // =========================================================================
     throw new Error(
       'Không thể nhận diện định dạng câu hỏi! Vui lòng dán dữ liệu theo định dạng JSON chuẩn (có quiz_title và questions) hoặc văn bản trắc nghiệm.'
     );

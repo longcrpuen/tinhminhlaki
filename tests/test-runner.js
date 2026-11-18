@@ -2221,6 +2221,111 @@ Tiếp tục phần 2:
   assert(template.includes('"image": ""'), 'Prompt template retains "image": "" schema');
 }
 
+// === TEST SUITE 33: Regression Test for Embedded Markdown Code Fences (```c, ```text) & Escaped Characters ===
+console.log('\n--- Test Suite 33: Embedded Markdown Code Fences (```c, ```text) & Escaped Characters ---');
+{
+  // 1. Direct Standard JSON containing ```c, ```text, \" and \\
+  const standardJsonWithCodeFences = JSON.stringify({
+    quiz_title: "Kiểm tra Lập trình C & Hệ thống nhúng",
+    questions: [
+      {
+        id: "q1",
+        question: "Cho đoạn mã nguồn sau:\n```c\n#include <stdio.h>\nint main() {\n    int a = 5;\n    printf(\"%d\\n\", a);\n    return 0;\n}\n```\nChương trình sẽ in ra kết quả gì trên màn hình console?",
+        options: [
+          { id: "a", text: "5" },
+          { id: "b", text: "0" },
+          { id: "c", text: "Lỗi biên dịch: printf chưa được định nghĩa" },
+          { id: "d", text: "Không in ra gì (\"output rỗng\")" }
+        ],
+        correct_option_id: "a",
+        explanation: "Hàm `printf` định dạng \"%d\" in giá trị biến số nguyên `a = 5` kèm ký tự xuống dòng."
+      },
+      {
+        id: "q2",
+        question: "Xem output nhật ký hệ thống sau:\n```text\n[INFO] Starting daemon at \\etc\\service...\n[SUCCESS] Connection established.\n```\nĐoạn log trên thể hiện trạng thái gì?",
+        options: [
+          { id: "a", text: "Dịch vụ đã khởi động và kết nối thành công (\"SUCCESS\")" },
+          { id: "b", text: "Dịch vụ gặp lỗi đường dẫn \\etc\\service" }
+        ],
+        correct_option_id: "a",
+        explanation: "Nhãn [SUCCESS] biểu thị quá trình kết nối daemon tại đường dẫn `\\etc\\service` đã hoàn tất mỹ mãn."
+      }
+    ]
+  }, null, 2);
+
+  const parsedDirect = AIParser.parse(standardJsonWithCodeFences);
+  assert(parsedDirect.cards.length === 2, 'Direct JSON with ```c & ```text parses 2 cards successfully');
+  assert(parsedDirect.cards[0].question.includes('```c'), 'Card 1 preserves ```c code fence');
+  assert(parsedDirect.cards[0].question.includes('#include <stdio.h>'), 'Card 1 preserves C source code');
+  assert(parsedDirect.cards[0].answerIndex === 0, 'Card 1 correct option index is 0');
+  assert(parsedDirect.cards[1].question.includes('```text'), 'Card 2 preserves ```text code fence');
+  assert(parsedDirect.cards[1].options[0].includes('"SUCCESS"'), 'Card 2 preserves escaped quotes in option text');
+  assert(parsedDirect.cards[1].options[1].includes('\\etc\\service'), 'Card 2 preserves backslashes in option text');
+  assert(parsedDirect.errors.length === 0, 'Zero errors on standard JSON with code fences');
+
+  // 2. Outermost markdown wrapper ```json ... ``` with embedded code fences
+  const wrappedJsonWithCode = `\`\`\`json
+${standardJsonWithCodeFences}
+\`\`\``;
+  const parsedWrapped = AIParser.parse(wrappedJsonWithCode);
+  assert(parsedWrapped.cards.length === 2, 'Outermost ```json ... ``` wrapper with inner ```c parses cleanly');
+  assert(parsedWrapped.cards[0].question.includes('printf("%d\\n", a);'), 'Inner C code remains uncorrupted when wrapped');
+
+  // 3. Fallback repair: JSON containing syntax errors (" + ", trailing comma) AND embedded code fence
+  const faultyJsonWithCode = `{
+    "quiz_title": "Tự sửa lỗi cú pháp có khối code",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Cho mã nguồn:\\n\`\`\`c\\nchar msg[] = \\"Hello \\\\\\"C\\\\\\" World\\\\n\\";\\nputs(msg);\\n\`\`\`\\nĐoạn mã in chuỗi gì?",
+        "options": [
+          { "id": "a", "text": "Hello \\"C\\" World" },
+          { "id": "b", "text": "Lỗi cú pháp chuỗi" },
+        ],
+        "correct_option_id": "a",
+        "explanation": "Hàm puts in ra chuỗi có dấu ngoặc kép " + "nhờ ký tự escape."
+      },
+    ]
+  }`;
+  const parsedFaulty = AIParser.parse(faultyJsonWithCode);
+  assert(parsedFaulty.cards.length === 1, 'Faulty JSON with " + " and embedded ```c is rescued and parsed');
+  assert(parsedFaulty.cards[0].question.includes('```c'), 'Rescued question keeps ```c code fence intact');
+  assert(parsedFaulty.cards[0].explanation.includes('Hàm puts in ra chuỗi có dấu ngoặc kép nhờ ký tự escape.'), 'Rescued explanation has concatenated string cleaned');
+
+  // 4. Fallback multi-block: 2 JSON blocks where each block contains code fences
+  const multiBlockWithCode = `\`\`\`json
+{
+  "quiz_title": "Lập trình C - Khối 1",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Đoạn mã:\\n\`\`\`c\\nint x = 42;\\n\`\`\`",
+      "options": [{"id":"a", "text":"42"}, {"id":"b", "text":"0"}],
+      "correct_option_id": "a"
+    }
+  ]
+}
+\`\`\`
+Tiếp tục khối 2:
+\`\`\`json
+{
+  "quiz_title": "Lập trình C - Khối 2",
+  "questions": [
+    {
+      "id": "q2",
+      "question": "Output shell:\\n\`\`\`text\\nProcess exited with status 0\\n\`\`\`",
+      "options": [{"id":"a", "text":"Thành công"}, {"id":"b", "text":"Lỗi"}],
+      "correct_option_id": "a"
+    }
+  ]
+}
+\`\`\``;
+  const parsedMulti = AIParser.parse(multiBlockWithCode);
+  assert(parsedMulti.cards.length === 2, 'Multi-block with embedded ```c and ```text merges into 2 cards');
+  assert(parsedMulti.cards[0].question.includes('```c'), 'Multi-block card 1 keeps ```c code fence');
+  assert(parsedMulti.cards[1].question.includes('```text'), 'Multi-block card 2 keeps ```text code fence');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);
