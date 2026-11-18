@@ -722,6 +722,9 @@ Yêu cầu thực hiện nghiêm ngặt 4 nguyên tắc sau:
 3. KỶ LUẬT CÚ PHÁP JSON (CHỐNG LỖI PARSE):
 - CẤM TUYỆT ĐỐI: nối chuỗi kiểu code (" + ", ' + '), xuống dòng thô trong chuỗi JSON (mọi xuống dòng phải dùng \\n), hoặc tự ngắt để viết lại từ q1 giữa chừng khi gặp câu có hình ảnh/bảng biểu.
 - Escape đúng \\" và \\\\ (đặc biệt với LaTeX như \\\\frac, \\\\le, \\\\ge và ký tự C như \\\\0, \\\\n). Trong văn bản giải thích/câu hỏi, ưu tiên dùng backtick \`...\` thay cho ngoặc kép " để hạn chế lỗi escape.
+- Với mã nguồn/lệnh máy tính trong câu hỏi hoặc giải thích:
+  + Đoạn code nhiều dòng dùng block \`\`\`c\\n...\\n\`\`\` hoặc \`\`\`text\\n...\\n\`\`\` (có \\n tách khỏi câu hỏi, tuyệt đối không dính liền 1 dòng).
+  + Tên biến hoặc lệnh ngắn 1 dòng (như \`printf()\`, \`int _dem2;\`, \`SELECT\`) ưu tiên dùng inline backtick \`...\`.
 - Chiến lược Hybrid xử lý đề thi có hình ảnh:
   + Bắt buộc OCR và chuyển toàn bộ sang Text + LaTeX ($...$, $$...$$) + Bảng Markdown đối với ảnh chụp chữ, công thức Toán/Lý/Hóa, bảng số liệu (KHÔNG giữ dạng ảnh).
   + Ảnh sơ đồ (ER, UML, mạch điện) hoặc đồ thị hình học: KHÔNG diễn giải thay thế bằng văn bản (làm mất ý nghĩa câu hỏi); giữ cấu trúc "image": "" trên câu hỏi hoặc options[].image để người dùng dán ảnh trực tiếp trên app.

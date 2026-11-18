@@ -11583,6 +11583,115 @@ html[data-theme="white-orange"] .card-image-upload-zone:focus-within {
   background: rgba(234, 88, 12, 0.05);
 }
 
+/* ==========================================================================
+   MARKDOWN CODE BLOCKS & INLINE CODE SYSTEM (Rich Text Formatting)
+   ========================================================================== */
+.code-block {
+  display: block;
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: var(--surface-code, rgba(12, 9, 22, 0.72));
+  border: 1px solid var(--glass-border, rgba(216, 180, 254, 0.20));
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', 'Courier New', monospace);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-primary, #f5f3ff);
+  white-space: pre;
+  overflow-x: auto;
+  text-align: left;
+  tab-size: 2;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+  -webkit-overflow-scrolling: touch;
+}
+
+.code-block code {
+  display: block;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  white-space: pre !important;
+  text-align: left;
+}
+
+.inline-code {
+  display: inline-block;
+  padding: 1.5px 6px;
+  margin: 0 2px;
+  background: var(--surface-code, rgba(216, 180, 254, 0.12));
+  border: 1px solid var(--glass-border-subtle, rgba(216, 180, 254, 0.18));
+  border-radius: var(--radius-xs, 6px);
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', 'Courier New', monospace);
+  font-size: 0.88em;
+  color: var(--accent, #d8b4fe);
+  vertical-align: baseline;
+  word-break: break-word;
+}
+
+/* Theme overrides for monochrome (black & white) */
+html[data-theme="monochrome"] .code-block,
+body[data-theme="monochrome"] .code-block,
+html[data-color-mode="bw-dark"] .code-block {
+  background: var(--surface-code, rgba(8, 8, 8, 0.85)) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #f4f4f5 !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+html[data-theme="monochrome"] .inline-code,
+body[data-theme="monochrome"] .inline-code,
+html[data-color-mode="bw-dark"] .inline-code {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Theme overrides for white-orange */
+html[data-theme="white-orange"] .code-block,
+body[data-theme="white-orange"] .code-block,
+html[data-color-mode="white-orange"] .code-block {
+  background: var(--surface-code, rgba(255, 245, 235, 0.95)) !important;
+  border-color: rgba(234, 88, 12, 0.22) !important;
+  color: #1c1917 !important;
+  box-shadow: inset 0 1px 3px rgba(234, 88, 12, 0.06) !important;
+}
+
+html[data-theme="white-orange"] .inline-code,
+body[data-theme="white-orange"] .inline-code,
+html[data-color-mode="white-orange"] .inline-code {
+  background: rgba(234, 88, 12, 0.10) !important;
+  border-color: rgba(234, 88, 12, 0.25) !important;
+  color: #c2410c !important;
+}
+
+/* Theme overrides for ascii / terminal theme */
+html[data-theme="ascii"] .code-block,
+body[data-theme="ascii"] .code-block {
+  background: #000000 !important;
+  border: 1px dashed #22c55e !important;
+  color: #22c55e !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="ascii"] .inline-code,
+body[data-theme="ascii"] .inline-code {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border: 1px solid #22c55e !important;
+  color: #22c55e !important;
+}
+
+@media (max-width: 640px) {
+  .code-block {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    margin: 8px 0;
+  }
+}
+
+
 
 
 

@@ -640,11 +640,70 @@ const App = {
       .trim();
   },
 
+  // --- RICH TEXT & MARKDOWN CODE & MIXED LATEX PARSER & RENDERER ---
+  formatRichText(text) {
+    if (text === null || text === undefined) return '';
+    let str = this.stripCitationArtifacts(String(text));
+    if (!str.trim()) return '';
+
+    // 1. Tokenize fenced code blocks (```lang\n...``` hoặc ```...```)
+    const codeBlocks = [];
+    str = str.replace(/```([a-zA-Z0-9_\-]+)?\s*[\r\n]([\s\S]*?)```/g, (match, lang, code) => {
+      const idx = codeBlocks.length;
+      const cleanCode = code.replace(/\r?\n$/, '');
+      const safeCode = this._escapeHtml(cleanCode);
+      const langAttr = lang ? ` data-lang="${this._escapeHtml(lang)}" class="language-${this._escapeHtml(lang)}"` : '';
+      codeBlocks.push(`<pre class="code-block"${langAttr}><code>${safeCode}</code></pre>`);
+      return `\n@@@MS_CODE_BLOCK_${idx}@@@\n`;
+    });
+
+    // Fenced code block một dòng ```code```
+    str = str.replace(/```([\s\S]*?)```/g, (match, code) => {
+      const idx = codeBlocks.length;
+      const safeCode = this._escapeHtml(code.trim());
+      codeBlocks.push(`<pre class="code-block"><code>${safeCode}</code></pre>`);
+      return `\n@@@MS_CODE_BLOCK_${idx}@@@\n`;
+    });
+
+    // 2. Tokenize inline code `...`
+    const inlineCodes = [];
+    str = str.replace(/`([^`\r\n]+)`/g, (match, inline) => {
+      const idx = inlineCodes.length;
+      const safeInline = this._escapeHtml(inline);
+      inlineCodes.push(`<code class="inline-code">${safeInline}</code>`);
+      return `@@@MS_INLINE_CODE_${idx}@@@`;
+    });
+
+    // 3. Render Math & Escape text thông qua renderLatexText
+    let rendered = this.renderLatexText(str);
+
+    // 4. Xử lý xuống dòng: Chuẩn hóa khoảng trống quanh code blocks rồi chuyển \n thành <br>
+    rendered = rendered.replace(/(?:\r?\n)*@@@MS_CODE_BLOCK_(\d+)@@@(?:\r?\n)*/g, '@@@MS_CODE_BLOCK_$1@@@');
+    rendered = rendered.replace(/\r?\n/g, '<br>');
+
+    // 5. Restore Inline code
+    inlineCodes.forEach((cHtml, idx) => {
+      rendered = rendered.replace(`@@@MS_INLINE_CODE_${idx}@@@`, cHtml);
+    });
+
+    // 6. Restore Code blocks
+    codeBlocks.forEach((bHtml, idx) => {
+      rendered = rendered.replace(`@@@MS_CODE_BLOCK_${idx}@@@`, bHtml);
+    });
+
+    return rendered;
+  },
+
   // --- ROBUST MIXED LATEX & TEXT PARSER & RENDERER ---
   renderLatexText(text) {
     if (text === null || text === undefined) return '';
     let str = this.stripCitationArtifacts(String(text));
     if (!str.trim()) return '';
+
+    // Nếu văn bản có chứa code block hoặc inline code thì ưu tiên xử lý qua formatRichText
+    if (str.includes('```') || str.includes('`')) {
+      return this.formatRichText(text);
+    }
 
     // Fast-path non-math bypass
     if (str.indexOf('$') === -1 && str.indexOf('\\(') === -1 && str.indexOf('\\[') === -1) {
@@ -800,6 +859,7 @@ const App = {
             { left: '$$', right: '$$', display: true },
             { left: '$', right: '$', display: false }
           ],
+          ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
           throwOnError: false
         });
       } catch (err) {
@@ -3412,7 +3472,7 @@ const App = {
 
     const qTextEl = document.getElementById('quiz-card-question');
     if (qTextEl) {
-      qTextEl.innerHTML = this.renderLatexText(card.question);
+      qTextEl.innerHTML = this.formatRichText(card.question);
     }
 
     const qImgEl = document.getElementById('quiz-card-image');
@@ -3533,7 +3593,7 @@ const App = {
       if (footerActions) footerActions.style.removeProperty('display');
       const expText = document.getElementById('quiz-explanation-text');
       if (expBox && expText) {
-        expText.innerHTML = this.renderLatexText(card.explanation || 'Không có giải thích thêm.');
+        expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
         expBox.classList.add('show');
         this.renderMath(expBox);
       }
@@ -3788,7 +3848,7 @@ const App = {
       btn.innerHTML = `
         <span class="quiz-option-letter select-none">${displayLetter}.</span>
         <div class="quiz-option-content">
-          ${cleanText ? `<div class="quiz-option-text">${this.renderLatexText(cleanText)}</div>` : ''}
+          ${cleanText ? `<div class="quiz-option-text">${this.formatRichText(cleanText)}</div>` : ''}
           ${optImgHtml}
         </div>
       `;
@@ -3965,7 +4025,7 @@ const App = {
     const expBox = document.getElementById('quiz-explanation-box');
     const expText = document.getElementById('quiz-explanation-text');
     if (expBox && expText) {
-      expText.innerHTML = this.renderLatexText(card.explanation || 'Không có giải thích thêm.');
+      expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
       expBox.classList.add('show');
       this.renderMath(expBox);
     }
@@ -4090,7 +4150,7 @@ const App = {
     const expBox = document.getElementById('quiz-explanation-box');
     const expText = document.getElementById('quiz-explanation-text');
     if (expBox && expText) {
-      expText.innerHTML = this.renderLatexText(card.explanation || 'Không có giải thích thêm.');
+      expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
       expBox.classList.add('show');
       this.renderMath(expBox);
     }
@@ -4288,7 +4348,7 @@ const App = {
     }
 
     const qEl = document.getElementById('flashcard-question-text');
-    if (qEl) qEl.innerHTML = this.renderLatexText(card.question);
+    if (qEl) qEl.innerHTML = this.formatRichText(card.question);
 
     const frontImgEl = document.getElementById('flashcard-front-image');
     if (frontImgEl) {
@@ -4315,7 +4375,7 @@ const App = {
       correctOptImg = (rawOpt && rawOpt.image) || (card.options && card.options[cIdx] && card.options[cIdx].image) || null;
     }
     const ansEl = document.getElementById('flashcard-answer-text');
-    if (ansEl) ansEl.innerHTML = this.renderLatexText(correctOpt);
+    if (ansEl) ansEl.innerHTML = this.formatRichText(correctOpt);
 
     const backImgEl = document.getElementById('flashcard-back-image');
     if (backImgEl) {
@@ -4337,7 +4397,7 @@ const App = {
         expWrap.classList.remove('is-collapsible');
         expWrap.classList.add('is-expanded');
       }
-      if (expEl) expEl.innerHTML = this.renderLatexText(card.explanation);
+      if (expEl) expEl.innerHTML = this.formatRichText(card.explanation);
       if (expToggle) expToggle.style.display = 'none';
     } else {
       if (expWrap) {
@@ -5117,7 +5177,7 @@ const App = {
 
     document.getElementById('exam-q-counter').textContent = `Câu ${current} / ${total}`;
     const examQText = document.getElementById('exam-q-text');
-    if (examQText) examQText.innerHTML = this.renderLatexText(card.question);
+    if (examQText) examQText.innerHTML = this.formatRichText(card.question);
 
     const examImgWrap = document.getElementById('exam-q-image-wrap');
     if (examImgWrap) {
@@ -5183,7 +5243,7 @@ const App = {
         btn.innerHTML = `
           <span class="quiz-option-letter">${letter}</span>
           <div class="quiz-option-content">
-            ${cleanText ? `<span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>` : ''}
+            ${cleanText ? `<span class="quiz-option-text">${this.formatRichText(cleanText)}</span>` : ''}
             ${optImgHtml}
           </div>
         `;
@@ -5257,7 +5317,7 @@ const App = {
               <span id="exam-status-badge-${idx}" class="subject-badge" style="font-size: 0.75rem; ${userAns !== undefined && userAns !== '' ? '' : 'display: none;'}">Đã trả lời</span>
             </div>
             <h3 class="quiz-question-text" style="font-size: 1.05rem; margin-bottom: 16px;">
-              ${this.renderLatexText(card.question)}
+              ${this.formatRichText(card.question)}
             </h3>
             ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', false) : ''}
         `;
@@ -5299,7 +5359,7 @@ const App = {
               <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected exam-option-selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
                 <span class="quiz-option-letter">${letter}</span>
                 <div class="quiz-option-content">
-                  ${cleanText ? `<span class="quiz-option-text">${this.renderLatexText(cleanText)}</span>` : ''}
+                  ${cleanText ? `<span class="quiz-option-text">${this.formatRichText(cleanText)}</span>` : ''}
                   ${optImgHtml}
                 </div>
               </button>
@@ -7817,7 +7877,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         </div>
 
         <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
-          ${this.renderLatexText(card.question)}
+          ${this.formatRichText(card.question)}
         </div>
         ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', true) : ''}
 
@@ -7834,7 +7894,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
               const optImg = (rawOpt && rawOpt.image) || (typeof opt === 'object' && opt !== null ? opt.image : null) || null;
               return `
               <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <b>${letter}.</b> ${cleanText ? this.renderLatexText(cleanText) : ''} ${i === ansIdx ? '✓' : ''}
+                <b>${letter}.</b> ${cleanText ? this.formatRichText(cleanText) : ''} ${i === ansIdx ? '✓' : ''}
                 ${optImg ? this.renderCardImageHtml(optImg, 'Hình đáp án ' + letter, true) : ''}
               </div>
             `;
@@ -7844,7 +7904,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
         ${card.explanation ? `
           <div style="font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent);">
-            <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px;vertical-align:-2px;"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg><b>Giải thích:</b> ${this.renderLatexText(card.explanation)}
+            <svg class="mono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px;vertical-align:-2px;"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg><b>Giải thích:</b> ${this.formatRichText(card.explanation)}
           </div>
         ` : ''}
       </div>
@@ -8993,17 +9053,30 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   }
 };
 
-window.App = App;
+if (typeof window !== 'undefined') {
+  window.App = App;
+  window.formatRichText = (t) => App.formatRichText(t);
+}
+if (typeof global !== 'undefined') {
+  global.formatRichText = (t) => App.formatRichText(t);
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { App, formatRichText: (t) => App.formatRichText(t) };
+}
 
 // Start application when DOM is ready
-window.addEventListener('DOMContentLoaded', () => App.init());
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('DOMContentLoaded', () => App.init());
+}
 
 // Pause all animations when tab is hidden to save battery & CPU/GPU cycles
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    document.body.classList.add('tab-hidden');
-  } else {
-    document.body.classList.remove('tab-hidden');
-  }
-});
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      document.body.classList.add('tab-hidden');
+    } else {
+      document.body.classList.remove('tab-hidden');
+    }
+  });
+}
 

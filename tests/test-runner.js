@@ -2326,6 +2326,69 @@ Tiếp tục khối 2:
   assert(parsedMulti.cards[1].question.includes('```text'), 'Multi-block card 2 keeps ```text code fence');
 }
 
+// === TEST SUITE 34: formatRichText Helper, Code Blocks, Inline Code & KaTeX Isolation ===
+console.log('\n--- Test Suite 34: formatRichText Helper, Code Blocks, Inline Code & KaTeX Isolation ---');
+{
+  const { App, formatRichText } = require('../js/app.js');
+  assert(typeof App.formatRichText === 'function', 'App defines formatRichText method');
+  assert(typeof formatRichText === 'function', 'formatRichText is exported as a function');
+
+  // Case 1: Fenced code block with language, multiple lines, indentation and C includes
+  const cSnippet = `Cho đoạn mã nguồn C sau:
+\`\`\`c
+#include <stdio.h>
+#include <stdbool.h>
+
+int main() {
+    int a = 5;
+    printf("%d\\n", a);
+    return 0;
+}
+\`\`\`
+Hỏi chương trình xuất kết quả gì?`;
+
+  const renderedC = formatRichText(cSnippet);
+  assert(renderedC.includes('<pre class="code-block" data-lang="c" class="language-c">'), 'formatRichText renders <pre class="code-block" with language-c');
+  assert(renderedC.includes('<code>#include &lt;stdio.h&gt;\n#include &lt;stdbool.h&gt;'), 'formatRichText safely escapes <stdio.h> to &lt;stdio.h&gt; inside <code>');
+  assert(!renderedC.includes('<stdio.h>'), 'Raw unescaped <stdio.h> tag is not present');
+  assert(renderedC.includes('\n    int a = 5;\n'), 'Indentation and newlines inside code block are preserved');
+  assert(renderedC.includes('Cho đoạn mã nguồn C sau:'), 'Text before code block is preserved');
+  assert(renderedC.includes('Hỏi chương trình xuất kết quả gì?'), 'Text after code block is preserved');
+
+  // Case 2: Inline code `...`
+  const inlineSnippet = `Sử dụng hàm \`printf("%d", a)\` và biểu thức \`x < y && y > z\`.`;
+  const renderedInline = formatRichText(inlineSnippet);
+  assert(renderedInline.includes('<code class="inline-code">printf(&quot;%d&quot;, a)</code>'), 'formatRichText renders inline code pill for printf');
+  assert(renderedInline.includes('<code class="inline-code">x &lt; y &amp;&amp; y &gt; z</code>'), 'formatRichText safely escapes < > & inside inline-code');
+
+  // Case 3: Line breaks in normal text (\n -> <br>)
+  const multilineText = `Dòng thứ nhất.\nDòng thứ hai.\nDòng thứ ba.`;
+  const renderedLines = formatRichText(multilineText);
+  assert(renderedLines === 'Dòng thứ nhất.<br>Dòng thứ hai.<br>Dòng thứ ba.', 'formatRichText converts \\n into <br> in normal text without losing lines');
+
+  // Case 4: Math formulas $...$ and $$...$$ alongside code blocks
+  const hybridSnippet = `Giả sử hàm $f(x) = x^2$.
+\`\`\`c
+int sq = square(5);
+\`\`\`
+Giá trị biến \`sq\` tương ứng với $f(5)$.`;
+  const renderedHybrid = formatRichText(hybridSnippet);
+  assert(renderedHybrid.includes('<pre class="code-block" data-lang="c" class="language-c">'), 'Hybrid snippet renders code block');
+  assert(renderedHybrid.includes('<code class="inline-code">sq</code>'), 'Hybrid snippet renders inline code');
+  assert(renderedHybrid.includes('katex') || renderedHybrid.includes('f(x) = x^2'), 'Hybrid snippet preserves math formula outside code block');
+  assert(!renderedHybrid.includes('<pre class="code-block" data-lang="c" class="language-c"><code><span class="katex">'), 'KaTeX does not parse into <pre><code> code blocks');
+
+  // Case 5: Empty and null inputs
+  assert(formatRichText(null) === '', 'formatRichText returns empty string for null');
+  assert(formatRichText(undefined) === '', 'formatRichText returns empty string for undefined');
+  assert(formatRichText('   ') === '', 'formatRichText returns empty string for blank whitespace');
+
+  // Case 6: AI Prompt Template refinement checks
+  const template = AIParser.generateAIPromptTemplate({ topic: 'Lập trình C', count: 10 });
+  assert(template.includes('Đoạn code nhiều dòng dùng block ```c\\n...\\n```'), 'Prompt template guides AI to use multiline ```c code blocks');
+  assert(template.includes('Tên biến hoặc lệnh ngắn 1 dòng (như `printf()`, `int _dem2;`, `SELECT`) ưu tiên dùng inline backtick `...`'), 'Prompt template guides AI to use inline backticks');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);
