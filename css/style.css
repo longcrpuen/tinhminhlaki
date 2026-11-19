@@ -14,7 +14,7 @@ body {
 }
 
 /* ========== BASE RESET ========== */
-*, *::before, *::after {
+*:not(.katex, .katex *), *:not(.katex, .katex *)::before, *:not(.katex, .katex *)::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -37,7 +37,7 @@ html {
   box-sizing: border-box;
 }
 
-*, *:before, *:after {
+*:not(.katex, .katex *), *:not(.katex, .katex *):before, *:not(.katex, .katex *):after {
   box-sizing: inherit;
 }
 
@@ -2247,7 +2247,10 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
 }
 
 /* Options — 2x2 grid on desktop, 1 column on mobile */
+.quiz-options,
 .quiz-options-list,
+#quiz-options-container,
+#exam-options-container,
 .bank-card-options-grid {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2285,7 +2288,9 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   font-weight: 700;
   color: var(--accent);
   font-size: 1rem;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  align-self: flex-start !important;
   user-select: none;
   margin-top: 2px;
 }
@@ -2303,6 +2308,17 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   white-space: normal !important;
 }
 
+.quiz-option-text {
+  display: block !important;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.55;
+  text-align: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
 .katex-inline-wrap {
   display: inline-block;
   vertical-align: middle;
@@ -2314,8 +2330,7 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
   scrollbar-width: none !important;
 }
 .katex {
-  font-size: 1.22em !important;
-  line-height: 1.5 !important;
+  font-size: 1.08em;
 }
 .quiz-question-text .katex,
 .flashcard-question-text .katex,
@@ -2363,7 +2378,7 @@ box-shadow: 0 0 35px rgba(217, 70, 239, 0.7), 0 0 70px rgba(168, 85, 247, 0.4)
 .quiz-option-btn.correct {
   background: var(--success-bg) !important;
   border: 2px solid var(--success) !important;
-  color: var(--success) !important;
+  color: #ffffff !important;
   box-shadow: inset 0 0 0 1px var(--success), inset 0 0 14px rgba(111, 207, 151, 0.3) !important;
   font-weight: 600;
   animation: correctPop var(--dur-norm) var(--ease-spring);
@@ -2702,8 +2717,12 @@ body.quiz-blind-active #study-quiz-area {
   min-height: 0;
 }
 
+#view-study .quiz-options,
 #view-study .quiz-options-list,
-#view-exam .quiz-options-list {
+#view-exam .quiz-options,
+#view-exam .quiz-options-list,
+#quiz-options-container,
+#exam-options-container {
   flex: 1 1 auto !important;
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2716,11 +2735,25 @@ body.quiz-blind-active #study-quiz-area {
   min-height: 0 !important;
 }
 
-/* Adaptive 1-column layout when LaTeX formulas or options are extra long */
+/* Adaptive 1-column layout when markdown tables or wide matrices are present */
+#view-study .quiz-options.layout-single-column,
 #view-study .quiz-options-list.layout-single-column,
+#view-exam .quiz-options.layout-single-column,
 #view-exam .quiz-options-list.layout-single-column,
+.quiz-options.layout-single-column,
 .quiz-options-list.layout-single-column,
-.bank-card-options-grid.layout-single-column {
+.bank-card-options-grid.layout-single-column,
+#view-study .quiz-options.quiz-options--single-col,
+#view-study .quiz-options-list.quiz-options--single-col,
+#view-exam .quiz-options.quiz-options--single-col,
+#view-exam .quiz-options-list.quiz-options--single-col,
+.quiz-options.quiz-options--single-col,
+.quiz-options-list.quiz-options--single-col,
+.bank-card-options-grid.quiz-options--single-col,
+#quiz-options-container.quiz-options--single-col,
+#exam-options-container.quiz-options--single-col,
+#quiz-options-container.layout-single-column,
+#exam-options-container.layout-single-column {
   grid-template-columns: 1fr !important;
   gap: 10px 12px !important;
 }
@@ -2771,9 +2804,14 @@ body.quiz-blind-active #study-quiz-area {
   #view-study .quiz-card {
     padding: 14px 16px;
   }
+  #view-study .quiz-options,
   #view-study .quiz-options-list,
+  #view-exam .quiz-options,
   #view-exam .quiz-options-list,
+  .quiz-options,
   .quiz-options-list,
+  #quiz-options-container,
+  #exam-options-container,
   .bank-card-options-grid {
     grid-template-columns: 1fr !important;
     gap: 8px !important;
@@ -4867,8 +4905,8 @@ body.disable-backdrop-blur .app-topbar {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
-  padding: 8px 0;
-  margin: 12px 0 !important;
+  padding: 2px 0 !important;
+  margin: 0.4em 0 !important;
   -webkit-overflow-scrolling: touch;
 }
 .katex {
@@ -6172,9 +6210,14 @@ select optgroup {
     flex-shrink: 0 !important;
     max-height: none !important;
   }
+  body.quiz-active .quiz-options,
   body.quiz-active .quiz-options-list,
+  #view-study .quiz-options,
   #view-study .quiz-options-list,
-  #quiz-options-container {
+  #view-exam .quiz-options,
+  #view-exam .quiz-options-list,
+  #quiz-options-container,
+  #exam-options-container {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important; /* gap-2.5 */
@@ -6183,9 +6226,22 @@ select optgroup {
     height: auto !important;
     flex-shrink: 0 !important;
   }
+  body.quiz-active .quiz-options.layout-single-column,
   body.quiz-active .quiz-options-list.layout-single-column,
+  #view-study .quiz-options.layout-single-column,
   #view-study .quiz-options-list.layout-single-column,
-  #quiz-options-container.layout-single-column {
+  #view-exam .quiz-options.layout-single-column,
+  #view-exam .quiz-options-list.layout-single-column,
+  #quiz-options-container.layout-single-column,
+  #exam-options-container.layout-single-column,
+  body.quiz-active .quiz-options.quiz-options--single-col,
+  body.quiz-active .quiz-options-list.quiz-options--single-col,
+  #view-study .quiz-options.quiz-options--single-col,
+  #view-study .quiz-options-list.quiz-options--single-col,
+  #view-exam .quiz-options.quiz-options--single-col,
+  #view-exam .quiz-options-list.quiz-options--single-col,
+  #quiz-options-container.quiz-options--single-col,
+  #exam-options-container.quiz-options--single-col {
     grid-template-columns: 1fr !important;
   }
   body.quiz-active .quiz-option-btn,
@@ -10105,50 +10161,44 @@ html[data-theme="white-orange"] #modal-manage-subject [data-icon-key].active {
 /* 1. Mode Tím Hồng */
 :root #view-exam .quiz-option-btn.exam-option-selected,
 html[data-theme="purple-pink"] #view-exam .quiz-option-btn.exam-option-selected,
+/* 1. Mode Tím Hồng & Mặc định: Trạng thái đang chọn (selected) */
 :root #view-exam .quiz-option-btn.selected,
-html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected,
-:root #view-exam .quiz-option-btn.correct,
-html[data-theme="purple-pink"] #view-exam .quiz-option-btn.correct {
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected {
   background: rgba(147, 51, 234, 0.32) !important;
   border: 2px solid #e879f9 !important;
   box-shadow: 0 6px 20px rgba(168, 85, 247, 0.32), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
   color: #ffffff !important;
 }
 :root #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
-html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
-html[data-theme="purple-pink"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+html[data-theme="purple-pink"] #view-exam .quiz-option-btn.selected .quiz-option-letter {
   color: #f472b6 !important;
   font-weight: 900 !important;
 }
 
-/* 2. Mode Trắng Đen */
+/* 2. Mode Trắng Đen: Trạng thái đang chọn (selected) */
 html[data-theme="monochrome"] #view-exam .quiz-option-btn.exam-option-selected,
-html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected,
-html[data-theme="monochrome"] #view-exam .quiz-option-btn.correct {
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected {
   background: rgba(255, 255, 255, 0.22) !important;
   border: 2px solid #ffffff !important;
   box-shadow: 0 6px 20px rgba(255, 255, 255, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
   color: #ffffff !important;
 }
 html[data-theme="monochrome"] #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
-html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
-html[data-theme="monochrome"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+html[data-theme="monochrome"] #view-exam .quiz-option-btn.selected .quiz-option-letter {
   color: #ffffff !important;
   text-decoration: underline !important;
 }
 
-/* 3. Mode Trắng Cam */
+/* 3. Mode Trắng Cam: Trạng thái đang chọn (selected) */
 html[data-theme="white-orange"] #view-exam .quiz-option-btn.exam-option-selected,
-html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected,
-html[data-theme="white-orange"] #view-exam .quiz-option-btn.correct {
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected {
   background: rgba(251, 146, 60, 0.24) !important;
   border: 2px solid #ea580c !important;
   box-shadow: 0 8px 20px -4px rgba(234, 88, 12, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
   color: #1c1917 !important;
 }
 html[data-theme="white-orange"] #view-exam .quiz-option-btn.exam-option-selected .quiz-option-letter,
-html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected .quiz-option-letter,
-html[data-theme="white-orange"] #view-exam .quiz-option-btn.correct .quiz-option-letter {
+html[data-theme="white-orange"] #view-exam .quiz-option-btn.selected .quiz-option-letter {
   color: #ea580c !important;
   font-weight: 900 !important;
 }
@@ -10252,7 +10302,8 @@ html body .quiz-option-btn .quiz-option-letter {
   line-height: 1.5 !important;
   min-width: 24px !important;
   flex-shrink: 0 !important;
-  align-self: center !important;
+  align-self: flex-start !important;
+  white-space: nowrap !important;
 }
 
 html body .quiz-option-btn .quiz-option-content {
@@ -10264,9 +10315,22 @@ html body .quiz-option-btn .quiz-option-content {
   font-size: 1.02rem !important;
   line-height: 1.55 !important;
   text-align: left !important;
-  align-self: center !important;
+  align-self: flex-start !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
+  white-space: normal !important;
+}
+
+html body .quiz-option-btn .quiz-option-text,
+.quiz-option-text {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  line-height: 1.55 !important;
+  text-align: left !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
   white-space: normal !important;
 }
 
@@ -11690,6 +11754,572 @@ body[data-theme="ascii"] .inline-code {
     margin: 8px 0;
   }
 }
+
+/* ==========================================================================
+   MARKDOWN TABLE SYSTEM (Rich Text Tables & Responsive Horizontal Scroll)
+   ========================================================================== */
+.table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm, 10px);
+  box-sizing: border-box;
+}
+
+.table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--glass-border, rgba(216, 180, 254, 0.25));
+  border-radius: 9999px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--accent, rgba(216, 180, 254, 0.45));
+}
+
+.md-table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  text-align: left;
+  border-radius: var(--radius-sm, 10px);
+  overflow: hidden;
+  border: 1px solid var(--glass-border, rgba(216, 180, 254, 0.20));
+  background: var(--surface-code, rgba(12, 9, 22, 0.65));
+}
+
+.md-table th,
+.md-table td {
+  padding: 8px 14px;
+  border: 1px solid var(--glass-border, rgba(216, 180, 254, 0.18));
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.md-table th {
+  background: var(--surface-code, rgba(216, 180, 254, 0.12));
+  font-weight: 700;
+  color: var(--accent, #d8b4fe);
+  white-space: nowrap;
+}
+
+.md-table td {
+  background: rgba(12, 9, 22, 0.35);
+  color: var(--text-primary, #f5f3ff);
+}
+
+.md-table tr:hover td {
+  background: rgba(216, 180, 254, 0.08);
+}
+
+.md-table .katex {
+  font-size: 1.05em !important;
+  line-height: normal !important;
+}
+
+/* KaTeX Matrix & Array overflow & whitespace protection */
+.katex .matrix,
+.katex .array {
+  white-space: nowrap !important;
+}
+
+/* Inside quiz options: compact table margin */
+.quiz-option-content .table-scroll {
+  margin: 4px 0;
+}
+
+/* Theme overrides for Monochrome (Black & White) */
+html[data-theme="monochrome"] .table-scroll::-webkit-scrollbar-thumb,
+body[data-theme="monochrome"] .table-scroll::-webkit-scrollbar-thumb,
+html[data-color-mode="bw-dark"] .table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+html[data-theme="monochrome"] .md-table,
+body[data-theme="monochrome"] .md-table,
+html[data-color-mode="bw-dark"] .md-table {
+  background: var(--surface-code, rgba(10, 10, 10, 0.85)) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html[data-theme="monochrome"] .md-table th,
+body[data-theme="monochrome"] .md-table th,
+html[data-color-mode="bw-dark"] .md-table th {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html[data-theme="monochrome"] .md-table td,
+body[data-theme="monochrome"] .md-table td,
+html[data-color-mode="bw-dark"] .md-table td {
+  background: rgba(18, 18, 18, 0.6) !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html[data-theme="monochrome"] .md-table tr:hover td,
+body[data-theme="monochrome"] .md-table tr:hover td,
+html[data-color-mode="bw-dark"] .md-table tr:hover td {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Theme overrides for White-Orange */
+html[data-theme="white-orange"] .table-scroll::-webkit-scrollbar-thumb,
+body[data-theme="white-orange"] .table-scroll::-webkit-scrollbar-thumb,
+html[data-color-mode="white-orange"] .table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(234, 88, 12, 0.3) !important;
+}
+
+html[data-theme="white-orange"] .md-table,
+body[data-theme="white-orange"] .md-table,
+html[data-color-mode="white-orange"] .md-table {
+  background: #ffffff !important;
+  border-color: rgba(234, 88, 12, 0.22) !important;
+}
+
+html[data-theme="white-orange"] .md-table th,
+body[data-theme="white-orange"] .md-table th,
+html[data-color-mode="white-orange"] .md-table th {
+  background: rgba(234, 88, 12, 0.10) !important;
+  color: #c2410c !important;
+  border-color: rgba(234, 88, 12, 0.22) !important;
+}
+
+html[data-theme="white-orange"] .md-table td,
+body[data-theme="white-orange"] .md-table td,
+html[data-color-mode="white-orange"] .md-table td {
+  background: rgba(255, 245, 235, 0.6) !important;
+  color: #1c1917 !important;
+  border-color: rgba(234, 88, 12, 0.15) !important;
+}
+
+html[data-theme="white-orange"] .md-table tr:hover td,
+body[data-theme="white-orange"] .md-table tr:hover td,
+html[data-color-mode="white-orange"] .md-table tr:hover td {
+  background: rgba(234, 88, 12, 0.08) !important;
+}
+
+/* Theme overrides for ASCII / Terminal theme */
+html[data-theme="ascii"] .md-table,
+body[data-theme="ascii"] .md-table {
+  background: #000000 !important;
+  border: 1px dashed #22c55e !important;
+}
+
+html[data-theme="ascii"] .md-table th,
+body[data-theme="ascii"] .md-table th {
+  background: rgba(34, 197, 94, 0.12) !important;
+  color: #22c55e !important;
+  border: 1px solid #22c55e !important;
+}
+
+html[data-theme="ascii"] .md-table td,
+body[data-theme="ascii"] .md-table td {
+  background: #000000 !important;
+  color: #22c55e !important;
+  border: 1px dashed rgba(34, 197, 94, 0.6) !important;
+}
+
+html[data-theme="ascii"] .md-table tr:hover td,
+body[data-theme="ascii"] .md-table tr:hover td {
+  background: rgba(34, 197, 94, 0.08) !important;
+}
+
+@media (max-width: 640px) {
+  .md-table {
+    font-size: 0.84rem;
+  }
+  .md-table th,
+  .md-table td {
+    padding: 6px 10px;
+  }
+}
+
+/* ==========================================================================
+   KATEX DISPLAY COMPACT MARGINS (Item 2)
+   ========================================================================== */
+.katex-display,
+.katex-display-wrap {
+  margin: 0.4em 0 !important;
+  padding: 2px 0 !important;
+  max-width: 100%;
+}
+
+/* ==========================================================================
+   ALIGNMENT OF LATEX WITH VIETNAMESE TEXT (Item 3)
+   ========================================================================== */
+.bank-question-text,
+.bank-option-text,
+.quiz-option-text,
+.quiz-question-text,
+#quiz-explanation-text {
+  display: block !important;
+  line-height: 1.55 !important;
+}
+
+.katex {
+  font-size: 1.02em !important;
+  vertical-align: baseline !important;
+}
+
+.katex-inline-wrap {
+  display: inline-block !important;
+  vertical-align: baseline !important;
+  margin: 0 2px !important;
+}
+
+.bank-question-text .katex,
+.bank-option-text .katex,
+.quiz-option-text .katex,
+.quiz-question-text .katex,
+#quiz-explanation-text .katex {
+  font-size: 1.02em !important;
+  vertical-align: baseline !important;
+}
+
+/* ==========================================================================
+   CORRECT OPTION STYLING — WHITE TEXT ON DARK THEMES, DARK ON LIGHT THEMES
+   ========================================================================== */
+/* Base correct option container: green border, soft green background, relative for checkmark */
+.quiz-option-btn.correct,
+.quiz-option-btn.is-correct,
+.bank-option-cell.correct,
+.bank-option-cell.is-correct,
+#view-study .quiz-option-btn.correct,
+#view-study .quiz-option-btn.is-correct,
+#view-bank .bank-option-cell.correct,
+#view-bank .bank-option-cell.is-correct,
+#view-exam .quiz-option-btn.correct,
+#view-exam .quiz-option-btn.is-correct {
+  position: relative !important;
+  border: 2px solid #10b981 !important;
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Ensure padding on right so text does not collide with the green checkmark */
+.quiz-option-btn.correct,
+.quiz-option-btn.is-correct {
+  padding-right: 42px !important;
+}
+
+/* Green checkmark ✓ for correct options in Quiz & Exam */
+.quiz-option-btn.correct::after,
+.quiz-option-btn.is-correct::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: #10b981;
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* DARK THEMES (:root, dark, monochrome/bw, ascii, purple-pink, violet-rose):
+   Keep normal bright white text for letters, option text, and KaTeX */
+:root .quiz-option-btn.correct,
+:root .quiz-option-btn.is-correct,
+:root .bank-option-cell.correct,
+:root .bank-option-cell.is-correct,
+html[data-theme="dark"] .quiz-option-btn.correct,
+html[data-theme="dark"] .quiz-option-btn.is-correct,
+html[data-theme="dark"] .bank-option-cell.correct,
+html[data-theme="dark"] .bank-option-cell.is-correct,
+html[data-theme="monochrome"] .quiz-option-btn.correct,
+html[data-theme="monochrome"] .quiz-option-btn.is-correct,
+html[data-theme="monochrome"] .bank-option-cell.correct,
+html[data-theme="monochrome"] .bank-option-cell.is-correct,
+html[data-theme="bw"] .quiz-option-btn.correct,
+html[data-theme="bw"] .quiz-option-btn.is-correct,
+html[data-theme="bw"] .bank-option-cell.correct,
+html[data-theme="bw"] .bank-option-cell.is-correct,
+html[data-theme="ascii"] .quiz-option-btn.correct,
+html[data-theme="ascii"] .quiz-option-btn.is-correct,
+html[data-theme="ascii"] .bank-option-cell.correct,
+html[data-theme="ascii"] .bank-option-cell.is-correct,
+html[data-theme="purple-pink"] .quiz-option-btn.correct,
+html[data-theme="purple-pink"] .quiz-option-btn.is-correct,
+html[data-theme="purple-pink"] .bank-option-cell.correct,
+html[data-theme="purple-pink"] .bank-option-cell.is-correct,
+[data-theme="violet-rose"] .quiz-option-btn.correct,
+[data-theme="violet-rose"] .quiz-option-btn.is-correct,
+[data-theme="violet-rose"] .bank-option-cell.correct,
+[data-theme="violet-rose"] .bank-option-cell.is-correct {
+  color: #ffffff !important;
+}
+
+/* Option letters: bright white */
+:root .quiz-option-btn.correct .quiz-option-letter,
+:root .quiz-option-btn.is-correct .quiz-option-letter,
+:root .bank-option-cell.correct .quiz-option-letter,
+:root .bank-option-cell.is-correct .quiz-option-letter,
+html[data-theme="dark"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="dark"] .bank-option-cell.correct .quiz-option-letter,
+html[data-theme="monochrome"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="monochrome"] .bank-option-cell.correct .quiz-option-letter,
+html[data-theme="bw"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="bw"] .bank-option-cell.correct .quiz-option-letter,
+html[data-theme="ascii"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="ascii"] .bank-option-cell.correct .quiz-option-letter,
+html[data-theme="purple-pink"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="purple-pink"] .bank-option-cell.correct .quiz-option-letter,
+[data-theme="violet-rose"] .quiz-option-btn.correct .quiz-option-letter,
+[data-theme="violet-rose"] .bank-option-cell.correct .quiz-option-letter {
+  color: #ffffff !important;
+}
+
+/* Option text: bright white */
+:root .quiz-option-btn.correct .quiz-option-text,
+:root .quiz-option-btn.is-correct .quiz-option-text,
+:root .bank-option-cell.correct .quiz-option-text,
+:root .bank-option-cell.correct .bank-option-text,
+:root .bank-option-cell.is-correct .quiz-option-text,
+:root .bank-option-cell.is-correct .bank-option-text,
+html[data-theme="dark"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="dark"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="dark"] .bank-option-cell.correct .bank-option-text,
+html[data-theme="monochrome"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="monochrome"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="monochrome"] .bank-option-cell.correct .bank-option-text,
+html[data-theme="bw"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="bw"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="bw"] .bank-option-cell.correct .bank-option-text,
+html[data-theme="ascii"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="ascii"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="ascii"] .bank-option-cell.correct .bank-option-text,
+html[data-theme="purple-pink"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="purple-pink"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="purple-pink"] .bank-option-cell.correct .bank-option-text,
+[data-theme="violet-rose"] .quiz-option-btn.correct .quiz-option-text,
+[data-theme="violet-rose"] .bank-option-cell.correct .quiz-option-text,
+[data-theme="violet-rose"] .bank-option-cell.correct .bank-option-text {
+  color: #ffffff !important;
+}
+
+/* KaTeX formulas: bright white */
+:root .quiz-option-btn.correct .katex,
+:root .quiz-option-btn.correct .katex *,
+:root .quiz-option-btn.is-correct .katex,
+:root .quiz-option-btn.is-correct .katex *,
+:root .bank-option-cell.correct .katex,
+:root .bank-option-cell.correct .katex *,
+:root .bank-option-cell.is-correct .katex,
+:root .bank-option-cell.is-correct .katex *,
+html[data-theme="dark"] .quiz-option-btn.correct .katex,
+html[data-theme="dark"] .quiz-option-btn.correct .katex *,
+html[data-theme="dark"] .bank-option-cell.correct .katex,
+html[data-theme="dark"] .bank-option-cell.correct .katex *,
+html[data-theme="monochrome"] .quiz-option-btn.correct .katex,
+html[data-theme="monochrome"] .quiz-option-btn.correct .katex *,
+html[data-theme="monochrome"] .bank-option-cell.correct .katex,
+html[data-theme="monochrome"] .bank-option-cell.correct .katex *,
+html[data-theme="bw"] .quiz-option-btn.correct .katex,
+html[data-theme="bw"] .quiz-option-btn.correct .katex *,
+html[data-theme="bw"] .bank-option-cell.correct .katex,
+html[data-theme="bw"] .bank-option-cell.correct .katex *,
+html[data-theme="ascii"] .quiz-option-btn.correct .katex,
+html[data-theme="ascii"] .quiz-option-btn.correct .katex *,
+html[data-theme="ascii"] .bank-option-cell.correct .katex,
+html[data-theme="ascii"] .bank-option-cell.correct .katex *,
+html[data-theme="purple-pink"] .quiz-option-btn.correct .katex,
+html[data-theme="purple-pink"] .quiz-option-btn.correct .katex *,
+html[data-theme="purple-pink"] .bank-option-cell.correct .katex,
+html[data-theme="purple-pink"] .bank-option-cell.correct .katex *,
+[data-theme="violet-rose"] .quiz-option-btn.correct .katex,
+[data-theme="violet-rose"] .quiz-option-btn.correct .katex *,
+[data-theme="violet-rose"] .bank-option-cell.correct .katex,
+[data-theme="violet-rose"] .bank-option-cell.correct .katex * {
+  color: #ffffff !important;
+}
+
+/* LIGHT THEMES (white-orange, orange):
+   High-contrast dark text (#1c1410), sharp green border (#059669), and soft green bg */
+html[data-theme="white-orange"] .quiz-option-btn.correct,
+html[data-theme="white-orange"] .quiz-option-btn.is-correct,
+html[data-theme="white-orange"] .bank-option-cell.correct,
+html[data-theme="white-orange"] .bank-option-cell.is-correct,
+html[data-theme="orange"] .quiz-option-btn.correct,
+html[data-theme="orange"] .quiz-option-btn.is-correct,
+html[data-theme="orange"] .bank-option-cell.correct,
+html[data-theme="orange"] .bank-option-cell.is-correct,
+[data-theme="white-orange"] .quiz-option-btn.correct,
+[data-theme="white-orange"] .quiz-option-btn.is-correct,
+[data-theme="white-orange"] .bank-option-cell.correct,
+[data-theme="white-orange"] .bank-option-cell.is-correct,
+[data-theme="orange"] .quiz-option-btn.correct,
+[data-theme="orange"] .quiz-option-btn.is-correct,
+[data-theme="orange"] .bank-option-cell.correct,
+[data-theme="orange"] .bank-option-cell.is-correct {
+  background: rgba(16, 185, 129, 0.20) !important;
+  border: 2px solid #059669 !important;
+  border-color: #059669 !important;
+  color: #1c1410 !important;
+}
+
+html[data-theme="white-orange"] .quiz-option-btn.correct::after,
+html[data-theme="white-orange"] .quiz-option-btn.is-correct::after,
+[data-theme="white-orange"] .quiz-option-btn.correct::after,
+[data-theme="white-orange"] .quiz-option-btn.is-correct::after {
+  color: #059669 !important;
+}
+
+html[data-theme="white-orange"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="white-orange"] .bank-option-cell.correct .quiz-option-letter,
+html[data-theme="orange"] .quiz-option-btn.correct .quiz-option-letter,
+html[data-theme="orange"] .bank-option-cell.correct .quiz-option-letter,
+[data-theme="white-orange"] .quiz-option-btn.correct .quiz-option-letter,
+[data-theme="white-orange"] .bank-option-cell.correct .quiz-option-letter,
+[data-theme="orange"] .quiz-option-btn.correct .quiz-option-letter,
+[data-theme="orange"] .bank-option-cell.correct .quiz-option-letter {
+  color: #1c1410 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="white-orange"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="white-orange"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="white-orange"] .bank-option-cell.correct .bank-option-text,
+html[data-theme="orange"] .quiz-option-btn.correct .quiz-option-text,
+html[data-theme="orange"] .bank-option-cell.correct .quiz-option-text,
+html[data-theme="orange"] .bank-option-cell.correct .bank-option-text,
+[data-theme="white-orange"] .quiz-option-btn.correct .quiz-option-text,
+[data-theme="white-orange"] .bank-option-cell.correct .quiz-option-text,
+[data-theme="white-orange"] .bank-option-cell.correct .bank-option-text,
+[data-theme="orange"] .quiz-option-btn.correct .quiz-option-text,
+[data-theme="orange"] .bank-option-cell.correct .bank-option-text {
+  color: #1c1410 !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="white-orange"] .quiz-option-btn.correct .katex,
+html[data-theme="white-orange"] .quiz-option-btn.correct .katex *,
+html[data-theme="white-orange"] .bank-option-cell.correct .katex,
+html[data-theme="white-orange"] .bank-option-cell.correct .katex *,
+html[data-theme="orange"] .quiz-option-btn.correct .katex,
+html[data-theme="orange"] .quiz-option-btn.correct .katex *,
+html[data-theme="orange"] .bank-option-cell.correct .katex,
+html[data-theme="orange"] .bank-option-cell.correct .katex *,
+[data-theme="white-orange"] .quiz-option-btn.correct .katex,
+[data-theme="white-orange"] .quiz-option-btn.correct .katex *,
+[data-theme="white-orange"] .bank-option-cell.correct .katex,
+[data-theme="white-orange"] .bank-option-cell.correct .katex *,
+[data-theme="orange"] .quiz-option-btn.correct .katex,
+[data-theme="orange"] .quiz-option-btn.correct .katex *,
+[data-theme="orange"] .bank-option-cell.correct .katex,
+[data-theme="orange"] .bank-option-cell.correct .katex * {
+  color: #1c1410 !important;
+}
+
+/* ==========================================================================
+   UNIFORM QUIZ OPTION LETTER NO-WRAP & ALIGNMENT SHIELD
+   ========================================================================== */
+#view-study .quiz-option-letter,
+#view-exam .quiz-option-letter,
+#view-bank .quiz-option-letter,
+.bank-option-cell .quiz-option-letter,
+.bank-option-cell b,
+.quiz-option-btn .quiz-option-letter {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  align-self: flex-start !important;
+  min-width: 1.6em !important;
+}
+
+/* ==========================================================================
+   MISSING IMAGE WARNING BADGE FOR QUESTIONS
+   ========================================================================== */
+.card-missing-image-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 14px 0;
+  border-radius: var(--radius-sm, 10px);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px dashed rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  box-sizing: border-box;
+}
+
+.card-missing-image-badge .missing-image-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.card-missing-image-badge .missing-image-text {
+  flex: 1 1 auto;
+}
+
+.card-missing-image-badge strong {
+  color: #fde68a;
+  font-weight: 600;
+}
+
+/* Theme overrides for Missing Image Badge */
+/* 1. Monochrome (B&W) */
+html[data-theme="monochrome"] .card-missing-image-badge,
+body[data-theme="monochrome"] .card-missing-image-badge,
+html[data-color-mode="bw-dark"] .card-missing-image-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.4) !important;
+  color: #f5f5f5 !important;
+}
+html[data-theme="monochrome"] .card-missing-image-badge strong,
+body[data-theme="monochrome"] .card-missing-image-badge strong,
+html[data-color-mode="bw-dark"] .card-missing-image-badge strong {
+  color: #ffffff !important;
+}
+
+/* 2. White-Orange (Light theme) */
+html[data-theme="white-orange"] .card-missing-image-badge,
+body[data-theme="white-orange"] .card-missing-image-badge,
+html[data-color-mode="solar-light"] .card-missing-image-badge {
+  background: #fffbeb !important;
+  border: 1px dashed #f59e0b !important;
+  color: #b45309 !important;
+}
+html[data-theme="white-orange"] .card-missing-image-badge strong,
+body[data-theme="white-orange"] .card-missing-image-badge strong,
+html[data-color-mode="solar-light"] .card-missing-image-badge strong {
+  color: #92400e !important;
+}
+
+/* 3. ASCII (Terminal theme) */
+html[data-theme="ascii"] .card-missing-image-badge,
+body[data-theme="ascii"] .card-missing-image-badge,
+html[data-color-mode="retro-green"] .card-missing-image-badge {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border: 1px dashed #22c55e !important;
+  color: #86efac !important;
+  font-family: var(--font-mono, monospace) !important;
+}
+html[data-theme="ascii"] .card-missing-image-badge strong,
+body[data-theme="ascii"] .card-missing-image-badge strong,
+html[data-color-mode="retro-green"] .card-missing-image-badge strong {
+  color: #4ade80 !important;
+}
+
+
 
 
 

@@ -234,6 +234,7 @@ body[data-theme="purple-pink"] {
   --shadow-glow: 0 0 12px var(--accent-glow);
   --streak-color: #f59e0b;
   --success: #10b981;
+  --success-text: #34d399;
   --success-bg: rgba(16, 185, 129, 0.18);
   --success-border: #10b981;
   --danger: #f43f5e;
@@ -480,6 +481,7 @@ html[data-theme="monochrome"] {
   --shadow-glow: 0 0 12px rgba(255, 255, 255, 0.25);
   --streak-color: #ffffff;
   --success: #ffffff;
+  --success-text: #047857;
   --success-bg: rgba(255, 255, 255, 0.15);
   --success-border: #ffffff;
   --danger: #a3a3a3;
@@ -751,6 +753,7 @@ html[data-theme="white-orange"] {
   --shadow-glow: 0 0 12px var(--accent-glow);
   --streak-color: #ea580c;
   --success: #059669;
+  --success-text: #047857;
   --success-bg: rgba(16, 185, 129, 0.22);
   --success-border: #059669;
   --danger: #dc2626;
@@ -1512,18 +1515,18 @@ textarea:focus,
 
 /* MỤC 4.1: TĂNG ĐỘ TƯƠNG PHẢN GIỮA CÂU SAI & CÂU ĐÚNG TRONG QUIZ Ở MODE TRẮNG ĐEN */
 html[data-theme="monochrome"] .quiz-option-btn.correct {
-  background: rgba(16, 185, 129, 0.28) !important;
-  border: 2.5px solid #34d399 !important;
-  border-left: 8px solid #10b981 !important;
-  color: #ecfdf5 !important;
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.18) !important;
+  background: rgba(16, 185, 129, 0.20) !important;
+  border: 2px solid #10b981 !important;
+  border-left: 6px solid #10b981 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), inset 0 0 10px rgba(16, 185, 129, 0.15) !important;
   font-weight: 700 !important;
 }
 html[data-theme="monochrome"] .quiz-option-btn.correct .quiz-option-letter {
-  background: #10b981 !important;
-  color: #09090b !important;
-  border-radius: 6px !important;
-  padding: 2px 8px !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
 }
 
 html[data-theme="monochrome"] .quiz-option-btn.incorrect {

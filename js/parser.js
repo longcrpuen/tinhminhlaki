@@ -482,6 +482,20 @@ const AIParser = {
         normalizedOptions.push(optEntry);
       }
 
+      // 2b. Kiểm tra phát hiện 2 đáp án trùng lặp nội dung (chuẩn hóa khoảng trắng và chữ thường)
+      let hasDuplicateOptions = false;
+      const seenOptTexts = new Set();
+      for (let i = 0; i < normalizedOptions.length; i++) {
+        const normOpt = (normalizedOptions[i].text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+        if (normOpt) {
+          if (seenOptTexts.has(normOpt)) {
+            hasDuplicateOptions = true;
+            break;
+          }
+          seenOptTexts.add(normOpt);
+        }
+      }
+
       // 3. Validate 'correct_option_id' (or fallback answer)
       let correctId = q.correct_option_id !== undefined ? String(q.correct_option_id).trim().toLowerCase() : null;
 
@@ -528,7 +542,10 @@ const AIParser = {
       }
 
       const explanation = this.stripCitationArtifacts((q.explanation || q.explain || q.note || '').trim());
-      const cleanQuestion = this.stripCitationArtifacts(q.question.trim());
+      let cleanQuestion = this.stripCitationArtifacts(q.question.trim());
+      if (hasDuplicateOptions && !cleanQuestion.includes('[Cần kiểm tra: trùng đáp án]')) {
+        cleanQuestion = `${cleanQuestion} [Cần kiểm tra: trùng đáp án]`;
+      }
 
       // Convert options for display: normalize to single clean "A. Text"
       const displayOptions = normalizedOptions.map((opt, idx) => {
@@ -555,7 +572,8 @@ const AIParser = {
         topic: topic,
         difficulty: difficulty,
         tag: topic, // alias for UI compatibility
-        source: (q.source && ['ai', 'lms', 'manual'].includes(q.source)) ? q.source : 'ai'
+        source: (q.source && ['ai', 'lms', 'manual'].includes(q.source)) ? q.source : 'ai',
+        hasDuplicateOptions: hasDuplicateOptions
       });
     });
 
@@ -588,9 +606,29 @@ const AIParser = {
         }
 
         const cleanedOpts = currentCard.options.map(t => this.stripCitationArtifacts(t));
+        let hasDuplicateOptions = false;
+        const seenOptTexts = new Set();
+        for (let i = 0; i < cleanedOpts.length; i++) {
+          let optText = cleanedOpts[i].trim();
+          const prefixMatch = optText.match(/^(?:[A-Da-d])[\.\)\:]\s+(.*)$/s);
+          if (prefixMatch && prefixMatch[1].trim()) optText = prefixMatch[1].trim();
+          const normOpt = optText.replace(/\s+/g, ' ').toLowerCase();
+          if (normOpt) {
+            if (seenOptTexts.has(normOpt)) {
+              hasDuplicateOptions = true;
+              break;
+            }
+            seenOptTexts.add(normOpt);
+          }
+        }
+        let qText = this.stripCitationArtifacts(currentCard.question.trim());
+        if (hasDuplicateOptions && !qText.includes('[Cần kiểm tra: trùng đáp án]')) {
+          qText = `${qText} [Cần kiểm tra: trùng đáp án]`;
+        }
+
         cards.push({
           id: `q${cards.length + 1}`,
-          question: this.stripCitationArtifacts(currentCard.question.trim()),
+          question: qText,
           options: cleanedOpts,
           rawOptions: cleanedOpts.map((t, i) => ({ id: defaultLetters[i], text: t })),
           answerIndex: answerIndex,
@@ -599,7 +637,8 @@ const AIParser = {
           topic: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
           difficulty: 'medium',
           tag: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
-          source: 'ai'
+          source: 'ai',
+          hasDuplicateOptions: hasDuplicateOptions
         });
       }
       currentCard = null;
@@ -682,15 +721,13 @@ const AIParser = {
    * Generates standard AI Prompt template adhering to JSON schema & pedagogical standards
    */
   generateAIPromptTemplate({ topic = '', count = 10, difficulty = 'medium' } = {}) {
-    return `Hãy đóng vai một chuyên gia giáo dục và biên soạn ${count} câu hỏi trắc nghiệm ôn tập chất lượng cao về chủ đề: "${topic || '[DÁN NỘI DUNG / CHỦ ĐỀ / TÀI LIỆU TẠI ĐÂY]'}".
+    return `CHỈ XUẤT DUY NHẤT 1 KHỐI \`\`\`json CHỨA TOÀN BỘ 100% CÂU HỎI TRONG 1 LẦN TRẢ LỜI. CẤM TUYỆT ĐỐI tự ý chia thành Phần 1/Phần 2, CẤM dừng giữa chừng bảo người dùng gõ 'tiếp', CẤM viết lời dẫn đầu/cuối, CẤM mở block \`\`\`json thứ hai.
 
-Yêu cầu thực hiện nghiêm ngặt 4 nguyên tắc sau:
+Hãy đóng vai một chuyên gia giáo dục và biên soạn ${count} câu hỏi trắc nghiệm ôn tập chất lượng cao về chủ đề: "${topic || '[DÁN NỘI DUNG / CHỦ ĐỀ / TÀI LIỆU TẠI ĐÂY]'}".
 
-1. VAI TRÒ & ĐẦU RA JSON CHUẨN:
-- Trả về DUY NHẤT 1 block JSON hợp lệ theo đúng schema dưới đây, tuyệt đối không kèm lời chào, lời dẫn hay bình luận ngoài JSON.
-- Mỗi câu hỏi gồm đầy đủ các trường: "id", "topic", "difficulty" ("easy"|"medium"|"hard"), "question", "image": "", "options" (mảng object [{"id", "text", "image": ""}]), "correct_option_id" (khớp với "id" trong "options"), "explanation".
-- Nội dung "text" của options KHÔNG tự thêm tiền tố "A.", "B.". Hỗ trợ LaTeX ($...$ hoặc $$...$$).
-- CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn hoặc đánh dấu trang/đoạn (như [cite: 1, 2], [cite_start], [cite_end], [1], [2], [source], 【1†source】). Mọi lựa chọn và câu hỏi phải có văn phong đồng nhất.
+Yêu cầu thực hiện nghiêm ngặt 5 nguyên tắc sau:
+
+1. Ghép ảnh & Đủ 100% số câu: Xuất toàn bộ câu hỏi trong 1 khối \`\`\`json duy nhất. Nếu input gồm nhiều ảnh chụp lộn xộn thứ tự, phải tự đối chiếu số câu và ngữ cảnh để ghép nối phần đầu - phần cuối bị cắt qua mép ảnh lại thành câu hoàn chỉnh trước khi xuất. Mỗi câu phải có đủ 4 đáp án (a, b, c, d), 4 đáp án (a, b, c, d) bắt buộc phải khác nhau hoàn toàn, cấm trùng lặp nội dung; bảng số liệu chuyển thành bảng Markdown (\`|...|\`). Với bài toán lời văn dài quen thuộc từ sách giáo khoa/đề mẫu, hãy diễn đạt lại câu dẫn ngắn gọn, tự nhiên (giữ nguyên 100% số liệu, bảng biểu, công thức và đáp án) để tránh bị bộ lọc hệ thống ngắt giữa chừng.
 
 \`\`\`json
 {
@@ -709,31 +746,38 @@ Yêu cầu thực hiện nghiêm ngặt 4 nguyên tắc sau:
         { "id": "d", "text": "$x$", "image": "" }
       ],
       "correct_option_id": "a",
-      "explanation": "Áp dụng công thức đạo hàm lũy thừa $(x^n)' = n \\\\cdot x^{n-1}$ với $n = 2$, ta có $(x^2)' = 2x^{2-1} = 2x$. Loại B vì giữ nguyên hàm gốc chưa lấy đạo hàm; loại C vì đạo hàm bậc nhất của $2x$ mới bằng $2$; loại D vì thiếu hệ số $n = 2$."
+      "explanation": "Áp dụng công thức $(x^n)' = n \\\\cdot x^{n-1}$ với $n = 2$, ta có $(x^2)' = 2x$. Phương án $x^2$ sai do giữ nguyên hàm gốc; phương án $2$ sai do nhầm sang đạo hàm cấp hai; phương án $x$ sai do thiếu hệ số nhân $2$."
     }
   ]
 }
 \`\`\`
 
-2. CHỐNG CẮT NGANG & KHÔNG LẶP CÂU:
-- Xuất toàn bộ câu hỏi trong 1 block JSON hoàn chỉnh.
-- Chỉ xuất tiếp ở lượt sau nếu chạm giới hạn độ dài của model (mỗi lượt là 1 block JSON hoàn chỉnh, nối tiếp thứ tự câu, tuyệt đối không lặp lại câu cũ).
+2. Xử lý câu bị thiếu dữ kiện/ảnh:
+   - Nếu vẫn thiếu phần đề bài sau khi đã ghép các ảnh: ưu tiên dùng tìm kiếm (nếu có) theo dữ kiện sẵn có; chỉ lấy bổ sung khi tìm được câu gốc khớp chính xác 100% số liệu/ngữ cảnh (cấm tự bịa số liệu). Nếu không tìm được, bỏ câu đó khỏi JSON và ghi chú số câu bị thiếu ở cuối câu trả lời.
+   - Nếu đã đủ đề bài và đáp án đúng nhưng chỉ bị cắt mất 1 đáp án nhiễu: tự bổ sung 1 phương án nhiễu hợp lý cho đủ 4 lựa chọn và ghi \`[Đã bổ sung nhiễu]\` ở cuối \`question\`.
+   - Nếu câu cần xem hình vẽ/đồ thị gốc mà không đọc được tọa độ: giữ nguyên câu hỏi, để "image": "" và ghi \`[Cần hình minh họa]\` ở cuối \`question\`.
 
 3. KỶ LUẬT CÚ PHÁP JSON (CHỐNG LỖI PARSE):
 - CẤM TUYỆT ĐỐI: nối chuỗi kiểu code (" + ", ' + '), xuống dòng thô trong chuỗi JSON (mọi xuống dòng phải dùng \\n), hoặc tự ngắt để viết lại từ q1 giữa chừng khi gặp câu có hình ảnh/bảng biểu.
+- CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn hoặc đánh dấu trang/đoạn (như [cite: 1, 2], [cite_start], [cite_end], [1], [2], [source], 【1†source】). Mọi lựa chọn và câu hỏi phải có văn phong đồng nhất.
+- Chỉ xuất tiếp ở lượt sau nếu chạm giới hạn độ dài của model (mỗi lượt là 1 block JSON hoàn chỉnh, nối tiếp thứ tự câu, tuyệt đối không lặp lại câu cũ).
 - Escape đúng \\" và \\\\ (đặc biệt với LaTeX như \\\\frac, \\\\le, \\\\ge và ký tự C như \\\\0, \\\\n). Trong văn bản giải thích/câu hỏi, ưu tiên dùng backtick \`...\` thay cho ngoặc kép " để hạn chế lỗi escape.
+- Nếu đề bài hoặc phương án có ký hiệu đô-la tiền tệ (ví dụ $50), bắt buộc ghi chữ USD (ví dụ: 50 USD) thay vì ký hiệu $ để không làm vỡ bộ render công thức toán LaTeX ($...$, $$...$$) của app.
 - Với mã nguồn/lệnh máy tính trong câu hỏi hoặc giải thích:
   + Đoạn code nhiều dòng dùng block \`\`\`c\\n...\\n\`\`\` hoặc \`\`\`text\\n...\\n\`\`\` (có \\n tách khỏi câu hỏi, tuyệt đối không dính liền 1 dòng).
   + Tên biến hoặc lệnh ngắn 1 dòng (như \`printf()\`, \`int _dem2;\`, \`SELECT\`) ưu tiên dùng inline backtick \`...\`.
+
+4. CHIẾN LƯỢC HYBRID XỬ LÝ HÌNH ẢNH & BẢNG BIỂU:
 - Chiến lược Hybrid xử lý đề thi có hình ảnh:
   + Bắt buộc OCR và chuyển toàn bộ sang Text + LaTeX ($...$, $$...$$) + Bảng Markdown đối với ảnh chụp chữ, công thức Toán/Lý/Hóa, bảng số liệu (KHÔNG giữ dạng ảnh).
   + Ảnh sơ đồ (ER, UML, mạch điện) hoặc đồ thị hình học: KHÔNG diễn giải thay thế bằng văn bản (làm mất ý nghĩa câu hỏi); giữ cấu trúc "image": "" trên câu hỏi hoặc options[].image để người dùng dán ảnh trực tiếp trên app.
 
-4. CHẤT LƯỢNG NỘI DUNG & GIẢI THÍCH:
+5. CHẤT LƯỢNG NỘI DUNG & GIẢI THÍCH CHI TIẾT:
 - Giữ nguyên vẹn nội dung câu hỏi và đủ 4 đáp án (không tự ý rút gọn).
-- Quy tắc BẮT BUỘC cho trường "explanation" (dài 2–3 câu):
-  + Nêu rõ TẠI SAO đáp án đúng là đúng (nêu công thức, quy tắc hoặc trace từng bước tính/suy diễn cụ thể).
-  + Nêu rõ TẠI SAO các phương án nhiễu còn lại sai (chỉ rõ lỗi sai bản chất hoặc bẫy thường gặp).
+- Quy tắc BẮT BUỘC cho trường "explanation" (1–2 câu cực ngắn gọn, đi thẳng vào công thức/lỗi sai):
+  + CẤM GỌI TÊN CHỮ CÁI ĐÁP ÁN (như A, B, C, D, "phương án A", "loại B, C, D") vì app có tính năng đảo thứ tự đáp án (shuffle); bắt buộc phải giải thích trực tiếp bằng nội dung, giá trị hoặc đặc điểm của phương án (ví dụ: "Phương án $x^2$ sai do...", "Loại các phương án trừ $x_4$ hoặc thêm biến giả $x_1^g$...").
+  + Nêu rõ TẠI SAO đáp án đúng là đúng (nêu công thức, quy tắc hoặc tính toán ngắn gọn trong 1 câu).
+  + Nêu rõ TẠI SAO các phương án nhiễu còn lại sai (chỉ ra ngắn gọn lỗi sai cốt lõi trong 1 câu; không viết dài dòng để tiết kiệm token tối đa).
   + CẤM TUYỆT ĐỐI viết câu mẫu sáo rỗng hoặc chung chung kiểu "Theo quy tắc chuẩn, đáp án đúng là...".
   + CHỐNG LƯỜI KHI SINH NHIỀU CÂU: Mỗi câu hỏi phải có lời giải thích riêng biệt bám sát ngữ cảnh đề bài, không lặp lại khuôn mẫu câu.`;
   }

@@ -640,13 +640,335 @@ const App = {
       .trim();
   },
 
+  // --- OPTION LAYOUT ADAPTATION & WIDE CONTENT DETECTOR ---
+  isWideMatrixOrTableOption(text) {
+    if (!text) return false;
+    const str = typeof text === 'object' && text !== null ? String(text.text || '') : String(text);
+    if (!str.trim()) return false;
+
+    // 1. Chứa bảng HTML (<table class="md-table"> hoặc <table) hoặc Markdown Table -> Chuyển sang 1 cột
+    if (str.includes('<table') || /\|[ \t]*:?-{2,}:?[ \t]*\|/.test(str)) {
+      return true;
+    }
+
+    // 2. CHỈ chuyển sang 1 cột khi ma trận rộng có từ 3 cột trở lên
+    // (tức bên trong \begin{...matrix} / \begin{array} có ít nhất 2 dấu '&' trên cùng một hàng)
+    // Tuyệt đối KHÔNG dựa vào độ dài chuỗi LaTeX thô (vì \frac, \begin{cases} viết dài nhưng hiển thị rất gọn)
+    // và KHÔNG gộp vectơ 1 cột hay hệ phương trình nhỏ \begin{cases} vào 1 cột.
+    const matrixRegex = /\\begin\{(?:[a-zA-Z]*matrix|array)\}([\s\S]*?)\\end\{(?:[a-zA-Z]*matrix|array)\}/g;
+    let mMatch;
+    while ((mMatch = matrixRegex.exec(str)) !== null) {
+      const matrixBody = mMatch[1];
+      const rows = matrixBody.split(/\\\\|\\cr/);
+      for (const row of rows) {
+        const ampCount = (row.match(/(?<!\\)&/g) || []).length;
+        if (ampCount >= 2) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  },
+
+  // --- MISSING IMAGE BADGE DETECTOR & RENDERER ---
+  isQuestionMissingImage(card) {
+    if (!card) return false;
+    if (card.image && String(card.image).trim()) return false;
+    const q = String(card.question || '');
+    if (!q) return false;
+
+    // 1. Chứa tag rõ ràng
+    if (q.includes('[Cần hình minh họa]')) return true;
+
+    // 2. Chứa các cụm từ chỉ hình minh họa / đồ thị
+    if (/(?:hình vẽ minh họa|đồ thị bên|trên hình vẽ|hình bên|đồ thị dưới đây|hình dưới đây)/i.test(q)) {
+      return true;
+    }
+
+    // 3. Chứa cụm từ bảng nhưng câu hỏi KHÔNG có bảng Markdown hoặc thẻ table
+    if (/(?:bảng bên dưới|bảng dưới đây|bảng sau)/i.test(q)) {
+      const hasTable = q.includes('<table') || /\|[ \t]*:?-{2,}:?[ \t]*\|/.test(q);
+      if (!hasTable) return true;
+    }
+
+    return false;
+  },
+
+  renderMissingImageBadgeHtml(card) {
+    let html = '';
+    if (this.isQuestionMissingImage(card)) {
+      html += `
+        <div class="card-missing-image-badge" role="alert">
+          <span class="missing-image-icon">⚠️</span>
+          <span class="missing-image-text">Câu hỏi này cần hình minh họa gốc — bấm biểu tượng ✏️ <strong>Sửa thẻ</strong> để dán/tải ảnh lên</span>
+        </div>
+      `;
+    }
+    if (card && (card.hasDuplicateOptions || (card.question && card.question.includes('[Cần kiểm tra: trùng đáp án]')))) {
+      html += `
+        <div class="card-missing-image-badge card-duplicate-warning-badge" role="alert" style="margin-top: 6px;">
+          <span class="missing-image-icon">⚠️</span>
+          <span class="missing-image-text">Cần kiểm tra: Câu hỏi có phương án trùng lặp nội dung — bấm biểu tượng ✏️ <strong>Sửa thẻ</strong> để điều chỉnh</span>
+        </div>
+      `;
+    }
+    return html;
+  },
+
+  // --- REMAP EXPLANATION LETTERS ON SHUFFLE ---
+  remapExplanationLetters(text, letterMap) {
+    if (!text || !letterMap || typeof text !== 'string') return text || '';
+
+    const normMap = {};
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    letters.forEach((L, idx) => {
+      const l = L.toLowerCase();
+      const mapped = letterMap[L] || letterMap[l] || letterMap[idx];
+      if (mapped) {
+        normMap[L] = String(mapped).toUpperCase();
+        normMap[l] = String(mapped).toLowerCase();
+      }
+    });
+
+    let hasChange = false;
+    for (const [k, v] of Object.entries(normMap)) {
+      if (k.toUpperCase() !== v.toUpperCase()) {
+        hasChange = true;
+        break;
+      }
+    }
+    if (!hasChange) return text;
+
+    // 1. Bảo vệ khối Code Blocks, Inline Code và LaTeX
+    const protectedBlocks = [];
+    const protect = (match) => {
+      const idx = protectedBlocks.length;
+      protectedBlocks.push(match);
+      return `@@@MS_EXP_PROTECTED_${idx}@@@`;
+    };
+
+    let str = text;
+    // Fenced code blocks
+    str = str.replace(/```[\s\S]*?```/g, protect);
+    // Inline code
+    str = str.replace(/`[^`\r\n]+`/g, protect);
+    // Display math $$...$$ or \[...\]
+    str = str.replace(/\$\$[\s\S]*?\$\$/g, protect);
+    str = str.replace(/\\\[[\s\S]*?\\\]/g, protect);
+    // Inline math $...$ or \(...\)
+    str = str.replace(/\\\(.*?\\\)/g, protect);
+    str = str.replace(/\$[^$\r\n]+?\$/g, protect);
+
+    // 2. Remap các chữ cái A-G đứng sau từ khóa chỉ phương án
+    // Keywords: phương án, đáp án, lựa chọn, loại trừ, loại bỏ, loại, chọn
+    const groupRegex = /((?:^|[^\p{L}\p{N}_])(?:phương án|đáp án|lựa chọn|loại trừ|loại bỏ|loại|chọn)(?:\s+(?:các\s+)?(?:phương án|đáp án|lựa chọn|câu))?(?:\s*(?:là|gồm|đúng là|sai là|:))?\s+)(\(?[A-Ga-g]\)?(?:(?:[\s,;]+|[\s,;]+(?:và|hoặc|hay|and|or)[\s,;]+)\(?[A-Ga-g]\)?)*)(?=[^\p{L}\p{N}]|$)/giu;
+
+    str = str.replace(groupRegex, (fullMatch, prefix, lettersList) => {
+      const remappedLetters = lettersList.replace(/(?<!\p{L})([A-Ga-g])(?!\p{L})/gu, (m, letter) => {
+        return normMap[letter] || letter;
+      });
+      return `${prefix}${remappedLetters}`;
+    });
+
+    // 3. Khôi phục lại các khối được bảo vệ
+    protectedBlocks.forEach((block, idx) => {
+      str = str.replace(`@@@MS_EXP_PROTECTED_${idx}@@@`, block);
+    });
+
+    return str;
+  },
+
+  getOptionLetterMap(card, cardIdx = null) {
+    const session = this.activeSession;
+    if (!session || !session.cardShuffledOptions) return null;
+    const idx = (cardIdx !== null && cardIdx !== undefined) ? cardIdx : session.currentIndex;
+    const shuffledList = session.cardShuffledOptions[idx];
+    if (!shuffledList || !Array.isArray(shuffledList)) return null;
+
+    const defaultLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    const letterMap = {};
+
+    shuffledList.forEach((item, displayIdx) => {
+      const displayLetter = defaultLetters[displayIdx] || String.fromCharCode(65 + displayIdx);
+      const origIdx = (item.originalIdx !== undefined) ? item.originalIdx : (item.origIdx !== undefined ? item.origIdx : displayIdx);
+      const origLetter = defaultLetters[origIdx] || String.fromCharCode(65 + origIdx);
+
+      letterMap[origLetter] = displayLetter;
+      letterMap[origLetter.toLowerCase()] = displayLetter.toLowerCase();
+      letterMap[origIdx] = displayLetter;
+    });
+
+    return letterMap;
+  },
+
+  // --- MARKDOWN TABLE PARSER & CELL RENDERER ---
+  _renderMarkdownTable(tableStr) {
+    if (!tableStr) return null;
+    const lines = tableStr.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) return null;
+
+    let delimIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/^\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)+[ \t]*\|?$/.test(line)) {
+        delimIdx = i;
+        break;
+      }
+    }
+
+    if (delimIdx === -1) return null;
+
+    const parseRow = (rowStr) => {
+      let clean = rowStr.trim();
+      if (clean.startsWith('|')) clean = clean.slice(1);
+      if (clean.endsWith('|')) clean = clean.slice(0, -1);
+      // Bảo vệ escaped pipe \|
+      clean = clean.replace(/\\\|/g, '@@@ESCAPED_PIPE@@@');
+      const cells = clean.split('|').map(c => c.replace(/@@@ESCAPED_PIPE@@@/g, '|').trim());
+      return cells;
+    };
+
+    const delimCells = parseRow(lines[delimIdx]);
+    const alignments = delimCells.map(c => {
+      const left = c.startsWith(':');
+      const right = c.endsWith(':');
+      if (left && right) return 'center';
+      if (right) return 'right';
+      if (left) return 'left';
+      return '';
+    });
+
+    const headers = delimIdx > 0 ? lines.slice(0, delimIdx).map(parseRow) : [];
+    const bodyRows = lines.slice(delimIdx + 1).map(parseRow);
+
+    let html = '<div class="table-scroll"><table class="md-table">';
+    if (headers.length > 0) {
+      html += '<thead>';
+      headers.forEach(hRow => {
+        html += '<tr>';
+        hRow.forEach((cell, idx) => {
+          const align = alignments[idx] ? ` style="text-align: ${alignments[idx]};"` : '';
+          const content = this._renderTableCell(cell);
+          html += `<th${align}>${content}</th>`;
+        });
+        html += '</tr>';
+      });
+      html += '</thead>';
+    }
+
+    if (bodyRows.length > 0) {
+      html += '<tbody>';
+      bodyRows.forEach(bRow => {
+        if (bRow.length === 1 && !bRow[0]) return;
+        html += '<tr>';
+        bRow.forEach((cell, idx) => {
+          const align = alignments[idx] ? ` style="text-align: ${alignments[idx]};"` : '';
+          const content = this._renderTableCell(cell);
+          html += `<td${align}>${content}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody>';
+    }
+
+    html += '</table></div>';
+    return html;
+  },
+
+  _renderTableCell(cellText) {
+    if (!cellText) return '';
+    // 1. Tokenize inline code `...`
+    const inlineCodes = [];
+    let str = cellText.replace(/`([^`\r\n]+)`/g, (match, inline) => {
+      const idx = inlineCodes.length;
+      inlineCodes.push(`<code class="inline-code">${this._escapeHtml(inline)}</code>`);
+      return `@@@MS_INLINE_CODE_${idx}@@@`;
+    });
+
+    // 2. Render LaTeX & escape HTML
+    let rendered = this.renderLatexText(str);
+
+    // 3. Restore inline code
+    inlineCodes.forEach((cHtml, idx) => {
+      rendered = rendered.replace(`@@@MS_INLINE_CODE_${idx}@@@`, cHtml);
+    });
+
+    return rendered;
+  },
+
+  // --- HELPER: RENDER SINGLE MATH FORMULA VIA KATEX ---
+  _renderMathCode(rawMathCode, isBlock) {
+    let code = rawMathCode;
+    code = code.replace(/\x09heta/g, '\\theta')
+               .replace(/\x0crac/g, '\\frac')
+               .replace(/\x08eta/g, '\\beta')
+               .replace(/\x0dho/g, '\\rho')
+               .replace(/\\frac\{/g, '\\dfrac{');
+
+    code = code.replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '\\$');
+    code = code.replace(/(^|[^\\])%/g, '$1\\%');
+
+    const hasKatex = (typeof katex !== 'undefined' && typeof katex.renderToString === 'function') ||
+                     (typeof window !== 'undefined' && typeof window.katex !== 'undefined' && typeof window.katex.renderToString === 'function');
+    const katexEngine = typeof katex !== 'undefined' && typeof katex.renderToString === 'function'
+      ? katex
+      : (typeof window !== 'undefined' ? window.katex : null);
+
+    if (!hasKatex || !katexEngine) {
+      return `<span class="katex-inline-wrap inline-block align-middle mx-1 font-mono">${this._escapeHtml(code)}</span>`;
+    }
+
+    try {
+      const cacheKey = (isBlock ? 'B:' : 'I:') + code;
+      let rendered = null;
+      let cache = (typeof this !== 'undefined' && this && this._katexCache) || (typeof App !== 'undefined' && App && App._katexCache) || null;
+      if (!cache) {
+        try {
+          if (typeof globalThis !== 'undefined') {
+            if (!globalThis._msKatexCache) globalThis._msKatexCache = new Map();
+            cache = globalThis._msKatexCache;
+          }
+        } catch (_) {}
+      }
+
+      if (cache && cache.has(cacheKey)) {
+        rendered = cache.get(cacheKey);
+      } else {
+        rendered = katexEngine.renderToString(code, {
+          displayMode: isBlock,
+          throwOnError: false
+        });
+        if (cache) {
+          if (cache.size >= 2500) {
+            const firstKey = cache.keys().next().value;
+            cache.delete(firstKey);
+          }
+          cache.set(cacheKey, rendered);
+        }
+      }
+
+      if (isBlock) {
+        return `<div class="katex-display-wrap overflow-x-auto">${rendered}</div>`;
+      } else {
+        return `<span class="katex-inline-wrap inline-block align-middle mx-1">${rendered}</span>`;
+      }
+    } catch (e) {
+      console.warn('KaTeX render error:', e);
+      return `<span class="katex-inline-wrap inline-block align-middle mx-1 font-mono">${this._escapeHtml(code)}</span>`;
+    }
+  },
+
   // --- RICH TEXT & MARKDOWN CODE & MIXED LATEX PARSER & RENDERER ---
   formatRichText(text) {
     if (text === null || text === undefined) return '';
     let str = this.stripCitationArtifacts(String(text));
     if (!str.trim()) return '';
 
-    // 1. Tokenize fenced code blocks (```lang\n...``` hoặc ```...```)
+    // 1. Bảo vệ ký hiệu đô-la tiền tệ đã escape \$ trước khi tokenize
+    str = str.replace(/(?<!\\)\\\$/g, '@@@MS_ESCAPED_DOLLAR@@@');
+
+    // 2. Tokenize fenced code blocks (```lang\n...``` hoặc ```...```)
     const codeBlocks = [];
     str = str.replace(/```([a-zA-Z0-9_\-]+)?\s*[\r\n]([\s\S]*?)```/g, (match, lang, code) => {
       const idx = codeBlocks.length;
@@ -665,7 +987,18 @@ const App = {
       return `\n@@@MS_CODE_BLOCK_${idx}@@@\n`;
     });
 
-    // 2. Tokenize inline code `...`
+    // 3. Tokenize Markdown Tables
+    const tables = [];
+    const tableRegex = /((?:^[ \t]*\|?[^\r\n|]+\|[^\r\n]*\|?[ \t]*\r?\n)+^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)+[ \t]*\|?[ \t]*(?:\r?\n^[ \t]*\|?[^\r\n|]+\|[^\r\n]*\|?[ \t]*)*)/gm;
+    str = str.replace(tableRegex, (match) => {
+      const tableHtml = this._renderMarkdownTable(match);
+      if (!tableHtml) return match;
+      const idx = tables.length;
+      tables.push(tableHtml);
+      return `\n@@@MS_TABLE_${idx}@@@\n`;
+    });
+
+    // 4. Tokenize inline code `...`
     const inlineCodes = [];
     str = str.replace(/`([^`\r\n]+)`/g, (match, inline) => {
       const idx = inlineCodes.length;
@@ -674,24 +1007,84 @@ const App = {
       return `@@@MS_INLINE_CODE_${idx}@@@`;
     });
 
-    // 3. Render Math & Escape text thông qua renderLatexText
-    let rendered = this.renderLatexText(str);
+    // 5. Tokenize & Render KaTeX Math formulas (BẢO VỆ TUYỆT ĐỐI KHÔNG BỊ \n -> <br> LÀM HỎNG SVG PATHS)
+    const mathBlocks = [];
+    const mathRegex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+?\$)/g;
 
-    // 4. Xử lý xuống dòng: Chuẩn hóa khoảng trống quanh code blocks rồi chuyển \n thành <br>
-    rendered = rendered.replace(/(?:\r?\n)*@@@MS_CODE_BLOCK_(\d+)@@@(?:\r?\n)*/g, '@@@MS_CODE_BLOCK_$1@@@');
-    rendered = rendered.replace(/\r?\n/g, '<br>');
+    str = str.replace(mathRegex, (match) => {
+      const idx = mathBlocks.length;
+      let isBlock = false;
+      let code = match;
+      if (code.startsWith('$$') && code.endsWith('$$')) {
+        isBlock = true;
+        code = code.slice(2, -2);
+      } else if (code.startsWith('\\[') && code.endsWith('\\]')) {
+        isBlock = true;
+        code = code.slice(2, -2);
+      } else if (code.startsWith('\\(') && code.endsWith('\\)')) {
+        isBlock = false;
+        code = code.slice(2, -2);
+      } else if (code.startsWith('$') && code.endsWith('$')) {
+        isBlock = false;
+        code = code.slice(1, -1);
+      }
 
-    // 5. Restore Inline code
+      const renderedHtml = this._renderMathCode(code.trim(), isBlock);
+      mathBlocks.push({ isBlock, html: renderedHtml });
+      return isBlock ? `\n@@@MS_MATH_BLOCK_${idx}@@@\n` : `@@@MS_MATH_INLINE_${idx}@@@`;
+    });
+
+    // 6. Xử lý Plain text: Escape HTML an toàn và in đậm **bold**
+    const tokenRegex = /(@@@MS_(?:CODE_BLOCK|TABLE|INLINE_CODE|MATH_BLOCK|MATH_INLINE)_\d+@@@)/g;
+    const segments = str.split(tokenRegex);
+    const escapedSegments = segments.map(seg => {
+      if (seg.startsWith('@@@MS_') && seg.endsWith('@@@')) {
+        return seg;
+      }
+      return this._escapeHtml(seg).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+    });
+    let processed = escapedSegments.join('');
+
+    // 7. Xử lý xuống dòng: Chuẩn hóa khoảng trống quanh các khối block rồi chuyển \r?\n thành <br>
+    processed = processed.replace(/(?:\r?\n)*@@@MS_CODE_BLOCK_(\d+)@@@(?:\r?\n)*/g, '\n@@@MS_CODE_BLOCK_$1@@@\n');
+    processed = processed.replace(/(?:\r?\n)*@@@MS_TABLE_(\d+)@@@(?:\r?\n)*/g, '\n@@@MS_TABLE_$1@@@\n');
+    processed = processed.replace(/(?:\r?\n)*@@@MS_MATH_BLOCK_(\d+)@@@(?:\r?\n)*/g, '\n@@@MS_MATH_BLOCK_$1@@@\n');
+
+    processed = processed.replace(/\r?\n/g, '<br>');
+
+    // Loại bỏ các thẻ <br> thừa nằm liền kề trước hoặc sau các block vì block đã tự ngắt dòng
+    processed = processed.replace(/(?:<br\s*\/?>)+@@@MS_MATH_BLOCK_/gi, '@@@MS_MATH_BLOCK_');
+    processed = processed.replace(/@@@MS_MATH_BLOCK_(\d+)@@@(?:<br\s*\/?>)+/gi, '@@@MS_MATH_BLOCK_$1@@@');
+    processed = processed.replace(/(?:<br\s*\/?>)+@@@MS_CODE_BLOCK_/gi, '@@@MS_CODE_BLOCK_');
+    processed = processed.replace(/@@@MS_CODE_BLOCK_(\d+)@@@(?:<br\s*\/?>)+/gi, '@@@MS_CODE_BLOCK_$1@@@');
+    processed = processed.replace(/(?:<br\s*\/?>)+@@@MS_TABLE_/gi, '@@@MS_TABLE_');
+    processed = processed.replace(/@@@MS_TABLE_(\d+)@@@(?:<br\s*\/?>)+/gi, '@@@MS_TABLE_$1@@@');
+
+    // 8. Restore Math (Đảm bảo 100% SVG và newlines trong KaTeX còn nguyên vẹn)
+    mathBlocks.forEach((m, idx) => {
+      const placeholder = m.isBlock ? `@@@MS_MATH_BLOCK_${idx}@@@` : `@@@MS_MATH_INLINE_${idx}@@@`;
+      processed = processed.replace(placeholder, () => m.html);
+    });
+
+    // 9. Restore Inline code
     inlineCodes.forEach((cHtml, idx) => {
-      rendered = rendered.replace(`@@@MS_INLINE_CODE_${idx}@@@`, cHtml);
+      processed = processed.replace(`@@@MS_INLINE_CODE_${idx}@@@`, () => cHtml);
     });
 
-    // 6. Restore Code blocks
+    // 10. Restore Tables
+    tables.forEach((tHtml, idx) => {
+      processed = processed.replace(`@@@MS_TABLE_${idx}@@@`, () => tHtml);
+    });
+
+    // 11. Restore Code blocks
     codeBlocks.forEach((bHtml, idx) => {
-      rendered = rendered.replace(`@@@MS_CODE_BLOCK_${idx}@@@`, bHtml);
+      processed = processed.replace(`@@@MS_CODE_BLOCK_${idx}@@@`, () => bHtml);
     });
 
-    return rendered;
+    // 12. Restore escaped dollars
+    processed = processed.replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '$');
+
+    return processed;
   },
 
   // --- ROBUST MIXED LATEX & TEXT PARSER & RENDERER ---
@@ -700,17 +1093,20 @@ const App = {
     let str = this.stripCitationArtifacts(String(text));
     if (!str.trim()) return '';
 
-    // Nếu văn bản có chứa code block hoặc inline code thì ưu tiên xử lý qua formatRichText
-    if (str.includes('```') || str.includes('`')) {
+    // Bảo vệ ký hiệu đô-la tiền tệ đã escape \$ trước khi tokenize công thức
+    str = str.replace(/(?<!\\)\\\$/g, '@@@MS_ESCAPED_DOLLAR@@@');
+
+    // Nếu văn bản có chứa code block, inline code hoặc bảng markdown thì ưu tiên xử lý qua formatRichText
+    if (str.includes('```') || str.includes('`') || (str.includes('|') && /\|[ \t]*:?-{2,}:?[ \t]*\|/.test(str))) {
       return this.formatRichText(text);
     }
 
     // Fast-path non-math bypass
     if (str.indexOf('$') === -1 && str.indexOf('\\(') === -1 && str.indexOf('\\[') === -1) {
       if (str.indexOf('**') !== -1) {
-        return this._escapeHtml(str).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+        return this._escapeHtml(str).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>').replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '$');
       }
-      return this._escapeHtml(str);
+      return this._escapeHtml(str).replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '$');
     }
 
     // High-level full-string LRU cache (max 1500 entries)
@@ -783,71 +1179,35 @@ const App = {
                  .replace(/\x0dho/g, '\\rho')
                  .replace(/\\frac\{/g, '\\dfrac{');
 
+      // Khôi phục placeholder escaped dollar nếu có trong math
+      code = code.replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '\\$');
+
       // Step 3 Requirement: Auto-escape unescaped % into \% inside math formulas
       code = code.replace(/(^|[^\\])%/g, '$1\\%');
 
       return { code: code.trim(), isBlock };
     };
 
-    return parts.map(p => {
+    const renderedParts = parts.map(p => {
       if (p.type === 'text') {
         // Plain text: safely escape HTML (&, <, >, ") without corrupting _ or normal chars
-        return escapeHtml(p.content).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+        return escapeHtml(p.content).replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>').replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '$');
       } else {
         const { code, isBlock } = cleanMath(p.raw);
-        if (!hasKatex || !katexEngine) {
-          return `<span class="katex-inline-wrap inline-block align-middle mx-1 font-mono">${escapeHtml(code)}</span>`;
-        }
-        try {
-          // KaTeX LRU Map cache (_katexCache) to eliminate redundant renderToString overhead (max 2500 entries)
-          const cacheKey = (isBlock ? 'B:' : 'I:') + code;
-          let rendered = null;
-          let cache = (typeof this !== 'undefined' && this && this._katexCache) || (typeof App !== 'undefined' && App && App._katexCache) || null;
-          if (!cache) {
-            try {
-              if (typeof globalThis !== 'undefined') {
-                if (!globalThis._msKatexCache) globalThis._msKatexCache = new Map();
-                cache = globalThis._msKatexCache;
-              }
-            } catch (_) {}
-          }
-
-          if (cache && cache.has(cacheKey)) {
-            rendered = cache.get(cacheKey);
-          } else {
-            // Inline Math uses displayMode: false; Block Math uses displayMode: true
-            rendered = katexEngine.renderToString(code, {
-              displayMode: isBlock,
-              throwOnError: false
-            });
-            if (cache) {
-              if (cache.size >= 2500) {
-                const firstKey = cache.keys().next().value;
-                cache.delete(firstKey);
-              }
-              cache.set(cacheKey, rendered);
-            }
-          }
-          if (isBlock) {
-            return `<div class="katex-display-wrap overflow-x-auto my-2">${rendered}</div>`;
-          } else {
-            return `<span class="katex-inline-wrap inline-block align-middle mx-1">${rendered}</span>`;
-          }
-        } catch (e) {
-          console.warn('KaTeX renderToString error:', e);
-          return `<span class="katex-inline-wrap inline-block align-middle mx-1">${escapeHtml(code)}</span>`;
-        }
+        return this._renderMathCode(code, isBlock);
       }
     }).join('');
+
+    const finalHtml = renderedParts.replace(/@@@MS_ESCAPED_DOLLAR@@@/g, '$');
 
     if (typeof globalThis !== 'undefined' && globalThis._msFullLatexCache) {
       if (globalThis._msFullLatexCache.size >= 1500) {
         const firstKey = globalThis._msFullLatexCache.keys().next().value;
         globalThis._msFullLatexCache.delete(firstKey);
       }
-      globalThis._msFullLatexCache.set(str, result);
+      globalThis._msFullLatexCache.set(str, finalHtml);
     }
-    return result;
+    return finalHtml;
   },
 
   // --- KATEX MATH RENDERING ---
@@ -3481,8 +3841,14 @@ const App = {
         qImgEl.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', false);
         qImgEl.style.display = 'block';
       } else {
-        qImgEl.innerHTML = '';
-        qImgEl.style.display = 'none';
+        const badgeHtml = this.renderMissingImageBadgeHtml(card);
+        if (badgeHtml) {
+          qImgEl.innerHTML = badgeHtml;
+          qImgEl.style.display = 'block';
+        } else {
+          qImgEl.innerHTML = '';
+          qImgEl.style.display = 'none';
+        }
       }
     }
 
@@ -3593,7 +3959,9 @@ const App = {
       if (footerActions) footerActions.style.removeProperty('display');
       const expText = document.getElementById('quiz-explanation-text');
       if (expBox && expText) {
-        expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
+        const letterMap = this.getOptionLetterMap(card);
+        const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
+        expText.innerHTML = this.formatRichText(exp);
         expBox.classList.add('show');
         this.renderMath(expBox);
       }
@@ -3735,57 +4103,28 @@ const App = {
 
   adaptOptionsLayout(container) {
     if (!container) return;
-    if (window.innerWidth < 640) return;
-
-    // Fast path: if no math elements and not currently forced, skip measurement
-    const hasMath = container.querySelector('.katex-inline-wrap, .katex');
-    if (!hasMath && !container.classList.contains('layout-single-column')) {
-      return;
-    }
+    if (typeof window !== 'undefined' && window.innerWidth < 640) return;
 
     // Reset single-column class and scaled classes
-    container.classList.remove('layout-single-column');
+    container.classList.remove('layout-single-column', 'quiz-options--single-col');
     container.querySelectorAll('.katex-scaled-down, .katex-scaled-down-1, .katex-scaled-down-2').forEach(el => {
       el.classList.remove('katex-scaled-down', 'katex-scaled-down-1', 'katex-scaled-down-2');
       el.style.removeProperty('font-size');
     });
 
-    if (!hasMath) return;
-
-    const measureAndAdapt = () => {
-      const items = container.querySelectorAll('.quiz-option-btn, .bank-card-options-grid > div');
-      if (!items.length) return;
-
-      let forceSingleColumn = false;
-
-      for (const item of items) {
-        const contentEl = item.querySelector('.quiz-option-content') || item;
-        const katexElements = item.querySelectorAll('.katex-inline-wrap, .katex');
-
-        // Check if item, content or formula overflows available column width
-        let isOverflow = (item && item.scrollWidth > item.clientWidth + 1) ||
-                         (contentEl && contentEl.scrollWidth > contentEl.clientWidth + 1);
-        for (const k of katexElements) {
-          if (k.scrollWidth > k.clientWidth + 1 || (contentEl && k.offsetWidth > contentEl.clientWidth + 1)) {
-            isOverflow = true;
-            break;
-          }
-        }
-
-        if (isOverflow) {
-          // Khi công thức dài, tự động chuyển sang 1 cột (.layout-single-column) thay vì ép nhỏ chữ (Prompt 1i Mục 1.3)
-          forceSingleColumn = true;
-          break;
-        }
+    // CHỈ gán .quiz-options--single-col khi có ít nhất 1 đáp án chứa bảng Markdown hoặc ma trận rộng >= 3 cột
+    const hasTable = Boolean(container.querySelector('.md-table, table, .table-scroll'));
+    let hasWideOption = hasTable;
+    if (!hasWideOption && container.innerHTML) {
+      if (this.isWideMatrixOrTableOption(container.innerHTML)) {
+        hasWideOption = true;
       }
+    }
 
-      if (forceSingleColumn) {
-        container.classList.add('layout-single-column');
-      }
-    };
-
-    measureAndAdapt();
-    requestAnimationFrame(measureAndAdapt);
+    if (hasWideOption) {
+      container.classList.add('layout-single-column');
+      container.classList.add('quiz-options--single-col');
+    }
   },
 
   _renderOptionsBlock(card, answeredState) {
@@ -3794,7 +4133,12 @@ const App = {
     optionsContainer.innerHTML = '';
     optionsContainer.style.removeProperty('display');
     optionsContainer.classList.remove('hidden-mode');
-    optionsContainer.classList.remove('layout-single-column');
+    optionsContainer.classList.remove('layout-single-column', 'quiz-options--single-col');
+
+    const hasWideOption = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
+    if (hasWideOption) {
+      optionsContainer.classList.add('layout-single-column', 'quiz-options--single-col');
+    }
 
     const session = this.activeSession;
     if (session) {
@@ -4025,7 +4369,9 @@ const App = {
     const expBox = document.getElementById('quiz-explanation-box');
     const expText = document.getElementById('quiz-explanation-text');
     if (expBox && expText) {
-      expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
+      const letterMap = this.getOptionLetterMap(card);
+      const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
+      expText.innerHTML = this.formatRichText(exp);
       expBox.classList.add('show');
       this.renderMath(expBox);
     }
@@ -4150,7 +4496,9 @@ const App = {
     const expBox = document.getElementById('quiz-explanation-box');
     const expText = document.getElementById('quiz-explanation-text');
     if (expBox && expText) {
-      expText.innerHTML = this.formatRichText(card.explanation || 'Không có giải thích thêm.');
+      const letterMap = this.getOptionLetterMap(card);
+      const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
+      expText.innerHTML = this.formatRichText(exp);
       expBox.classList.add('show');
       this.renderMath(expBox);
     }
@@ -4356,8 +4704,14 @@ const App = {
         frontImgEl.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', true);
         frontImgEl.style.display = 'block';
       } else {
-        frontImgEl.innerHTML = '';
-        frontImgEl.style.display = 'none';
+        const badgeHtml = this.renderMissingImageBadgeHtml(card);
+        if (badgeHtml) {
+          frontImgEl.innerHTML = badgeHtml;
+          frontImgEl.style.display = 'block';
+        } else {
+          frontImgEl.innerHTML = '';
+          frontImgEl.style.display = 'none';
+        }
       }
     }
 
@@ -5185,8 +5539,14 @@ const App = {
         examImgWrap.innerHTML = this.renderCardImageHtml(card.image, 'Hình câu hỏi', false);
         examImgWrap.style.display = 'block';
       } else {
-        examImgWrap.innerHTML = '';
-        examImgWrap.style.display = 'none';
+        const badgeHtml = this.renderMissingImageBadgeHtml(card);
+        if (badgeHtml) {
+          examImgWrap.innerHTML = badgeHtml;
+          examImgWrap.style.display = 'block';
+        } else {
+          examImgWrap.innerHTML = '';
+          examImgWrap.style.display = 'none';
+        }
       }
     }
 
@@ -5241,9 +5601,9 @@ const App = {
         const optImgHtml = optImg ? this.renderCardImageHtml(optImg, 'Đáp án ' + letter, true) : '';
 
         btn.innerHTML = `
-          <span class="quiz-option-letter">${letter}</span>
+          <span class="quiz-option-letter select-none">${letter}.</span>
           <div class="quiz-option-content">
-            ${cleanText ? `<span class="quiz-option-text">${this.formatRichText(cleanText)}</span>` : ''}
+            ${cleanText ? `<div class="quiz-option-text">${this.formatRichText(cleanText)}</div>` : ''}
             ${optImgHtml}
           </div>
         `;
@@ -5256,7 +5616,13 @@ const App = {
     }
 
     this.renderMath(document.getElementById('view-exam'));
-    if (optContainer) this.adaptOptionsLayout(optContainer);
+    if (optContainer) {
+      const hasWideOption = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
+      if (hasWideOption) {
+        optContainer.classList.add('layout-single-column', 'quiz-options--single-col');
+      }
+      this.adaptOptionsLayout(optContainer);
+    }
 
     // Prev / Next button state
     document.getElementById('btn-exam-prev').disabled = session.currentIndex === 0;
@@ -5319,7 +5685,7 @@ const App = {
             <h3 class="quiz-question-text" style="font-size: 1.05rem; margin-bottom: 16px;">
               ${this.formatRichText(card.question)}
             </h3>
-            ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', false) : ''}
+            ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', false) : this.renderMissingImageBadgeHtml(card)}
         `;
 
         if (card.type === 'numeric') {
@@ -5349,7 +5715,9 @@ const App = {
             session.cardShuffledOptions[idx] = shuffledList;
           }
 
-          html += `<div class="quiz-options-list" id="exam-lms-options-${idx}">`;
+          const hasWideOption = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
+          const singleColClass = hasWideOption ? ' layout-single-column quiz-options--single-col' : '';
+          html += `<div class="quiz-options-list${singleColClass}" id="exam-lms-options-${idx}">`;
           shuffledList.forEach((opt, optIdx) => {
             const isSelected = userAns === optIdx;
             const { letter, cleanText } = this.cleanOptionText(opt.text, optIdx);
@@ -5357,9 +5725,9 @@ const App = {
             const optImgHtml = optImg ? this.renderCardImageHtml(optImg, 'Đáp án ' + letter, true) : '';
             html += `
               <button type="button" class="quiz-option-btn exam-lms-opt-btn ${isSelected ? 'selected exam-option-selected' : ''}" data-card-idx="${idx}" data-opt-idx="${optIdx}">
-                <span class="quiz-option-letter">${letter}</span>
+                <span class="quiz-option-letter select-none">${letter}.</span>
                 <div class="quiz-option-content">
-                  ${cleanText ? `<span class="quiz-option-text">${this.formatRichText(cleanText)}</span>` : ''}
+                  ${cleanText ? `<div class="quiz-option-text">${this.formatRichText(cleanText)}</div>` : ''}
                   ${optImgHtml}
                 </div>
               </button>
@@ -7876,10 +8244,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           </div>
         </div>
 
-        <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+        <div class="bank-question-text" style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; line-height: 1.55; display: block;">
           ${this.formatRichText(card.question)}
         </div>
-        ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', true) : ''}
+        ${card.image ? this.renderCardImageHtml(card.image, 'Hình câu hỏi', true) : this.renderMissingImageBadgeHtml(card)}
 
         ${card.type === 'numeric' ? `
           <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
@@ -7893,9 +8261,12 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
               const rawOpt = card.rawOptions && card.rawOptions[i];
               const optImg = (rawOpt && rawOpt.image) || (typeof opt === 'object' && opt !== null ? opt.image : null) || null;
               return `
-              <div class="bank-option-cell" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)'}; color: ${i === ansIdx ? 'var(--success)' : 'var(--text-primary)'}; font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <b>${letter}.</b> ${cleanText ? this.formatRichText(cleanText) : ''} ${i === ansIdx ? '✓' : ''}
-                ${optImg ? this.renderCardImageHtml(optImg, 'Hình đáp án ' + letter, true) : ''}
+              <div class="bank-option-cell ${i === ansIdx ? 'correct is-correct' : ''}" style="padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; background: ${i === ansIdx ? 'var(--success-bg, rgba(16, 185, 129, 0.16))' : 'var(--bg-surface-elevated)'}; border: 1px solid ${i === ansIdx ? 'var(--success-border, #10b981)' : 'var(--border-color)'}; color: var(--text-primary); font-weight: ${i === ansIdx ? '600' : '400'}; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; display: flex; align-items: flex-start; gap: 8px;">
+                <span class="quiz-option-letter select-none">${letter}.</span>
+                <div class="quiz-option-text bank-option-text" style="display: block; flex: 1 1 auto; min-width: 0; line-height: 1.55;">
+                  ${cleanText ? this.formatRichText(cleanText) : ''} ${i === ansIdx ? '✓' : ''}
+                  ${optImg ? this.renderCardImageHtml(optImg, 'Hình đáp án ' + letter, true) : ''}
+                </div>
               </div>
             `;
             }).join('')}
@@ -9056,12 +9427,27 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 if (typeof window !== 'undefined') {
   window.App = App;
   window.formatRichText = (t) => App.formatRichText(t);
+  window.remapExplanationLetters = (t, m) => App.remapExplanationLetters(t, m);
+  window.isWideMatrixOrTableOption = (t) => App.isWideMatrixOrTableOption(t);
+  window.isQuestionMissingImage = (c) => App.isQuestionMissingImage(c);
+  window.renderMissingImageBadgeHtml = (c) => App.renderMissingImageBadgeHtml(c);
 }
 if (typeof global !== 'undefined') {
   global.formatRichText = (t) => App.formatRichText(t);
+  global.remapExplanationLetters = (t, m) => App.remapExplanationLetters(t, m);
+  global.isWideMatrixOrTableOption = (t) => App.isWideMatrixOrTableOption(t);
+  global.isQuestionMissingImage = (c) => App.isQuestionMissingImage(c);
+  global.renderMissingImageBadgeHtml = (c) => App.renderMissingImageBadgeHtml(c);
 }
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { App, formatRichText: (t) => App.formatRichText(t) };
+  module.exports = {
+    App,
+    formatRichText: (t) => App.formatRichText(t),
+    remapExplanationLetters: (t, m) => App.remapExplanationLetters(t, m),
+    isWideMatrixOrTableOption: (t) => App.isWideMatrixOrTableOption(t),
+    isQuestionMissingImage: (c) => App.isQuestionMissingImage(c),
+    renderMissingImageBadgeHtml: (c) => App.renderMissingImageBadgeHtml(c)
+  };
 }
 
 // Start application when DOM is ready

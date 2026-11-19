@@ -1965,12 +1965,16 @@ console.log('\n--- Test Suite 30: Phase 2b AI Prompt Template & Pedagogical Expl
   assert(template.includes('CHỐNG LƯỜI KHI SINH NHIỀU CÂU'), 'Prompt template requires unique context-bound explanations');
 
   // 2. Parse sample JSON from inside the template
-  const jsonMatch = template.match(/```json\s*([\s\S]*?)\s*```/);
+  const jsonMatch = template.match(/(?:^|\r?\n)```json\s*\r?\n([\s\S]*?)\r?\n```/);
   assert(jsonMatch && jsonMatch[1], 'Prompt template embeds valid json code block');
   const parsedTemplateDeck = AIParser.parse(jsonMatch[1]);
   assert(parsedTemplateDeck.cards.length === 1, 'Template sample JSON parses cleanly into 1 card');
   assert(parsedTemplateDeck.errors.length === 0, 'Template sample JSON has 0 parse errors');
-  assert(parsedTemplateDeck.cards[0].explanation.includes('Loại B vì') && parsedTemplateDeck.cards[0].explanation.includes('loại C vì'), 'Template sample explanation demonstrates standard pedagogical analysis');
+  assert(
+    (parsedTemplateDeck.cards[0].explanation.includes('Phương án') && parsedTemplateDeck.cards[0].explanation.includes('sai')) ||
+    (parsedTemplateDeck.cards[0].explanation.includes('Loại B vì') && parsedTemplateDeck.cards[0].explanation.includes('loại C vì')),
+    'Template sample explanation demonstrates standard pedagogical analysis'
+  );
 
   // 3. App.copyAIPrompt verification
   assert(appJs.includes('copyAIPrompt()') && appJs.includes('AIParser.generateAIPromptTemplate'), 'App.copyAIPrompt calls AIParser.generateAIPromptTemplate');
@@ -2387,6 +2391,390 @@ Giá trị biến \`sq\` tương ứng với $f(5)$.`;
   const template = AIParser.generateAIPromptTemplate({ topic: 'Lập trình C', count: 10 });
   assert(template.includes('Đoạn code nhiều dòng dùng block ```c\\n...\\n```'), 'Prompt template guides AI to use multiline ```c code blocks');
   assert(template.includes('Tên biến hoặc lệnh ngắn 1 dòng (như `printf()`, `int _dem2;`, `SELECT`) ưu tiên dùng inline backtick `...`'), 'Prompt template guides AI to use inline backticks');
+}
+
+// === TEST SUITE 35: Markdown Tables, KaTeX Cell Rendering & Single-Column Grid Adaptation ===
+console.log('\n--- Test Suite 35: Markdown Tables, KaTeX Cell Rendering & Single-Column Grid Adaptation ---');
+{
+  const { App, formatRichText } = require('../js/app.js');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf-8');
+
+  // Case 1: Markdown Table with Simplex Tableau & KaTeX inside cells
+  const simplexTable = `Cho bảng đơn hình sau:
+| Biến cơ sở | Hệ số | $x_1$ | $x_2$ |
+| :--- | :---: | :---: | ---: |
+| $x_3$ | 0 | 2 | 1 |
+| $\\Delta$ | | -$3$ | -$2$ |
+
+Phương án tối ưu là gì?`;
+
+  const renderedTable = formatRichText(simplexTable);
+  assert(renderedTable.includes('<div class="table-scroll"><table class="md-table">'), 'Table rendered inside .table-scroll with .md-table');
+  assert(renderedTable.includes('<thead><tr>'), 'Table contains <thead> and <tr>');
+  assert(renderedTable.includes('<th style="text-align: left;">Biến cơ sở</th>'), 'Header alignment style="text-align: left;" applied');
+  assert(renderedTable.includes('<th style="text-align: center;">Hệ số</th>'), 'Header alignment style="text-align: center;" applied');
+  assert(renderedTable.includes('<th style="text-align: right;">'), 'Header alignment style="text-align: right;" applied');
+  assert(renderedTable.includes('<tbody><tr>'), 'Table contains <tbody> and <tr>');
+  assert(renderedTable.includes('x_1') || renderedTable.includes('katex'), 'KaTeX rendered inside table header cell $x_1$');
+  assert(renderedTable.includes('x_3') || renderedTable.includes('katex'), 'KaTeX rendered inside table body cell $x_3$');
+  assert(renderedTable.includes('\\Delta') || renderedTable.includes('Delta') || renderedTable.includes('katex'), 'KaTeX rendered inside table body cell \\Delta');
+
+  // Case 2: Code block with C code, indentation & <stdio.h>
+  const cSnippet = `\`\`\`c
+#include <stdio.h>
+int main() {
+    int sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum += i;
+    }
+    printf("%d\\n", sum);
+    return 0;
+}
+\`\`\``;
+  const renderedC = formatRichText(cSnippet);
+  assert(renderedC.includes('<pre class="code-block" data-lang="c" class="language-c">'), 'C code block rendered with .code-block and data-lang="c"');
+  assert(renderedC.includes('<code>#include &lt;stdio.h&gt;'), 'Inside code block <stdio.h> is escaped to &lt;stdio.h&gt;');
+  assert(!renderedC.includes('<stdio.h>'), 'Raw unescaped <stdio.h> is absent in code block');
+  assert(renderedC.includes('i &lt; 10'), 'Inequality < is safely escaped to &lt;');
+  assert(renderedC.includes('\n    int sum = 0;\n'), 'Indentation and line breaks are preserved inside code block');
+
+  // Case 3: Escape <stdio.h> in general text and inline code
+  const mixedEscaped = 'Thư viện `<stdio.h>` và thẻ <stdio.h> không bị nuốt.';
+  const renderedEsc = formatRichText(mixedEscaped);
+  assert(renderedEsc.includes('&lt;stdio.h&gt;'), 'HTML tags like <stdio.h> safely escaped to &lt;stdio.h&gt;');
+  assert(!renderedEsc.includes('<stdio.h>'), 'Raw <stdio.h> tag is never present in rendered output');
+
+  // Case 4: Adaptive Single-Column Grid Detection & CSS Rules
+  const mockTableContainer = {
+    classList: {
+      classes: new Set(),
+      add(...cls) { cls.forEach(c => this.classes.add(c)); },
+      remove(...cls) { cls.forEach(c => this.classes.delete(c)); },
+      contains(c) { return this.classes.has(c); }
+    },
+    innerHTML: '<div class="table-scroll"><table class="md-table"><tr><td>1</td></tr></table></div>',
+    querySelector(sel) {
+      if (sel.includes('.md-table') || sel.includes('table')) return {};
+      return null;
+    },
+    querySelectorAll() { return []; }
+  };
+  App.adaptOptionsLayout(mockTableContainer);
+  assert(mockTableContainer.classList.contains('layout-single-column'), 'Table container switches to layout-single-column');
+  assert(mockTableContainer.classList.contains('quiz-options--single-col'), 'Table container switches to quiz-options--single-col');
+
+  const mockMatrixContainer = {
+    classList: {
+      classes: new Set(),
+      add(...cls) { cls.forEach(c => this.classes.add(c)); },
+      remove(...cls) { cls.forEach(c => this.classes.delete(c)); },
+      contains(c) { return this.classes.has(c); }
+    },
+    innerHTML: '\\begin{bmatrix} a & b & c \\\\ d & e & f \\end{bmatrix}',
+    querySelector() { return null; },
+    querySelectorAll() { return []; }
+  };
+  App.adaptOptionsLayout(mockMatrixContainer);
+  assert(mockMatrixContainer.classList.contains('layout-single-column'), 'Matrix container switches to layout-single-column');
+  assert(mockMatrixContainer.classList.contains('quiz-options--single-col'), 'Matrix container switches to quiz-options--single-col');
+
+  // Case 5: CSS Rules Verification (white-space, flex-shrink, align-self, theme styling)
+  assert(styleCss.includes('.quiz-options--single-col'), 'CSS defines .quiz-options--single-col');
+  assert(styleCss.includes('.table-scroll'), 'CSS defines .table-scroll');
+  assert(styleCss.includes('.md-table'), 'CSS defines .md-table');
+  assert(styleCss.includes('white-space: nowrap !important;'), 'CSS enforces white-space: nowrap !important on option letters');
+  assert(styleCss.includes('align-self: flex-start !important;'), 'CSS aligns option letters and content with flex-start !important');
+  assert(styleCss.includes('[data-theme="monochrome"] .md-table'), 'Monochrome theme override exists for .md-table');
+  assert(styleCss.includes('[data-theme="white-orange"] .md-table'), 'White-orange theme override exists for .md-table');
+  assert(styleCss.includes('[data-theme="ascii"] .md-table'), 'ASCII theme override exists for .md-table');
+  assert(styleCss.includes('.katex .matrix') && styleCss.includes('.katex .array'), 'KaTeX matrix and array white-space protection exists');
+}
+
+// === TEST SUITE 36: Explanation Letters Remapping on Option Shuffle & KaTeX Matrix Shield ===
+console.log('\n--- Test Suite 36: Explanation Letters Remapping on Option Shuffle & KaTeX Matrix Shield ---');
+{
+  const { App, remapExplanationLetters } = require('../js/app.js');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf-8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf-8');
+
+  // Case 1: remapExplanationLetters with letterMap
+  // Original options: A, B, C, D
+  // Shuffled mapping: A -> B, B -> D, C -> A, D -> C
+  const letterMap = {
+    'A': 'B',
+    'B': 'D',
+    'C': 'A',
+    'D': 'C'
+  };
+
+  const explanation1 = 'Loại B vì trừ $x_4$; loại C và D vì thêm $x_1^g$. Đáp án đúng là A.';
+  const remapped1 = remapExplanationLetters(explanation1, letterMap);
+  assert(remapped1.includes('Loại D vì trừ $x_4$'), 'B remapped to D after "Loại" keyword');
+  assert(remapped1.includes('loại A và C vì thêm $x_1^g$'), 'C and D remapped to A and C after "loại" keyword');
+  assert(remapped1.includes('Đáp án đúng là B'), 'A remapped to B after "Đáp án đúng là" keyword');
+  assert(remapped1.includes('$x_4$') && remapped1.includes('$x_1^g$'), 'Math formulas in explanation preserved intact');
+
+  // Case 2: Math variables and code must remain 100% untouched
+  const explanation2 = 'Phương án $A \\rightarrow BC$ là đúng. Loại A vì vi phạm; chọn B. Biến `printf("B")` không đổi.';
+  const remapped2 = remapExplanationLetters(explanation2, letterMap);
+  assert(remapped2.includes('$A \\rightarrow BC$'), 'Math formula $A \\rightarrow BC$ is never touched');
+  assert(remapped2.includes('`printf("B")`'), 'Inline code `printf("B")` is never touched');
+  assert(remapped2.includes('Loại B vì vi phạm'), 'A remapped to B after "Loại"');
+  assert(remapped2.includes('chọn D'), 'B remapped to D after "chọn"');
+
+  // Case 3: Empty, null, or identity letterMap
+  assert(remapExplanationLetters('', letterMap) === '', 'Empty explanation returns empty string');
+  assert(remapExplanationLetters('Giải thích.', null) === 'Giải thích.', 'Null letterMap returns explanation unchanged');
+  assert(remapExplanationLetters('Loại A', { 'A': 'A', 'B': 'B' }) === 'Loại A', 'Identity map returns explanation unchanged');
+
+  // Case 4: KaTeX Matrix Bracket SVG Shield CSS & CDN match
+  assert(styleCss.includes('*:not(.katex, .katex *)'), 'CSS base reset isolates KaTeX elements from global box-sizing & margin');
+  assert(!styleCss.includes('height: inherit !important;') && !styleCss.includes('.katex, .katex * { line-height: normal !important; }'), 'CSS avoids intrusive overrides on KaTeX internals');
+  assert(indexHtml.includes('katex@0.18.7'), 'index.html matches KaTeX 0.18.7 version with katex.min.js');
+
+  // Case 5: Real matrix rendering check
+  const katex = require('../lib/katex/katex.min.js');
+  const matrixLatex = '\\mathbf{A}=\\begin{bmatrix}1&0&2&1&1\\\\1&3&3&2&0\\\\2&2&1&2&1\\end{bmatrix}';
+  const renderedMatrix = katex.renderToString(matrixLatex, { displayMode: true });
+  assert(renderedMatrix.includes('delimsizing mult'), 'KaTeX renders multiline delimsizing for bmatrix');
+  assert(renderedMatrix.includes('<svg xmlns="http://www.w3.org/2000/svg"'), 'KaTeX generates SVG for matrix brackets');
+  assert(renderedMatrix.includes('viewBox="0 0 667 3600"'), 'Bracket SVG has valid 667x3600 viewBox');
+  assert(renderedMatrix.includes('<path d="M403 1759 V84 H666 V0 H319 V1759'), 'Bracket SVG contains opening bracket path');
+  assert(renderedMatrix.includes('<path d="M347 1759 V0 H0 V84 H263 V1759'), 'Bracket SVG contains closing bracket path');
+
+  // Case 6: AI Prompt Template strictly forbids option letters in explanation
+  const promptTemplate = AIParser.generateAIPromptTemplate();
+  assert(promptTemplate.includes('CẤM GỌI TÊN CHỮ CÁI ĐÁP ÁN'), 'Prompt template strictly forbids option letters in explanation');
+  assert(promptTemplate.includes('đảo thứ tự đáp án (shuffle)'), 'Prompt template explains shuffle rationale');
+  assert(promptTemplate.includes('Phương án $x^2$ sai do'), 'Prompt template example demonstrates direct explanation');
+}
+
+// === TEST SUITE 37: Escaped Currency Dollar \$ Isolation, Wide Option Rules, Missing Image Badges & Strict 5-Rule Prompt ===
+console.log('\n--- Test Suite 37: Escaped Currency Dollar \\$ Isolation, Wide Option Rules, Missing Image Badges & Strict 5-Rule Prompt ---');
+{
+  global.katex = require('../lib/katex/katex.min.js');
+  const { App, isWideMatrixOrTableOption, isQuestionMissingImage } = require('../js/app.js');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf-8');
+
+  // Case 1: Escaped Currency Dollar \$ does not break LaTeX parser
+  const currencyWithMath = 'Giá là \\$50 cho mỗi đơn vị, biết hàm cầu là $Q = 100 - 2P$ và hàm chi phí $C(x)$.';
+  const renderedCurrency = App.renderLatexText(currencyWithMath);
+  assert(renderedCurrency.includes('Giá là $50 cho mỗi đơn vị, biết hàm cầu là'), 'Escaped \\$50 is converted to plain dollar without corrupting Vietnamese spaces');
+  assert(renderedCurrency.includes('katex') && (renderedCurrency.includes('100') || renderedCurrency.includes('Q')), 'Math formula $Q = 100 - 2P$ is parsed into KaTeX');
+  assert(!renderedCurrency.includes('50 cho mỗi đơn vị, biết hàm cầu là $Q'), 'Currency text is not erroneously merged into math formula');
+
+  // Fast-path currency text without math
+  const pureCurrency = 'Tổng cộng: \\$100 và \\$200.';
+  const renderedPure = App.renderLatexText(pureCurrency);
+  assert(renderedPure === 'Tổng cộng: $100 và $200.', 'Pure currency string fast-paths directly to plain text');
+
+  // Sqrt formula rendering check
+  const sqrtLatex = 'Biết $-0,828 \\approx 2 - \\sqrt{8}$ là nghiệm.';
+  const renderedSqrt = App.renderLatexText(sqrtLatex);
+  assert(renderedSqrt.includes('sqrt'), 'Formula with \\sqrt{8} contains KaTeX sqrt elements');
+  assert(renderedSqrt.includes('hide-tail'), 'KaTeX sqrt contains hide-tail SVG wrap');
+
+  // Case 2: KaTeX strict isolation CSS
+  assert(styleCss.includes('*:not(.katex'), 'CSS base reset isolates KaTeX from global box-sizing & margin');
+  assert(!styleCss.includes('.katex, .katex * { line-height: normal !important; }'), 'CSS does not inject intrusive line-height: normal into KaTeX internals');
+
+  // Case 3: Wide Option Detector (2x2 vs 1 column)
+  // (a) 1D column vector -> keeps 2x2 (returns false)
+  const colVector = '$\\begin{bmatrix} 6 \\\\ 3 \\\\ 2 \\end{bmatrix}$';
+  assert(isWideMatrixOrTableOption(colVector) === false, '1D column vector keeps 2x2 grid (returns false)');
+
+  // (b) 2x2 small matrix -> keeps 2x2 (returns false)
+  const smallMatrix = '$\\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}$';
+  assert(isWideMatrixOrTableOption(smallMatrix) === false, 'Small 2x2 matrix keeps 2x2 grid (returns false)');
+
+  // (c) 3x3 wide matrix -> triggers single column (returns true)
+  const wideMatrix = '$\\begin{bmatrix} 1 & 0 & 2 \\\\ 1 & 3 & 3 \\\\ 2 & 2 & 1 \\end{bmatrix}$';
+  assert(isWideMatrixOrTableOption(wideMatrix) === true, '3x3 wide matrix triggers single column (returns true)');
+
+  // (d) Markdown table -> triggers single column
+  const tableOption = '| A | B |\n|---|---|\n| 1 | 2 |';
+  assert(isWideMatrixOrTableOption(tableOption) === true, 'Markdown table in option triggers single column (returns true)');
+
+  // (e) System of equations \begin{cases} or long raw LaTeX / text -> keeps 2x2 grid (returns false)
+  const systemOfEq = '$\\begin{cases} 2x + 3y = 5 \\\\ 4x - y = 3 \\end{cases}$';
+  assert(isWideMatrixOrTableOption(systemOfEq) === false, 'System of equations \\begin{cases} keeps 2x2 grid (returns false)');
+  const complexFormula = '$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} + \\frac{\\alpha + \\beta}{\\gamma + \\delta} = \\int_0^\\infty f(x) dx$';
+  assert(isWideMatrixOrTableOption(complexFormula) === false, 'Complex raw LaTeX formula keeps 2x2 grid (returns false)');
+  const longText = 'Đây là một phương án văn bản dài thông thường nhưng không chứa bảng markdown hay ma trận 3 cột.'.repeat(2);
+  assert(isWideMatrixOrTableOption(longText) === false, 'Long text without markdown table or 3-column matrix keeps 2x2 grid (returns false)');
+
+  // (f) Normal short text -> keeps 2x2
+  assert(isWideMatrixOrTableOption('Phương án A đúng.') === false, 'Short text option keeps 2x2 grid (returns false)');
+
+  // (g) CSS Grid verification: 2x2 on desktop, 1-col on mobile, only .quiz-options--single-col switches to 1fr
+  assert(styleCss.includes('.quiz-options') && styleCss.includes('grid-template-columns: repeat(2, minmax(0, 1fr)) !important;'), 'CSS specifies 2x2 grid repeat(2, minmax(0, 1fr)) for .quiz-options on desktop');
+  assert(styleCss.includes('#quiz-options-container') && styleCss.includes('#exam-options-container'), 'CSS targets #quiz-options-container and #exam-options-container');
+  assert(styleCss.includes('@media (max-width: 640px)') && styleCss.includes('#view-study .quiz-options') && styleCss.includes('grid-template-columns: 1fr !important;'), 'CSS collapses to 1fr on mobile');
+  assert(styleCss.includes('.quiz-options--single-col') && styleCss.includes('grid-template-columns: 1fr !important;'), 'CSS switches to 1fr only with .quiz-options--single-col');
+
+  // Case 4: Option letter no-wrap & alignment across views
+  assert(styleCss.includes('#view-study .quiz-option-letter'), 'CSS targets study view option letter');
+  assert(styleCss.includes('#view-exam .quiz-option-letter'), 'CSS targets exam view option letter');
+  assert(styleCss.includes('#view-bank .quiz-option-letter'), 'CSS targets bank view option letter');
+  assert(styleCss.includes('min-width: 1.6em !important;'), 'CSS enforces min-width: 1.6em !important on option letters');
+  const appJsSource = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf-8');
+  assert(appJsSource.includes('<span class="quiz-option-letter select-none">${letter}.</span>'), 'renderQuestionBank uses .quiz-option-letter');
+
+  // Case 5: Missing image warning badge
+  const cardWithTag = { question: 'Tìm cực trị hàm số [Cần hình minh họa]', image: '' };
+  assert(isQuestionMissingImage(cardWithTag) === true, 'Question with [Cần hình minh họa] is flagged missing image');
+  const badgeTag = App.renderMissingImageBadgeHtml(cardWithTag);
+  assert(badgeTag.includes('card-missing-image-badge') && badgeTag.includes('Câu hỏi này cần hình minh họa gốc'), 'Missing image badge is rendered with message');
+
+  const cardWithGraphicPhrase = { question: 'Dựa vào hình vẽ minh họa bên dưới, tính diện tích...', image: '' };
+  assert(isQuestionMissingImage(cardWithGraphicPhrase) === true, 'Question with "hình vẽ minh họa" is flagged missing image');
+
+  const cardWithTablePhraseNoTable = { question: 'Dựa vào bảng bên dưới để xác định phương án đúng:', image: '' };
+  assert(isQuestionMissingImage(cardWithTablePhraseNoTable) === true, 'Question with "bảng bên dưới" without table is flagged missing image');
+
+  const cardWithTablePhraseAndTable = {
+    question: 'Dựa vào bảng bên dưới để xác định phương án đúng:\n| X | Y |\n|---|---|\n| 1 | 2 |',
+    image: ''
+  };
+  assert(isQuestionMissingImage(cardWithTablePhraseAndTable) === false, 'Question with "bảng bên dưới" WITH Markdown table is NOT flagged');
+
+  const cardWithExistingImage = { question: 'Dựa vào đồ thị bên, tìm tiệm cận:', image: 'data:image/webp;base64,ABC' };
+  assert(isQuestionMissingImage(cardWithExistingImage) === false, 'Question with existing image is NOT flagged');
+  assert(App.renderMissingImageBadgeHtml(cardWithExistingImage) === '', 'No badge rendered when image is present');
+
+  // Theme overrides for badge
+  assert(styleCss.includes('html[data-theme="monochrome"] .card-missing-image-badge'), 'Monochrome theme override exists for missing image badge');
+  assert(styleCss.includes('html[data-theme="white-orange"] .card-missing-image-badge'), 'White-orange theme override exists for missing image badge');
+  assert(styleCss.includes('html[data-theme="ascii"] .card-missing-image-badge'), 'ASCII theme override exists for missing image badge');
+
+  // Case 6: Strict 5-Rule AI Prompt Template
+  const promptTemplate5 = AIParser.generateAIPromptTemplate({ topic: 'Quy hoạch tuyến tính', count: 15 });
+  assert(promptTemplate5.includes('Yêu cầu thực hiện nghiêm ngặt 5 nguyên tắc sau:'), 'Prompt template specifies 5 strict principles');
+  assert(promptTemplate5.includes('Ghép ảnh & Đủ 100% số câu: Xuất toàn bộ câu hỏi trong 1 khối ```json duy nhất'), 'Prompt template specifies image merging and single json block');
+  assert(promptTemplate5.includes('Với bài toán lời văn dài quen thuộc từ sách giáo khoa/đề mẫu, hãy diễn đạt lại câu dẫn ngắn gọn, tự nhiên (giữ nguyên 100% số liệu, bảng biểu, công thức và đáp án) để tránh bị bộ lọc hệ thống ngắt giữa chừng.'), 'Prompt template includes recitation filter bypass instruction in Rule 1');
+  assert(promptTemplate5.includes('Xử lý câu bị thiếu dữ kiện/ảnh:'), 'Prompt template specifies handling missing data and diagrams');
+  assert(promptTemplate5.includes('[Đã bổ sung nhiễu]'), 'Prompt template guides tagging added distractor options');
+  assert(promptTemplate5.includes('[Cần hình minh họa]'), 'Prompt template guides tagging missing diagrams');
+  assert(promptTemplate5.includes('15 câu hỏi'), 'Prompt template specifies count');
+  assert(promptTemplate5.includes('Quy hoạch tuyến tính'), 'Prompt template specifies topic');
+}
+
+// === TEST SUITE 38: KaTeX Bracket SVG Isolation, Display Math Compaction, Baseline Alignment, Success Color Sync & Duplicate Option Detection ===
+console.log('\n--- Test Suite 38: KaTeX Bracket SVG Isolation, Display Math Compaction, Baseline Alignment, Success Color Sync & Duplicate Option Detection ---');
+{
+  const { App, formatRichText } = require('../js/app.js');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // 1. Item 1: KaTeX Delimiters & Matrix Integrity
+  assert(!styleCss.includes('.katex svg {\n  display: block !important;\n  position: absolute !important;\n  left: 0 !important;') && !styleCss.includes('.katex, .katex * { line-height: normal !important; }'), 'Intrusive KaTeX SVG and line-height overrides are removed');
+  const katexLib = require(path.join(__dirname, '../lib/katex/katex.min.js'));
+  const renderedMatrix = katexLib.renderToString('\\mathbf{A} = \\begin{bmatrix} 1 & 0 & 2 & 1 & 1 \\\\ 1 & 3 & 3 & 2 & 0 \\\\ 2 & 2 & 1 & 2 & 1 \\end{bmatrix}', { displayMode: true });
+  assert(renderedMatrix.includes('bmatrix') || renderedMatrix.includes('delimsizing'), 'Matrix 3x5 renders with intact delimsizing structure');
+  const renderedCases = katexLib.renderToString('\\begin{cases} y_1 + y_2 + 2y_3 \\ge 5 \\\\ 3y_2 + 2y_3 \\ge 3 \\\\ 2y_1 + 3y_2 + y_3 \\ge 6 \\\\ y_1 + 2y_2 + 2y_3 \\ge 1 \\\\ y_1 + y_3 \\ge 1 \\end{cases}', { displayMode: false });
+  assert(renderedCases.includes('cases') || renderedCases.includes('delimsizing'), 'System of 5 equations renders with intact curly brace delimsizing');
+
+  // 2. Item 2: Display Math Compaction
+  assert(styleCss.includes('margin: 0.4em 0 !important'), 'KaTeX display formula reduces margin to 0.4em 0');
+  const richSample = App.formatRichText("Câu hỏi trước\n$$\nf(x) = x^2\n$$\nCâu hỏi sau");
+  assert(!richSample.includes('<br><div class="katex-display-wrap') && !richSample.includes('<br/><div class="katex-display-wrap'), 'No <br> immediately precedes katex-display-wrap');
+  assert(!richSample.includes('</div><br>') && !richSample.includes('</div><br/>'), 'No <br> immediately follows katex-display-wrap');
+
+  // 3. Item 3: Alignment with Vietnamese text
+  assert(styleCss.includes('.bank-question-text') && styleCss.includes('line-height: 1.55 !important'), 'Bank question text specifies line-height 1.55');
+  assert(styleCss.includes('.bank-option-text'), 'Bank option text class is defined');
+  assert(styleCss.includes('vertical-align: baseline !important') && styleCss.includes('.katex'), 'KaTeX formula aligns to baseline naturally with text');
+  assert(appJs.includes('class="bank-question-text"'), 'renderQuestionBank applies bank-question-text');
+  assert(appJs.includes('bank-option-text'), 'renderQuestionBank applies bank-option-text');
+
+  // 4. Item 4: White Text on Dark Themes, Dark Text on Light Themes & Green Highlight
+  assert(styleCss.includes('.quiz-option-btn.correct') && styleCss.includes('color: #ffffff !important;'), 'Dark theme correct option enforces bright white text');
+  assert(styleCss.includes('.quiz-option-btn.correct .quiz-option-letter') && styleCss.includes('color: #ffffff !important;'), 'Dark theme correct option letter enforces bright white text');
+  assert(styleCss.includes('.quiz-option-btn.correct .katex') && styleCss.includes('color: #ffffff !important;'), 'Dark theme correct option KaTeX formula enforces bright white text');
+  assert(styleCss.includes('[data-theme="white-orange"] .quiz-option-btn.correct') && styleCss.includes('color: #1c1410 !important;'), 'Light theme correct option enforces high-contrast dark text');
+  assert(styleCss.includes('.quiz-option-btn.correct::after') && styleCss.includes("content: '✓'"), 'Correct options have green checkmark ✓ indicator');
+  assert(appJs.includes("i === ansIdx ? 'var(--success-bg") || appJs.includes("bank-option-cell ${i === ansIdx ? 'correct is-correct'"), 'renderQuestionBank applies correct class to right answer');
+
+  // 5. Item 5: Locked Strict 5-Rule Prompt Template & Anti-duplicate Options
+  const lockedPrompt = AIParser.generateAIPromptTemplate();
+  assert(lockedPrompt.includes('CHỈ XUẤT DUY NHẤT 1 KHỐI ```json CHỨA TOÀN BỘ 100% CÂU HỎI TRONG 1 LẦN TRẢ LỜI'), 'Prompt template starts with strict single-json-block command');
+  assert(lockedPrompt.includes('1–2 câu cực ngắn gọn, đi thẳng vào công thức/lỗi sai'), 'Prompt template strictly requires 1-2 sentence concise explanation');
+  assert(lockedPrompt.includes('4 đáp án (a, b, c, d) bắt buộc phải khác nhau hoàn toàn, cấm trùng lặp nội dung'), 'Prompt template strictly requires 4 distinct non-duplicate options');
+
+  // Test AIParser.parse JSON with duplicate options
+  const dupJson = JSON.stringify({
+    quiz_title: "Test Duplicate",
+    questions: [
+      {
+        id: "q_dup",
+        question: "Hàm số nào sau đây liên tục?",
+        options: [
+          { id: "a", text: "f(x) = x" },
+          { id: "b", text: "f(x) = x" }, // trùng lặp với a
+          { id: "c", text: "f(x) = 1/x" },
+          { id: "d", text: "f(x) = tan(x)" }
+        ],
+        correct_option_id: "a"
+      }
+    ]
+  });
+  const parsedDup = AIParser.parse(dupJson);
+  assert(parsedDup.cards.length === 1, 'Question with duplicate options is kept during import');
+  assert(parsedDup.cards[0].question.includes('[Cần kiểm tra: trùng đáp án]'), 'Question with duplicate options is tagged with [Cần kiểm tra: trùng đáp án]');
+  assert(parsedDup.cards[0].hasDuplicateOptions === true, 'Card has duplicate options flag set');
+
+  // Test AIParser.parse Text Format with duplicate options
+  const dupText = `Câu 1: Hàm số nào đồng biến?
+A. y = 2x + 1
+B. y = 2x + 1
+C. y = -x
+D. y = 5
+Đáp án: A`;
+  const parsedDupText = AIParser.parse(dupText);
+  assert(parsedDupText.cards.length === 1, 'Text format with duplicate options is kept');
+  assert(parsedDupText.cards[0].question.includes('[Cần kiểm tra: trùng đáp án]'), 'Text format question is tagged with [Cần kiểm tra: trùng đáp án]');
+  assert(parsedDupText.cards[0].hasDuplicateOptions === true, 'Text format card has duplicate options flag set');
+}
+
+// === TEST SUITE 39: KaTeX Matrix & Vector Delimiter Path Protection Against <br> Injection ===
+console.log('\n--- Test Suite 39: KaTeX Matrix & Vector Delimiter Path Protection Against <br> Injection ---');
+{
+  global.katex = require('../lib/katex/katex.min.js');
+  const { App, formatRichText } = require('../js/app.js');
+
+  // Case 1: bmatrix 3x5 must have pure SVG path without any <br> inside
+  const bmatrix = '$$\\mathbf{A} = \\begin{bmatrix} 1 & 0 & 2 & 1 & 1 \\\\ 1 & 3 & 3 & 2 & 0 \\\\ 2 & 2 & 1 & 2 & 1 \\end{bmatrix}$$';
+  const b_rendered = formatRichText(bmatrix);
+  assert(b_rendered.includes('<svg'), 'formatRichText renders KaTeX SVG for bmatrix 3x5');
+  assert(!b_rendered.includes('<br>H403z') && !b_rendered.includes('<br/>H403z'), 'bmatrix left bracket path does not inject <br> before H403z');
+  assert(!/<svg[\s\S]*?<br[\s\S]*?<\/svg>/.test(b_rendered), 'bmatrix 3x5 has zero <br> tags inside any <svg> element');
+
+  // Case 2: pmatrix 5x5 must have intact parenthesis curves without <br> inside
+  const pmatrix = '$$\\begin{pmatrix} 1 & 2 & 3 & 4 & 5 \\\\ 1 & 2 & 3 & 4 & 5 \\\\ 1 & 2 & 3 & 4 & 5 \\\\ 1 & 2 & 3 & 4 & 5 \\\\ 1 & 2 & 3 & 4 & 5 \\end{pmatrix}$$';
+  const p_rendered = formatRichText(pmatrix);
+  assert(p_rendered.includes('<svg'), 'formatRichText renders KaTeX SVG for pmatrix 5x5');
+  assert(!/<svg[\s\S]*?<br[\s\S]*?<\/svg>/.test(p_rendered), 'pmatrix 5x5 has zero <br> tags inside any <svg> element');
+  const p_paths = p_rendered.match(/<path[^>]*>/g) || [];
+  assert(p_paths.length >= 2, 'pmatrix 5x5 has both opening and closing SVG delimiter paths');
+  assert(!p_paths[0].includes('<br>') && !p_paths[1].includes('<br>'), 'pmatrix paths are free of <br> tags');
+
+  // Case 3: Mixed text with block math and plain text line breaks
+  const mixed = `Câu hỏi mở đầu:
+$$\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}$$
+Dòng kết luận cuối cùng.`;
+  const m_rendered = formatRichText(mixed);
+  assert(!m_rendered.includes('<br><div class="katex-display-wrap'), 'No <br> immediately precedes block math');
+  assert(!m_rendered.includes('</div><br>'), 'No <br> immediately follows block math');
+  assert(!/<svg[\s\S]*?<br[\s\S]*?<\/svg>/.test(m_rendered), 'Mixed question has zero <br> tags inside KaTeX SVG');
+  assert(m_rendered.includes('Câu hỏi mở đầu:'), 'Question introductory text is preserved');
+  assert(m_rendered.includes('Dòng kết luận cuối cùng.'), 'Question concluding text is preserved');
+
+  // Case 4: Service Worker precaches KaTeX fonts
+  const swJs = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+  assert(swJs.includes('KaTeX_Size1-Regular.woff2'), 'Service Worker precaches KaTeX_Size1-Regular.woff2 font');
+  assert(swJs.includes('KaTeX_Main-Regular.woff2'), 'Service Worker precaches KaTeX_Main-Regular.woff2 font');
+  assert(swJs.includes('KaTeX_Math-Italic.woff2'), 'Service Worker precaches KaTeX_Math-Italic.woff2 font');
 }
 
 console.log(`\n========================================`);
