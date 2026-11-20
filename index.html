@@ -1452,14 +1452,14 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                     <div class="energy-wave-hud">
                       <div class="theme-title-group" style="display: flex; align-items: center; gap: 8px;">
                         <span class="theme-live-dot" id="theme-live-dot"></span>
-                        <div style="display: flex; align-items: baseline; gap: 6px;">
+                        <div class="theme-title-text">
                           <strong class="energy-wave-title" id="energy-wave-mode-title">Tím Hồng</strong>
                           <span class="theme-subtitle" id="theme-subtitle">Kính tím khói mộng mơ</span>
                         </div>
                       </div>
                       <div class="energy-level-pill" id="energy-wave-mode-badge">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 12h3l3-8 4 16 4-8h6"/></svg>
-                        <span id="energy-wave-badge-text">Năng lượng • 16%</span>
+                        <span id="energy-wave-badge-text">Năng lượng • 13%</span>
                       </div>
                     </div>
 
@@ -1512,22 +1512,27 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                     </svg>
                   </div>
 
-                  <!-- Thanh kéo Năng lượng liên tục & 2 Cổng Pha Tinh Thể (Crystal Phase Gates) -->
+                  <!-- Thanh kéo Năng lượng liên tục & 3 Cổng Pha Tinh Thể (Crystal Phase Gates cho 4 theme) -->
                   <div class="energy-slider-control-wrap">
                     <div class="energy-slider-track-wrap" style="position: relative; display: flex; align-items: center; height: 38px; margin: 6px 0 10px 0;">
                       <!-- Thanh kéo sóng -->
-                      <input type="range" id="theme-energy-slider" class="theme-energy-slider" min="0" max="100" step="0.5" value="16"
+                      <input type="range" id="theme-energy-slider" class="theme-energy-slider" min="0" max="100" step="0.5" value="12.5"
                              oninput="App.onThemeEnergySliderInput(this.value)"
                              onchange="App.onThemeEnergySliderCommit(this.value)"
                              aria-label="Điều chỉnh bước sóng năng lượng giao diện">
 
-                      <!-- Cổng Pha 1 (33.33%: Ranh giới Tím Hồng <-> Trắng Đen) -->
-                      <div class="energy-phase-gate" id="phase-gate-1" style="left: 33.333%;" title="Ngưỡng chuyển pha I (33.33%): Tím Hồng ↔ Trắng Đen">
+                      <!-- Cổng Pha 1 (25%: Ranh giới Tím Hồng <-> Trắng Đen) -->
+                      <div class="energy-phase-gate" id="phase-gate-1" style="left: 25%;" title="Ngưỡng chuyển pha I (25%): Tím Hồng ↔ Trắng Đen">
                         <span class="phase-gate-diamond"><span class="phase-gate-core"></span></span>
                       </div>
 
-                      <!-- Cổng Pha 2 (66.67%: Ranh giới Trắng Đen <-> Trắng Cam) -->
-                      <div class="energy-phase-gate" id="phase-gate-2" style="left: 66.667%;" title="Ngưỡng chuyển pha II (66.67%): Trắng Đen ↔ Trắng Cam">
+                      <!-- Cổng Pha 2 (50%: Ranh giới Trắng Đen <-> Trắng Cam) -->
+                      <div class="energy-phase-gate" id="phase-gate-2" style="left: 50%;" title="Ngưỡng chuyển pha II (50%): Trắng Đen ↔ Trắng Cam">
+                        <span class="phase-gate-diamond"><span class="phase-gate-core"></span></span>
+                      </div>
+
+                      <!-- Cổng Pha 3 (75%: Ranh giới Trắng Cam <-> ASCII 3D) -->
+                      <div class="energy-phase-gate" id="phase-gate-3" style="left: 75%;" title="Ngưỡng chuyển pha III (75%): Trắng Cam ↔ ASCII 3D">
                         <span class="phase-gate-diamond"><span class="phase-gate-core"></span></span>
                       </div>
                     </div>
@@ -1549,9 +1554,12 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                         <span class="energy-node-label">ASCII 3D</span>
                       </button>
                     </div>
-                    <div id="ascii-scene-settings-bar" class="ascii-scene-settings-bar">
-                      <div class="ascii-scene-settings-label">Chế độ phát hoạt ảnh ASCII 3D:</div>
-                      <div class="ascii-scene-pill-group" role="group" aria-label="Chọn chế độ phát hoạt ảnh ASCII">
+                    <div id="ascii-scene-settings-bar" class="ascii-scene-settings-bar is-ascii-inactive" data-ascii-active="false">
+                      <button type="button" id="ascii-scene-bar-toggle" class="ascii-scene-bar-toggle" onclick="App.toggleAsciiSettingsBar()" aria-expanded="false" aria-controls="ascii-scene-pill-group">
+                        <span class="ascii-scene-settings-label">Chế độ phát hoạt ảnh ASCII 3D:</span>
+                        <span class="ascii-scene-bar-status" id="ascii-scene-bar-status">Chọn nhanh ▾</span>
+                      </button>
+                      <div id="ascii-scene-pill-group" class="ascii-scene-pill-group" role="group" aria-label="Chọn chế độ phát hoạt ảnh ASCII">
                         <button type="button" class="ascii-scene-pill-btn active" data-ascii-preset="slideshow" onclick="App.setAsciiScenePreset('slideshow')">
                           <span class="ascii-scene-pill-icon">↻</span>
                           <span>Slideshow tự chuyển</span>
@@ -1755,6 +1763,9 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
 
   <!-- Mobile Bottom Navigation -->
   <nav class="bottom-nav" id="mobile-bottom-nav">
+    <button type="button" class="bottom-nav-brand" onclick="App.navigateTo('dashboard')" title="TinhMinhLaKey" aria-label="Về trang chủ TinhMinhLaKey">
+      <img src="./meo.png" alt="TinhMinhLaKey" class="bottom-nav-brand-img">
+    </button>
     <button type="button" class="bottom-nav-item active" data-view="dashboard" onclick="App.navigateTo('dashboard')">
       <svg class="bnav-svg" viewBox="0 0 24 24" width="20" height="20"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
       <span>Trang chủ</span>
