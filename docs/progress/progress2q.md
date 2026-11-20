@@ -1,7 +1,7 @@
 # TIẾN ĐỘ THỰC HIỆN ĐỢT 2Q (`docs/progress/progress2q.md`)
-> **Nhánh**: `fix/mobile-full-audit` (tách từ `main`)  
+> **Nhánh**: `fix/mobile-full-audit` (tách từ `main`, chuẩn bị merge & push `main`)  
 > **Thời điểm hoàn thành**: 2026-11-21  
-> **Trạng thái**: Hoàn tất 100% mục tiêu Đợt 2q (chưa merge vào `main`)
+> **Trạng thái**: Hoàn tất 100% mục tiêu Đợt 2q & tinh chỉnh thẩm mỹ mobile bổ sung (đã merge vào `main`)
 
 ---
 
@@ -16,26 +16,31 @@
 | **4. Luyện tập (Study), Thi thử (Exam) & Flashcard** | Hoàn thành | Chuyển `.quiz-progress-track` xuống hàng thứ 2 full-width (`flex: 1 0 100%`) trên `<= 640px` để không bị bóp còn `8–10px` và giữ `#btn-toggle-blind` trên 1 dòng; khóa `#exam-q-counter` (`white-space: nowrap`) và nâng `.exam-palette-btn` lên `40x40px`. Khắc phục triệt để lỗi độ ưu tiên CSS của `body.flashcard-active .flashcard-stage` / `.flashcard-face` để thẻ tự giãn chiều cao (hết đè lên `#flashcard-srs-bar` ở `390x844`) và đổi `justify-content: flex-start` (hết cắt đầu `"ĐÁP ÁN ĐÚNG"` ở `667x375` & `844x390`). |
 | **5. Cài đặt (Settings) & Nền ASCII 3D (`js/ascii-bg.js`)** | Hoàn thành | Nâng chiều cao `.energy-node-btn` & `.ascii-scene-pill-btn` lên `>= 40px`, chuyển 4 nút cảnh ASCII thành icon trên chữ ở `<= 480px` tránh gãy giữa từ (`Slideshow`, `Gargantua`), bỏ `min-width: 260px` của `#lofi-track-dropdown-wrap` và cho `.settings-option-row` wrap gọn. Trong `js/ascii-bg.js`, tách chính xác mobile qua `isDesktopViewport(width, height)` (`width > 840 && height > 500`), căn giữa và giới hạn khung an toàn cho cả **Cây thông**, **Hố đen Gargantua** và **Hiệp sĩ Mèo** (kể cả `startZoom: 1.18` trên mobile để mũi kiếm không chạm mép `y=0`), giảm mật độ cell mobile (`4.2x7.4`) và thêm cơ chế nhường blit khi người dùng đang vuốt cuộn (`_lastScrollMs`), vẫn giữ nguyên `DPR = 1` & `30 FPS`. |
 
+### 1.1. Tinh Chỉnh Thẩm Mỹ Mobile Bổ Sung (3 Hạng Mục Hậu Kiểm)
+1. **Giảm lồng hộp (nested boxes) trong Settings (`<= 640px`)**: Gộp phẳng `.energy-slider-control-wrap` và `.ascii-scene-settings-bar` vào chung nền sạch của `#theme-energy-chamber` (bỏ `border`, `box-shadow`, `backdrop-filter`, giảm `padding` thừa) và dùng 1 đường kẻ mảnh `border-top: 1px solid var(--border-subtle, var(--glass-border-subtle, rgba(255, 255, 255, 0.12)))` phân tách khu vực chọn cảnh ASCII — hiển thị gọn sạch trên cả `ascii` lẫn `white-orange` (`393x852`).
+2. **Căn giữa dọc thanh dock trái khi xoay ngang (`#mobile-bottom-nav`)**: Dùng `justify-content: flex-start !important; justify-content: safe center !important;` kết hợp fallback `margin-top: auto` trên `.bottom-nav-brand` và `margin-bottom: auto` trên `.bottom-nav-item:last-child`. Trên `852x393`, cụm logo + 5 icon tự căn giữa cân đối tuyệt đối (`topGap = 56.8px` vs `bottomGap = 56.8px`); trên khung cực thấp `852x240`, logo đầu giữ `topGap = +8.0px` (không bị cắt đỉnh) và cuộn dọc trơn tru.
+3. **Căn giữa `.topbar-hud-capsule` trên Mobile S (`<= 360px`)**: Căn giữa `.app-topbar` & `.topbar-right`, đặt `margin-inline: auto` và `max-width: calc(100vw - 16px)` cho `.topbar-hud-capsule`, co nhẹ `gap`, `padding`, nút theme/ASCII (`30x30px`) và `#ascii-scene-popover` dưới `<= 360px`. Trên `320x619`, `.topbar-hud-capsule` căn giữa cân đối (`left = 38.49px`, `right = 281.51px`, `width = 243.03px`, lệch `0.00px`) và `#ascii-scene-popover` (`52.29px..272.29px`) nằm gọn trong khung hình.
+
 ---
 
 ## 2. Kết Quả Kiểm Thử, Đóng Gói & Xác Thực Trực Tiếp
 
 ### 2.1. Kiểm thử tự động (`node tests/test-runner.js`)
-- Tổng số test case: **1,555 passed, 0 failed** (100% pass từ Suite 1 đến Suite 48).
-- **Test Suite 48** (33 assertions) kiểm chứng:
-  + Toàn bộ rule responsive Portrait & Landscape trong `PHASE 2Q` của `css/style.css` và các class hook trong `index.html`.
+- Tổng số test case: **1,558 passed, 0 failed** (100% pass từ Suite 1 đến Suite 48).
+- **Test Suite 48** (36 assertions) kiểm chứng:
+  + Toàn bộ rule responsive Portrait, Landscape & tinh chỉnh thẩm mỹ (`<= 640px`, Landscape dock `safe center`, Mobile S `<= 360px`) trong `PHASE 2Q` của `css/style.css` và các class hook trong `index.html`.
   + Hành vi `App._openCyberDropdown()` tự gắn `align-right` khi menu sát mép phải trên `667x375`.
   + `AsciiBg`: bảo toàn `DPR = 1`, `FPS_LIMIT = 30`, phân tách `isDesktopViewport`, quét bounding box pixel không đen của cả 3 cảnh (`tree`, `gargantua`, `cat`) trên cả 4 viewport (`375x667`, `390x844`, `667x375`, `844x390`) nằm gọn trong lề an toàn, và cơ chế nhường blit khi chạm vuốt cuộn trong `_tick`.
 
 ### 2.2. Kiểm tra trực tiếp trên trình duyệt local (`http://localhost:5173/`)
-- **Đo tràn ngang (`scrollWidth <= clientWidth`)**: Đạt 100% trên cả 4 viewport di động (`375x667`, `390x844`, `667x375`, `844x390`) và Desktop (`1280x800`).
+- **Đo tràn ngang (`scrollWidth <= clientWidth`)**: Đạt 100% trên cả Mobile S (`320x619`), Mobile Portrait (`375x667`, `390x844`, `393x852`), Mobile Landscape (`667x375`, `844x390`, `852x393`, `852x240`) và Desktop (`1280x800`).
 - **Flashcard Back vs `#flashcard-srs-bar`**: Không còn chồng lấn trên `390x844` (`overlapPx = -24.8px`), `667x375` (`-26.8px`), `844x390` (`-22.0px`), và không còn cắt phần đầu trên Landscape.
-- **Toast & Popover & Dropdowns**: Toast nằm trên bottom-nav ở Portrait và cách lề trái `>= 76px` ở Landscape; `#bank-subject-dropdown-menu` lật `align-right` gọn trong `<= 667px`; `#ascii-scene-popover` gọn trong khung hình; các nút chọn cảnh ASCII ở Settings `375x667` hết gãy giữa từ; mũi kiếm Hiệp sĩ Mèo trên `667x375` (`y ≈ 48px`) và `844x390` (`y ≈ 64px`) nằm trọn bên dưới mép trên.
+- **Toast & Popover & Dropdowns & 3 Điểm Tinh Chỉnh**: Toast nằm trên bottom-nav ở Portrait và cách lề trái `>= 76px` ở Landscape; `#bank-subject-dropdown-menu` lật `align-right` gọn trong `<= 667px`; `#ascii-scene-popover` gọn trong khung hình cả trên `320x619`; `.topbar-hud-capsule` căn giữa cân xứng 2 bên trên `320x619` (`38.49px` mỗi bên); dock trái Landscape căn giữa dọc cân xứng trên `852x393` (`56.8px` trên/dưới) và không mất logo đỉnh trên `852x240`; Settings trên `393x852` phẳng sạch hết lồng hộp; mũi kiếm Hiệp sĩ Mèo trên `667x375` (`y ≈ 48px`) và `844x390` (`y ≈ 64px`) nằm trọn bên dưới mép trên.
 - **Desktop (`1280x800`)**: Sidebar `244px`, layout 2 cột, Flashcard (`overlapPx = -18px`) và tọa độ ASCII 3D bên phải (`~0.72`) giữ nguyên hoàn toàn.
 
 ### 2.3. Đóng gói sản phẩm (`node scripts/build.js`)
 - Xác thực cú pháp toàn bộ core JS files (`node --check`): **100% Passed**.
-- Đóng gói hoàn chỉnh **101 files** (`4.90 MB`) vào `dist/`, sẵn sàng PWA Offline.
+- Đóng gói hoàn chỉnh **101 files** (`4.91 MB`) vào `dist/`, sẵn sàng PWA Offline.
 
 ---
 

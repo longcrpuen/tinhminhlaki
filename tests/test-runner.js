@@ -4148,6 +4148,33 @@ console.log('\n--- Test Suite 48: Wave 2q Full Mobile Audit (Portrait & Landscap
     global.document = prevDoc2;
     global.requestAnimationFrame = prevRaf2;
   }
+
+  // 9. Wave 2q Polish — Settings flattened boxes (<= 640px), Landscape dock safe-centering & Mobile S (<= 360px) HUD centering
+  const phase2qPolishCss = styleCss.slice(styleCss.indexOf('PHASE 2Q: FULL MOBILE AUDIT'));
+  assert(
+    phase2qPolishCss.includes('html body #theme-energy-chamber .energy-slider-control-wrap') &&
+    phase2qPolishCss.includes('html body #theme-energy-chamber .ascii-scene-settings-bar') &&
+    phase2qPolishCss.includes('border: none !important;') &&
+    phase2qPolishCss.includes('box-shadow: none !important;') &&
+    phase2qPolishCss.includes('border-top: 1px solid var(--border-subtle'),
+    'Settings flattens nested energy slider & ASCII scene containers under <= 640px with a single top divider'
+  );
+  assert(
+    phase2qPolishCss.includes('justify-content: safe center !important;') &&
+    phase2qPolishCss.includes('#mobile-bottom-nav .bottom-nav-brand') &&
+    phase2qPolishCss.includes('margin-top: auto !important;') &&
+    phase2qPolishCss.includes('#mobile-bottom-nav .bottom-nav-item:last-child') &&
+    phase2qPolishCss.includes('margin-bottom: auto !important;'),
+    'Landscape left dock centers vertically with safe center + auto-margin fallback without clipping top logo'
+  );
+  assert(
+    phase2qPolishCss.includes('@media (max-width: 360px)') &&
+    phase2qPolishCss.includes('html body .app-topbar') &&
+    phase2qPolishCss.includes('justify-content: center !important;') &&
+    phase2qPolishCss.includes('margin-inline: auto !important;') &&
+    phase2qPolishCss.includes('max-width: calc(100vw - 16px) !important;'),
+    'Mobile S (<= 360px) centers .topbar-hud-capsule symmetrically with compact controls'
+  );
 }
 
 console.log(`\n========================================`);
