@@ -6285,20 +6285,22 @@ const App = {
   pasteSampleData() {
     const sample = `{
   "quiz_title": "Chương 3: Đạo hàm",
+  "total_questions": 1,
   "questions": [
     {
       "id": "q1",
       "topic": "Đạo hàm",
       "difficulty": "medium",
       "question": "Đạo hàm của $f(x) = x^2$ là gì?",
+      "image": "",
       "options": [
-        { "id": "a", "text": "$2x$" },
-        { "id": "b", "text": "$x^2$" },
-        { "id": "c", "text": "$2$" },
-        { "id": "d", "text": "$x$" }
+        { "id": "a", "text": "$2x$", "image": "" },
+        { "id": "b", "text": "$x^2$", "image": "" },
+        { "id": "c", "text": "$2$", "image": "" },
+        { "id": "d", "text": "$x$", "image": "" }
       ],
       "correct_option_id": "a",
-      "explanation": "Áp dụng quy tắc đạo hàm lũy thừa: $\\\\frac{d}{dx}x^n = nx^{n-1}$"
+      "explanation": "Áp dụng quy tắc đạo hàm lũy thừa $\\\\frac{d}{dx}x^n = nx^{n-1}$ với $n = 2$, ta có $(x^2)' = 2x$. Phương án $x^2$ sai do giữ nguyên hàm gốc; phương án $2$ sai do nhầm sang đạo hàm cấp hai; phương án $x$ sai do thiếu hệ số nhân $2$."
     }
   ]
 }`;
@@ -6310,14 +6312,18 @@ const App = {
   },
 
   copyAIPrompt() {
-    const topic = document.getElementById('import-new-deck-name')?.value || '';
-    const prompt = AIParser.generateAIPromptTemplate({ topic });
-    navigator.clipboard.writeText(prompt)
+    const topic = document.getElementById('import-new-deck-name')?.value?.trim() || '';
+    const rawCount = parseInt(document.getElementById('import-prompt-count')?.value, 10);
+    const count = Number.isFinite(rawCount) && rawCount >= 1 ? Math.min(rawCount, 200) : 10;
+    const rawDiff = document.getElementById('import-prompt-difficulty')?.value || 'medium';
+    const difficulty = ['easy', 'medium', 'hard'].includes(rawDiff) ? rawDiff : 'medium';
+    const promptText = AIParser.generateAIPromptTemplate({ topic, count, difficulty });
+    navigator.clipboard.writeText(promptText)
       .then(() => {
-        this.showToast('Đã sao chép prompt AI chuẩn vào clipboard! Dán vào ChatGPT/Claude ngay.', 'success');
+        this.showToast(`Đã sao chép Prompt AI chuẩn (${count} câu) vào clipboard! Dán vào ChatGPT / Gemini / Claude kèm tài liệu của bạn.`, 'success');
       })
       .catch(() => {
-        prompt('Sao chép prompt dưới đây:', prompt);
+        window.prompt('Sao chép prompt dưới đây:', promptText);
       });
   },
 
@@ -6333,16 +6339,29 @@ const App = {
     try {
       const parsed = AIParser.parse(rawInput);
 
-      // Handle validation warnings / errors
+      // Handle validation warnings / errors & shortfall detection
+      const alertItems = [];
+      if (parsed.missingCount && parsed.missingCount > 0) {
+        alertItems.push(`<li><b>Thiếu số câu yêu cầu:</b> AI khai báo ${parsed.expectedCount} câu nhưng chỉ bóc tách được ${parsed.cards.length} câu hợp lệ (thiếu ${parsed.missingCount} câu). Hãy kiểm tra lại phản hồi AI để bổ sung phần còn thiếu.</li>`);
+      }
       if (parsed.errors && parsed.errors.length > 0) {
+        parsed.errors.forEach(e => {
+          alertItems.push(`<li><b>Câu ${e.index} (${e.id}):</b> ${this._escapeHtml(e.message)}</li>`);
+        });
+      }
+
+      if (alertItems.length > 0) {
         if (alertBox) {
+          const titleText = parsed.errors && parsed.errors.length > 0
+            ? `Phát hiện ${parsed.errors.length} câu hỏi sai định dạng${parsed.missingCount > 0 ? ` và thiếu ${parsed.missingCount} câu` : ''}:`
+            : `Cảnh báo thiếu ${parsed.missingCount} câu so với khai báo (${parsed.cards.length}/${parsed.expectedCount}):`;
           alertBox.innerHTML = `
             <div class="validation-alert-box">
               <div class="validation-alert-title">
-                Phát hiện ${parsed.errors.length} câu hỏi sai định dạng:
+                ${titleText}
               </div>
               <ul class="validation-alert-list">
-                ${parsed.errors.map(e => `<li><b>Câu ${e.index} (${e.id}):</b> ${this._escapeHtml(e.message)}</li>`).join('')}
+                ${alertItems.join('')}
               </ul>
             </div>
           `;
@@ -6406,12 +6425,16 @@ const App = {
         this.activeSession.cards = [...(this.activeSession.cards || []), ...cardsToSave];
       }
 
-      let msg = `Đã lưu thành công ${cardsToSave.length} câu hỏi vào bộ thẻ!`;
+      let msg = parsed.mergedBlockCount > 1
+        ? `Đã tự động gộp ${parsed.mergedBlockCount} khối JSON và lưu thành công ${cardsToSave.length} câu hỏi!`
+        : `Đã lưu thành công ${cardsToSave.length} câu hỏi vào bộ thẻ!`;
       if (parsed.errors && parsed.errors.length > 0) {
         msg = `Đã lưu ${cardsToSave.length} câu hợp lệ (Bỏ qua ${parsed.errors.length} câu bị lỗi).`;
+      } else if (parsed.missingCount > 0) {
+        msg = `Đã lưu ${cardsToSave.length}/${parsed.expectedCount} câu (AI xuất thiếu ${parsed.missingCount} câu).`;
       }
 
-      this.showToast(msg, 'success');
+      this.showToast(msg, parsed.missingCount > 0 ? 'warning' : 'success');
       Confetti.fire({ count: 60, duration: 2500 });
 
       // Clear input
@@ -8910,24 +8933,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       return;
     }
 
-    const payload = {
-      role_instruction: "Bạn là chuyên gia giáo dục. Các câu hỏi trắc nghiệm sau đây do người học đánh dấu vì 'diễn đạt chưa rõ ràng, tối nghĩa hoặc gây hiểu nhầm'. Hãy viết lại câu hỏi, các phương án lựa chọn và lời giải thích cho thật mạch lạc, chính xác sư phạm, giữ nguyên công thức LaTeX trong dấu $...$ hoặc $$...$$. CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn tài liệu hoặc đánh dấu trang/đoạn (như [cite: ...], [cite_start], [cite_end], [1], 【...】) vào câu hỏi, các lựa chọn trả lời hay lời giải thích. Tuyệt đối không để lộ dấu vết dẫn chứng ở đáp án đúng!",
-      output_format: "Trả về JSON chuẩn TinhMinhLaKey có cấu trúc { quiz_title, questions: [...] } để dán trực tiếp vào app. Trường 'topic' bắt buộc phân loại theo Chương ('Chương 1: ...', 'Chương 2: ...') đồng nhất.",
-      questions_to_improve: flagged.map(c => ({
-        id: c.id,
-        topic: c.topic || c.tag,
-        difficulty: c.difficulty,
-        question: c.question,
-        options: (c.options || []).map((opt, idx) => ({ id: ['a','b','c','d'][idx], text: opt })),
-        correct_option_id: ['a','b','c','d'][c.answerIndex] || 'a',
-        explanation: c.explanation
-      }))
-    };
-
-    const promptText = `Hãy giúp tôi viết lại các câu hỏi trắc nghiệm sau đây cho thật chuẩn xác, sư phạm và mạch lạc:\n\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\``;
+    const promptText = AIParser.generateFlaggedRewritePrompt(flagged);
 
     navigator.clipboard.writeText(promptText).then(() => {
-      this.showToast(`Đã sao chép Prompt AI viết lại cho ${flagged.length} câu hỏi gắn cờ!`, 'success');
+      this.showToast(`Đã sao chép Prompt AI viết lại chuẩn hóa cho ${flagged.length} câu hỏi gắn cờ!`, 'success');
     }).catch(err => {
       alert('Không thể sao chép: ' + err.message);
     });

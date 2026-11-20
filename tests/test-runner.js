@@ -3527,6 +3527,401 @@ console.log('\n--- Test Suite 46: Wave 2o 4-Milestone Energy Slider, Liquid Glas
   }
 }
 
+// === TEST SUITE 47: Wave 2p — Quiz Prompt Quality Upgrade & Hardened Multi-Block/Noisy AI Parser ===
+console.log('\n--- Test Suite 47: Wave 2p Quiz Prompt Quality & Hardened Multi-Block/Noisy Parser ---');
+{
+  const { AIParser } = require('../js/parser.js');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+
+  // Group 1: Upgraded generateAIPromptTemplate (4 Quality Pillars)
+  const qPrompt = AIParser.generateAIPromptTemplate({ topic: 'Mạng Máy Tính', count: 20, difficulty: 'medium' });
+
+  // Pillar 1: Single code block & strict schema
+  assert(qPrompt.includes('CHỈ XUẤT DUY NHẤT 1 KHỐI ```json CHỨA TOÀN BỘ 100% CÂU HỎI TRONG 1 LẦN TRẢ LỜI'),
+         'Prompt enforces single uninterrupted json code block at top');
+  assert(qPrompt.includes('bắt đầu ngay bằng ```json và kết thúc ngay bằng ```') &&
+         qPrompt.includes('CẤM chèn lời giải thích rườm rà') &&
+         qPrompt.includes('"total_questions": 20'),
+         'Prompt locks single-fence boundaries, forbids chatter between questions, and embeds total_questions schema');
+
+  // Pillar 2: Explicit count 1..N, self-check, anti-ellipsis/truncation
+  assert(qPrompt.includes('"q1"') && qPrompt.includes('"q20"') &&
+         qPrompt.includes('tự đối chiếu đếm đủ đúng 20 câu') &&
+         qPrompt.includes('CẤM viết tắt kiểu `...`') &&
+         qPrompt.includes('CẤM gộp câu'),
+         'Prompt enforces explicit 1..N numbering (q1..q20), self-count check, and bans ellipsis/merging');
+
+  // Pillar 3: Full-document scan, uniform coverage & cross-section combine
+  assert(qPrompt.includes('quét toàn bộ từ đầu đến cuối') &&
+         qPrompt.includes('phân bổ đều') &&
+         qPrompt.includes('không chỉ lấy vài trang') &&
+         qPrompt.includes('kết hợp (combine) kiến thức liên kết giữa các phần'),
+         'Prompt enforces 3-step full-document scan, uniform coverage, and cross-section knowledge combination');
+
+  // Pillar 4: High-quality academic distractors & anti-"sinh ngu" rules
+  assert(qPrompt.includes('đồng đều độ dài') &&
+         qPrompt.includes('hợp lý về mặt học thuật') &&
+         qPrompt.includes('CẤM tạo đáp án nhiễu lộ liễu') &&
+         qPrompt.includes('lặp y nguyên') &&
+         qPrompt.includes('bám sát tài liệu gốc'),
+         'Prompt enforces balanced-length academic distractors, bans giveaway/copy-paste flaws, and anchors explanations to source');
+
+  // Embedded schema sample inside upgraded prompt still parses cleanly
+  const sampleBlockMatch = qPrompt.match(/(?:^|\r?\n)```json\s*\r?\n([\s\S]*?)\r?\n```/);
+  assert(sampleBlockMatch && sampleBlockMatch[1], 'Upgraded prompt contains valid ```json schema sample');
+  const parsedSchemaSample = AIParser.parse(sampleBlockMatch[1]);
+  assert(parsedSchemaSample.cards.length === 1 && parsedSchemaSample.errors.length === 0 && parsedSchemaSample.expectedCount === 20,
+         'Prompt schema sample parses with 0 errors and reports expectedCount === 20');
+
+  // Group 2: Flagged Rewrite Prompt & App/HTML Integration
+  assert(typeof AIParser.generateFlaggedRewritePrompt === 'function',
+         'AIParser exports generateFlaggedRewritePrompt helper');
+  const flaggedSample = [
+    {
+      id: 'f1',
+      topic: 'Chương 1: Tổng quan',
+      difficulty: 'medium',
+      question: 'Tầng mạng đảm nhiệm vai trò gì?',
+      rawOptions: [
+        { id: 'a', text: 'Định tuyến gói tin' },
+        { id: 'b', text: 'Mã hóa dữ liệu' },
+        { id: 'c', text: 'Điều khiển phiên' },
+        { id: 'd', text: 'Truyền bit vật lý' }
+      ],
+      answerIndex: 0,
+      explanation: 'Tầng mạng chịu trách nhiệm định tuyến.'
+    },
+    {
+      id: 'f2',
+      topic: 'Chương 2: Giao vận',
+      difficulty: 'hard',
+      question: 'TCP khác UDP ở điểm nào?',
+      rawOptions: [
+        { id: 'a', text: 'Hướng kết nối và đảm bảo tin cậy' },
+        { id: 'b', text: 'Không kết nối và không kiểm soát tắc nghẽn' },
+        { id: 'c', text: 'Chỉ hoạt động ở tầng liên kết dữ liệu' },
+        { id: 'd', text: 'Không sử dụng số hiệu cổng nguồn và đích' }
+      ],
+      answerIndex: 0,
+      explanation: 'TCP thiết lập kết nối 3 bước và đảm bảo thứ tự gói tin.'
+    }
+  ];
+  const rewritePrompt = AIParser.generateFlaggedRewritePrompt(flaggedSample);
+  assert(rewritePrompt.includes('CHỈ XUẤT DUY NHẤT 1 KHỐI ```json') &&
+         rewritePrompt.includes('2 câu') &&
+         rewritePrompt.includes('"q1"') && rewritePrompt.includes('"q2"') &&
+         rewritePrompt.includes('đồng đều độ dài') &&
+         rewritePrompt.includes('CẤM GỌI TÊN CHỮ CÁI ĐÁP ÁN'),
+         'generateFlaggedRewritePrompt enforces single JSON block, exact count, balanced distractors, and shuffle-safe explanation');
+  assert(appJs.includes('AIParser.generateFlaggedRewritePrompt') &&
+         appJs.includes('import-prompt-count') &&
+         appJs.includes('parsed.missingCount'),
+         'js/app.js integrates generateFlaggedRewritePrompt, import-prompt-count, and missingCount warning');
+  assert(indexHtml.includes('id="import-prompt-count"'),
+         'index.html provides #import-prompt-count input for configuring prompt question count');
+
+  // Group 3: Parser Multi-Block Merging (All External AI Failure Modes)
+  const makeQ = (id, text, optA = 'Phương án đúng chuẩn', optB = 'Phương án nhiễu hợp lý') => ({
+    id,
+    topic: 'Chương 1',
+    difficulty: 'medium',
+    question: text,
+    options: [
+      { id: 'a', text: optA },
+      { id: 'b', text: optB },
+      { id: 'c', text: 'Phương án nhiễu thứ ba' },
+      { id: 'd', text: 'Phương án nhiễu thứ tư' }
+    ],
+    correct_option_id: 'a',
+    explanation: 'Giải thích bám sát tài liệu gốc.'
+  });
+
+  // 3A: Back-to-back ```json blocks with NO blank line between them (```\n```json)
+  const backToBackBlocks =
+    '```json\n' +
+    JSON.stringify({ quiz_title: 'Back-to-back Test', total_questions: 4, questions: [makeQ('q1', 'Câu back-to-back 1?'), makeQ('q2', 'Câu back-to-back 2?')] }) +
+    '\n```\n```json\n' +
+    JSON.stringify({ quiz_title: 'Back-to-back Test', total_questions: 4, questions: [makeQ('q3', 'Câu back-to-back 3?'), makeQ('q4', 'Câu back-to-back 4?')] }) +
+    '\n```';
+  const parsed3A = AIParser.parse(backToBackBlocks);
+  assert(parsed3A.cards.length === 4 && parsed3A.mergedBlockCount === 2 && parsed3A.missingCount === 0,
+         'Case 3A: Back-to-back ```json blocks with no blank line merge all 4 cards without dropping block 2');
+
+  // 3B: Indented fences + prose headings + horizontal rules + inline closing }```
+  const indentedMultiBlocks = `Dưới đây là 12 câu hỏi chia 3 phần:
+### Phần 1 (Câu 1-4):
+  \`\`\`json
+  ${JSON.stringify({ quiz_title: 'Đề 12 câu chia 3 khối', total_questions: 12, questions: [makeQ('q1', 'Câu phần 1 số 1?'), makeQ('q2', 'Câu phần 1 số 2?'), makeQ('q3', 'Câu phần 1 số 3?'), makeQ('q4', 'Câu phần 1 số 4?')] })}  \`\`\`
+---
+### Phần 2 (Câu 5-8):
+    \`\`\`JSON
+    ${JSON.stringify({ quiz_title: 'Đề 12 câu chia 3 khối', total_questions: 12, questions: [makeQ('q5', 'Câu phần 2 số 5?'), makeQ('q6', 'Câu phần 2 số 6?'), makeQ('q7', 'Câu phần 2 số 7?'), makeQ('q8', 'Câu phần 2 số 8?')] })}
+    \`\`\`
+Tiếp theo là Phần 3:
+  \`\`\`jsonc
+  ${JSON.stringify({ quiz_title: 'Đề 12 câu chia 3 khối', total_questions: 12, questions: [makeQ('q9', 'Câu phần 3 số 9?'), makeQ('q10', 'Câu phần 3 số 10?'), makeQ('q11', 'Câu phần 3 số 11?'), makeQ('q12', 'Câu phần 3 số 12?')] })}
+  \`\`\`
+Chúc bạn ôn thi đạt điểm cao!`;
+  const parsed3B = AIParser.parse(indentedMultiBlocks);
+  assert(parsed3B.cards.length === 12 && parsed3B.mergedBlockCount === 3 && parsed3B.expectedCount === 12 && parsed3B.missingCount === 0,
+         'Case 3B: Indented multi-blocks with chatter, --- and inline }``` merge all 12 cards cleanly');
+  assert(parsed3B.cards[0].id === 'q1' && parsed3B.cards[11].id === 'q12',
+         'Case 3B: Merged cards are numbered sequentially q1..q12');
+
+  // 3C: Mixed fenced block + unfenced JSON block with prose in between (order preserved)
+  const mixedFenceAndRaw = `Phần 1:
+\`\`\`json
+${JSON.stringify({ quiz_title: 'Mixed Blocks', questions: [makeQ('q1', 'Câu hỗn hợp 1?'), makeQ('q2', 'Câu hỗn hợp 2?')] })}
+\`\`\`
+Phần 2 (không có code fence):
+${JSON.stringify({ quiz_title: 'Mixed Blocks', questions: [makeQ('q3', 'Câu hỗn hợp 3?'), makeQ('q4', 'Câu hỗn hợp 4?')] })}
+Hết bộ câu hỏi.`;
+  const parsed3C = AIParser.parse(mixedFenceAndRaw);
+  assert(parsed3C.cards.length === 4 && parsed3C.mergedBlockCount === 2,
+         'Case 3C: Mixed fenced + unfenced JSON blocks merge into 4 cards');
+  assert(parsed3C.cards[0].question.includes('hỗn hợp 1') && parsed3C.cards[3].question.includes('hỗn hợp 4'),
+         'Case 3C: Original document order is preserved across fenced and unfenced blocks');
+
+  // 3D: Individual single-question JSON objects split into separate code blocks
+  const perQuestionBlocks = `Câu 1:
+\`\`\`json
+${JSON.stringify(makeQ('q1', 'Câu tách block riêng số 1?'))}
+\`\`\`
+Câu 2:
+\`\`\`json
+${JSON.stringify(makeQ('q2', 'Câu tách block riêng số 2?'))}
+\`\`\`
+Câu 3:
+\`\`\`json
+${JSON.stringify(makeQ('q3', 'Câu tách block riêng số 3?'))}
+\`\`\``;
+  const parsed3D = AIParser.parse(perQuestionBlocks);
+  assert(parsed3D.cards.length === 3 && parsed3D.mergedBlockCount === 3,
+         'Case 3D: Single-question JSON objects in separate blocks merge into 3 valid cards');
+
+  // 3E: Two JSON objects stuffed inside one single ```json fence
+  const twoObjectsInOneFence = `\`\`\`json
+${JSON.stringify({ quiz_title: 'Two in One', questions: [makeQ('q1', 'Câu trong cùng fence 1?')] })}
+${JSON.stringify({ quiz_title: 'Two in One', questions: [makeQ('q2', 'Câu trong cùng fence 2?')] })}
+\`\`\``;
+  const parsed3E = AIParser.parse(twoObjectsInOneFence);
+  assert(parsed3E.cards.length === 2 && parsed3E.mergedBlockCount === 2,
+         'Case 3E: Two JSON objects inside a single code fence merge cleanly into 2 cards');
+
+  // 3F: Anti-false-positive deduplication for same id + shared Vietnamese 20-char stem
+  const sharedStemBlocks = `\`\`\`json
+${JSON.stringify({ quiz_title: 'OOP P1', questions: [makeQ('q1', 'Trong lập trình hướng đối tượng, khái niệm đóng gói có ý nghĩa gì?')] })}
+\`\`\`
+\`\`\`json
+${JSON.stringify({ quiz_title: 'OOP P2', questions: [makeQ('q1', 'Trong lập trình hướng đối tượng, khái niệm đa hình có ý nghĩa gì?')] })}
+\`\`\``;
+  const parsed3F = AIParser.parse(sharedStemBlocks);
+  assert(parsed3F.cards.length === 2,
+         'Case 3F: Distinct questions sharing same id "q1" and 20-char prefix are NOT falsely deduplicated');
+
+  // Group 4: Format Noise Cleaning & Schema Drift Resilience
+  // 4A: Unfenced JSON surrounded by prose containing decoy { braces } and [brackets]
+  const unfencedWithProse = `Chào bạn! Dưới đây là bộ câu hỏi theo cấu trúc { quiz_title, questions } cho [Phần 1]:
+${JSON.stringify({ quiz_title: 'Unfenced Prose', total_questions: 2, questions: [makeQ('q1', 'Câu không fence 1?'), makeQ('q2', 'Câu không fence 2?')] })}
+Lưu ý: Bạn có thể dán trực tiếp vào app nhé!`;
+  const parsed4A = AIParser.parse(unfencedWithProse);
+  assert(parsed4A.cards.length === 2 && parsed4A.errors.length === 0,
+         'Case 4A: Unfenced JSON wrapped in prose with decoy braces/brackets parses cleanly');
+
+  // 4B: JSONC comments, stray ellipsis, duplicate commas, BOM, zero-width chars, preserved URL inside string
+  const noisyJson = `\uFEFF\u200B\`\`\`json
+{
+  // Tiêu đề bộ đề
+  "quiz_title": "Nhiễu định dạng nâng cao",
+  "total_questions": 2,
+  /* Danh sách câu hỏi */
+  "questions": [
+    // Câu hỏi số 1
+    {
+      "id": "q1",
+      "question": "Tài liệu tham khảo tại https://example.com/docs//v1 nói về giao thức nào?",
+      "options": [
+        { "id": "a", "text": "HTTP/2" },
+        { "id": "b", "text": "FTP" },
+        { "id": "c", "text": "SMTP" },
+        { "id": "d", "text": "SSH" },
+      ],
+      "correct_option_id": "a",
+      "explanation": "Xem chi tiết tại https://example.com/docs//v1 về HTTP/2."
+    },
+    ...,
+    ,
+    /* Câu hỏi số 2 */
+    {
+      "id": "q2",
+      "question": "Cổng mặc định của HTTPS là bao nhiêu?",
+      "options": [
+        { "id": "a", "text": "80" },
+        { "id": "b", "text": "443" },
+        { "id": "c", "text": "21" },
+        { "id": "d", "text": "22" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "HTTPS sử dụng cổng 443 theo chuẩn IANA."
+    },
+  ]
+}
+\`\`\`\u200B`;
+  const parsed4B = AIParser.parse(noisyJson);
+  assert(parsed4B.cards.length === 2 && parsed4B.errors.length === 0,
+         'Case 4B: Strips BOM, zero-width chars, // and /* */ comments, stray ellipsis and duplicate commas');
+  assert(parsed4B.cards[0].question.includes('https://example.com/docs//v1') &&
+         parsed4B.cards[0].explanation.includes('https://example.com/docs//v1'),
+         'Case 4B: Preserves // inside quoted URL strings without corruption');
+
+  // 4C: Schema drift (correct_option_id "B.", camelCase correctOptionId, object-map options)
+  const schemaDriftJson = JSON.stringify({
+    quiz_title: 'Schema Drift Rescue',
+    total_questions: 3,
+    questions: [
+      {
+        id: 'q1',
+        question: 'Câu drift 1?',
+        options: [{ id: 'a', text: 'Sai 1' }, { id: 'b', text: 'Đúng 1' }, { id: 'c', text: 'Sai 2' }, { id: 'd', text: 'Sai 3' }],
+        correct_option_id: 'B.'
+      },
+      {
+        id: 'q2',
+        question: 'Câu drift 2?',
+        options: [{ id: 'a', text: 'Sai 1' }, { id: 'b', text: 'Sai 2' }, { id: 'c', text: 'Đúng 2' }, { id: 'd', text: 'Sai 3' }],
+        correctOptionId: 'c'
+      },
+      {
+        id: 'q3',
+        question: 'Câu drift 3 với options dạng object?',
+        options: { a: 'Sai 1', b: 'Sai 2', c: 'Sai 3', d: 'Đúng 3' },
+        correct_answer: 'D)'
+      }
+    ]
+  });
+  const parsed4C = AIParser.parse(schemaDriftJson);
+  assert(parsed4C.cards.length === 3 && parsed4C.errors.length === 0,
+         'Case 4C: Rescues "B.", camelCase correctOptionId, correct_answer "D)", and object-map options');
+  assert(parsed4C.cards[0].answerIndex === 1 && parsed4C.cards[1].answerIndex === 2 && parsed4C.cards[2].answerIndex === 3,
+         'Case 4C: Resolves exact answerIndex for all 3 schema-drift variants');
+
+  // 4D: Noisy Markdown/Text fallback across multiple fences with bold markers & intro prose
+  const noisyMarkdownText = `Dưới đây là 3 câu hỏi trắc nghiệm ôn tập:
+\`\`\`markdown
+### Phần 1
+**Câu 1:** Giao thức nào hoạt động ở tầng ứng dụng?
+- **A.** IP
+- **B.** HTTP
+- **C.** ARP
+- **D.** ICMP
+**Đáp án đúng:** **B**
+**Giải thích:** HTTP là giao thức tầng ứng dụng; IP, ARP và ICMP thuộc tầng mạng/liên kết.
+---
+\`\`\`
+Tiếp tục Phần 2:
+\`\`\`text
+**Câu 2:** Địa chỉ IPv4 có độ dài bao nhiêu bit?
+**A.** 32 bit
+**B.** 64 bit
+**C.** 128 bit
+**D.** 16 bit
+**Đáp án:** A
+**Giải thích:** IPv4 dài 32 bit, còn IPv6 dài 128 bit.
+
+**Câu 3:** Thiết bị nào hoạt động chủ yếu ở tầng 2 (Data Link)?
+A. Router
+B. Switch
+C. Repeater
+D. Gateway
+Đáp án đúng là B
+Giải thích: Switch chuyển mạch khung dữ liệu dựa trên địa chỉ MAC ở tầng 2.
+\`\`\``;
+  const parsed4D = AIParser.parse(noisyMarkdownText);
+  assert(parsed4D.cards.length === 3, 'Case 4D: Noisy multi-fence Markdown text parses all 3 questions');
+  assert(parsed4D.cards[0].question === 'Giao thức nào hoạt động ở tầng ứng dụng?' &&
+         parsed4D.cards[0].answerIndex === 1 &&
+         parsed4D.cards[1].answerIndex === 0 &&
+         parsed4D.cards[2].answerIndex === 1,
+         'Case 4D: Cleanly strips bold/intro noise and resolves exact answers across all 3 cards');
+
+  // Group 5: Shortfall Detection (expectedCount vs actual parsed count) & Edge-Case Hardening
+  const shortfallJson = JSON.stringify({
+    quiz_title: 'Kiểm tra thiếu câu',
+    total_questions: 10,
+    questions: [
+      makeQ('q1', 'Câu 1 hợp lệ?'),
+      makeQ('q2', 'Câu 2 hợp lệ?'),
+      makeQ('q3', 'Câu 3 hợp lệ?'),
+      makeQ('q4', 'Câu 4 hợp lệ?'),
+      makeQ('q5', 'Câu 5 hợp lệ?'),
+      makeQ('q6', 'Câu 6 hợp lệ?')
+    ]
+  });
+  const parsedShortfall = AIParser.parse(shortfallJson);
+  assert(parsedShortfall.cards.length === 6 && parsedShortfall.expectedCount === 10 && parsedShortfall.missingCount === 4,
+         'Group 5: Reports exact expectedCount (10) and missingCount (4) when AI outputs fewer questions than declared');
+
+  // 5B: Decoy non-quiz matrix array [[1,2],[3,4]] in prose before real quiz JSON must NOT pollute cards or errors
+  const decoyArrayPlusQuiz = `Ma trận ví dụ: [[1, 2], [3, 4]]
+\`\`\`json
+${JSON.stringify({ quiz_title: 'Clean After Decoy Array', total_questions: 2, questions: [makeQ('q1', 'Câu sau ma trận 1?'), makeQ('q2', 'Câu sau ma trận 2?')] })}
+\`\`\``;
+  const parsedDecoy = AIParser.parse(decoyArrayPlusQuiz);
+  assert(parsedDecoy.cards.length === 2 && parsedDecoy.errors.length === 0 && parsedDecoy.mergedBlockCount === 1,
+         'Case 5B: Ignores decoy numeric matrix [[1,2],[3,4]] in prose without polluting errors or mergedBlockCount');
+
+  // 5C: 4-backtick outer fences (````json ... ````) containing embedded ```c code blocks
+  const quadBacktickQuiz = '````json\n' + JSON.stringify({
+    quiz_title: 'Quad Fence C Code',
+    total_questions: 1,
+    questions: [{
+      id: 'q1',
+      topic: 'Lập trình C',
+      difficulty: 'medium',
+      question: 'Đoạn mã sau in ra gì?\n```c\nprintf("%d", 2 + 3);\n```',
+      options: [
+        { id: 'a', text: '5' },
+        { id: 'b', text: '23' },
+        { id: 'c', text: '2 + 3' },
+        { id: 'd', text: 'Lỗi biên dịch' }
+      ],
+      correct_option_id: 'a',
+      explanation: 'Biểu thức 2 + 3 được tính thành 5 trước khi in với đặc tả %d.'
+    }]
+  }) + '\n````';
+  const parsedQuad = AIParser.parse(quadBacktickQuiz);
+  assert(parsedQuad.cards.length === 1 && parsedQuad.errors.length === 0 && parsedQuad.cards[0].question.includes('```c'),
+         'Case 5C: Supports 4-backtick outer fences (````json) wrapping embedded ```c blocks');
+
+  // 5D: Curly smart quotes around JSON keys/values (copy-paste from Word/Docs)
+  const smartQuoteJson = `{
+    “quiz_title”: “Đề copy từ Word”,
+    “total_questions”: 1,
+    “questions”: [
+      {
+        “id”: “q1”,
+        “question”: “Thủ đô của Việt Nam là thành phố nào?”,
+        “options”: [
+          { “id”: “a”, “text”: “Hà Nội” },
+          { “id”: “b”, “text”: “Đà Nẵng” },
+          { “id”: “c”, “text”: “Huế” },
+          { “id”: “d”, “text”: “Cần Thơ” }
+        ],
+        “correct_option_id”: “a”,
+        “explanation”: “Hà Nội là thủ đô của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.”
+      }
+    ]
+  }`;
+  const parsedSmartQuotes = AIParser.parse(smartQuoteJson);
+  assert(parsedSmartQuotes.cards.length === 1 && parsedSmartQuotes.cards[0].answerIndex === 0,
+         'Case 5D: Repairs structural curly smart quotes around JSON keys/values');
+
+  // 5E: copyAIPrompt does not shadow window.prompt in clipboard catch fallback
+  assert(!appJs.includes("prompt('Sao chép prompt dưới đây:', prompt)"),
+         'Case 5E: App.copyAIPrompt uses window.prompt without variable shadowing');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

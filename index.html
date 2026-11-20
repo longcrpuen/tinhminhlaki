@@ -989,14 +989,18 @@
             </div>
 
             <div class="hero-card" style="margin-bottom: 24px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                 <div style="font-weight: 700; font-size: 1rem;">Mẫu Prompt AI chuẩn hóa</div>
-                <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.copyAIPrompt()">
-                  Sao chép Prompt AI 1-Click
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <label for="import-prompt-count" style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">Số câu:</label>
+                  <input type="number" id="import-prompt-count" class="form-control" min="1" max="200" value="10" style="width: 78px; padding: 6px 10px; font-size: 0.85rem; text-align: center;" aria-label="Số lượng câu hỏi AI cần sinh">
+                  <button class="btn btn-secondary" style="font-size: 0.85rem;" onclick="App.copyAIPrompt()">
+                    Sao chép Prompt AI 1-Click
+                  </button>
+                </div>
               </div>
               <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
-                Bạn có tài liệu học tập hoặc sách giáo trình? Bấm <b>"Sao chép Prompt AI"</b>, dán vào ChatGPT / Gemini / Claude kèm tài liệu của bạn, sau đó sao chép toàn bộ phản hồi của AI dán vào ô bên dưới!
+                Bạn có tài liệu học tập hoặc sách giáo trình? Chọn số câu mong muốn, bấm <b>"Sao chép Prompt AI"</b>, dán vào ChatGPT / Gemini / Claude kèm tài liệu của bạn, sau đó sao chép toàn bộ phản hồi của AI dán vào ô bên dưới!
               </p>
             </div>
 
@@ -1061,6 +1065,7 @@
                 </div>
                 <textarea id="import-raw-input" class="form-control" placeholder="{
   &quot;quiz_title&quot;: &quot;Chương 3: Đạo hàm&quot;,
+  &quot;total_questions&quot;: 1,
   &quot;questions&quot;: [
     {
       &quot;id&quot;: &quot;q1&quot;,

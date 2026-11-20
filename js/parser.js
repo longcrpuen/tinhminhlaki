@@ -28,19 +28,65 @@ const AIParser = {
   },
 
   /**
+   * 0. Loại bỏ BOM & ký tự zero-width vô hình thường dính khi copy từ giao diện chat AI
+   */
+  _stripInvisibleChars(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str.replace(/[\uFEFF\u200B-\u200D\u2060]/g, '');
+  },
+
+  /**
    * 1. Làm sạch lỗi cú pháp phổ biến của LLM:
+   *    - BOM / ký tự zero-width vô hình
    *    - Phép nối chuỗi kiểu code: " + " hoặc ' + '
+   *    - Comment kiểu JS/JSONC (// ..., /* ... *\/) ngoài string literal
+   *    - Dấu chấm lửng bỏ lửng (... / …) ngoài string literal
    *    - Xuống dòng thô (raw newline) / ký tự điều khiển trong chuỗi JSON literal
-   *    - Dấu phẩy thừa (trailing comma) trước } hoặc ]
+   *    - Dấu phẩy thừa (trailing comma, leading comma, duplicate comma) ngoài string
    */
   _sanitizeJsonString(str) {
     if (!str || typeof str !== 'string') return '';
 
+    // Loại bỏ BOM & zero-width chars
+    let cleaned = this._stripInvisibleChars(str);
+
     // Xóa phép nối chuỗi kiểu JS code: " + " hoặc ' + '
-    let cleaned = str.replace(/(?<!\\)"\s*\+\s*"/g, '');
+    cleaned = cleaned.replace(/(?<!\\)"\s*\+\s*"/g, '');
     cleaned = cleaned.replace(/(?<!\\)'\s*\+\s*'/g, '');
 
-    // State machine: xử lý raw newline/control char trong string literal và trailing comma ngoài string
+    // Helper: bỏ qua khoảng trắng, comment //, /* */ và dấu ... ngoài chuỗi để peek ký tự tiếp theo
+    const peekNextSignificant = (src, startIdx) => {
+      let j = startIdx;
+      while (j < src.length) {
+        const c = src[j];
+        if (/\s/.test(c)) {
+          j++;
+        } else if (c === '/' && src[j + 1] === '/') {
+          j += 2;
+          while (j < src.length && src[j] !== '\n' && src[j] !== '\r') j++;
+        } else if (c === '/' && src[j + 1] === '*') {
+          j += 2;
+          while (j < src.length && !(src[j] === '*' && src[j + 1] === '/')) j++;
+          if (j < src.length) j += 2;
+        } else if (c === '.' && src[j + 1] === '.' && src[j + 2] === '.') {
+          while (j < src.length && src[j] === '.') j++;
+        } else if (c === '\u2026') {
+          j++;
+        } else {
+          break;
+        }
+      }
+      return j < src.length ? src[j] : '';
+    };
+
+    const getLastNonWsChar = (s) => {
+      for (let k = s.length - 1; k >= 0; k--) {
+        if (!/\s/.test(s[k])) return s[k];
+      }
+      return '';
+    };
+
+    // State machine: xử lý raw newline/control char trong string literal và comment/ellipsis/comma ngoài string
     let result = '';
     let inString = false;
     let isEscaped = false;
@@ -76,13 +122,46 @@ const AIParser = {
         if (ch === '"') {
           result += ch;
           inString = true;
-        } else if (ch === ',') {
-          let j = i + 1;
-          while (j < cleaned.length && /\s/.test(cleaned[j])) {
-            j++;
+        } else if (ch === '/' && cleaned[i + 1] === '/') {
+          // Bỏ comment 1 dòng // ... ngoài string literal (giữ nguyên URL https://... trong string)
+          i += 2;
+          while (i < cleaned.length && cleaned[i] !== '\n' && cleaned[i] !== '\r') {
+            i++;
           }
-          if (j < cleaned.length && (cleaned[j] === '}' || cleaned[j] === ']')) {
-            continue; // Bỏ trailing comma
+          if (i < cleaned.length) {
+            result += cleaned[i];
+          }
+        } else if (ch === '/' && cleaned[i + 1] === '*') {
+          // Bỏ comment khối /* ... */ ngoài string literal
+          i += 2;
+          while (i < cleaned.length && !(cleaned[i] === '*' && cleaned[i + 1] === '/')) {
+            i++;
+          }
+          if (i < cleaned.length) {
+            i++; // vượt qua ký tự '/' cuối '*/'
+          }
+        } else if (ch === '.' && cleaned[i + 1] === '.' && cleaned[i + 2] === '.') {
+          // Bỏ dấu ... viết tắt lạc ngoài string literal
+          while (i + 1 < cleaned.length && cleaned[i + 1] === '.') {
+            i++;
+          }
+        } else if (ch === '\u2026') {
+          // Bỏ ký tự … (Unicode ellipsis) lạc ngoài string literal
+          continue;
+        } else if (ch === ',') {
+          const prevSig = getLastNonWsChar(result);
+          const nextSig = peekNextSignificant(cleaned, i + 1);
+          // Bỏ trailing comma trước }/], leading comma sau [/{, hoặc duplicate comma ,,
+          if (
+            !nextSig ||
+            nextSig === '}' ||
+            nextSig === ']' ||
+            nextSig === ',' ||
+            prevSig === '[' ||
+            prevSig === '{' ||
+            prevSig === ','
+          ) {
+            continue;
           }
           result += ch;
         } else {
@@ -95,17 +174,59 @@ const AIParser = {
   },
 
   /**
+   * Chuẩn hóa dấu ngoặc kép cong (“ ”) dùng làm delimiter JSON khi copy từ Word/Notion (chỉ dùng ở fallback)
+   */
+  _normalizeStructuralSmartQuotes(str) {
+    if (!str || typeof str !== 'string') return str || '';
+    if (!/[“”]/.test(str)) return str;
+    if (!/[“”]\s*(?:quiz_title|deckName|title|questions|cards|total_questions|id|question|options|correct_option_id|explanation|topic|difficulty|text)\s*[“”]\s*:/.test(str)) {
+      return str;
+    }
+    return str.replace(/[“”]/g, '"');
+  },
+
+  _isSingleQuestionObject(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+    const hasQuestion = typeof data.question === 'string' && data.question.trim().length > 0;
+    const hasOptionsArray = Array.isArray(data.options) && data.options.length >= 2;
+    const hasOptionsMap = Boolean(
+      data.options &&
+      typeof data.options === 'object' &&
+      !Array.isArray(data.options) &&
+      Object.keys(data.options).length >= 2
+    );
+    return hasQuestion && (hasOptionsArray || hasOptionsMap);
+  },
+
+  _extractExpectedCount(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+    const raw = data.total_questions ?? data.expected_count ?? data.question_count ?? data.expectedCount;
+    if (raw === undefined || raw === null || raw === '') return null;
+    const num = Number(raw);
+    if (Number.isInteger(num) && num > 0) return num;
+    return null;
+  },
+
+  /**
    * 2. Tự cứu JSON bị cắt cụt giữa chừng do chạm token limit:
    *    Dò ngược từ cuối chuỗi để tìm dấu } của object câu hỏi hoàn chỉnh gần nhất,
    *    cắt bỏ phần dở dang và đóng ngoặc hợp lệ.
    */
   _tryRepairAndParseJson(jsonStr) {
     if (!jsonStr || typeof jsonStr !== 'string') return null;
-    const sanitized = this._sanitizeJsonString(jsonStr.trim());
+    let sanitized = this._sanitizeJsonString(jsonStr.trim());
 
     try {
       return JSON.parse(sanitized);
-    } catch (e) {}
+    } catch (e) {
+      const smartNormalized = this._normalizeStructuralSmartQuotes(sanitized);
+      if (smartNormalized !== sanitized) {
+        sanitized = this._sanitizeJsonString(smartNormalized);
+        try {
+          return JSON.parse(sanitized);
+        } catch (_) {}
+      }
+    }
 
     const trimmed = sanitized.trim();
     const isObject = trimmed.startsWith('{');
@@ -128,7 +249,7 @@ const AIParser = {
         } catch (err1) {
           try {
             const parsed = JSON.parse(sliced + '\n}');
-            if (parsed && (Array.isArray(parsed.questions) || Array.isArray(parsed.cards) || Array.isArray(parsed))) {
+            if (parsed && (Array.isArray(parsed.questions) || Array.isArray(parsed.cards) || Array.isArray(parsed) || this._isSingleQuestionObject(parsed))) {
               return parsed;
             }
           } catch (err2) {}
@@ -150,50 +271,290 @@ const AIParser = {
 
   _isQuizJsonData(data) {
     if (!data || typeof data !== 'object') return false;
-    if (Array.isArray(data)) return data.length > 0;
+    if (Array.isArray(data)) {
+      return data.length > 0 && data.some(item => item && typeof item === 'object' && !Array.isArray(item) && (
+        typeof item.question === 'string' ||
+        typeof item.q === 'string' ||
+        Array.isArray(item.options) ||
+        (item.options && typeof item.options === 'object')
+      ));
+    }
     return Boolean(
       (Array.isArray(data.questions) && data.questions.length > 0) ||
       (Array.isArray(data.cards) && data.cards.length > 0) ||
       (data.quiz_title && (Array.isArray(data.questions) || Array.isArray(data.cards))) ||
-      (data.deckName && (Array.isArray(data.questions) || Array.isArray(data.cards)))
+      (data.deckName && (Array.isArray(data.questions) || Array.isArray(data.cards))) ||
+      this._isSingleQuestionObject(data)
     );
   },
 
   /**
-   * 3. Tách các block JSON từ rawInput (hỗ trợ nhiều block ```json hoặc nhiều object { "quiz_title": ... })
-   * Tuyệt đối không match nhầm các khối code ```c, ```text, ```python bên trong chuỗi JSON.
+   * Quét chuỗi theo ngoặc cân bằng (nhận biết string literal và comment JSONC) để tách mọi khối JSON hợp lệ hoặc bị cắt cụt,
+   * bỏ qua hoàn toàn văn bản lời dẫn, { ngoặc minh họa } hay [nhãn] bên ngoài JSON.
+   */
+  _extractBalancedJsonCandidates(text) {
+    if (!text || typeof text !== 'string') return [];
+    const candidates = [];
+
+    const peekNextNonWsNonComment = (src, idx) => {
+      let j = idx;
+      while (j < src.length) {
+        const c = src[j];
+        if (/\s/.test(c)) {
+          j++;
+        } else if (c === '/' && src[j + 1] === '/') {
+          j += 2;
+          while (j < src.length && src[j] !== '\n' && src[j] !== '\r') j++;
+        } else if (c === '/' && src[j + 1] === '*') {
+          j += 2;
+          while (j < src.length && !(src[j] === '*' && src[j + 1] === '/')) j++;
+          if (j < src.length) j += 2;
+        } else {
+          break;
+        }
+      }
+      return j < src.length ? src[j] : '';
+    };
+
+    let startIdx = -1;
+    let stack = [];
+    let inString = false;
+    let isEscaped = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+
+      if (stack.length === 0) {
+        if (ch === '/' && text[i + 1] === '/') {
+          i += 2;
+          while (i < text.length && text[i] !== '\n' && text[i] !== '\r') i++;
+          continue;
+        }
+        if (ch === '/' && text[i + 1] === '*') {
+          i += 2;
+          while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
+          if (i < text.length) i++;
+          continue;
+        }
+        if (ch === '{') {
+          const nextCh = peekNextNonWsNonComment(text, i + 1);
+          if (nextCh === '"' || nextCh === '“' || nextCh === '}') {
+            startIdx = i;
+            stack = ['{'];
+            inString = false;
+            isEscaped = false;
+          }
+        } else if (ch === '[') {
+          const nextCh = peekNextNonWsNonComment(text, i + 1);
+          if (nextCh === '{' || nextCh === '[' || nextCh === ']') {
+            startIdx = i;
+            stack = ['['];
+            inString = false;
+            isEscaped = false;
+          }
+        }
+        continue;
+      }
+
+      if (inString) {
+        if (isEscaped) {
+          isEscaped = false;
+        } else if (ch === '\\') {
+          isEscaped = true;
+        } else if (ch === '"') {
+          inString = false;
+        }
+      } else {
+        if (ch === '/' && text[i + 1] === '/') {
+          i += 2;
+          while (i < text.length && text[i] !== '\n' && text[i] !== '\r') i++;
+          continue;
+        }
+        if (ch === '/' && text[i + 1] === '*') {
+          i += 2;
+          while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
+          if (i < text.length) i++;
+          continue;
+        }
+        if (ch === '"') {
+          inString = true;
+        } else if (ch === '{' || ch === '[') {
+          stack.push(ch);
+        } else if (ch === '}' || ch === ']') {
+          const top = stack[stack.length - 1];
+          if ((ch === '}' && top === '{') || (ch === ']' && top === '[')) {
+            stack.pop();
+            if (stack.length === 0) {
+              const snippet = text.slice(startIdx, i + 1).trim();
+              if (snippet) candidates.push(snippet);
+              startIdx = -1;
+            }
+          }
+        }
+      }
+    }
+
+    // Xử lý khối JSON bị cắt cụt (chưa đóng ngoặc) ở cuối chuỗi
+    if (startIdx !== -1 && stack.length > 0) {
+      const tail = text.slice(startIdx).trim();
+      if (tail) {
+        // Phòng trường hợp block 1 bị cụt không có code fence nhưng theo sau là block 2 không có code fence
+        const nextRootMatch = tail.slice(1).match(/\r?\n[ \t]*(\{\s*"(?:quiz_title|deckName|questions|cards|total_questions)")/);
+        if (nextRootMatch && typeof nextRootMatch.index === 'number') {
+          const splitAt = nextRootMatch.index + 1;
+          const part1 = tail.slice(0, splitAt).trim();
+          const part2 = tail.slice(splitAt).trim();
+          if (part1) candidates.push(part1);
+          if (part2) {
+            const subCandidates = this._extractBalancedJsonCandidates(part2);
+            if (subCandidates.length > 0) {
+              candidates.push(...subCandidates);
+            } else {
+              candidates.push(part2);
+            }
+          }
+        } else {
+          candidates.push(tail);
+        }
+      }
+    }
+
+    return candidates;
+  },
+
+  /**
+   * 3. Tách toàn bộ các block JSON từ rawInput theo đúng thứ tự xuất hiện:
+   *    - Hỗ trợ nhiều block ```json / ```JSON / ```jsonc / ``` liền kề nhau (không cần dòng trống)
+   *    - Hỗ trợ code fence thụt lề, đóng fence cùng dòng (}```), và lời dẫn/tiêu đề xen giữa
+   *    - Hỗ trợ pha trộn giữa block có fence và block JSON trần không có fence
+   *    - Hỗ trợ nhiều object JSON nằm chung trong 1 code fence
+   *    - Tuyệt đối không cắt nhầm các khối code ```c, ```text, ```python bên trong chuỗi JSON.
    */
   _extractJsonBlocks(rawInput) {
     if (!rawInput || typeof rawInput !== 'string') return [];
-    const trimmed = rawInput.trim();
+    const cleaned = this._stripInvisibleChars(rawInput).trim();
+    if (!cleaned) return [];
 
-    // 1. Tách các block markdown code fence nếu có
-    if (trimmed.includes('```')) {
-      const blocks = [];
-      // Chỉ match opening fence là ```json/```jsonc hoặc ``` đứng một mình trên một dòng
-      // Tuyệt đối không match ```c, ```text, ```python, ```cpp, v.v.
-      const fenceRegex = /(?:^|\r?\n)```(?:(?:json|jsonc)\s*|[ \t]*\r?\n)\s*([\s\S]*?)(?:\r?\n```\s*(?:\r?\n|$)|$)/gi;
-      let m;
-      while ((m = fenceRegex.exec(trimmed)) !== null) {
-        const content = m[1].trim();
-        if (content && (content.startsWith('{') || content.startsWith('['))) {
-          blocks.push(content);
+    const allBlocks = [];
+    const lines = cleaned.split(/\r?\n/);
+
+    let inFence = false;
+    let fenceTicks = 3;
+    let innerFenceDepth = 0;
+    let fenceLines = [];
+    let outsideLines = [];
+
+    const flushOutside = () => {
+      if (outsideLines.length === 0) return;
+      const outsideText = outsideLines.join('\n').trim();
+      outsideLines = [];
+      if (!outsideText) return;
+      const found = this._extractBalancedJsonCandidates(outsideText);
+      if (found.length > 0) {
+        allBlocks.push(...found);
+      }
+    };
+
+    const flushFence = () => {
+      const content = fenceLines.join('\n').trim();
+      fenceLines = [];
+      inFence = false;
+      fenceTicks = 3;
+      innerFenceDepth = 0;
+      if (!content) return;
+      const found = this._extractBalancedJsonCandidates(content);
+      if (found.length > 0) {
+        allBlocks.push(...found);
+      } else if (content.startsWith('{') || content.startsWith('[')) {
+        allBlocks.push(content);
+      }
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (!inFence) {
+        // Trường hợp 1: cả mở fence, JSON và đóng fence trên cùng 1 dòng (hỗ trợ 3+ backtick)
+        const singleLineFence = line.match(/^[ \t]*(`{3,})[ \t]*(?:jsonc?|json5)?[ \t]*([\{\[][\s\S]*?)`{3,}[ \t]*$/i);
+        if (singleLineFence) {
+          flushOutside();
+          const inlineContent = singleLineFence[2].trim();
+          const found = this._extractBalancedJsonCandidates(inlineContent);
+          if (found.length > 0) {
+            allBlocks.push(...found);
+          } else if (inlineContent.startsWith('{') || inlineContent.startsWith('[')) {
+            allBlocks.push(inlineContent);
+          }
+          continue;
         }
+
+        // Trường hợp 2: dòng mở fence JSON chuẩn (```json, ````json, ```JSON, ```jsonc, ```json5 hoặc ``` đứng riêng)
+        const openFenceBare = line.match(/^[ \t]*(`{3,})[ \t]*(?:jsonc?|json5)?[ \t]*$/i);
+        if (openFenceBare) {
+          flushOutside();
+          inFence = true;
+          fenceTicks = openFenceBare[1].length;
+          innerFenceDepth = 0;
+          fenceLines = [];
+          continue;
+        }
+
+        // Trường hợp 3: dòng mở fence có sẵn dấu { hoặc [ ngay trên cùng dòng
+        const openFenceInlineStart = line.match(/^[ \t]*(`{3,})[ \t]*(?:jsonc?|json5)?[ \t]+([\{\[].*)$/i);
+        if (openFenceInlineStart) {
+          flushOutside();
+          inFence = true;
+          fenceTicks = openFenceInlineStart[1].length;
+          innerFenceDepth = 0;
+          fenceLines = [openFenceInlineStart[2]];
+          continue;
+        }
+
+        outsideLines.push(line);
+      } else {
+        // Nếu bên trong fence JSON (có raw newline) gặp opening fence ngôn ngữ khác (```c, ```text, ```python...)
+        if (/^[ \t]*`{3,}[a-zA-Z0-9_+#.-]+[ \t]*$/.test(line) && !/^[ \t]*`{3,}(?:jsonc?|json5)[ \t]*$/i.test(line)) {
+          innerFenceDepth++;
+          fenceLines.push(line);
+          continue;
+        }
+
+        // Dòng đóng fence đứng riêng (hoặc có lời chú thích theo sau dấu cách)
+        const closeMatch = line.match(/^[ \t]*(`{3,})(?:[ \t]*$|[ \t]+[^`].*$)/);
+        if (closeMatch) {
+          if (innerFenceDepth > 0) {
+            innerFenceDepth--;
+            fenceLines.push(line);
+          } else if (closeMatch[1].length >= fenceTicks) {
+            flushFence();
+          } else {
+            fenceLines.push(line);
+          }
+          continue;
+        }
+
+        // Dòng JSON kết thúc bằng }``` hoặc ]``` ngay trên cùng dòng
+        const inlineClose = innerFenceDepth === 0 ? line.match(/^(.*[\}\]])[ \t]*(`{3,})[ \t]*$/) : null;
+        if (inlineClose && inlineClose[2].length >= fenceTicks) {
+          fenceLines.push(inlineClose[1]);
+          flushFence();
+          continue;
+        }
+
+        fenceLines.push(line);
       }
-      if (blocks.length > 0) return blocks;
     }
 
-    // 2. Tách các object JSON đứng liền nhau không có code fence (ví dụ: { ... }\n{ ... })
-    const objectSplitRegex = /(?<=\})\s*(?=\{\s*"(?:quiz_title|questions|id)")/g;
-    if (objectSplitRegex.test(trimmed)) {
-      const parts = trimmed.split(objectSplitRegex);
-      const validParts = parts.map(p => p.trim()).filter(p => p.startsWith('{') || p.startsWith('['));
-      if (validParts.length > 1) {
-        return validParts;
-      }
+    if (inFence) {
+      flushFence();
+    }
+    flushOutside();
+
+    if (allBlocks.length > 0) {
+      return allBlocks;
     }
 
-    return [trimmed];
+    return [cleaned];
   },
 
   _normalizeQuestionForComparison(text) {
@@ -203,6 +564,17 @@ const AIParser = {
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'’“”]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
+  },
+
+  _isQuestionIncompleteForDedup(qObj) {
+    if (!qObj || typeof qObj !== 'object') return false;
+    const text = String(qObj.question || qObj.q || qObj.title || '').trim();
+    const optsCount = Array.isArray(qObj.options)
+      ? qObj.options.length
+      : (qObj.options && typeof qObj.options === 'object' ? Object.keys(qObj.options).length : 0);
+    if (optsCount < 2) return true;
+    if (/\.\.\.$|…$/.test(text)) return true;
+    return false;
   },
 
   /**
@@ -229,7 +601,7 @@ const AIParser = {
 
     const idA = qA.id ? String(qA.id).trim().toLowerCase() : '';
     const idB = qB.id ? String(qB.id).trim().toLowerCase() : '';
-    if (idA && idB && idA === idB) {
+    if (idA && idB && idA === idB && (this._isQuestionIncompleteForDedup(qA) || this._isQuestionIncompleteForDedup(qB))) {
       const minLen = Math.min(normA.length, normB.length);
       if (minLen >= 15 && normA.slice(0, 20) === normB.slice(0, 20)) {
         return true;
@@ -259,17 +631,26 @@ const AIParser = {
   },
 
   /**
-   * 5. Gộp nhiều block JSON, khử trùng lặp và đánh lại ID q1..qN khi có gộp/trùng
+   * 5. Gộp nhiều block JSON, khử trùng lặp an toàn và đánh lại ID q1..qN khi có gộp nhiều block
    */
   _mergeParsedJsonBlocks(blocks) {
     if (!Array.isArray(blocks) || blocks.length === 0) return null;
     if (blocks.length === 1) {
+      if (this._isSingleQuestionObject(blocks[0])) {
+        return {
+          quiz_title: blocks[0].topic || 'Bộ thẻ mới',
+          description: '',
+          subject: '',
+          questions: [blocks[0]]
+        };
+      }
       return blocks[0];
     }
 
     let deckName = 'Bộ thẻ mới';
     let description = '';
     let subject = '';
+    const declaredCounts = [];
 
     const mergedQuestions = [];
     const mergedMeta = [];
@@ -278,12 +659,13 @@ const AIParser = {
     const byId = new Map();
 
     const extractMeta = (qItem) => {
-      if (!qItem) return { norm: '', id: '' };
+      if (!qItem) return { norm: '', id: '', incomplete: false };
       const text = (typeof qItem === 'object' ? (qItem.question || qItem.q || qItem.title || '') : String(qItem)).trim();
-      if (!text) return { norm: '', id: '' };
+      if (!text) return { norm: '', id: '', incomplete: false };
       const norm = this._normalizeQuestionForComparison(text);
       const id = (typeof qItem === 'object' && qItem.id) ? String(qItem.id).trim().toLowerCase() : '';
-      return { norm, id };
+      const incomplete = this._isQuestionIncompleteForDedup(qItem);
+      return { norm, id, incomplete };
     };
 
     const indexQuestion = (idx, meta) => {
@@ -315,9 +697,20 @@ const AIParser = {
         }
         if (!description) description = block.description || '';
         if (!subject) subject = block.subject || block.subjectName || '';
+        const blockDeclared = this._extractExpectedCount(block);
+        if (blockDeclared !== null) {
+          declaredCounts.push(blockDeclared);
+        }
       }
 
-      const qs = Array.isArray(block) ? block : (Array.isArray(block.questions) ? block.questions : (Array.isArray(block.cards) ? block.cards : []));
+      const qs = Array.isArray(block)
+        ? block
+        : (Array.isArray(block.questions)
+          ? block.questions
+          : (Array.isArray(block.cards)
+            ? block.cards
+            : (this._isSingleQuestionObject(block) ? [block] : [])));
+
       for (const q of qs) {
         const meta = extractMeta(q);
         let existingIdx = -1;
@@ -340,6 +733,8 @@ const AIParser = {
                 }
               }
             }
+            // Chỉ gộp theo cùng ID + 20 ký tự đầu khi ít nhất 1 câu bị dở dang/cụt,
+            // tuyệt đối không làm rớt 2 câu hoàn chỉnh khác nhau dùng chung tiền tố "Trong lập trình..." ở Phần 1 & Phần 2
             if (existingIdx === -1 && meta.id && meta.norm.length >= 15) {
               const idBucket = byId.get(meta.id);
               if (idBucket) {
@@ -347,7 +742,11 @@ const AIParser = {
                 for (let b = 0; b < idBucket.length; b++) {
                   const candIdx = idBucket[b];
                   const mMeta = mergedMeta[candIdx];
-                  if (mMeta.norm.length >= 15 && mMeta.norm.slice(0, 20) === p20) {
+                  if (
+                    (meta.incomplete || mMeta.incomplete) &&
+                    mMeta.norm.length >= 15 &&
+                    mMeta.norm.slice(0, 20) === p20
+                  ) {
                     existingIdx = candIdx;
                     break;
                   }
@@ -378,25 +777,44 @@ const AIParser = {
       }
     });
 
-    return {
+    let totalQuestions = null;
+    if (declaredCounts.length === 1) {
+      totalQuestions = declaredCounts[0];
+    } else if (declaredCounts.length > 1) {
+      const uniqueCounts = new Set(declaredCounts);
+      if (uniqueCounts.size === 1 && declaredCounts[0] >= mergedQuestions.length) {
+        totalQuestions = declaredCounts[0];
+      } else {
+        totalQuestions = declaredCounts.reduce((acc, n) => acc + n, 0);
+      }
+    }
+
+    const mergedObj = {
       quiz_title: deckName,
       description: description,
       subject: subject,
       questions: mergedQuestions
     };
+    if (totalQuestions !== null) {
+      mergedObj.total_questions = totalQuestions;
+    }
+    return mergedObj;
   },
 
   /**
    * Main parse function. Detects format and validates items.
    * @param {string} rawInput 
-   * @returns {Object} { deckName, description, cards: [...validCards], errors: [...errorList], rawCardsCount }
+   * @returns {Object} { deckName, description, cards: [...validCards], errors: [...errorList], rawCardsCount, expectedCount, missingCount, mergedBlockCount }
    */
   parse(rawInput) {
     if (!rawInput || typeof rawInput !== 'string') {
       throw new Error('Dữ liệu nhập vào trống hoặc không hợp lệ.');
     }
 
-    const trimmed = rawInput.trim();
+    const trimmed = this._stripInvisibleChars(rawInput).trim();
+    if (!trimmed) {
+      throw new Error('Dữ liệu nhập vào trống hoặc không hợp lệ.');
+    }
 
     // =========================================================================
     // FAST-PATH 1: Thử parse trực tiếp input gốc bằng JSON.parse chuẩn
@@ -405,7 +823,7 @@ const AIParser = {
     try {
       const directParsed = JSON.parse(trimmed);
       if (this._isQuizJsonData(directParsed)) {
-        return this._normalizeJsonData(directParsed);
+        return this._normalizeJsonData(directParsed, { mergedBlockCount: 1 });
       }
     } catch (_) {}
 
@@ -414,13 +832,13 @@ const AIParser = {
     // Chỉ bóc cặp code fence ở đầu/cuối tuyệt đối (anchor ^ và $), không dùng regex global
     // =========================================================================
     if (trimmed.startsWith('```')) {
-      const outerFenceMatch = trimmed.match(/^```(?:json)?\s*\r?\n([\s\S]*?)\r?\n```\s*$/i);
+      const outerFenceMatch = trimmed.match(/^(`{3,})(?:jsonc?|json5)?\s*\r?\n([\s\S]*?)\r?\n\1\s*$/i);
       if (outerFenceMatch) {
-        const unboxed = outerFenceMatch[1].trim();
+        const unboxed = outerFenceMatch[2].trim();
         try {
           const directUnboxed = JSON.parse(unboxed);
           if (this._isQuizJsonData(directUnboxed)) {
-            return this._normalizeJsonData(directUnboxed);
+            return this._normalizeJsonData(directUnboxed, { mergedBlockCount: 1 });
           }
         } catch (_) {}
       }
@@ -443,7 +861,7 @@ const AIParser = {
     if (parsedDataList.length > 0) {
       const mergedJson = this._mergeParsedJsonBlocks(parsedDataList);
       if (this._isQuizJsonData(mergedJson)) {
-        return this._normalizeJsonData(mergedJson);
+        return this._normalizeJsonData(mergedJson, { mergedBlockCount: parsedDataList.length });
       }
     }
 
@@ -457,7 +875,10 @@ const AIParser = {
         description: `Nhập tự động ${textCards.length} câu hỏi`,
         cards: textCards,
         errors: [],
-        rawCardsCount: textCards.length
+        rawCardsCount: textCards.length,
+        expectedCount: null,
+        missingCount: 0,
+        mergedBlockCount: 1
       };
     }
 
@@ -472,18 +893,23 @@ const AIParser = {
   /**
    * Normalizes parsed JSON data into standard structure with isolated per-question validation.
    */
-  _normalizeJsonData(data) {
+  _normalizeJsonData(data, meta = {}) {
     let deckName = 'Bộ thẻ mới';
     let description = '';
     let subject = '';
     let rawQuestions = [];
+    let expectedCount = null;
 
     if (Array.isArray(data)) {
       rawQuestions = data;
+    } else if (this._isSingleQuestionObject(data)) {
+      deckName = data.topic || 'Bộ thẻ mới';
+      rawQuestions = [data];
     } else if (typeof data === 'object' && data !== null) {
       deckName = data.quiz_title || data.deckName || data.name || data.title || 'Bộ thẻ mới';
       description = data.description || '';
       subject = (typeof data.subject === 'string' ? data.subject : (typeof data.subjectName === 'string' ? data.subjectName : (typeof data.subject_name === 'string' ? data.subject_name : ''))).trim();
+      expectedCount = this._extractExpectedCount(data);
       rawQuestions = data.questions || data.cards || [];
     }
 
@@ -496,10 +922,10 @@ const AIParser = {
 
     rawQuestions.forEach((q, index) => {
       const qIndex = index + 1;
-      const qId = q.id || `q${qIndex}`;
+      const qId = (q && q.id) ? q.id : `q${qIndex}`;
 
       // 1. Validate 'question' field
-      if (!q.question || typeof q.question !== 'string' || !q.question.trim()) {
+      if (!q || !q.question || typeof q.question !== 'string' || !q.question.trim()) {
         errors.push({
           index: qIndex,
           id: qId,
@@ -511,12 +937,22 @@ const AIParser = {
       // 1b. Extract optional question image (image / question_image / img)
       const questionImage = (typeof q.image === 'string' ? q.image : (typeof q.question_image === 'string' ? q.question_image : (typeof q.img === 'string' ? q.img : ''))).trim() || null;
 
-      // 2. Validate 'options' field (must have >= 2 choices)
-      if (!Array.isArray(q.options) || q.options.length < 2) {
+      // 2. Validate 'options' field (must have >= 2 choices; also rescue object-map { a: "...", b: "..." })
+      let rawOptionsList = q.options;
+      if (!Array.isArray(rawOptionsList) && rawOptionsList && typeof rawOptionsList === 'object') {
+        rawOptionsList = Object.entries(rawOptionsList).map(([k, v]) => {
+          if (typeof v === 'object' && v !== null) {
+            return { id: k, ...v };
+          }
+          return { id: k, text: String(v ?? '') };
+        });
+      }
+
+      if (!Array.isArray(rawOptionsList) || rawOptionsList.length < 2) {
         errors.push({
           index: qIndex,
           id: qId,
-          message: `Câu hỏi số ${qIndex} (id: "${qId}") phải có ít nhất 2 phương án lựa chọn ('options'). Hiện có: ${Array.isArray(q.options) ? q.options.length : 0}.`
+          message: `Câu hỏi số ${qIndex} (id: "${qId}") phải có ít nhất 2 phương án lựa chọn ('options'). Hiện có: ${Array.isArray(rawOptionsList) ? rawOptionsList.length : 0}.`
         });
         return;
       }
@@ -526,8 +962,8 @@ const AIParser = {
       const optionIds = new Set();
       const defaultLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 
-      for (let i = 0; i < q.options.length; i++) {
-        const opt = q.options[i];
+      for (let i = 0; i < rawOptionsList.length; i++) {
+        const opt = rawOptionsList[i];
         let optId = '';
         let optText = '';
         let optImg = null;
@@ -574,11 +1010,37 @@ const AIParser = {
         }
       }
 
-      // 3. Validate 'correct_option_id' (or fallback answer)
-      let correctId = q.correct_option_id !== undefined ? String(q.correct_option_id).trim().toLowerCase() : null;
+      // 3. Validate 'correct_option_id' (or fallback camelCase / correct_answer / answer)
+      const rawCorrectField = q.correct_option_id !== undefined
+        ? q.correct_option_id
+        : (q.correctOptionId !== undefined
+          ? q.correctOptionId
+          : (q.correct_answer !== undefined
+            ? q.correct_answer
+            : (q.correctAnswer !== undefined ? q.correctAnswer : undefined)));
 
-      // Backward-compatible fallbacks for answer / correctAnswer
-      if (!correctId && q.answer !== undefined) {
+      let correctId = null;
+      if (rawCorrectField !== undefined && rawCorrectField !== null) {
+        if (typeof rawCorrectField === 'number' && rawCorrectField >= 0 && rawCorrectField < normalizedOptions.length) {
+          correctId = normalizedOptions[rawCorrectField].id;
+        } else {
+          const cleanedCorrect = String(rawCorrectField).trim().toLowerCase();
+          if (optionIds.has(cleanedCorrect)) {
+            correctId = cleanedCorrect;
+          } else {
+            // Cứu trường hợp AI thêm dấu chấm/ngoặc vào ID đáp án như "B." hoặc "D)" hoặc "option_a"
+            const strippedLetterMatch = cleanedCorrect.match(/^(?:option[\s_-]*)?([a-g])(?:[\.\)\:]\s*|$)/i);
+            if (strippedLetterMatch && optionIds.has(strippedLetterMatch[1].toLowerCase())) {
+              correctId = strippedLetterMatch[1].toLowerCase();
+            } else {
+              correctId = cleanedCorrect;
+            }
+          }
+        }
+      }
+
+      // Backward-compatible fallbacks for answer
+      if ((!correctId || !optionIds.has(correctId)) && q.answer !== undefined) {
         if (typeof q.answer === 'number' && q.answer >= 0 && q.answer < normalizedOptions.length) {
           correctId = normalizedOptions[q.answer].id;
         } else if (typeof q.answer === 'string') {
@@ -604,7 +1066,7 @@ const AIParser = {
         errors.push({
           index: qIndex,
           id: qId,
-          message: `Câu hỏi số ${qIndex} (id: "${qId}") có 'correct_option_id' ("${q.correct_option_id || ''}") không khớp với bất kỳ id nào trong options: [${Array.from(optionIds).join(', ')}].`
+          message: `Câu hỏi số ${qIndex} (id: "${qId}") có 'correct_option_id' ("${rawCorrectField ?? ''}") không khớp với bất kỳ id nào trong options: [${Array.from(optionIds).join(', ')}].`
         });
         return;
       }
@@ -655,29 +1117,46 @@ const AIParser = {
       });
     });
 
+    const missingCount = (expectedCount !== null && expectedCount > validCards.length)
+      ? expectedCount - validCards.length
+      : 0;
+
     return {
       deckName,
       description,
       subject,
       cards: validCards,
       errors: errors,
-      rawCardsCount: rawQuestions.length
+      rawCardsCount: rawQuestions.length,
+      expectedCount: expectedCount,
+      missingCount: missingCount,
+      mergedBlockCount: meta.mergedBlockCount || 1
     };
   },
 
   /**
    * Parses plaintext / Markdown block format as fallback
+   * Hỗ trợ nhiều block ```markdown / ```text, dấu đậm **Câu 1:** và **A.**, gạch đầu dòng và lọc lời dẫn đầu/giữa.
    */
   _parseTextFormat(text) {
     const cards = [];
-    const lines = text.split(/\r?\n/);
+    const cleanedText = this._stripInvisibleChars(text || '');
+    const lines = cleanedText.split(/\r?\n/);
     let currentCard = null;
+
+    const stripMdEmphasis = (str) => String(str || '')
+      .replace(/^\s*(?:\*\*|__)+/, '')
+      .replace(/(?:\*\*|__)+$/, '')
+      .trim();
 
     const flushCurrent = () => {
       if (currentCard && currentCard.question && currentCard.options.length >= 2) {
         const defaultLetters = ['a', 'b', 'c', 'd', 'e'];
         let answerIndex = 0;
-        const letterMatch = currentCard.rawAnswer.match(/^([A-Da-d])/);
+        const normalizedRawAns = stripMdEmphasis(currentCard.rawAnswer)
+          .replace(/^(?:đáp án(?:\s+đúng)?|phương án|chọn|là)[\s:.-]*/i, '')
+          .trim();
+        const letterMatch = normalizedRawAns.match(/^([A-Da-d])(?:\b|[\.\)\:])/);
         if (letterMatch) {
           const idx = 'abcd'.indexOf(letterMatch[1].toLowerCase());
           if (idx >= 0 && idx < currentCard.options.length) answerIndex = idx;
@@ -699,7 +1178,7 @@ const AIParser = {
             seenOptTexts.add(normOpt);
           }
         }
-        let qText = this.stripCitationArtifacts(currentCard.question.trim());
+        let qText = this.stripCitationArtifacts(stripMdEmphasis(currentCard.question.trim()));
         if (hasDuplicateOptions && !qText.includes('[Cần kiểm tra: trùng đáp án]')) {
           qText = `${qText} [Cần kiểm tra: trùng đáp án]`;
         }
@@ -711,10 +1190,10 @@ const AIParser = {
           rawOptions: cleanedOpts.map((t, i) => ({ id: defaultLetters[i], text: t })),
           answerIndex: answerIndex,
           correctOptionId: defaultLetters[answerIndex],
-          explanation: this.stripCitationArtifacts((currentCard.explanation || '').trim()),
-          topic: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
+          explanation: this.stripCitationArtifacts(stripMdEmphasis((currentCard.explanation || '').trim())),
+          topic: this.stripCitationArtifacts(stripMdEmphasis((currentCard.topic || 'Chung').trim())),
           difficulty: 'medium',
-          tag: this.stripCitationArtifacts((currentCard.topic || 'Chung').trim()),
+          tag: this.stripCitationArtifacts(stripMdEmphasis((currentCard.topic || 'Chung').trim())),
           source: 'ai',
           hasDuplicateOptions: hasDuplicateOptions
         });
@@ -722,25 +1201,32 @@ const AIParser = {
       currentCard = null;
     };
 
-    const qRegex = /^(?:#{1,6}\s*)?(?:Câu\s*\d+[\s:.-]*|\d+[\s:.-]+)\s*(.*)/i;
-    const optRegex = /^\s*([A-Da-d])[\.\)\:]\s+(.*)/;
-    const ansRegex = /^\s*(?:Đáp án|Đ\/A|Answer|Correct|Key)[\s:.-]+\s*(.*)/i;
-    const expRegex = /^\s*(?:Giải thích|Explain|Lý do|Note)[\s:.-]+\s*(.*)/i;
-    const tagRegex = /^\s*(?:Tag|Topic|Chủ đề|Chủ điểm|Category)[\s:.-]+\s*(.*)/i;
+    const qRegex = /^(?:[-*•]\s+)?(?:#{1,6}\s*)?(?:\*\*|__)?(?:Câu(?:\s+hỏi)?\s*\d+|Question\s*\d+|Q\d+|\d+)(?:\*\*|__)?[\s:.)\-]+(?:\*\*|__)?\s*(.*)/i;
+    const optRegex = /^(?:[-*•]\s+)?(?:\*\*|__)?([A-Da-d])[\.\)\:](?:\*\*|__)?\s+(.*)/;
+    const ansRegex = /^(?:[-*•]\s+)?(?:\*\*|__)?(?:Đáp án(?:\s+đúng)?|Đ\/A|Answer|Correct(?:\s+Answer)?|Key)(?:\*\*|__)?[\s:.-]*(?:là\s+)?(?:\*\*|__)?\s*(.*)/i;
+    const expRegex = /^(?:[-*•]\s+)?(?:\*\*|__)?(?:Giải thích|Explain|Explanation|Lý do|Note)(?:\*\*|__)?[\s:.-]+(?:\*\*|__)?\s*(.*)/i;
+    const tagRegex = /^(?:[-*•]\s+)?(?:\*\*|__)?(?:Tag|Topic|Chủ đề|Chủ điểm|Category|Chương)(?:\*\*|__)?[\s:.-]+(?:\*\*|__)?\s*(.*)/i;
+    const fenceLineRegex = /^```(?:markdown|md|text|txt|quiz)?\s*$/i;
+    const dividerRegex = /^[-*_=]{3,}$/;
+    const sectionNoiseRegex = /^(?:(?:#{1,6}\s*)|(?:\*\*|__))?(?:Phần|Part|Tiếp tục(?:\s+Phần)?|Section|Đợt)\s+\d+[^?]*$/i;
+
+    const hasExplicitQuestions = lines.some(l => qRegex.test(l.trim()));
 
     for (let line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
+      if (fenceLineRegex.test(trimmed) || dividerRegex.test(trimmed)) continue;
+      if (sectionNoiseRegex.test(trimmed)) continue;
 
       if (!currentCard && /^#+\s+(.+)/.test(trimmed) && !qRegex.test(trimmed)) {
         continue;
       }
 
       const qMatch = trimmed.match(qRegex);
-      if (qMatch && (!currentCard || currentCard.options.length >= 2)) {
+      if (qMatch && (!currentCard || currentCard.options.length >= 2 || currentCard.options.length === 0)) {
         flushCurrent();
         currentCard = {
-          question: qMatch[1] || trimmed,
+          question: stripMdEmphasis(qMatch[1] || trimmed),
           options: [],
           rawAnswer: 'A',
           explanation: '',
@@ -750,6 +1236,9 @@ const AIParser = {
       }
 
       if (!currentCard) {
+        if (hasExplicitQuestions) {
+          continue; // Bỏ qua lời dẫn mở đầu trước Câu 1
+        }
         currentCard = {
           question: trimmed,
           options: [],
@@ -762,25 +1251,27 @@ const AIParser = {
 
       const optMatch = trimmed.match(optRegex);
       if (optMatch) {
-        currentCard.options.push(trimmed);
+        const letter = optMatch[1].toUpperCase();
+        const optBody = stripMdEmphasis(optMatch[2]);
+        currentCard.options.push(`${letter}. ${optBody}`);
         continue;
       }
 
       const ansMatch = trimmed.match(ansRegex);
       if (ansMatch) {
-        currentCard.rawAnswer = ansMatch[1].trim();
+        currentCard.rawAnswer = stripMdEmphasis(ansMatch[1]);
         continue;
       }
 
       const expMatch = trimmed.match(expRegex);
       if (expMatch) {
-        currentCard.explanation = expMatch[1].trim();
+        currentCard.explanation = stripMdEmphasis(expMatch[1]);
         continue;
       }
 
       const tagMatch = trimmed.match(tagRegex);
       if (tagMatch) {
-        currentCard.topic = tagMatch[1].trim();
+        currentCard.topic = stripMdEmphasis(tagMatch[1]);
         continue;
       }
 
@@ -799,22 +1290,37 @@ const AIParser = {
    * Generates standard AI Prompt template adhering to JSON schema & pedagogical standards
    */
   generateAIPromptTemplate({ topic = '', count = 10, difficulty = 'medium' } = {}) {
-    return `CHỈ XUẤT DUY NHẤT 1 KHỐI \`\`\`json CHỨA TOÀN BỘ 100% CÂU HỎI TRONG 1 LẦN TRẢ LỜI. CẤM TUYỆT ĐỐI tự ý chia thành Phần 1/Phần 2, CẤM dừng giữa chừng bảo người dùng gõ 'tiếp', CẤM viết lời dẫn đầu/cuối, CẤM mở block \`\`\`json thứ hai.
+    const parsedCount = parseInt(count, 10);
+    const safeCount = Number.isFinite(parsedCount) && parsedCount >= 1 ? parsedCount : 10;
+    const rawDiff = String(difficulty || 'medium').trim().toLowerCase();
+    const safeDifficulty = ['easy', 'medium', 'hard'].includes(rawDiff) ? rawDiff : 'medium';
 
-Hãy đóng vai một chuyên gia giáo dục và biên soạn ${count} câu hỏi trắc nghiệm ôn tập chất lượng cao về chủ đề: "${topic || '[DÁN NỘI DUNG / CHỦ ĐỀ / TÀI LIỆU TẠI ĐÂY]'}".
+    return `CHỈ XUẤT DUY NHẤT 1 KHỐI \`\`\`json CHỨA TOÀN BỘ 100% CÂU HỎI TRONG 1 LẦN TRẢ LỜI. Toàn bộ phản hồi PHẢI bắt đầu ngay bằng \`\`\`json và kết thúc ngay bằng \`\`\` duy nhất; CẤM TUYỆT ĐỐI tự ý chia thành Phần 1/Phần 2, CẤM mở block \`\`\`json thứ hai, CẤM dừng giữa chừng bảo người dùng gõ 'tiếp', CẤM viết lời dẫn đầu/cuối, CẤM chèn lời giải thích rườm rà hay bình luận // giữa các câu hỏi.
+
+Hãy đóng vai một chuyên gia giáo dục và biên soạn CHÍNH XÁC ${safeCount} câu hỏi trắc nghiệm ôn tập chất lượng cao (đánh số thứ tự rõ ràng từ 1 đến ${safeCount}, tương ứng \`"id": "q1"\` đến \`"q${safeCount}"\`) về chủ đề: "${topic || '[DÁN NỘI DUNG / CHỦ ĐỀ / TÀI LIỆU TẠI ĐÂY]'}".
 
 Yêu cầu thực hiện nghiêm ngặt 5 nguyên tắc sau:
 
-1. Ghép ảnh & Đủ 100% số câu: Xuất toàn bộ câu hỏi trong 1 khối \`\`\`json duy nhất. Nếu input gồm nhiều ảnh chụp lộn xộn thứ tự, phải tự đối chiếu số câu và ngữ cảnh để ghép nối phần đầu - phần cuối bị cắt qua mép ảnh lại thành câu hoàn chỉnh trước khi xuất. Mỗi câu phải có đủ 4 đáp án (a, b, c, d), 4 đáp án (a, b, c, d) bắt buộc phải khác nhau hoàn toàn, cấm trùng lặp nội dung; bảng số liệu chuyển thành bảng Markdown (\`|...|\`). Với bài toán lời văn dài quen thuộc từ sách giáo khoa/đề mẫu, hãy diễn đạt lại câu dẫn ngắn gọn, tự nhiên (giữ nguyên 100% số liệu, bảng biểu, công thức và đáp án) để tránh bị bộ lọc hệ thống ngắt giữa chừng.
+1. QUY TRÌNH ĐỌC HẾT TÀI LIỆU, COMBINE KIẾN THỨC & ÉP ĐỦ 100% SỐ CÂU (1 -> ${safeCount}):
+- Quy trình phân tích tài liệu nguồn BẮT BUỘC trước khi sinh câu hỏi:
+  + Bước 1 — Quét toàn văn: Bắt buộc quét toàn bộ từ đầu đến cuối tất cả các mục/chương/slide, định nghĩa, bảng biểu, ví dụ và phần kết luận của tài liệu nguồn; tuyệt đối không chỉ lấy vài trang/slide đầu rồi bỏ sót phần giữa và phần cuối.
+  + Bước 2 — Phân bổ đều phủ kín mọi phần: Phân bổ đều ${safeCount} câu hỏi phủ kín 100% các mục/chương/slide trọng tâm của tài liệu nguồn; ghi rõ tên Chương/Mục cụ thể vào trường \`"topic"\` của từng câu để không dồn cục một phần.
+  + Bước 3 — Kết hợp kiến thức liên phần: Phân tầng tư duy hợp lý (Nhận biết ~25–30%, Thông hiểu ~35–40%, Vận dụng/Phân tích ~30–40%). Với các câu hỏi mức độ hiểu và vận dụng/phân tích, BẮT BUỘC kết hợp (combine) kiến thức liên kết giữa các phần/chương/slide khác nhau (so sánh cơ chế, đối chiếu điều kiện, xâu chuỗi nhân-quả hoặc áp dụng nguyên lý ở mục này vào tình huống ở mục khác), tuyệt đối không cắt dán nguyên văn 1 câu đơn lẻ.
+- Cơ chế ép đủ chính xác ${safeCount} câu hỏi:
+  + Đánh số thứ tự liên tục từ \`"q1"\` đến \`"q${safeCount}"\` và khai báo \`"total_questions": ${safeCount}\`.
+  + Trước khi kết thúc mảng \`questions\`, BẮT BUỘC tự đối chiếu đếm đủ đúng ${safeCount} câu (không thiếu dù chỉ 1 câu); CẤM viết tắt kiểu \`...\`, \`// các câu còn lại tương tự\`, CẤM gộp câu, CẤM tự ý giảm số lượng câu hoặc dừng giữa chừng.
+- Ghép ảnh & Đủ 100% số câu: Xuất toàn bộ câu hỏi trong 1 khối \`\`\`json duy nhất. Nếu input gồm nhiều ảnh chụp lộn xộn thứ tự, phải tự đối chiếu số câu và ngữ cảnh để ghép nối phần đầu - phần cuối bị cắt qua mép ảnh lại thành câu hoàn chỉnh trước khi xuất. Mỗi câu phải có đủ 4 đáp án (a, b, c, d), 4 đáp án (a, b, c, d) bắt buộc phải khác nhau hoàn toàn, cấm trùng lặp nội dung; bảng số liệu chuyển thành bảng Markdown (\`|...|\`). Với bài toán lời văn dài quen thuộc từ sách giáo khoa/đề mẫu, hãy diễn đạt lại câu dẫn ngắn gọn, tự nhiên (giữ nguyên 100% số liệu, bảng biểu, công thức và đáp án) để tránh bị bộ lọc hệ thống ngắt giữa chừng.
 
+Schema JSON chuẩn tuyệt đối tương thích 100% với bộ parser (bắt buộc giữ nguyên tên trường):
 \`\`\`json
 {
   "quiz_title": "${topic || 'Chương 3: Đạo hàm'}",
+  "total_questions": ${safeCount},
   "questions": [
     {
       "id": "q1",
       "topic": "${topic || 'Đạo hàm'}",
-      "difficulty": "${difficulty}",
+      "difficulty": "${safeDifficulty}",
       "question": "Đạo hàm của $f(x) = x^2$ là gì?",
       "image": "",
       "options": [
@@ -831,11 +1337,12 @@ Yêu cầu thực hiện nghiêm ngặt 5 nguyên tắc sau:
 \`\`\`
 
 2. Xử lý câu bị thiếu dữ kiện/ảnh:
-   - Nếu vẫn thiếu phần đề bài sau khi đã ghép các ảnh: ưu tiên dùng tìm kiếm (nếu có) theo dữ kiện sẵn có; chỉ lấy bổ sung khi tìm được câu gốc khớp chính xác 100% số liệu/ngữ cảnh (cấm tự bịa số liệu). Nếu không tìm được, bỏ câu đó khỏi JSON và ghi chú số câu bị thiếu ở cuối câu trả lời.
+   - Nếu vẫn thiếu phần đề bài sau khi đã ghép các ảnh: ưu tiên dùng tìm kiếm (nếu có) theo dữ kiện sẵn có; chỉ lấy bổ sung khi tìm được câu gốc khớp chính xác 100% số liệu/ngữ cảnh (cấm tự bịa số liệu). Nếu không tìm được, bỏ câu đó khỏi mảng \`questions\` và ghi chú số câu bị thiếu vào trường \`"description"\` ngay bên trong JSON (tuyệt đối không viết văn bản ngoài khối \`\`\`json).
    - Nếu đã đủ đề bài và đáp án đúng nhưng chỉ bị cắt mất 1 đáp án nhiễu: tự bổ sung 1 phương án nhiễu hợp lý cho đủ 4 lựa chọn và ghi \`[Đã bổ sung nhiễu]\` ở cuối \`question\`.
    - Nếu câu cần xem hình vẽ/đồ thị gốc mà không đọc được tọa độ: giữ nguyên câu hỏi, để "image": "" và ghi \`[Cần hình minh họa]\` ở cuối \`question\`.
 
-3. KỶ LUẬT CÚ PHÁP JSON (CHỐNG LỖI PARSE):
+3. KỶ LUẬT CÚ PHÁP JSON & ĐẦU RA DUY NHẤT 1 BLOCK (CHỐNG LỖI PARSE):
+- Xuất duy nhất 1 khối \`\`\`json ... \`\`\` liền mạch, không viết văn bản trước/sau khối, không chèn comment \`//\` hoặc \`/* */\`, không thêm dấu phẩy thừa ở phần tử cuối.
 - CẤM TUYỆT ĐỐI: nối chuỗi kiểu code (" + ", ' + '), xuống dòng thô trong chuỗi JSON (mọi xuống dòng phải dùng \\n), hoặc tự ngắt để viết lại từ q1 giữa chừng khi gặp câu có hình ảnh/bảng biểu.
 - CẤM TUYỆT ĐỐI việc chèn các ký hiệu trích dẫn nguồn hoặc đánh dấu trang/đoạn (như [cite: 1, 2], [cite_start], [cite_end], [1], [2], [source], 【1†source】). Mọi lựa chọn và câu hỏi phải có văn phong đồng nhất.
 - Chỉ xuất tiếp ở lượt sau nếu chạm giới hạn độ dài của model (mỗi lượt là 1 block JSON hoàn chỉnh, nối tiếp thứ tự câu, tuyệt đối không lặp lại câu cũ).
@@ -850,14 +1357,71 @@ Yêu cầu thực hiện nghiêm ngặt 5 nguyên tắc sau:
   + Bắt buộc OCR và chuyển toàn bộ sang Text + LaTeX ($...$, $$...$$) + Bảng Markdown đối với ảnh chụp chữ, công thức Toán/Lý/Hóa, bảng số liệu (KHÔNG giữ dạng ảnh).
   + Ảnh sơ đồ (ER, UML, mạch điện) hoặc đồ thị hình học: KHÔNG diễn giải thay thế bằng văn bản (làm mất ý nghĩa câu hỏi); giữ cấu trúc "image": "" trên câu hỏi hoặc options[].image để người dùng dán ảnh trực tiếp trên app.
 
-5. CHẤT LƯỢNG NỘI DUNG & GIẢI THÍCH CHI TIẾT:
+5. CHẤT LƯỢNG CÂU HỎI, PHƯƠNG ÁN NHIỄU & GIẢI THÍCH CHI TIẾT:
 - Giữ nguyên vẹn nội dung câu hỏi và đủ 4 đáp án (không tự ý rút gọn).
-- Quy tắc BẮT BUỘC cho trường "explanation" (1–2 câu cực ngắn gọn, đi thẳng vào công thức/lỗi sai):
+- Tiêu chuẩn 4 phương án lựa chọn (chặn phương án nhiễu kém chất lượng):
+  + 4 lựa chọn phải đồng đều độ dài, đồng nhất cấu trúc ngữ pháp và mức độ chi tiết (CẤM đáp án đúng quá dài/chi tiết trong khi 3 đáp án nhiễu quá ngắn sơ sài hoặc ngược lại).
+  + 3 phương án nhiễu phải hợp lý về mặt học thuật: xây dựng từ lỗi sai nhận thức phổ biến, khái niệm gần nghĩa, nhầm điều kiện biên hoặc sai bước suy luận bám sát tài liệu gốc.
+  + CẤM tạo đáp án nhiễu lộ liễu, vô lý, hài hước hoặc lệch chủ đề; CẤM lặp y nguyên cụm từ khóa đặc trưng từ đề bài chỉ vào đáp án đúng; CẤM dùng lựa chọn lười biếng kiểu "Tất cả đều đúng", "Cả A và B", "Không có đáp án nào đúng" (trừ khi trích nguyên văn từ đề thi gốc); phân bổ cân bằng \`correct_option_id\` giữa \`a, b, c, d\`.
+- Quy tắc BẮT BUỘC cho trường "explanation" (1–2 câu cực ngắn gọn, đi thẳng vào công thức/lỗi sai, bám sát tài liệu gốc):
   + CẤM GỌI TÊN CHỮ CÁI ĐÁP ÁN (như A, B, C, D, "phương án A", "loại B, C, D") vì app có tính năng đảo thứ tự đáp án (shuffle); bắt buộc phải giải thích trực tiếp bằng nội dung, giá trị hoặc đặc điểm của phương án (ví dụ: "Phương án $x^2$ sai do...", "Loại các phương án trừ $x_4$ hoặc thêm biến giả $x_1^g$...").
-  + Nêu rõ TẠI SAO đáp án đúng là đúng (nêu công thức, quy tắc hoặc tính toán ngắn gọn trong 1 câu).
+  + Nêu rõ TẠI SAO đáp án đúng là đúng dựa trên kiến thức/công thức trong tài liệu gốc (1 câu súc tích).
   + Nêu rõ TẠI SAO các phương án nhiễu còn lại sai (chỉ ra ngắn gọn lỗi sai cốt lõi trong 1 câu; không viết dài dòng để tiết kiệm token tối đa).
   + CẤM TUYỆT ĐỐI viết câu mẫu sáo rỗng hoặc chung chung kiểu "Theo quy tắc chuẩn, đáp án đúng là...".
-  + CHỐNG LƯỜI KHI SINH NHIỀU CÂU: Mỗi câu hỏi phải có lời giải thích riêng biệt bám sát ngữ cảnh đề bài, không lặp lại khuôn mẫu câu.`;
+  + CHỐNG LƯỜI KHI SINH NHIỀU CÂU: Mỗi câu hỏi phải có lời giải thích riêng biệt bám sát ngữ cảnh đề bài, không lặp lại khuôn mẫu câu.
+
+KIỂM TRA BẮT BUỘC TRƯỚC KHI ĐÓNG \`\`\`: (1) Duy nhất 1 khối \`\`\`json hợp lệ, không văn bản ngoài khối; (2) Tự đối chiếu đếm đủ đúng ${safeCount} câu từ "q1" đến "q${safeCount}" khớp "total_questions": ${safeCount}, không viết tắt \`...\`; (3) Đã quét toàn bộ từ đầu đến cuối tài liệu, phân bổ đều mọi phần và có câu combine kiến thức liên phần; (4) 4 lựa chọn đồng đều độ dài, nhiễu hợp lý học thuật, giải thích bám sát tài liệu gốc và không gọi chữ cái đáp án.`;
+  },
+
+  /**
+   * Generates strict AI Prompt for rewriting flagged questions (Question Bank)
+   */
+  generateFlaggedRewritePrompt(flaggedCards = []) {
+    const list = Array.isArray(flaggedCards) ? flaggedCards : [];
+    const total = list.length;
+    const defaultLetters = ['a', 'b', 'c', 'd'];
+
+    const payload = {
+      role_instruction: `Bạn là chuyên gia giáo dục. Viết lại CHÍNH XÁC ${total} câu hỏi trắc nghiệm bị người học gắn cờ dưới đây cho thật mạch lạc, chính xác học thuật và chuẩn sư phạm, bảo toàn công thức LaTeX ($...$, $$...$$), bảng Markdown và khối code. CẤM TUYỆT ĐỐI chèn ký hiệu trích dẫn ([cite: ...], [cite_start], [cite_end], [1], 【...】).`,
+      quality_rules: [
+        `CHỈ XUẤT DUY NHẤT 1 KHỐI \`\`\`json LIỀN MẠCH (bắt đầu ngay bằng \`\`\`json và kết thúc ngay bằng \`\`\`), không chia nhiều phần, không lời dẫn đầu/cuối, không comment //.`,
+        `Đánh số tuần tự từ "q1" đến "q${total}", khai báo "total_questions": ${total}, tự đối chiếu đếm đủ đúng ${total} câu trước khi đóng mảng; CẤM viết tắt \`...\`, CẤM gộp câu hoặc bỏ sót câu.`,
+        `4 lựa chọn (a, b, c, d) bắt buộc khác nhau hoàn toàn, đồng đều độ dài và cấu trúc ngữ pháp; phương án nhiễu phải hợp lý về mặt học thuật, CẤM tạo đáp án nhiễu lộ liễu hoặc lặp y nguyên từ khóa dễ đoán.`,
+        `Trường "explanation" dài 1–2 câu ngắn gọn bám sát kiến thức gốc: nêu lý do đúng và lỗi sai của phương án nhiễu; CẤM GỌI TÊN CHỮ CÁI ĐÁP ÁN (A, B, C, D) vì app đảo thứ tự đáp án (shuffle).`,
+        `Trường "topic" bắt buộc phân loại theo Chương ('Chương 1: ...', 'Chương 2: ...') đồng nhất.`
+      ],
+      output_format: `Trả về duy nhất 1 khối \`\`\`json chuẩn cấu trúc { "quiz_title": "...", "total_questions": ${total}, "questions": [{ "id": "q1", "topic": "...", "difficulty": "easy|medium|hard", "question": "...", "image": "", "options": [{ "id": "a", "text": "...", "image": "" }, ...], "correct_option_id": "a", "explanation": "..." }] } để dán trực tiếp vào app.`,
+      questions_to_improve: list.map((c, qIdx) => {
+        const cleanOptions = (Array.isArray(c.rawOptions) && c.rawOptions.length >= 2)
+          ? c.rawOptions.map((o, idx) => ({
+            id: (o && o.id ? String(o.id).toLowerCase() : defaultLetters[idx]) || `opt_${idx + 1}`,
+            text: (o && o.text !== undefined) ? String(o.text).trim() : ''
+          }))
+          : (c.options || []).map((opt, idx) => ({
+            id: defaultLetters[idx] || `opt_${idx + 1}`,
+            text: String(opt || '').replace(/^[A-Da-d][\.\)\:]\s+/, '').trim()
+          }));
+        const correctId = (c.correctOptionId || defaultLetters[c.answerIndex] || 'a').toLowerCase();
+        return {
+          id: `q${qIdx + 1}`,
+          original_id: c.id,
+          topic: c.topic || c.tag || 'Chung',
+          difficulty: c.difficulty || 'medium',
+          question: c.question || '',
+          options: cleanOptions,
+          correct_option_id: correctId,
+          explanation: c.explanation || ''
+        };
+      })
+    };
+
+    return `CHỈ XUẤT DUY NHẤT 1 KHỐI \`\`\`json CHỨA ĐỦ ${total} CÂU HỎI ("q1" ĐẾN "q${total}") TRONG 1 LẦN TRẢ LỜI. CẤM viết lời dẫn đầu/cuối, CẤM chia nhiều block, CẤM viết tắt \`...\`, CẤM bỏ sót câu.
+
+Hãy viết lại toàn bộ ${total} câu hỏi trắc nghiệm sau đây cho thật chuẩn xác, sư phạm, đồng đều độ dài 4 phương án và mạch lạc theo đúng quy tắc trong JSON đầu vào:
+
+\`\`\`json
+${JSON.stringify(payload, null, 2)}
+\`\`\``;
   }
 };
 
