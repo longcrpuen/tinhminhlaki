@@ -1708,11 +1708,41 @@ const App = {
   setAsciiScenePreset(preset) {
     if (typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.selectPreset === 'function') {
       window.AsciiBg.selectPreset(preset);
-      const isAsciiTheme = document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
-      if (isAsciiTheme && typeof window.AsciiBg.start === 'function' && !window.AsciiBg._running) {
-        window.AsciiBg.start();
+    }
+    const isAsciiTheme = typeof document !== 'undefined' && document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
+    if (!isAsciiTheme && typeof this.setTheme === 'function') {
+      if (typeof this.triggerThemeWaveTransition === 'function') {
+        this.triggerThemeWaveTransition('ascii');
       }
+      const themeRes = this.setTheme('ascii', { syncDefaultBg: false });
       this.syncAsciiSceneUI();
+      if (themeRes && typeof themeRes.then === 'function') {
+        return themeRes.then(() => {
+          if (typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.selectPreset === 'function') {
+            window.AsciiBg.selectPreset(preset);
+          }
+          this.syncAsciiSceneUI();
+        });
+      }
+      return;
+    } else if (isAsciiTheme && typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.start === 'function' && !window.AsciiBg._running) {
+      window.AsciiBg.start();
+    }
+    this.syncAsciiSceneUI();
+  },
+
+  toggleAsciiSettingsBar() {
+    const bar = document.getElementById('ascii-scene-settings-bar');
+    if (!bar) return;
+    if (bar.classList.contains('is-ascii-active')) return;
+    const expanded = bar.classList.toggle('is-expanded');
+    const toggleBtn = document.getElementById('ascii-scene-bar-toggle');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+    const statusEl = document.getElementById('ascii-scene-bar-status');
+    if (statusEl) {
+      statusEl.textContent = expanded ? 'Thu gọn ▴' : 'Chọn nhanh ▾';
     }
   },
 
@@ -1780,18 +1810,41 @@ const App = {
   },
 
   syncAsciiSceneUI() {
-    if (typeof window === 'undefined' || !window.AsciiBg || typeof window.AsciiBg.getState !== 'function') return;
-    const state = window.AsciiBg.getState();
-    const curPreset = state.mode === 'slideshow' ? 'slideshow' : state.scene;
+    if (typeof document === 'undefined') return;
+    const isAsciiActive = document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
+
+    const settingsBar = document.getElementById('ascii-scene-settings-bar');
+    if (settingsBar) {
+      settingsBar.classList.toggle('is-ascii-active', Boolean(isAsciiActive));
+      settingsBar.classList.toggle('is-ascii-inactive', !isAsciiActive);
+      settingsBar.setAttribute('data-ascii-active', isAsciiActive ? 'true' : 'false');
+      if (isAsciiActive) {
+        settingsBar.classList.remove('is-expanded');
+      } else {
+        settingsBar.classList.remove('is-expanded');
+      }
+    }
+
+    const barToggle = document.getElementById('ascii-scene-bar-toggle');
+    if (barToggle) {
+      barToggle.setAttribute('aria-expanded', isAsciiActive ? 'true' : 'false');
+    }
+    const barStatus = document.getElementById('ascii-scene-bar-status');
+    if (barStatus) {
+      barStatus.textContent = isAsciiActive ? 'Đang bật' : 'Chọn nhanh ▾';
+    }
 
     const quickCtrl = document.getElementById('ascii-scene-quick-ctrl');
-    const isAsciiActive = document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
     if (quickCtrl) {
       quickCtrl.style.display = isAsciiActive ? 'inline-flex' : 'none';
       if (!isAsciiActive) {
         this.closeAsciiScenePopover();
       }
     }
+
+    if (typeof window === 'undefined' || !window.AsciiBg || typeof window.AsciiBg.getState !== 'function') return;
+    const state = window.AsciiBg.getState();
+    const curPreset = state.mode === 'slideshow' ? 'slideshow' : state.scene;
 
     const iconEl = document.getElementById('ascii-scene-cycle-icon');
     const labelEl = document.getElementById('ascii-scene-cycle-label');
@@ -1843,6 +1896,21 @@ const App = {
     sliderEl.style.setProperty('--slider-pct', `${pct.toFixed(1)}%`);
   },
 
+  _resolveEnergyThemeFromVal(val) {
+    const n = Math.max(0, Math.min(100, parseFloat(val) || 0));
+    if (n < 25) return 'violet-rose';
+    if (n < 50) return 'monochrome';
+    if (n < 75) return 'white-orange';
+    return 'ascii';
+  },
+
+  _getEnergyMilestoneForTheme(theme) {
+    if (theme === 'ascii') return 87.5;
+    if (theme === 'white-orange') return 62.5;
+    if (theme === 'monochrome' || theme === 'bw-dark') return 37.5;
+    return 12.5;
+  },
+
   syncThemeEnergyChamber(themeKey, options = {}) {
     const theme = (themeKey === 'ascii') ? 'ascii'
                 : (themeKey === 'purple-pink' || themeKey === 'violet-rose' || themeKey === 'dark') ? 'violet-rose'
@@ -1852,27 +1920,30 @@ const App = {
     this._lastEnergyZone = theme;
 
     const slider = document.getElementById('theme-energy-slider');
-    let sliderVal = theme === 'ascii' ? 92 : (theme === 'violet-rose' ? 16 : (theme === 'monochrome' ? 50 : 84));
+    let sliderVal = this._getEnergyMilestoneForTheme(theme);
 
     if (!options || !options.fromEnergySlider) {
       try {
         const savedVal = localStorage.getItem('tinhminhlakey_energy_slider_val');
-        if (savedVal !== null && theme !== 'ascii') {
+        if (savedVal !== null) {
           const parsed = parseFloat(savedVal);
-          const zone = parsed < 33.5 ? 'violet-rose' : (parsed <= 66.5 ? 'monochrome' : 'white-orange');
-          if (zone === theme) sliderVal = parsed;
+          if (!Number.isNaN(parsed) && this._resolveEnergyThemeFromVal(parsed) === theme) {
+            sliderVal = parsed;
+          }
         }
       } catch (_) {}
       if (slider) slider.value = String(sliderVal);
     } else if (slider) {
-      sliderVal = parseFloat(slider.value) || sliderVal;
+      const parsedCur = parseFloat(slider.value);
+      if (!Number.isNaN(parsedCur)) sliderVal = parsedCur;
     }
 
     if (slider) {
       this.syncRangeSliderVisual(slider);
     }
 
-    this._updateEnergyWaveVisuals(sliderVal, theme === 'ascii' ? 'ascii' : null);
+    const forcedZone = theme === 'violet-rose' ? 'purple-pink' : theme;
+    this._updateEnergyWaveVisuals(sliderVal, forcedZone);
   },
 
   _sliderAnimRafId: null,
@@ -1899,13 +1970,15 @@ const App = {
       cursorOrb: document.getElementById('wave-cursor-orb'),
       gate1: document.getElementById('phase-gate-1'),
       gate2: document.getElementById('phase-gate-2'),
+      gate3: document.getElementById('phase-gate-3'),
+      badgeEl: document.getElementById('energy-wave-mode-badge'),
+      badgeTextEl: document.getElementById('energy-wave-badge-text'),
       stop1: document.getElementById('ew-stop-1'),
       stop2: document.getElementById('ew-stop-2'),
       stop3: document.getElementById('ew-stop-3'),
       areaTop: document.getElementById('ew-area-top'),
       areaMid: document.getElementById('ew-area-mid'),
       areaBot: document.getElementById('ew-area-bot'),
-      badgeEl: document.getElementById('energy-wave-mode-badge'),
       titleEl: document.querySelector('.energy-wave-title') || document.getElementById('energy-wave-mode-title'),
       subtitleEl: document.querySelector('.theme-subtitle') || document.getElementById('theme-subtitle'),
       pillEl: document.querySelector('.energy-level-pill') || document.getElementById('energy-wave-mode-badge'),
@@ -1939,8 +2012,8 @@ const App = {
       });
     }
 
-    // Xác định vùng năng lượng theo 2 ngưỡng Threshold: 33.5% và 66.5%
-    const targetTheme = val < 33.5 ? 'violet-rose' : (val <= 66.5 ? 'monochrome' : 'white-orange');
+    // Xác định vùng năng lượng 4 mốc (Ngưỡng Crystal Phase Gates: 25%, 50%, 75%)
+    const targetTheme = this._resolveEnergyThemeFromVal(val);
     if (!this._lastEnergyZone) {
       let cur = document.documentElement.getAttribute('data-theme') || 'violet-rose';
       if (cur === 'dark' || cur === 'purple-pink') cur = 'violet-rose';
@@ -1951,16 +2024,22 @@ const App = {
     if (targetTheme !== this._lastEnergyZone) {
       this._lastEnergyZone = targetTheme;
       this.triggerThemeWaveTransition(targetTheme);
-      this.setTheme(targetTheme, { fromEnergySlider: true, syncDefaultBg: true });
+      this.setTheme(targetTheme, { fromEnergySlider: true, syncDefaultBg: targetTheme !== 'ascii' });
     }
   },
 
   onThemeEnergySliderCommit(rawVal) {
-    // Giữ nguyên vị trí con trượt tự nhiên nơi người dùng thả tay, chỉ lưu lại vào localStorage
+    // Giữ nguyên vị trí con trượt tự nhiên nơi người dùng thả tay, lưu localStorage & đồng bộ mốc theme nếu chưa kích hoạt
     const val = parseFloat(rawVal) || 0;
     try {
       localStorage.setItem('tinhminhlakey_energy_slider_val', String(val));
     } catch (_) {}
+    const targetTheme = this._resolveEnergyThemeFromVal(val);
+    if (targetTheme !== this._lastEnergyZone) {
+      this._lastEnergyZone = targetTheme;
+      this.triggerThemeWaveTransition(targetTheme);
+      this.setTheme(targetTheme, { fromEnergySlider: true, syncDefaultBg: targetTheme !== 'ascii' });
+    }
     this._updateEnergyWaveVisuals(val);
   },
 
@@ -1970,30 +2049,29 @@ const App = {
       this._sliderAnimRafId = null;
     }
     const normTheme = (themeName === 'purple-pink' || themeName === 'violet-rose') ? 'violet-rose' : themeName;
-    const targetVal = normTheme === 'ascii' ? 92 : (normTheme === 'violet-rose' ? 16 : (normTheme === 'monochrome' ? 50 : 84));
+    const targetVal = this._getEnergyMilestoneForTheme(normTheme);
+    const forcedZone = normTheme === 'violet-rose' ? 'purple-pink' : normTheme;
     const slider = document.getElementById('theme-energy-slider');
     const startVal = slider ? parseFloat(slider.value) || 0 : targetVal;
     this._lastEnergyZone = normTheme;
+    try {
+      localStorage.setItem('tinhminhlakey_energy_slider_val', String(targetVal));
+    } catch (_) {}
     this.triggerThemeWaveTransition(normTheme);
     this.setTheme(normTheme, { fromEnergySlider: true, syncDefaultBg: normTheme !== 'ascii' });
-    if (normTheme !== 'ascii') {
-      try {
-        localStorage.setItem('tinhminhlakey_energy_slider_val', String(targetVal));
-      } catch (_) {}
-    }
 
-    // Hoạt ảnh lướt con trượt & biến đổi sóng mượt mà tới vùng đã chọn
+    // Hoạt ảnh lướt con trượt & biến đổi sóng mượt mà tới mốc đã chọn
     const duration = 320;
     const startTime = performance.now();
     const animateSlider = (now) => {
       const t = Math.min(1, (now - startTime) / duration);
       const eased = 1 - Math.pow(1 - t, 3);
-      const cur = startVal + (targetVal - startVal) * eased;
+      const cur = t >= 1 ? targetVal : (startVal + (targetVal - startVal) * eased);
       if (slider) {
         slider.value = String(cur);
         this.syncRangeSliderVisual(slider);
       }
-      this._updateEnergyWaveVisuals(cur, normTheme === 'ascii' ? 'ascii' : null);
+      this._updateEnergyWaveVisuals(cur, forcedZone);
       if (t < 1) {
         this._sliderAnimRafId = requestAnimationFrame(animateSlider);
       } else {
@@ -2110,19 +2188,26 @@ const App = {
       dom.cursorOrb.setAttribute('cy', ycStr);
     }
 
-    // Cập nhật 2 Cổng Pha Tinh Thể (Crystal Phase Gates at 33.333% & 66.667%)
+    // Cập nhật 3 Cổng Pha Tinh Thể (Crystal Phase Gates at 25%, 50% & 75%)
     const numericVal = pct;
     if (dom.gate1) {
-      dom.gate1.classList.toggle('active', numericVal >= 33.333);
-      dom.gate1.classList.toggle('is-passed', numericVal >= 33.333);
+      dom.gate1.classList.toggle('active', numericVal >= 25);
+      dom.gate1.classList.toggle('is-passed', numericVal >= 25);
     }
     if (dom.gate2) {
-      dom.gate2.classList.toggle('active', numericVal >= 66.667);
-      dom.gate2.classList.toggle('is-passed', numericVal >= 66.667);
+      dom.gate2.classList.toggle('active', numericVal >= 50);
+      dom.gate2.classList.toggle('is-passed', numericVal >= 50);
+    }
+    if (dom.gate3) {
+      dom.gate3.classList.toggle('active', numericVal >= 75);
+      dom.gate3.classList.toggle('is-passed', numericVal >= 75);
     }
 
-    if (dom.pillEl) {
-      dom.pillEl.textContent = `Năng lượng • ${Math.round(pct)}%`;
+    const energyLabel = `Năng lượng • ${Math.round(pct)}%`;
+    if (dom.badgeTextEl) {
+      dom.badgeTextEl.textContent = energyLabel;
+    } else if (dom.pillEl) {
+      dom.pillEl.textContent = energyLabel;
     }
 
     if (dom.slider) {
@@ -2131,9 +2216,9 @@ const App = {
       dom.slider.style.setProperty('--energy-clip-pct', pctStr);
     }
 
-    const activeZone = forcedTheme === 'ascii'
-      ? 'ascii'
-      : (pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange'));
+    const normalizedForced = forcedTheme === 'violet-rose' ? 'purple-pink' : forcedTheme;
+    const activeZone = normalizedForced
+      || (pct < 25 ? 'purple-pink' : (pct < 50 ? 'monochrome' : (pct < 75 ? 'white-orange' : 'ascii')));
     if (activeZone !== this._lastWaveAppliedZone) {
       this._lastWaveAppliedZone = activeZone;
       let themeName = '';
@@ -2142,8 +2227,8 @@ const App = {
       let glowColor = 'rgba(168, 85, 247, 0.55)';
 
       if (activeZone === 'ascii') {
-        themeName = 'ASCII Giáng Sinh (3D Pine Matrix)';
-        themeSubtitle = 'Cây thông 3D phát sáng & kính đêm trong suốt';
+        themeName = 'ASCII 3D (Terminal Matrix)';
+        themeSubtitle = 'Hoạt ảnh ASCII 3D & kính khói trong suốt';
         dotColor = '#34d399';
         if (dom.stop1) dom.stop1.setAttribute('stop-color', '#34d399');
         if (dom.stop2) dom.stop2.setAttribute('stop-color', '#10b981');

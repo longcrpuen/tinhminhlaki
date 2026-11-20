@@ -1425,7 +1425,7 @@ console.log('\n=== TEST SUITE 21: Phase 1o Free Wave Threshold Switching, Lofi T
   assert(indexHtml.includes('id="theme-energy-slider"') && indexHtml.includes('step="0.5"'), 'Energy slider allows smooth continuous dragging with step=0.5');
   assert(indexHtml.includes('id="theme-wave-transition-overlay"'), 'DOM contains screen-wide wave transition overlay');
   assert(appJs.includes('_updateEnergyWaveVisuals') && appJs.includes('cycles = 2.2 + t * 3.8'), 'app.js continuously morphs wave geometry across 0..100%');
-  assert(appJs.includes('33.5') && appJs.includes('66.5') && appJs.includes('triggerThemeWaveTransition'), 'app.js triggers theme change and ripple only when crossing 33.5% or 66.5%');
+  assert(appJs.includes('_resolveEnergyThemeFromVal') && appJs.includes('n < 25') && appJs.includes('n < 50') && appJs.includes('n < 75') && appJs.includes('triggerThemeWaveTransition'), 'app.js triggers 4-milestone theme changes and ripple across 25%, 50%, 75% thresholds');
   assert(styleCss.includes('.energy-wave-hud') && styleCss.includes('rgba(12, 10, 22, 0.72) !important;'), 'Energy wave HUD uses high-contrast blurred background above wave');
   assert(styleCss.includes('.energy-slider-control-wrap::before { left: 33.5% !important; }'), 'Energy slider indicates 33.5% threshold marker');
   assert(styleCss.includes('.energy-slider-control-wrap::after  { left: 66.5% !important; }'), 'Energy slider indicates 66.5% threshold marker');
@@ -1635,7 +1635,7 @@ console.log('\n--- Test Suite 26: Phase 1u Fixed Floating Sidebar, Layout Center
   assert(indexHtml.includes('phase-gate-diamond') && indexHtml.includes('phase-gate-core'), 'index.html contains crystal gate sub-elements');
   assert(styleCss.includes('.energy-phase-gate') && styleCss.includes('transform: rotate(45deg)'), 'style.css rotates phase-gate-diamond by 45 degrees');
   assert(styleCss.includes('.energy-phase-gate.is-passed .phase-gate-diamond') || styleCss.includes('.phase-gate-diamond'), 'style.css styles active is-passed state for crystal gates');
-  assert(appJs.includes("numericVal >= 33.333") && appJs.includes("numericVal >= 66.667"), 'app.js activates phase gates dynamically at 33.333% and 66.667%');
+  assert(appJs.includes("numericVal >= 25") && appJs.includes("numericVal >= 50") && appJs.includes("numericVal >= 75"), 'app.js activates all 3 phase gates dynamically at 25%, 50%, and 75%');
 }
 
 // === TEST SUITE 27: Phase 1v Full-Width Responsive Layout, Liquid Glass Controls & 120FPS Algorithmic Engine ===
@@ -1678,8 +1678,8 @@ console.log('\n--- Test Suite 27: Phase 1v Full-Width Responsive Layout, Liquid 
   // 7. Default Background Restoration in App.init()
   assert(appJs.includes("savedBg = './backgrounds/bg-2.webp'") && appJs.includes("db.setMeta('backgroundSrc', savedBg)"), 'app.js defaults to bg-2.webp when backgroundSrc is null/undefined');
 
-  // 8. Clean Wave Chamber & Crystal Phase Gates at 33.333% & 66.667%
-  assert(indexHtml.includes('left: 33.333%') && indexHtml.includes('left: 66.667%'), 'index.html positions phase gates cleanly at 33.333% and 66.667%');
+  // 8. Clean Wave Chamber & Crystal Phase Gates at 25%, 50% & 75%
+  assert(indexHtml.includes('left: 25%') && indexHtml.includes('left: 50%') && indexHtml.includes('left: 75%') && indexHtml.includes('id="phase-gate-3"'), 'index.html positions 3 phase gates cleanly at 25%, 50%, and 75%');
   assert(!indexHtml.includes('id="wave-cursor-beam"'), 'index.html removes #wave-cursor-beam');
   assert(!indexHtml.includes('phase-gate-notch'), 'index.html removes phase-gate-notch');
   assert(indexHtml.includes('class="energy-level-pill"'), 'index.html contains energy-level-pill HUD');
@@ -3361,6 +3361,170 @@ console.log('\n--- Test Suite 43: Wave 2g Snowfall, Multi-Scene Manager & Gargan
 
   AsciiBg.selectPreset('cat');
   assert(AsciiBg.getPlaybackMode() === 'single' && AsciiBg.getScene() === 'cat', 'selectPreset("cat") locks single mode onto cat scene');
+}
+
+// === TEST SUITE 46: Wave 2o — 4-Milestone Energy Slider, Liquid Glass ASCII Bar & Mobile Portrait/Landscape Fixes ===
+console.log('\n--- Test Suite 46: Wave 2o 4-Milestone Energy Slider, Liquid Glass ASCII Bar & Mobile Responsive ---');
+{
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+
+  // Group 1: 4-Milestone Theme Slider (25% / 50% / 75%) & Liquid Glass Theme Tokens
+  assert(indexHtml.includes('id="phase-gate-1"') && indexHtml.includes('left: 25%') &&
+         indexHtml.includes('id="phase-gate-2"') && indexHtml.includes('left: 50%') &&
+         indexHtml.includes('id="phase-gate-3"') && indexHtml.includes('left: 75%'),
+         'index.html renders 3 Crystal Phase Gates separating all 4 theme milestones (25%, 50%, 75%)');
+  assert(themeCss.includes('--energy-control-bg:') && themeCss.includes('--ascii-bar-bg:') && themeCss.includes('--ascii-pill-bg:'),
+         'css/theme.css defines Liquid Glass surface/pill CSS variables across themes');
+  assert(!styleCss.includes('color: #94a3b8 !important;\n}\n\n.ascii-scene-pill-group'),
+         'css/style.css removes hardcoded #94a3b8 from .ascii-scene-settings-label');
+  assert(styleCss.includes('var(--ascii-pill-bg') && styleCss.includes('var(--energy-control-bg'),
+         'css/style.css binds slider control deck and ASCII pill group to theme CSS variables');
+
+  // Group 2: Smart ASCII Scene Settings Bar & Auto-Switch to ascii Theme
+  assert(indexHtml.includes('id="ascii-scene-settings-bar"') && indexHtml.includes('id="ascii-scene-bar-toggle"') && indexHtml.includes('App.toggleAsciiSettingsBar()'),
+         'index.html includes collapsible smart ASCII scene settings bar toggle');
+  assert(styleCss.includes('.ascii-scene-settings-bar.is-ascii-inactive:not(.is-expanded) .ascii-scene-pill-group'),
+         'css/style.css compacts inactive ASCII bar cleanly until expanded or activated');
+  assert(appJs.includes('toggleAsciiSettingsBar()') && appJs.includes("this.setTheme('ascii', { syncDefaultBg: false })"),
+         'js/app.js supports collapsing/expanding inactive ASCII bar and auto-switching to ascii on preset click');
+
+  // Group 3: Mobile Portrait (<= 480px) & Mobile Landscape (<= 500px) Layout Fixes
+  assert(styleCss.includes('@media (max-width: 480px)') && styleCss.includes('grid-template-columns: repeat(2, 1fr) !important;'),
+         'css/style.css arranges 4 theme selector buttons in 2x2 grid on <= 480px mobile portrait');
+  assert(styleCss.includes('#energy-wave-mode-title') && styleCss.includes('overflow-wrap: break-word !important;') && styleCss.includes('height: auto !important;'),
+         'css/style.css allows Energy Resonance HUD title to wrap cleanly with min-width: 0 on mobile');
+  assert(styleCss.includes('#energy-wave-mode-badge svg') && styleCss.includes('width: 14px !important;') && styleCss.includes('height: 14px !important;') && styleCss.includes('flex-shrink: 0 !important;'),
+         'css/style.css locks badge SVG icon to 14x14px with flex-shrink: 0 inside mobile Energy Wave HUD');
+  assert(styleCss.includes('grid-auto-rows: 1fr !important;') && styleCss.includes('height: 100% !important;') && styleCss.includes('min-height: 44px !important;') && styleCss.includes('padding: 8px 10px !important;') && styleCss.includes('font-size: 12px !important;'),
+         'css/style.css equalizes all 4 ASCII scene pill buttons into symmetric 2x2 grid cells on <= 480px mobile');
+  assert(indexHtml.includes('class="bottom-nav-brand"') && indexHtml.includes('./meo.png'),
+         'index.html includes mascot brand logo button inside #mobile-bottom-nav for landscape left dock');
+  assert(styleCss.includes('justify-content: flex-start !important;') && styleCss.includes('overflow-y: auto !important;') && styleCss.includes('padding-inline: 10px !important;'),
+         'css/style.css keeps landscape dock logo visible at top with hidden scrollbar and clean inline padding on horizontal subject pills');
+
+  // Behavioral JS Verification for 4-milestone math and ASCII scene auto-switch
+  const slice = appJs.slice(
+    appJs.indexOf('// --- ASCII MULTI-SCENE SWITCHER CONTROLS ---'),
+    appJs.indexOf('triggerThemeWaveTransition(targetTheme) {')
+  );
+  const evalObj = eval('({' + slice + '})');
+  const prevWin = global.window;
+  const prevDoc = global.document;
+  let presetSelected = null;
+  let startedCount = 0;
+  const mockClasses = new Set();
+  const makeClassList = (initial = []) => {
+    const s = new Set(initial);
+    return {
+      toggle: (cls, force) => { if (force === undefined ? !s.has(cls) : force) s.add(cls); else s.delete(cls); },
+      add: (cls) => s.add(cls),
+      remove: (cls) => s.delete(cls),
+      contains: (cls) => s.has(cls)
+    };
+  };
+  const barClasses = makeClassList(['is-ascii-inactive']);
+  const gate1Classes = makeClassList();
+  const gate2Classes = makeClassList();
+  const gate3Classes = makeClassList();
+  const mockSlider = { min: '0', max: '100', value: '12.5', isConnected: true, style: { setProperty: (k, v) => { mockSlider.style[k] = v; } } };
+  const mockSvg = { isConnected: true, style: {} };
+  const mockTitle = { textContent: '' };
+  const mockSubtitle = { textContent: '' };
+  const mockBadgeText = { textContent: '' };
+  const mockBar = { classList: barClasses, setAttribute: () => {} };
+  const mockQuick = { style: { display: 'none' } };
+  const nodeBtns = ['purple-pink', 'monochrome', 'white-orange', 'ascii'].map(opt => ({
+    classList: makeClassList(),
+    getAttribute: (k) => (k === 'data-theme-opt' ? opt : null)
+  }));
+  const mockDoc = {
+    documentElement: {
+      _theme: 'white-orange',
+      getAttribute: (k) => (k === 'data-theme' ? mockDoc.documentElement._theme : null)
+    },
+    getElementById: (id) => {
+      if (id === 'ascii-scene-settings-bar') return mockBar;
+      if (id === 'ascii-scene-quick-ctrl') return mockQuick;
+      if (id === 'theme-energy-slider') return mockSlider;
+      if (id === 'energy-wave-svg') return mockSvg;
+      if (id === 'phase-gate-1') return { classList: gate1Classes };
+      if (id === 'phase-gate-2') return { classList: gate2Classes };
+      if (id === 'phase-gate-3') return { classList: gate3Classes };
+      if (id === 'energy-wave-mode-title') return mockTitle;
+      if (id === 'theme-subtitle') return mockSubtitle;
+      if (id === 'energy-wave-badge-text') return mockBadgeText;
+      return null;
+    },
+    querySelector: (sel) => {
+      if (sel === '.energy-wave-title') return mockTitle;
+      if (sel === '.theme-subtitle') return mockSubtitle;
+      return null;
+    },
+    querySelectorAll: (sel) => (sel === '.energy-node-btn' ? nodeBtns : [])
+  };
+  const mockWin = {
+    AsciiBg: {
+      _running: false,
+      selectPreset: (p) => { presetSelected = p; },
+      start: () => { startedCount++; mockWin.AsciiBg._running = true; },
+      getState: () => ({ mode: presetSelected === 'slideshow' ? 'slideshow' : 'single', scene: presetSelected || 'tree' })
+    }
+  };
+  try {
+    global.window = mockWin;
+    global.document = mockDoc;
+    const mockApp = Object.assign(Object.create(evalObj), {
+      setThemeCalled: null,
+      waveTransitionTheme: null,
+      setTheme(themeId, opts) {
+        this.setThemeCalled = { themeId, opts };
+        mockDoc.documentElement._theme = themeId;
+        mockWin.AsciiBg.start();
+        this.syncThemeEnergyChamber(themeId, opts);
+        this.syncAsciiSceneUI();
+      },
+      triggerThemeWaveTransition(themeId) { this.waveTransitionTheme = themeId; },
+      closeAsciiScenePopover() {}
+    });
+
+    assert(mockApp._resolveEnergyThemeFromVal(10) === 'violet-rose', '_resolveEnergyThemeFromVal(10) -> violet-rose');
+    assert(mockApp._resolveEnergyThemeFromVal(35) === 'monochrome', '_resolveEnergyThemeFromVal(35) -> monochrome');
+    assert(mockApp._resolveEnergyThemeFromVal(60) === 'white-orange', '_resolveEnergyThemeFromVal(60) -> white-orange');
+    assert(mockApp._resolveEnergyThemeFromVal(90) === 'ascii', '_resolveEnergyThemeFromVal(90) -> ascii');
+    assert(mockApp._getEnergyMilestoneForTheme('violet-rose') === 12.5 &&
+           mockApp._getEnergyMilestoneForTheme('monochrome') === 37.5 &&
+           mockApp._getEnergyMilestoneForTheme('white-orange') === 62.5 &&
+           mockApp._getEnergyMilestoneForTheme('ascii') === 87.5,
+           '_getEnergyMilestoneForTheme returns exact 4-milestone centers (12.5, 37.5, 62.5, 87.5)');
+
+    mockApp.syncThemeEnergyChamber('ascii', {});
+    assert(parseFloat(mockSlider.value) === 87.5 &&
+           gate1Classes.contains('is-passed') && gate2Classes.contains('is-passed') && gate3Classes.contains('is-passed') &&
+           mockBadgeText.textContent === 'Năng lượng • 88%' &&
+           mockTitle.textContent.includes('ASCII 3D') &&
+           nodeBtns[3].classList.contains('active'),
+           'syncThemeEnergyChamber("ascii") lights all 3 gates, sets slider to 87.5%, updates HUD title/badge, and activates ASCII node');
+
+    mockDoc.documentElement._theme = 'white-orange';
+    mockApp.syncThemeEnergyChamber('white-orange', {});
+    assert(parseFloat(mockSlider.value) === 62.5 &&
+           gate1Classes.contains('is-passed') && gate2Classes.contains('is-passed') && !gate3Classes.contains('is-passed') &&
+           mockBadgeText.textContent === 'Năng lượng • 63%',
+           'syncThemeEnergyChamber("white-orange") sets slider to 62.5%, passes gates 1-2 only, and shows 63%');
+
+    mockApp.setAsciiScenePreset('cat');
+    assert(presetSelected === 'cat', 'setAsciiScenePreset("cat") forwards chosen scene to AsciiBg');
+    assert(mockApp.setThemeCalled && mockApp.setThemeCalled.themeId === 'ascii' && mockApp.setThemeCalled.opts.syncDefaultBg === false,
+           'setAsciiScenePreset auto-switches to theme ascii without overriding user wallpaper');
+    assert(mockApp.waveTransitionTheme === 'ascii' && startedCount >= 1 && barClasses.contains('is-ascii-active'),
+           'Auto-switching via ASCII preset triggers wave transition, starts AsciiBg, and marks bar active');
+  } finally {
+    global.window = prevWin;
+    global.document = prevDoc;
+  }
 }
 
 console.log(`\n========================================`);
