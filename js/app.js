@@ -8700,7 +8700,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   closeAllCyberDropdowns() {
     document.querySelectorAll('.cyber-dropdown.open').forEach(el => {
-      el.classList.remove('open', 'dropup');
+      el.classList.remove('open', 'dropup', 'align-right');
       const trigger = el.querySelector('.cyber-dropdown-trigger');
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
     });
@@ -8712,6 +8712,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   _openCyberDropdown(wrap) {
     if (!wrap) return;
     this.closeAllCyberDropdowns();
+    wrap.classList.remove('align-right');
     const trigger = wrap.querySelector('.cyber-dropdown-trigger');
     if (trigger) {
       trigger.setAttribute('aria-expanded', 'true');
@@ -8720,6 +8721,19 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         wrap.classList.add('dropup');
       } else {
         wrap.classList.remove('dropup');
+      }
+      const menu = wrap.querySelector('.cyber-dropdown-menu');
+      let minMenuW = 230;
+      if (menu && typeof getComputedStyle === 'function') {
+        try {
+          minMenuW = parseFloat(getComputedStyle(menu).minWidth) || 230;
+        } catch (_) {}
+      }
+      const estimatedMenuWidth = Math.max(rect.width || 0, minMenuW);
+      if (rect.left + estimatedMenuWidth > window.innerWidth - 12 && rect.right >= estimatedMenuWidth) {
+        wrap.classList.add('align-right');
+      } else {
+        wrap.classList.remove('align-right');
       }
     }
     wrap.classList.add('open');

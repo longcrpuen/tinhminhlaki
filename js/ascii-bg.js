@@ -1091,6 +1091,10 @@
   const HY = H_RAW_Y / H_LEN;
   const HZ = H_RAW_Z / H_LEN;
 
+  function isDesktopViewport(width, height) {
+    return width > 840 && height > 500;
+  }
+
   // =========================================================================
   // SCENE 1: 3D CHRISTMAS TREE (agac.py) + SNOWFALL
   // =========================================================================
@@ -1170,10 +1174,29 @@
     const cosY = Math.cos(rotY);
     const sinY = Math.sin(rotY);
 
-    const isDesktop = width > 840;
-    const focal = isDesktop ? Math.min(height * 1.13, width * 0.82) : Math.min(height * 1.04, width * 1.18);
-    const cx = isDesktop ? width * 0.74 : width * 0.50;
-    const cy = isDesktop ? Math.max(height * 0.435, 68 + 0.31 * focal) : height * 0.47;
+    const isDesktop = isDesktopViewport(width, height);
+    let focal, cx, cy;
+    if (isDesktop) {
+      focal = Math.min(height * 1.13, width * 0.82);
+      cx = width * 0.74;
+      cy = Math.max(height * 0.435, 68 + 0.31 * focal);
+    } else if (height >= width) {
+      const topSafe = 64;
+      const botSafe = 92;
+      const usableH = Math.max(height * 0.56, height - topSafe - botSafe);
+      focal = Math.min(usableH / 0.78, (width * 0.88) / 0.68);
+      cx = width * 0.50;
+      cy = topSafe + 0.315 * focal + Math.max(0, (usableH - 0.74 * focal) * 0.5);
+    } else {
+      const leftSafe = width > 520 ? 64 : 0;
+      const topSafe = 44;
+      const botSafe = 14;
+      const usableW = Math.max(width * 0.7, width - leftSafe);
+      const usableH = Math.max(height * 0.70, height - topSafe - botSafe);
+      focal = Math.min(usableH / 0.80, (usableW * 0.86) / 0.68);
+      cx = leftSafe + usableW * 0.50;
+      cy = topSafe + 0.335 * focal + Math.max(0, (usableH - 0.78 * focal) * 0.5);
+    }
     const invCellW = 1 / cellW;
     const invCellH = 1 / cellH;
 
@@ -1729,9 +1752,26 @@
     // 2. Black Hole Geometry & Normalized Coordinates
     const cycleT = ((t % GARG_DURATION) + GARG_DURATION) % GARG_DURATION;
 
-    const isDesktop = width > 840;
-    const cx = isDesktop ? cols * 0.70 : cols * 0.50;
-    const cy = rows * 0.48;
+    const isDesktop = isDesktopViewport(width, height);
+    const aspect = cellW / cellH;
+    let cx, cy, scaleHalfRows;
+    if (isDesktop) {
+      cx = cols * 0.70;
+      cy = rows * 0.48;
+      scaleHalfRows = rows * 0.5;
+    } else if (height >= width) {
+      cx = cols * 0.50;
+      const topRows = 64 / cellH;
+      const botRows = 92 / cellH;
+      cy = (topRows + (rows - botRows)) * 0.5;
+      scaleHalfRows = Math.min((rows - topRows - botRows) * 0.46, (cols * aspect) * 0.36);
+    } else {
+      const leftCols = width > 520 ? (64 / cellW) : 0;
+      const usableCols = Math.max(1, cols - leftCols);
+      cx = leftCols + usableCols * 0.50;
+      cy = rows * 0.51;
+      scaleHalfRows = Math.min(rows * 0.48, (usableCols * aspect) * 0.38);
+    }
 
     // Stage 1 (0s -> 3.5s): Tidal Disruption / Accretion Capture -> Photon Ring Ignition
     const isTidal = cycleT < 3.85;
@@ -1775,14 +1815,13 @@
     const shockW = 0.025 + 0.008 * (1 - q);
     const shockFade = isImpact ? (smooth(q / 0.06) * (1 - smooth((q - 0.40) / 0.55))) : 0;
 
-    const aspect = cellW / cellH;
-    const invHalfRows = 1 / (rows * 0.5);
+    const invHalfRows = 1 / Math.max(1, scaleHalfRows);
 
     let renderedLetters = 0;
 
     // 2a. Opening Tidal Disruption / Accretion Capture streams (0s -> 3.85s, O(72 * 16) ultra-fast curved trails)
     if (isTidal) {
-      const halfRows = rows * 0.5;
+      const halfRows = scaleHalfRows;
       const invAspect = 1 / aspect;
       const tData = GARG_TIDAL_STREAMS.data;
       const tCount = GARG_TIDAL_STREAMS.count;
@@ -1850,10 +1889,10 @@
       curR0 * 3.55,
       isImpact ? Math.max(jetHead + 0.08, shockR + shockW * 3.5) : 0
     );
-    const minGy = runMainShader ? Math.max(0, Math.floor(cy - maxR * rows * 0.5)) : 1;
-    const maxGy = runMainShader ? Math.min(rows - 1, Math.ceil(cy + maxR * rows * 0.5)) : 0;
-    const minGx = runMainShader ? Math.max(0, Math.floor(cx - maxR * (rows * 0.5) / aspect)) : 1;
-    const maxGx = runMainShader ? Math.min(cols - 1, Math.ceil(cx + maxR * (rows * 0.5) / aspect)) : 0;
+    const minGy = runMainShader ? Math.max(0, Math.floor(cy - maxR * scaleHalfRows)) : 1;
+    const maxGy = runMainShader ? Math.min(rows - 1, Math.ceil(cy + maxR * scaleHalfRows)) : 0;
+    const minGx = runMainShader ? Math.max(0, Math.floor(cx - maxR * scaleHalfRows / aspect)) : 1;
+    const maxGx = runMainShader ? Math.min(cols - 1, Math.ceil(cx + maxR * scaleHalfRows / aspect)) : 0;
 
     for (let gy = minGy; gy <= maxGy; gy++) {
       const Y = (gy - cy) * invHalfRows;
@@ -2044,7 +2083,7 @@
     if (isImpact && q > 0.02 && q < 0.96) {
       const emberFade = smooth(q / 0.08) * (1 - smooth((q - 0.45) / 0.50));
       if (emberFade > 0.04) {
-        const halfRows = rows * 0.5;
+        const halfRows = scaleHalfRows;
         const invAspect = 1 / aspect;
         const eData = GARG_EMBERS.data;
         const eCount = GARG_EMBERS.count;
@@ -2363,14 +2402,19 @@
       return { activeCount: 0, renderedLetters: 0, cycleT, isDone: true };
     }
 
+    const isDesktop = isDesktopViewport(width, height);
+
     // 2. Cinematic Camera Zoom-Out (0.0s -> 6.5s: close-up on kitten face -> heroic full-body knight)
     const kRaw = prefersReduced ? 1.0 : smooth((cycleT - 1.0) / 5.5);
     const kEase = kRaw * kRaw * (3 - 2 * kRaw);
     const focusU = 0.50 + (0.46 - 0.50) * kEase;
     const focusV = 0.42 + (0.50 - 0.42) * kEase;
-    const zoom = 2.55 + (1.00 - 2.55) * kEase;
+    const startZoom = isDesktop ? 2.55 : 1.18;
+    const zoom = startZoom + (1.00 - startZoom) * kEase;
     const revealFade = smooth(cycleT / 0.85);
-    const revealRadius = 0.18 + 0.95 * smooth(cycleT / 1.15);
+    const revealRadius = isDesktop
+      ? (0.18 + 0.95 * smooth(cycleT / 1.15))
+      : (0.38 + 0.85 * smooth(cycleT / 1.15));
 
     // 3. Wind, Blink, Sword Glint & Dissolve State
     const animT = prefersReduced ? 8.0 : cycleT;
@@ -2406,11 +2450,31 @@
     const inDissolve = cycleT >= 17.20;
 
     // 4. Layout & Aspect-Correct Projection (right-side open canvas on desktop ~0.72)
-    const isDesktop = width > 840;
-    const cx = isDesktop ? cols * 0.72 : cols * 0.50;
-    const cy = isDesktop ? rows * 0.52 : rows * 0.53;
-    const figRows = rows * (isDesktop ? 0.84 : 0.78);
     const spriteAspect = sw / sh; // ~0.77
+    let cx, cy, figRows;
+    if (isDesktop) {
+      cx = cols * 0.72;
+      cy = rows * 0.52;
+      figRows = rows * 0.84;
+    } else if (height >= width) {
+      const topRows = 64 / cellH;
+      const botRows = 92 / cellH;
+      const usableRows = Math.max(rows * 0.55, rows - topRows - botRows);
+      cx = cols * 0.50;
+      cy = topRows + usableRows * 0.50;
+      const maxFigRowsByW = (cols * 0.86) / (spriteAspect * (cellH / cellW));
+      figRows = Math.min(usableRows * 0.88, maxFigRowsByW);
+    } else {
+      const leftCols = width > 520 ? (64 / cellW) : 0;
+      const usableCols = Math.max(1, cols - leftCols);
+      const topRows = 44 / cellH;
+      const botRows = 14 / cellH;
+      const usableRows = Math.max(rows * 0.65, rows - topRows - botRows);
+      cx = leftCols + usableCols * 0.50;
+      cy = topRows + usableRows * 0.50;
+      const maxFigRowsByW = (usableCols * 0.84) / (spriteAspect * (cellH / cellW));
+      figRows = Math.min(usableRows * 0.86, maxFigRowsByW);
+    }
     const figCols = figRows * spriteAspect * (cellH / cellW);
 
     const invFigCols = 1 / (figCols * zoom);
@@ -2631,6 +2695,7 @@
     ALL_GLYPHS,
     SCENES,
     SCENE_ORDER,
+    isDesktopViewport,
     envelope,
     fib,
     starMaxRadius,
@@ -2690,6 +2755,8 @@
     _startMs: 0,
     _pausedElapsedSec: 0,
     _lastRenderMs: 0,
+    _lastScrollMs: 0,
+    _isMobileViewport: false,
     _resizeTimer: null,
     _listenersBound: false,
     _reducedMotionQuery: null,
@@ -2883,12 +2950,27 @@
 
       this._onResize = () => {
         if (this._resizeTimer) clearTimeout(this._resizeTimer);
+        const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const curWidth = Math.max(1, Math.floor(window.innerWidth || 800));
+        const curHeight = Math.max(1, Math.floor(window.innerHeight || 600));
+        const sameWidthJitter = this._isMobileViewport &&
+          curWidth === this._width &&
+          Math.abs(curHeight - this._height) < 90 &&
+          this._lastScrollMs > 0 &&
+          (now - this._lastScrollMs) < 350;
+        const delayMs = sameWidthJitter ? 260 : 120;
         this._resizeTimer = setTimeout(() => {
           this.resize();
           if (this._running || this._isAppActiveForRender()) {
             this.renderAt(this._prefersReducedMotion() ? CONFIG.SHOWCASE_STATIC_T : this._getSceneElapsedSec(), this._activeSceneId);
           }
-        }, 120);
+        }, delayMs);
+      };
+
+      this._onUserScroll = () => {
+        if (this._isMobileViewport) {
+          this._lastScrollMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        }
       };
 
       this._onVisibilityOrMotionChange = () => {
@@ -2896,6 +2978,8 @@
       };
 
       window.addEventListener('resize', this._onResize, { passive: true });
+      window.addEventListener('scroll', this._onUserScroll, { passive: true });
+      window.addEventListener('touchmove', this._onUserScroll, { passive: true });
       if (typeof document !== 'undefined') {
         document.addEventListener('visibilitychange', this._onVisibilityOrMotionChange);
       }
@@ -2920,11 +3004,12 @@
       const width = Math.max(1, Math.floor(window.innerWidth || canvas.clientWidth || 800));
       const height = Math.max(1, Math.floor(window.innerHeight || canvas.clientHeight || 600));
 
-      const isMobile = width < 768;
-      const cellW = isMobile ? 3.2 : 3.6;
-      const cellH = isMobile ? 5.8 : 6.5;
+      const isMobile = !isDesktopViewport(width, height);
+      this._isMobileViewport = isMobile;
+      const cellW = isMobile ? 4.2 : 3.6;
+      const cellH = isMobile ? 7.4 : 6.5;
       const fontStr = isMobile
-        ? '700 6.5px "JetBrains Mono", Consolas, "Courier New", monospace'
+        ? '700 7.5px "JetBrains Mono", Consolas, "Courier New", monospace'
         : '700 7px "JetBrains Mono", Consolas, "Courier New", monospace';
       const atlasKey = `${cellW}x${cellH}:${fontStr}`;
 
@@ -3035,6 +3120,10 @@
       // Schedule next RAF FIRST — strictly independent of 30 FPS throttle so loop NEVER stalls!
       if (typeof requestAnimationFrame === 'function') {
         this._rafId = requestAnimationFrame((ts) => this._tick(ts));
+      }
+
+      if (this._isMobileViewport && this._lastScrollMs > 0 && (now - this._lastScrollMs) < 140 && (now - this._lastScrollMs) >= 0) {
+        return;
       }
 
       const elapsed = now - this._lastRenderMs;
@@ -3162,6 +3251,8 @@
       }
       if (this._listenersBound && typeof window !== 'undefined') {
         window.removeEventListener('resize', this._onResize);
+        window.removeEventListener('scroll', this._onUserScroll);
+        window.removeEventListener('touchmove', this._onUserScroll);
         if (typeof document !== 'undefined') {
           document.removeEventListener('visibilitychange', this._onVisibilityOrMotionChange);
         }
