@@ -25,6 +25,7 @@ const jsFilesToCheck = [
   'js/audio-config.js',
   'js/confetti.js',
   'js/lofi-music.js',
+  'js/ascii-bg.js',
   'quotes.js',
   'sw.js',
   'server.js'
@@ -75,6 +76,7 @@ const assetsToCopy = [
   { src: 'sw.js', dest: 'sw.js' },
   { src: 'quotes.js', dest: 'quotes.js' },
   { src: 'meo.png', dest: 'meo.png' },
+  { src: 'assets', dest: 'assets' },
   { src: 'css', dest: 'css' },
   { src: 'js', dest: 'js' },
   { src: 'lib', dest: 'lib' },
@@ -124,11 +126,13 @@ const criticalChecks = [
   'css/theme.css',
   'css/fonts.css',
   'js/app.js',
+  'js/ascii-bg.js',
   'js/db.js',
   'js/parser.js',
   'lib/katex/katex.min.js',
   'icons/icon-192.png',
-  'meo.png'
+  'meo.png',
+  'assets/cat-knight.jpg'
 ];
 
 for (const chk of criticalChecks) {
