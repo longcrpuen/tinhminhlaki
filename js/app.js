@@ -524,6 +524,11 @@ const App = {
   setupIdleAndVisibilityListeners() {
     if (typeof window === 'undefined') return;
     let idleTimeout = null;
+    const syncAsciiVisibilityOnly = () => {
+      if (typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.syncVisibility === 'function') {
+        window.AsciiBg.syncVisibility();
+      }
+    };
     const resetIdle = () => {
       if (document.body.classList.contains('app-idle')) {
         document.body.classList.remove('app-idle');
@@ -531,7 +536,10 @@ const App = {
       clearTimeout(idleTimeout);
       if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.IDLE_PAUSE) {
         idleTimeout = setTimeout(() => {
-          document.body.classList.add('app-idle');
+          // Never pause ASCII background on mouse/keyboard idle — ASCII only pauses when document.hidden === true
+          if (document.documentElement && document.documentElement.getAttribute('data-theme') !== 'ascii') {
+            document.body.classList.add('app-idle');
+          }
         }, 30000);
       }
     };
@@ -548,6 +556,7 @@ const App = {
         document.body.classList.remove('app-hidden');
         resetIdle();
       }
+      syncAsciiVisibilityOnly();
     });
   },
 
@@ -1608,9 +1617,9 @@ const App = {
     }
   },
 
-  // --- 3-THEME SYSTEM (violet-rose, monochrome, white-orange) ---
+  // --- 4-THEME SYSTEM (violet-rose, monochrome, white-orange, ascii) ---
   async setTheme(themeId, options = { syncDefaultBg: true }) {
-    const validThemes = ['violet-rose', 'monochrome', 'white-orange'];
+    const validThemes = ['violet-rose', 'monochrome', 'white-orange', 'ascii'];
     const theme = validThemes.includes(themeId) ? themeId : 'violet-rose';
 
     // Bug 6 & Phase 1s: Disable heavy transitions during theme switch for 0ms instant transition & 60FPS lock
@@ -1632,11 +1641,20 @@ const App = {
       'purple-pink': 'purple-pink',
       'monochrome': 'bw-dark',
       'bw-dark': 'bw-dark',
-      'white-orange': 'white-orange'
+      'white-orange': 'white-orange',
+      'ascii': 'ascii'
     };
     const colorMode = colorModeMap[theme] || theme;
     document.documentElement.setAttribute('data-color-mode', colorMode);
     document.body.dataset.colorMode = colorMode;
+
+    if (typeof window !== 'undefined' && window.AsciiBg) {
+      if (theme === 'ascii') {
+        window.AsciiBg.start();
+      } else {
+        window.AsciiBg.stop();
+      }
+    }
 
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => {
@@ -1656,8 +1674,8 @@ const App = {
       await db.setMeta('appTheme', theme);
     } catch (e) {}
 
-    // Auto-sync default background for theme if requested
-    if (options && options.syncDefaultBg) {
+    // Auto-sync default background for theme if requested (skip ascii to preserve user wallpaper)
+    if (options && options.syncDefaultBg && theme !== 'ascii') {
       if (theme === 'monochrome') {
         await this.setBackground('./backgrounds/bg-noir-mono.webp');
       } else if (theme === 'white-orange') {
@@ -1680,9 +1698,139 @@ const App = {
 
     // Sync Interactive Resonance Energy Wave Chamber (Phase 1n & 1o)
     this.syncThemeEnergyChamber(theme, options);
+    this.syncAsciiSceneUI();
 
     // Re-render hero quote to apply responsive styles & weights
     this.updateHeroQuote();
+  },
+
+  // --- ASCII MULTI-SCENE SWITCHER CONTROLS ---
+  setAsciiScenePreset(preset) {
+    if (typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.selectPreset === 'function') {
+      window.AsciiBg.selectPreset(preset);
+      const isAsciiTheme = document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
+      if (isAsciiTheme && typeof window.AsciiBg.start === 'function' && !window.AsciiBg._running) {
+        window.AsciiBg.start();
+      }
+      this.syncAsciiSceneUI();
+    }
+  },
+
+  cycleAsciiScene() {
+    if (typeof window !== 'undefined' && window.AsciiBg && typeof window.AsciiBg.getState === 'function') {
+      const state = window.AsciiBg.getState();
+      let nextPreset = 'slideshow';
+      if (state.mode === 'slideshow') {
+        nextPreset = 'tree';
+      } else if (state.mode === 'single' && state.scene === 'tree') {
+        nextPreset = 'gargantua';
+      } else if (state.mode === 'single' && state.scene === 'gargantua') {
+        nextPreset = 'cat';
+      } else {
+        nextPreset = 'slideshow';
+      }
+      this.setAsciiScenePreset(nextPreset);
+    }
+  },
+
+  toggleAsciiScenePopover(event) {
+    if (event) {
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+    }
+    const popover = document.getElementById('ascii-scene-popover');
+    if (!popover) return;
+    const isShowing = popover.style.display !== 'none';
+    if (isShowing) {
+      this.closeAsciiScenePopover();
+    } else {
+      this.openAsciiScenePopover();
+    }
+  },
+
+  openAsciiScenePopover() {
+    const popover = document.getElementById('ascii-scene-popover');
+    const btn = document.getElementById('ascii-scene-cycle-btn');
+    if (!popover) return;
+    popover.style.display = 'block';
+    if (btn) {
+      btn.classList.add('active');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+  },
+
+  closeAsciiScenePopover() {
+    const popover = document.getElementById('ascii-scene-popover');
+    const btn = document.getElementById('ascii-scene-cycle-btn');
+    if (!popover) return;
+    popover.style.display = 'none';
+    if (btn) {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  },
+
+  selectAsciiSceneFromPopover(preset, event) {
+    if (event) {
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+    }
+    this.setAsciiScenePreset(preset);
+    this.closeAsciiScenePopover();
+  },
+
+  syncAsciiSceneUI() {
+    if (typeof window === 'undefined' || !window.AsciiBg || typeof window.AsciiBg.getState !== 'function') return;
+    const state = window.AsciiBg.getState();
+    const curPreset = state.mode === 'slideshow' ? 'slideshow' : state.scene;
+
+    const quickCtrl = document.getElementById('ascii-scene-quick-ctrl');
+    const isAsciiActive = document.documentElement && document.documentElement.getAttribute('data-theme') === 'ascii';
+    if (quickCtrl) {
+      quickCtrl.style.display = isAsciiActive ? 'inline-flex' : 'none';
+      if (!isAsciiActive) {
+        this.closeAsciiScenePopover();
+      }
+    }
+
+    const iconEl = document.getElementById('ascii-scene-cycle-icon');
+    const labelEl = document.getElementById('ascii-scene-cycle-label');
+    const btnEl = document.getElementById('ascii-scene-cycle-btn');
+    if (iconEl) {
+      if (curPreset === 'slideshow') {
+        iconEl.textContent = '↻';
+        if (labelEl) labelEl.textContent = 'Slideshow';
+        if (btnEl) btnEl.title = 'Chế độ ASCII: Slideshow (Bấm để chọn hoạt ảnh)';
+      } else if (curPreset === 'tree') {
+        iconEl.textContent = '🌲';
+        if (labelEl) labelEl.textContent = 'Cây thông';
+        if (btnEl) btnEl.title = 'Chế độ ASCII: Cây thông Noel 3D (Bấm để chọn hoạt ảnh)';
+      } else if (curPreset === 'cat') {
+        iconEl.textContent = '🐱';
+        if (labelEl) labelEl.textContent = 'Hiệp sĩ Mèo';
+        if (btnEl) btnEl.title = 'Chế độ ASCII: Hiệp sĩ Mèo (Bấm để chọn hoạt ảnh)';
+      } else {
+        iconEl.textContent = '🕳️';
+        if (labelEl) labelEl.textContent = 'Hố đen';
+        if (btnEl) btnEl.title = 'Chế độ ASCII: Hố đen Gargantua (Bấm để chọn hoạt ảnh)';
+      }
+    }
+
+    // Sync popover items active check
+    document.querySelectorAll('.ascii-popover-item').forEach(item => {
+      const p = item.getAttribute('data-ascii-preset');
+      const isMatch = p === curPreset;
+      item.classList.toggle('active', isMatch);
+      item.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
+
+    // Sync Settings pill group
+    document.querySelectorAll('.ascii-scene-pill-btn').forEach(btn => {
+      const p = btn.getAttribute('data-ascii-preset');
+      const isMatch = p === curPreset;
+      btn.classList.toggle('active', isMatch);
+      btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
   },
 
   // --- INTERACTIVE RESONANCE ENERGY WAVE TUNER (PHASE 1O, 1N & 1S) ---
@@ -1696,19 +1844,20 @@ const App = {
   },
 
   syncThemeEnergyChamber(themeKey, options = {}) {
-    const theme = (themeKey === 'purple-pink' || themeKey === 'violet-rose' || themeKey === 'dark') ? 'violet-rose'
+    const theme = (themeKey === 'ascii') ? 'ascii'
+                : (themeKey === 'purple-pink' || themeKey === 'violet-rose' || themeKey === 'dark') ? 'violet-rose'
                 : (themeKey === 'monochrome' || themeKey === 'bw-dark') ? 'monochrome'
                 : 'white-orange';
 
     this._lastEnergyZone = theme;
 
     const slider = document.getElementById('theme-energy-slider');
-    let sliderVal = theme === 'violet-rose' ? 16 : (theme === 'monochrome' ? 50 : 84);
+    let sliderVal = theme === 'ascii' ? 92 : (theme === 'violet-rose' ? 16 : (theme === 'monochrome' ? 50 : 84));
 
     if (!options || !options.fromEnergySlider) {
       try {
         const savedVal = localStorage.getItem('tinhminhlakey_energy_slider_val');
-        if (savedVal !== null) {
+        if (savedVal !== null && theme !== 'ascii') {
           const parsed = parseFloat(savedVal);
           const zone = parsed < 33.5 ? 'violet-rose' : (parsed <= 66.5 ? 'monochrome' : 'white-orange');
           if (zone === theme) sliderVal = parsed;
@@ -1723,7 +1872,7 @@ const App = {
       this.syncRangeSliderVisual(slider);
     }
 
-    this._updateEnergyWaveVisuals(sliderVal);
+    this._updateEnergyWaveVisuals(sliderVal, theme === 'ascii' ? 'ascii' : null);
   },
 
   _sliderAnimRafId: null,
@@ -1821,15 +1970,17 @@ const App = {
       this._sliderAnimRafId = null;
     }
     const normTheme = (themeName === 'purple-pink' || themeName === 'violet-rose') ? 'violet-rose' : themeName;
-    const targetVal = normTheme === 'violet-rose' ? 16 : (normTheme === 'monochrome' ? 50 : 84);
+    const targetVal = normTheme === 'ascii' ? 92 : (normTheme === 'violet-rose' ? 16 : (normTheme === 'monochrome' ? 50 : 84));
     const slider = document.getElementById('theme-energy-slider');
     const startVal = slider ? parseFloat(slider.value) || 0 : targetVal;
     this._lastEnergyZone = normTheme;
     this.triggerThemeWaveTransition(normTheme);
-    this.setTheme(normTheme, { fromEnergySlider: true, syncDefaultBg: true });
-    try {
-      localStorage.setItem('tinhminhlakey_energy_slider_val', String(targetVal));
-    } catch (_) {}
+    this.setTheme(normTheme, { fromEnergySlider: true, syncDefaultBg: normTheme !== 'ascii' });
+    if (normTheme !== 'ascii') {
+      try {
+        localStorage.setItem('tinhminhlakey_energy_slider_val', String(targetVal));
+      } catch (_) {}
+    }
 
     // Hoạt ảnh lướt con trượt & biến đổi sóng mượt mà tới vùng đã chọn
     const duration = 320;
@@ -1842,7 +1993,7 @@ const App = {
         slider.value = String(cur);
         this.syncRangeSliderVisual(slider);
       }
-      this._updateEnergyWaveVisuals(cur);
+      this._updateEnergyWaveVisuals(cur, normTheme === 'ascii' ? 'ascii' : null);
       if (t < 1) {
         this._sliderAnimRafId = requestAnimationFrame(animateSlider);
       } else {
@@ -1867,7 +2018,7 @@ const App = {
     return { u, x, baseEnv, steps, width };
   })(),
 
-  _updateEnergyWaveVisuals(val) {
+  _updateEnergyWaveVisuals(val, forcedTheme = null) {
     const pct = Math.max(0, Math.min(100, parseFloat(val) || 0));
     const t = pct / 100; // 0.0 -> 1.0
 
@@ -1980,7 +2131,9 @@ const App = {
       dom.slider.style.setProperty('--energy-clip-pct', pctStr);
     }
 
-    const activeZone = pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange');
+    const activeZone = forcedTheme === 'ascii'
+      ? 'ascii'
+      : (pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange'));
     if (activeZone !== this._lastWaveAppliedZone) {
       this._lastWaveAppliedZone = activeZone;
       let themeName = '';
@@ -1988,7 +2141,18 @@ const App = {
       let dotColor = '#ec4899';
       let glowColor = 'rgba(168, 85, 247, 0.55)';
 
-      if (activeZone === 'purple-pink') {
+      if (activeZone === 'ascii') {
+        themeName = 'ASCII Giáng Sinh (3D Pine Matrix)';
+        themeSubtitle = 'Cây thông 3D phát sáng & kính đêm trong suốt';
+        dotColor = '#34d399';
+        if (dom.stop1) dom.stop1.setAttribute('stop-color', '#34d399');
+        if (dom.stop2) dom.stop2.setAttribute('stop-color', '#10b981');
+        if (dom.stop3) dom.stop3.setAttribute('stop-color', '#fbbf24');
+        if (dom.areaTop) dom.areaTop.setAttribute('stop-color', '#34d399');
+        if (dom.areaMid) dom.areaMid.setAttribute('stop-color', 'rgba(16, 185, 129, 0.22)');
+        if (dom.areaBot) dom.areaBot.setAttribute('stop-color', '#052e16');
+        glowColor = 'rgba(52, 211, 153, 0.65)';
+      } else if (activeZone === 'purple-pink') {
         themeName = 'Tím Hồng (Cyber Violet)';
         themeSubtitle = 'Kính tím khói mộng mơ';
         dotColor = '#ec4899';
@@ -2044,7 +2208,9 @@ const App = {
       document.body.appendChild(ripple);
     }
     const glowColor =
-      targetTheme === 'white-orange'
+      targetTheme === 'ascii'
+        ? 'rgba(52, 211, 153, 0.30)'
+        : targetTheme === 'white-orange'
         ? 'rgba(255, 148, 77, 0.32)'
         : targetTheme === 'monochrome'
         ? 'rgba(255, 255, 255, 0.22)'
@@ -2584,10 +2750,26 @@ const App = {
           parent.classList.remove('has-open-dropdown');
         });
       }
+
+      // Close ASCII scene popover when clicking outside
+      const asciiPopover = document.getElementById('ascii-scene-popover');
+      if (asciiPopover && asciiPopover.style.display !== 'none') {
+        const quickCtrl = document.getElementById('ascii-scene-quick-ctrl');
+        if (quickCtrl && !quickCtrl.contains(e.target)) {
+          App.closeAsciiScenePopover();
+        }
+      }
     });
 
-    // Universal keyboard navigation for Cyber Violet dropdowns
+    // Universal keyboard navigation for Cyber Violet dropdowns & ASCII Popover
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const asciiPopover = document.getElementById('ascii-scene-popover');
+        if (asciiPopover && asciiPopover.style.display !== 'none') {
+          App.closeAsciiScenePopover();
+        }
+      }
+
       const openWrap = document.querySelector('.cyber-dropdown.open');
       if (!openWrap) return;
 

@@ -3276,7 +3276,374 @@ body[data-theme="white-orange"] .exam-palette-btn.answered {
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35) !important;
 }
 
+/* ==========================================================================
+   THEME 4: ASCII 3D CHRISTMAS TREE ([data-theme="ascii"] — SMOKED LIQUID GLASS, ZERO PURPLE)
+   ========================================================================== */
+#ascii-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+  background: #000000;
+  contain: strict;
+}
 
+html[data-theme="ascii"] #ascii-bg-canvas,
+body[data-theme="ascii"] #ascii-bg-canvas {
+  display: block;
+}
 
+html[data-theme="ascii"] #bg-layer,
+body[data-theme="ascii"] #bg-layer,
+html[data-theme="ascii"] body::before,
+body[data-theme="ascii"]::before {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+html[data-theme="ascii"] body,
+body[data-theme="ascii"] {
+  background-color: transparent !important;
+}
+
+.energy-node-dot.dot-ascii {
+  background: linear-gradient(135deg, #34d399 0%, #fbbf24 100%);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.65);
+}
+
+[data-theme="ascii"],
+body[data-theme="ascii"],
+html[data-theme="ascii"],
+html[data-color-mode="ascii"] {
+  color-scheme: dark;
+
+  /* NHÓM 1: SURFACES & SMOKED DARK-GRAY LIQUID GLASS */
+  --bg-base: #000000;
+  --surface-card: rgba(22, 24, 30, 0.44);
+  --surface-card-hover: rgba(30, 33, 41, 0.56);
+  --surface-elevated: rgba(26, 29, 36, 0.66);
+  --surface-header: rgba(18, 20, 26, 0.52);
+  --surface-dropdown: rgba(16, 18, 24, 0.88);
+  --surface-dropdown-menu: rgba(14, 16, 22, 0.94);
+  --surface-code: rgba(10, 12, 16, 0.70);
+  --surface-sidebar: rgba(18, 20, 26, 0.40);
+  --surface-hud: rgba(22, 24, 30, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-strong: rgba(255, 255, 255, 0.36);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.22);
+  --glass-specular: inset 1px 1.5px 2px rgba(255, 255, 255, 0.34), inset -1px -1px 2px rgba(255, 255, 255, 0.06);
+  --bg-overlay: rgba(2, 3, 6, 0.78);
+  --bg-overlay-tint: rgba(8, 10, 14, 0.32);
+
+  /* NHÓM 2: TYPOGRAPHY & CONTRAST */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-on-accent: #04130d;
+  --text-accent: #34d399;
+
+  /* NHÓM 3: ACCENT, BUTTONS & PROGRESS BARS (EMERALD PINE & STARLIGHT GOLD ONLY ON ACCENTS) */
+  --primary: #34d399;
+  --accent: #34d399;
+  --accent-strong: #fbbf24;
+  --accent-primary: #10b981;
+  --accent-secondary: #fbbf24;
+  --accent-glow: rgba(52, 211, 153, 0.28);
+  --accent-subtle-bg: rgba(255, 255, 255, 0.10);
+  --accent-soft: rgba(255, 255, 255, 0.10);
+  --accent-border: rgba(255, 255, 255, 0.24);
+  --brand-gradient: #34d399;
+  --brand-gradient-subtle: rgba(52, 211, 153, 0.10);
+  --btn-primary-bg: #10b981;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #34d399;
+  --btn-primary-hover-bg: #34d399;
+  --btn-secondary-bg: rgba(26, 29, 36, 0.44);
+  --btn-secondary-text: #f8fafc;
+  --btn-secondary-border: rgba(255, 255, 255, 0.22);
+  --btn-secondary-hover: rgba(38, 42, 52, 0.56);
+  --btn-secondary-hover-bg: rgba(38, 42, 52, 0.56);
+  --btn-secondary-hover-border: rgba(255, 255, 255, 0.38);
+  --btn-secondary-hover-text: #ffffff;
+  --progress-track-bg: rgba(255, 255, 255, 0.12);
+  --progress-fill-bg: #34d399;
+
+  /* NHÓM 4: HOVER, SPOTLIGHT & SHADOWS */
+  --spotlight-primary: rgba(255, 255, 255, 0.10);
+  --spotlight-secondary: rgba(251, 191, 36, 0.04);
+  --card-hover-border: rgba(255, 255, 255, 0.36);
+  --card-hover-shadow: inset 1px 1.5px 2px rgba(255, 255, 255, 0.36), 0 14px 32px rgba(0, 0, 0, 0.65);
+  --border-focus: rgba(52, 211, 153, 0.72);
+  --focus-ring: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent);
+  --shadow-xs: 0 2px 6px rgba(0, 0, 0, 0.36);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.44);
+  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.68);
+  --shadow-glow: 0 0 14px rgba(52, 211, 153, 0.26);
+
+  /* NHÓM 5: QUIZ OPTIONS & FLASHCARD SRS */
+  --option-bg: rgba(22, 24, 30, 0.50);
+  --option-border: rgba(255, 255, 255, 0.18);
+  --option-text: #f8fafc;
+  --option-letter: #fbbf24;
+  --option-correct-bg: rgba(16, 185, 129, 0.22);
+  --option-correct-border: #10b981;
+  --option-correct-text: #6ee7b7;
+  --option-wrong-bg: rgba(244, 63, 94, 0.18);
+  --option-wrong-border: #f43f5e;
+  --option-wrong-text: #fda4af;
+
+  /* NHÓM 6: COMPONENT SPECIFICS */
+  --bg-surface: var(--surface-card);
+  --bg-surface-elevated: var(--surface-elevated);
+  --bg-card: var(--surface-card);
+  --bg-card-hover: var(--surface-card-hover);
+  --glass-tint: var(--surface-card);
+  --border-color: var(--glass-border);
+  --sidebar-bg: var(--surface-sidebar);
+  --bottom-nav-bg: var(--surface-hud);
+  --bottom-nav-border: rgba(255, 255, 255, 0.16);
+  --nav-active-bg: var(--accent);
+  --nav-active-text: var(--text-on-accent);
+  --nav-active-glow: rgba(52, 211, 153, 0.32);
+  --nav-bubble-bg: var(--accent);
+  --nav-bubble-text: var(--text-on-accent);
+  --dropdown-trigger-bg: var(--surface-dropdown);
+  --dropdown-trigger-border: var(--accent-border);
+  --dropdown-bg: rgba(16, 18, 24, 0.88);
+  --dropdown-text: #f8fafc;
+  --dropdown-menu-bg: rgba(14, 16, 22, 0.94);
+  --dropdown-border: rgba(255, 255, 255, 0.20);
+  --dropdown-menu-border: var(--accent-border);
+  --dropdown-menu-shadow: 0 20px 44px rgba(0, 0, 0, 0.85);
+  --dropdown-item-hover-bg: rgba(255, 255, 255, 0.12);
+  --dropdown-item-active-bg: #10b981;
+  --dropdown-item-active-text: #ffffff;
+  --hero-stage-bg: linear-gradient(110deg, rgba(20, 22, 28, 0.46) 0%, rgba(14, 16, 21, 0.24) 45%, rgba(8, 10, 14, 0.06) 100%);
+  --hero-title-color: #f8fafc;
+  --hero-title-shadow: 0 8px 24px rgba(0, 0, 0, 0.72);
+  --hero-accent-color: #fbbf24;
+  --hero-accent-stroke: #fbbf24;
+  --hero-border-color: rgba(255, 255, 255, 0.20);
+  --hero-border-hover: rgba(255, 255, 255, 0.38);
+  --hero-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.65), inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.30);
+  --selection-bg: #34d399;
+  --selection-text: #04130d;
+  --streak-color: #fbbf24;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.28);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.52);
+  --status-glass-bg: rgba(20, 22, 28, 0.78);
+  --status-glass-border: rgba(255, 255, 255, 0.24);
+  --status-glass-text: #f8fafc;
+
+  --bg-surface-1: rgba(22, 24, 30, 0.68);
+  --bg-surface-2: rgba(28, 31, 39, 0.78);
+  --bg-elevated: rgba(24, 27, 34, 0.88);
+  --bg-glass-liquid: rgba(22, 24, 30, 0.56);
+  --bg-glass-hud: rgba(22, 24, 30, 0.46);
+  --card-border: rgba(255, 255, 255, 0.18);
+  --card-hover-bg: rgba(32, 36, 45, 0.76);
+  --card-spotlight: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.68);
+  --subject-pill-bg: rgba(255, 255, 255, 0.10);
+  --subject-pill-text: #e2e8f0;
+  --subject-pill-border: rgba(255, 255, 255, 0.22);
+  --subject-pill-active-bg: #10b981;
+  --subject-pill-active-text: #ffffff;
+  --battery-box-bg: rgba(18, 20, 26, 0.86);
+  --battery-box-border: rgba(255, 255, 255, 0.24);
+  --battery-box-glow: rgba(52, 211, 153, 0.18);
+  --battery-segment-bg: rgba(255, 255, 255, 0.08);
+  --battery-segment-active-bg: #34d399;
+  --battery-segment-active-glow: rgba(52, 211, 153, 0.48);
+  --battery-label-color: #e2e8f0;
+  --battery-badge-color: #fbbf24;
+
+  /* SMOKED SLAB / CONVEX / FROSTED TOKENS (OVERWRITING :root DEFAULTS) */
+  --glass-slab-bg: linear-gradient(135deg, rgba(28, 31, 38, 0.48) 0%, rgba(14, 16, 21, 0.38) 55%, rgba(22, 25, 31, 0.44) 100%);
+  --glass-slab-blur: blur(24px) saturate(180%);
+  --glass-slab-border: rgba(255, 255, 255, 0.22);
+  --glass-slab-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.38),
+    inset -1px -1.5px 3px rgba(255, 255, 255, 0.08),
+    0 24px 56px -12px rgba(0, 0, 0, 0.72);
+  --modal-convex-bg: linear-gradient(145deg, rgba(32, 35, 43, 0.54) 0%, rgba(14, 16, 21, 0.44) 55%, rgba(22, 25, 31, 0.50) 100%);
+  --modal-convex-border: rgba(255, 255, 255, 0.28);
+  --card-frosted-bg: linear-gradient(145deg, rgba(26, 29, 36, 0.48) 0%, rgba(13, 15, 20, 0.38) 100%);
+  --card-frosted-hover-bg: rgba(34, 38, 46, 0.22);
+  --card-frosted-border: rgba(255, 255, 255, 0.18);
+  --card-frosted-hover-border: rgba(255, 255, 255, 0.40);
+  --card-frosted-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.32),
+    0 14px 34px -10px rgba(0, 0, 0, 0.65);
+
+  --card-glass-bg: rgba(22, 24, 30, 0.48);
+  --card-glass-hover-bg: rgba(30, 34, 42, 0.30);
+  --card-glass-border: rgba(255, 255, 255, 0.16);
+  --card-glass-hover-border: rgba(255, 255, 255, 0.38);
+  --card-glass-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.66);
+  --card-inner-specular: inset 0 1px 1px rgba(255, 255, 255, 0.24);
+  --flashcard-solid-bg: #111318;
+  --flashcard-solid-border: rgba(255, 255, 255, 0.22);
+  --input-box-bg: rgba(14, 16, 21, 0.78);
+  --input-box-border: rgba(255, 255, 255, 0.24);
+  --stat-box-hover-bg: rgba(42, 46, 56, 0.56);
+  --stat-box-hover-border: rgba(255, 255, 255, 0.42);
+  --stat-box-hover-text: #ffffff;
+
+  /* 3D Liquid Glass Cards (Smoked dark-gray translucent glass) */
+  --lg-card-rest-bg: linear-gradient(145deg, rgba(26, 29, 36, 0.52) 0%, rgba(13, 15, 20, 0.40) 100%);
+  --lg-card-rest-border: rgba(255, 255, 255, 0.18);
+  --lg-card-rest-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.32),
+    inset -1px -1.5px 2.5px rgba(255, 255, 255, 0.06),
+    0 14px 34px -8px rgba(0, 0, 0, 0.70);
+  --lg-card-hover-bg: rgba(30, 34, 42, 0.20);
+  --lg-card-hover-border: rgba(255, 255, 255, 0.34);
+  --lg-card-hover-shadow:
+    inset 1.5px 2px 3.5px rgba(255, 255, 255, 0.54),
+    inset -1px -2px 5px rgba(255, 255, 255, 0.14),
+    inset 0 0 24px rgba(255, 255, 255, 0.06),
+    0 22px 48px -10px rgba(0, 0, 0, 0.80);
+  --glass-block-rest-bg: var(--lg-card-rest-bg);
+  --glass-block-rest-border: var(--lg-card-rest-border);
+  --glass-block-rest-shadow: var(--lg-card-rest-shadow);
+  --glass-block-hover-bg: var(--lg-card-hover-bg);
+  --glass-block-hover-border: var(--lg-card-hover-border);
+  --glass-block-hover-shadow: var(--lg-card-hover-shadow);
+
+  /* Directional 135deg Specular Bevel & Popup Liquid Glass */
+  --lg-directional-bevel:
+    inset 1.5px 1.5px 1.5px rgba(255, 255, 255, 0.48),
+    inset -1px -1.5px 2px rgba(255, 255, 255, 0.12),
+    inset 0 12px 24px -10px rgba(255, 255, 255, 0.08);
+  --lg-directional-border-top: rgba(255, 255, 255, 0.38);
+  --lg-directional-border-left: rgba(255, 255, 255, 0.26);
+  --lg-directional-border-right: rgba(255, 255, 255, 0.08);
+  --lg-directional-border-bottom: rgba(255, 255, 255, 0.14);
+
+  --popup-glass-volume-bg: linear-gradient(145deg, rgba(32, 35, 43, 0.56) 0%, rgba(14, 16, 21, 0.46) 55%, rgba(22, 25, 32, 0.52) 100%);
+  --popup-glass-rim-border: rgba(255, 255, 255, 0.28);
+  --popup-glass-volume-shadow:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.62),
+    inset -1px -1.5px 2px rgba(255, 255, 255, 0.16),
+    inset 0 18px 36px -12px rgba(255, 255, 255, 0.12),
+    0 32px 72px -12px rgba(0, 0, 0, 0.84);
+
+  /* Sliders, Energy Wave Chamber, Sidebar & Unified Controls */
+  --range-track-bg: rgba(255, 255, 255, 0.14);
+  --range-fill-color: #34d399;
+  --range-active-color: #34d399;
+  --range-active-glow: rgba(52, 211, 153, 0.50);
+  --range-inactive-bg: rgba(255, 255, 255, 0.14);
+  --range-thumb-bg: #f8fafc;
+  --range-thumb-border: #10b981;
+  --range-thumb-glow: rgba(251, 191, 36, 0.50);
+
+  --wave-chamber-bg:
+    radial-gradient(120% 90% at var(--slider-pct, 92%) 65%, rgba(52, 211, 153, 0.20) 0%, transparent 65%),
+    linear-gradient(180deg, #06070a 0%, #0d1016 60%, #131820 100%);
+  --wave-chamber-border: rgba(255, 255, 255, 0.20);
+  --wave-chamber-bottom-glow: inset 0 -16px 28px rgba(52, 211, 153, 0.12);
+  --wave-grid-line: rgba(255, 255, 255, 0.06);
+  --wave-primary-stroke: #f8fafc;
+  --wave-primary-glow-color: #34d399;
+  --wave-secondary-stroke: rgba(52, 211, 153, 0.62);
+  --wave-tertiary-stroke: rgba(251, 191, 36, 0.40);
+  --wave-area-stop-top: rgba(52, 211, 153, 0.42);
+  --wave-area-stop-mid: rgba(16, 185, 129, 0.16);
+  --wave-area-stop-bot: rgba(6, 7, 10, 0.0);
+  --wave-stroke-glow: drop-shadow(0 0 10px rgba(52, 211, 153, 0.48));
+  --wave-orb-fill: #ffffff;
+  --wave-orb-ring: #34d399;
+
+  --sidebar-glass-bg: linear-gradient(
+    135deg,
+    rgba(28, 31, 38, 0.46) 0%,
+    rgba(13, 15, 20, 0.36) 55%,
+    rgba(20, 23, 29, 0.42) 100%
+  );
+  --sidebar-glass-border-top: rgba(255, 255, 255, 0.40);
+  --sidebar-glass-border-left: rgba(255, 255, 255, 0.28);
+  --sidebar-glass-border-right: rgba(255, 255, 255, 0.08);
+  --sidebar-glass-border-bottom: rgba(255, 255, 255, 0.14);
+  --sidebar-glass-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.38),
+    inset -1px -1.5px 3px rgba(255, 255, 255, 0.10),
+    inset 0 12px 24px rgba(255, 255, 255, 0.05),
+    0 16px 38px rgba(0, 0, 0, 0.56);
+
+  --lg-ctrl-bg: linear-gradient(135deg, rgba(32, 35, 44, 0.50) 0%, rgba(16, 18, 24, 0.38) 100%);
+  --lg-ctrl-hover-bg: linear-gradient(135deg, rgba(44, 48, 60, 0.62) 0%, rgba(22, 25, 32, 0.50) 100%);
+  --lg-ctrl-border-top: rgba(255, 255, 255, 0.42);
+  --lg-ctrl-border-left: rgba(255, 255, 255, 0.28);
+  --lg-ctrl-border-right: rgba(255, 255, 255, 0.10);
+  --lg-ctrl-border-bottom: rgba(255, 255, 255, 0.16);
+  --lg-ctrl-bevel:
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.34),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.10),
+    0 6px 18px rgba(0, 0, 0, 0.42);
+  --lg-ctrl-text: #f8fafc;
+}
+
+/* Theme 4 LMS & Exam Palette Sync (Neutral Smoked Glass, Zero Purple) */
+html[data-theme="ascii"] .lms-format-guide-card,
+body[data-theme="ascii"] .lms-format-guide-card {
+  background: rgba(22, 24, 30, 0.56) !important;
+  backdrop-filter: blur(20px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(165%) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.24) !important;
+}
+html[data-theme="ascii"] .lms-format-guide-card .tech-tag,
+body[data-theme="ascii"] .lms-format-guide-card .tech-tag {
+  background: rgba(52, 211, 153, 0.14) !important;
+  color: #a7f3d0 !important;
+  border-color: rgba(52, 211, 153, 0.32) !important;
+}
+html[data-theme="ascii"] .lms-sample-snippet,
+body[data-theme="ascii"] .lms-sample-snippet {
+  background: rgba(10, 12, 16, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+html[data-theme="ascii"] .lms-sample-line.header-line { color: #fbbf24 !important; }
+html[data-theme="ascii"] .lms-sample-line.q-line      { color: #f8fafc !important; }
+html[data-theme="ascii"] .lms-sample-line.choice-line { color: #94a3b8 !important; }
+
+html[data-theme="ascii"] #exam-palette-bar,
+body[data-theme="ascii"] #exam-palette-bar,
+html[data-theme="ascii"] .exam-palette-bar {
+  background: linear-gradient(145deg, rgba(28, 31, 38, 0.60) 0%, rgba(14, 16, 21, 0.48) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.28), 0 10px 24px rgba(0, 0, 0, 0.50) !important;
+}
+html[data-theme="ascii"] .exam-palette-btn,
+body[data-theme="ascii"] .exam-palette-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+html[data-theme="ascii"] .exam-palette-btn.answered,
+html[data-theme="ascii"] .exam-palette-btn.active,
+body[data-theme="ascii"] .exam-palette-btn.answered {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.36) !important;
+}
+
+html[data-theme="ascii"] .ascii-scene-popover,
+body[data-theme="ascii"] .ascii-scene-popover {
+  background: rgba(16, 20, 26, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: inset 1px 1.5px 2px rgba(255, 255, 255, 0.22), 0 16px 36px rgba(0, 0, 0, 0.75) !important;
+}
 
 

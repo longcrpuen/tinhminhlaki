@@ -40,6 +40,7 @@
 <body>
   <!-- Background Layer for Custom Wallpapers -->
   <div id="bg-layer"></div>
+  <canvas id="ascii-bg-canvas" aria-hidden="true"></canvas>
 
   <!-- Tab Wave Curtain Transition -->
   <div id="tab-wave-curtain" class="tab-wave-curtain" aria-hidden="true"><div class="wave-sweep-layer"></div></div>
@@ -146,6 +147,52 @@
               <button type="button" class="theme-icon-btn" data-theme-choice="white-orange" onclick="App.setTheme('white-orange')" title="Chế độ Trắng Cam Liquid Glass" aria-label="Chế độ Trắng Cam Liquid Glass">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
               </button>
+              <button type="button" class="theme-icon-btn" data-theme-choice="ascii" onclick="App.setTheme('ascii')" title="Chế độ ASCII 3D (>_)" aria-label="Chế độ ASCII 3D">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              </button>
+            </div>
+            <div id="ascii-scene-quick-ctrl" class="ascii-scene-quick-ctrl" style="display: none;">
+              <div class="hud-divider"></div>
+              <button type="button" id="ascii-scene-cycle-btn" class="ascii-scene-cycle-btn" onclick="App.toggleAsciiScenePopover(event)" title="Chọn hoạt ảnh ASCII: Slideshow / Cây thông / Hố đen" aria-label="Chọn hoạt ảnh ASCII" aria-haspopup="true" aria-expanded="false">
+                <span id="ascii-scene-cycle-icon" class="ascii-scene-cycle-icon">↻</span>
+              </button>
+              <div id="ascii-scene-popover" class="ascii-scene-popover" role="menu" aria-label="Danh sách hoạt ảnh ASCII" style="display: none;">
+                <div class="ascii-popover-header">Hoạt ảnh ASCII</div>
+                <div class="ascii-popover-list">
+                  <button type="button" class="ascii-popover-item active" data-ascii-preset="slideshow" role="menuitem" onclick="App.selectAsciiSceneFromPopover('slideshow', event)">
+                    <span class="ascii-popover-icon">↻</span>
+                    <div class="ascii-popover-meta">
+                      <div class="ascii-popover-name">Slideshow</div>
+                      <div class="ascii-popover-sub">Tự động chuyển cảnh</div>
+                    </div>
+                    <span class="ascii-popover-check">✓</span>
+                  </button>
+                  <button type="button" class="ascii-popover-item" data-ascii-preset="tree" role="menuitem" onclick="App.selectAsciiSceneFromPopover('tree', event)">
+                    <span class="ascii-popover-icon">🌲</span>
+                    <div class="ascii-popover-meta">
+                      <div class="ascii-popover-name">Cây thông Noel</div>
+                      <div class="ascii-popover-sub">Cây 3D & tuyết rơi</div>
+                    </div>
+                    <span class="ascii-popover-check">✓</span>
+                  </button>
+                  <button type="button" class="ascii-popover-item" data-ascii-preset="gargantua" role="menuitem" onclick="App.selectAsciiSceneFromPopover('gargantua', event)">
+                    <span class="ascii-popover-icon">🕳️</span>
+                    <div class="ascii-popover-meta">
+                      <div class="ascii-popover-name">Hố đen Gargantua</div>
+                      <div class="ascii-popover-sub">Đĩa bồi tụ & thấu kính</div>
+                    </div>
+                    <span class="ascii-popover-check">✓</span>
+                  </button>
+                  <button type="button" class="ascii-popover-item" data-ascii-preset="cat" role="menuitem" onclick="App.selectAsciiSceneFromPopover('cat', event)">
+                    <span class="ascii-popover-icon">🐱</span>
+                    <div class="ascii-popover-meta">
+                      <div class="ascii-popover-name">Hiệp sĩ Mèo</div>
+                      <div class="ascii-popover-sub">Áo choàng bay & kiếm bạc</div>
+                    </div>
+                    <span class="ascii-popover-check">✓</span>
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="hud-divider"></div>
             <div class="streak-chip" title="Số ngày học liên tiếp">
@@ -1497,6 +1544,31 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
                         <span class="energy-node-dot dot-orange"></span>
                         <span class="energy-node-label">Trắng Cam</span>
                       </button>
+                      <button type="button" class="energy-node-btn" data-theme-opt="ascii" data-theme-choice="ascii" onclick="App.selectThemeViaEnergyWave('ascii')">
+                        <span class="energy-node-dot dot-ascii"></span>
+                        <span class="energy-node-label">ASCII 3D</span>
+                      </button>
+                    </div>
+                    <div id="ascii-scene-settings-bar" class="ascii-scene-settings-bar">
+                      <div class="ascii-scene-settings-label">Chế độ phát hoạt ảnh ASCII 3D:</div>
+                      <div class="ascii-scene-pill-group" role="group" aria-label="Chọn chế độ phát hoạt ảnh ASCII">
+                        <button type="button" class="ascii-scene-pill-btn active" data-ascii-preset="slideshow" onclick="App.setAsciiScenePreset('slideshow')">
+                          <span class="ascii-scene-pill-icon">↻</span>
+                          <span>Slideshow tự chuyển</span>
+                        </button>
+                        <button type="button" class="ascii-scene-pill-btn" data-ascii-preset="tree" onclick="App.setAsciiScenePreset('tree')">
+                          <span class="ascii-scene-pill-icon">🌲</span>
+                          <span>Cây thông Noel</span>
+                        </button>
+                        <button type="button" class="ascii-scene-pill-btn" data-ascii-preset="gargantua" onclick="App.setAsciiScenePreset('gargantua')">
+                          <span class="ascii-scene-pill-icon">🪐</span>
+                          <span>Hố đen Gargantua</span>
+                        </button>
+                        <button type="button" class="ascii-scene-pill-btn" data-ascii-preset="cat" onclick="App.setAsciiScenePreset('cat')">
+                          <span class="ascii-scene-pill-icon">🐱</span>
+                          <span>Hiệp sĩ Mèo</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2405,6 +2477,7 @@ Thực hiện chiến lược xây dựng giai cấp công nhân lớn mạnh, g
   <script src="./js/audio.js"></script>
   <script src="./js/confetti.js"></script>
   <script src="./js/lofi-music.js"></script>
+  <script src="./js/ascii-bg.js"></script>
   <script src="./js/app.js"></script>
   <div id="theme-wave-transition-overlay" aria-hidden="true"></div>
 </body>

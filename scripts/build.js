@@ -26,6 +26,7 @@ const jsFilesToCheck = [
   'js/audio-config.js',
   'js/confetti.js',
   'js/lofi-music.js',
+  'js/ascii-bg.js',
   'quotes.js',
   'sw.js',
   'server.js'
@@ -76,6 +77,7 @@ const assetsToCopy = [
   { src: 'sw.js', dest: 'sw.js' },
   { src: 'quotes.js', dest: 'quotes.js' },
   { src: 'meo.png', dest: 'meo.png' },
+  { src: 'assets', dest: 'assets' },
   { src: 'css', dest: 'css' },
   { src: 'js', dest: 'js' },
   { src: 'lib', dest: 'lib' },
@@ -106,12 +108,14 @@ const hashInputs = [
   'css/theme.css',
   'css/fonts.css',
   'js/app.js',
+  'js/ascii-bg.js',
   'js/db.js',
   'js/parser.js',
   'js/srs.js',
   'js/audio.js',
   'js/lofi-music.js',
-  'js/worker.js'
+  'js/worker.js',
+  'assets/cat-knight.jpg'
 ];
 const hasher = crypto.createHash('sha256');
 for (const rel of hashInputs) {
@@ -128,7 +132,7 @@ const buildStamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(
 const distSwPath = path.join(DIST, 'sw.js');
 if (fs.existsSync(distSwPath)) {
   const swRaw = fs.readFileSync(distSwPath, 'utf8');
-  const stampedCacheName = `mindsparks-v4.15.0-${buildHash}-${buildStamp}`;
+  const stampedCacheName = `mindsparks-v4.15.1-${buildHash}-${buildStamp}`;
   const swStamped = swRaw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = '${stampedCacheName}';`);
   fs.writeFileSync(distSwPath, swStamped, 'utf8');
   execSync(`node --check "${distSwPath}"`);
@@ -162,11 +166,13 @@ const criticalChecks = [
   'css/theme.css',
   'css/fonts.css',
   'js/app.js',
+  'js/ascii-bg.js',
   'js/db.js',
   'js/parser.js',
   'lib/katex/katex.min.js',
   'icons/icon-192.png',
-  'meo.png'
+  'meo.png',
+  'assets/cat-knight.jpg'
 ];
 
 for (const chk of criticalChecks) {

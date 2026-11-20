@@ -2935,6 +2935,434 @@ console.log('\n--- Test Suite 41: Phase 2j Wave 2 (Lofi Bar Spacing, Single-Fire
   assert(probeOut.includes('DB_RUNTIME_OK'), 'Runtime check: QuizDatabase shallow-copy .slice() and in-place saveCard preserve warm _memCache');
 }
 
+// === TEST SUITE 42: Phase 2f Theme 'ascii' & 3D ASCII Christmas Tree Engine (js/ascii-bg.js) ===
+console.log('\n--- Test Suite 42: Phase 2f Theme ascii & 3D ASCII Christmas Tree Engine ---');
+{
+  const AsciiBg = require('../js/ascii-bg.js');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const buildJs = fs.readFileSync(path.join(__dirname, '../scripts/build.js'), 'utf8');
+  const swJs = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+
+  // 1. Core Config & Math helpers
+  assert(AsciiBg && typeof AsciiBg.start === 'function', 'AsciiBg exports start method');
+  assert(AsciiBg.CONFIG.TARGET_FPS >= 24 && AsciiBg.CONFIG.TARGET_FPS <= 30, 'AsciiBg targets 24-30 FPS');
+  assert(AsciiBg.CONFIG.CAMERA_PITCH_DEG >= 15 && AsciiBg.CONFIG.CAMERA_PITCH_DEG <= 25, 'AsciiBg tilts camera downward 15-25 degrees');
+  assert(AsciiBg.CONFIG.Y0 === 0.42 && AsciiBg.CONFIG.Y1 === 2.55, 'AsciiBg matches agac.py foliage Y0=0.42 and Y1=2.55');
+  assert(AsciiBg.envelope(0.42) > 0.85 && AsciiBg.envelope(2.55) < 0.05, 'AsciiBg.envelope tapers cone smoothly from base to apex');
+  assert(AsciiBg.fib(12).length === 36, 'AsciiBg.fib(n) returns flat XYZ unit sphere coordinates');
+
+  // 2. Deterministic 3D Scene Generation across all 10 part kinds
+  const sceneA = AsciiBg.buildSceneData(7);
+  const sceneB = AsciiBg.buildSceneData(7);
+  assert(sceneA.count > 180000 && sceneA.count === sceneB.count, 'buildSceneData(7) is deterministic and high-density');
+  assert(sceneA.meta.lightCount === 170, 'buildSceneData builds exactly 170 fairy light clusters');
+  assert(sceneA.meta.baubleCount === 44, 'buildSceneData places 44 baubles on branch tips');
+  assert(sceneA.meta.giftCount === 8, 'buildSceneData builds 8 3D gift boxes');
+
+  const kCounts = sceneA.meta.countsByKind;
+  for (let k = 1; k <= 10; k++) {
+    assert(kCounts[k] > 0, `buildSceneData populates non-empty points for KIND=${k}`);
+  }
+
+  // 3. Domino Wave & Gentle Stardust Dissolve Phase
+  const domPeak = AsciiBg.computeDominoIntensity(0.0, 0.0);
+  const domOff = AsciiBg.computeDominoIntensity(0.25, 0.0);
+  assert(domPeak > domOff, 'computeDominoIntensity creates sequential traveling wave peaks');
+
+  const disBefore = AsciiBg.computeDissolveState(1.0, 10, 12.5);
+  assert(disBefore.active === true && disBefore.u === 0, 'Dissolve stays inactive during showcase phase');
+  const disMid = AsciiBg.computeDissolveState(0.5, 0, AsciiBg.CONFIG.DISSOLVE_START + 1.8);
+  assert(disMid.u > 0, 'Dissolve progresses smoothly after DISSOLVE_START');
+  const disAfter = AsciiBg.computeDissolveState(2.5, 1, AsciiBg.CONFIG.DISSOLVE_START + 3.0);
+  assert(disAfter.active === false, 'Points deactivate cleanly before cycle restart');
+
+  // 4. Headless Render Verification across Growth, Showcase, and Dissolve (Fine micro-pixel grid)
+  const W = 480;
+  const H = 360;
+  const cellW = AsciiBg._cellW || 3.6;
+  const cellH = AsciiBg._cellH || 6.5;
+  const cols = (W / cellW) | 0;
+  const rows = (H / cellH) | 0;
+  const buf32 = new Uint32Array(W * H);
+  const zBuf = new Float32Array(cols * rows).fill(1e9);
+  const winIdx = new Int32Array(cols * rows);
+  const activeCells = new Int32Array(cols * rows);
+  const atlas = AsciiBg.buildGlyphAtlas(cellW, cellH, '700 7px monospace');
+  const stars = AsciiBg.buildStars(160, 1337);
+
+  const resGrowth = AsciiBg.renderFrameToBuffer({
+    t: 0.5, width: W, height: H, cellW, cellH, cols, rows,
+    buf32, zBuf, winIdx, activeCells, atlas, stars, scene: sceneA
+  });
+  const resShowcase = AsciiBg.renderFrameToBuffer({
+    t: 12.5, width: W, height: H, cellW, cellH, cols, rows,
+    buf32, zBuf, winIdx, activeCells, atlas, stars, scene: sceneA
+  });
+  const resDissolve = AsciiBg.renderFrameToBuffer({
+    t: 24.75, width: W, height: H, cellW, cellH, cols, rows,
+    buf32, zBuf, winIdx, activeCells, atlas, stars, scene: sceneA
+  });
+  const resAfterDissolve = AsciiBg.renderFrameToBuffer({
+    t: 25.2, width: W, height: H, cellW, cellH, cols, rows,
+    buf32, zBuf, winIdx, activeCells, atlas, stars, scene: sceneA
+  });
+
+  assert(AsciiBg._cellW <= 4.5 && AsciiBg._cellH <= 7.5, 'AsciiBg defaults to fine micro-pixel cells on desktop (cellW <= 4.5, cellH <= 7.5)');
+  assert(resGrowth.activeCount > 0 && resShowcase.activeCount > resGrowth.activeCount, 'Scene grows from floor to full tree');
+  assert(resDissolve.activeCount < resShowcase.activeCount && resAfterDissolve.activeCount === 0, 'Dissolve phase reduces active points and resets cleanly before loop');
+
+  // Verify 1440x900 desktop showcase produces > 8000 crisp ASCII letters
+  const DW = 1440, DH = 900, dCols = (DW / cellW) | 0, dRows = (DH / cellH) | 0;
+  const resDesktop = AsciiBg.renderFrameToBuffer({
+    t: 12.5, width: DW, height: DH, cellW, cellH, cols: dCols, rows: dRows,
+    buf32: new Uint32Array(DW * DH),
+    zBuf: new Float32Array(dCols * dRows).fill(1e9),
+    winIdx: new Int32Array(dCols * dRows),
+    activeCells: new Int32Array(dCols * dRows),
+    atlas, stars, scene: sceneA
+  });
+  assert(resDesktop.renderedLetters > 8000, 'Desktop 1440x900 render produces > 8000 active ASCII letters (high-density grid)');
+
+  let nonBgPixels = 0;
+  const bgVal = buf32[0];
+  for (let p = 0; p < buf32.length; p++) {
+    if (buf32[p] !== bgVal) nonBgPixels++;
+  }
+  assert(nonBgPixels > 0, 'Headless renderFrameToBuffer writes non-background ASCII pixels');
+
+  // Verify zBuf was cleanly reset back to 1e9 after render
+  let dirtyZ = 0;
+  for (let zi = 0; zi < zBuf.length; zi++) {
+    if (zBuf[zi] < 1e8) dirtyZ++;
+  }
+  assert(dirtyZ === 0, 'renderFrameToBuffer cleanly resets zBuf in O(activeCount)');
+
+  // 5. Smoked Dark-Gray Liquid Glass Synchronization & Zero Regression on Existing 3 Themes
+  assert(indexHtml.includes('id="ascii-bg-canvas"') && indexHtml.includes('./js/ascii-bg.js'), 'index.html mounts #ascii-bg-canvas and loads js/ascii-bg.js');
+  assert(indexHtml.includes('data-theme-choice="ascii"'), 'index.html includes ascii theme switcher controls');
+  assert(themeCss.includes('[data-theme="ascii"]') && themeCss.includes('#ascii-bg-canvas') && themeCss.includes('--glass-slab-bg:') && themeCss.includes('--modal-convex-bg:'), 'css/theme.css defines complete [data-theme="ascii"] smoked glass tokens');
+  assert(styleCss.includes('GROUP 5: ASCII 3D THEME') && styleCss.includes('html[data-theme="ascii"] .hero-lofi-bar') && styleCss.includes('html[data-theme="ascii"] .topbar-hud-capsule') && styleCss.includes('html[data-theme="ascii"] #view-dashboard .stat-card'), 'css/style.css synchronizes smoked dark-gray Liquid Glass across sidebar, hero, stats, lofi bar, topbar pill, and modals');
+  assert(appJs.includes("'violet-rose', 'monochrome', 'white-orange', 'ascii'") && appJs.includes('window.AsciiBg'), 'js/app.js registers ascii theme and manages AsciiBg lifecycle');
+  assert(buildJs.includes("'js/ascii-bg.js'"), 'scripts/build.js validates and verifies js/ascii-bg.js');
+  assert(swJs.includes("'./js/ascii-bg.js'"), 'sw.js precaches ./js/ascii-bg.js for offline PWA support');
+}
+
+// === TEST SUITE 43: Wave 2g Snowfall Layer, Multi-Scene Architecture & Gargantua Black Hole ===
+console.log('\n--- Test Suite 43: Wave 2g Snowfall, Multi-Scene Manager & Gargantua Black Hole ---');
+{
+  const AsciiBg = require('../js/ascii-bg.js');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const asciiJs = fs.readFileSync(path.join(__dirname, '../js/ascii-bg.js'), 'utf8');
+
+  // 1. Snowfall Generator & Particle Physics
+  assert(typeof AsciiBg.buildSnow === 'function', 'AsciiBg exports buildSnow');
+  const snow = AsciiBg.buildSnow(220, 2026);
+  assert(snow && snow.count === 220, 'buildSnow generates exactly 220 snow particles');
+  assert(snow.pos.length === 220 * 7, 'snow.pos has 7 scalar attributes per particle');
+  assert(snow.col.length === 220 * 4, 'snow.col stores glyph index and RGBA channels');
+
+  // Verify particles have valid normalized bounds & diagonal drift properties
+  for (let i = 0; i < 220; i++) {
+    const x0 = snow.pos[i * 7];
+    const y0 = snow.pos[i * 7 + 1];
+    const vy = snow.pos[i * 7 + 2];
+    const wind = snow.pos[i * 7 + 3];
+    assert(x0 >= 0 && x0 <= 1 && y0 >= 0 && y0 <= 1, 'Snow coordinates initialized in [0, 1]');
+    assert(vy > 0 && wind > 0, 'Snow particles have positive downward fall speed and diagonal wind drift');
+  }
+
+  // 2. Extensible Multi-Scene Architecture & Playback Modes
+  assert(AsciiBg.SCENES && AsciiBg.SCENES.tree && AsciiBg.SCENES.gargantua, 'AsciiBg defines SCENES registry with tree and gargantua');
+  assert(typeof AsciiBg.registerScene === 'function', 'AsciiBg exports registerScene API for easy future scene addition');
+
+  // Custom scene registration test
+  AsciiBg.registerScene('test_galaxy', { id: 'test_galaxy', title: 'Thiên hà Spiral', duration: 30.0 });
+  assert(AsciiBg.SCENES.test_galaxy && AsciiBg.SCENES.test_galaxy.title === 'Thiên hà Spiral', 'registerScene adds custom scenes cleanly');
+  delete AsciiBg.SCENES.test_galaxy;
+
+  // Playback modes: slideshow vs single
+  AsciiBg.setPlaybackMode('slideshow');
+  assert(AsciiBg.getPlaybackMode() === 'slideshow', 'AsciiBg sets and gets slideshow mode');
+  AsciiBg.setPlaybackMode('single');
+  assert(AsciiBg.getPlaybackMode() === 'single', 'AsciiBg sets and gets single scene lock mode');
+
+  AsciiBg.selectPreset('gargantua');
+  assert(AsciiBg.getPlaybackMode() === 'single' && AsciiBg.getScene() === 'gargantua', 'selectPreset("gargantua") locks mode to single and active scene to gargantua');
+
+  AsciiBg.selectPreset('tree');
+  assert(AsciiBg.getPlaybackMode() === 'single' && AsciiBg.getScene() === 'tree', 'selectPreset("tree") locks mode to single and active scene to tree');
+
+  AsciiBg.selectPreset('slideshow');
+  assert(AsciiBg.getPlaybackMode() === 'slideshow', 'selectPreset("slideshow") enables auto-advance slideshow mode');
+
+  const state = AsciiBg.getState();
+  assert(state && typeof state.mode === 'string' && typeof state.scene === 'string', 'getState returns valid state object');
+
+  // 3. Headless Gargantua Black Hole Render Verification (2D Dense Pixel Field Shader)
+  const W = 480;
+  const H = 360;
+  const cellW = AsciiBg._cellW || 3.6;
+  const cellH = AsciiBg._cellH || 6.5;
+  const cols = (W / cellW) | 0;
+  const rows = (H / cellH) | 0;
+  const buf32 = new Uint32Array(W * H);
+  const atlas = AsciiBg.buildGlyphAtlas(cellW, cellH, '700 7px monospace');
+  const stars = AsciiBg.buildStars(160, 1337);
+
+  // Stage 1: Circle draws itself with tangent glyphs (t = 1.5s)
+  const resRing = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 1.5, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resRing.renderedLetters > 15, 'Stage 1 (t=1.5s): Photon ring draws itself with tangent glyphs');
+
+  // Stage 2: Breathing corona settling around event horizon (t = 3.5s)
+  const resAura = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 3.5, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resAura.renderedLetters > resRing.renderedLetters, 'Stage 2 (t=3.5s): Breathing aura expands around photon ring');
+
+  // Stage 3: Full accretion disk & lensed halo emerge (t = 8.2s)
+  const resEmerge = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 8.2, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resEmerge.renderedLetters > resAura.renderedLetters, 'Stage 3 (t=8.2s): Accretion disk & lensed halo expand around event horizon');
+
+  // Stage 4: Full showcase with concentric thin gas filaments, wide lensed halo, and front crossing belt (t = 12.0s)
+  const resShowcase = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 12.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resShowcase.renderedLetters > 400, 'Stage 4 (t=12.0s): Full showcase produces fine filament ASCII accretion disk and lensed halo (> 400 letters)');
+  assert(resShowcase.isDone === false, 'Stage 4 (t=12.0s): isDone is false during active showcase');
+
+  // Verify desktop 1440x900 Gargantua dense shader produces > 8000 active ASCII letters with eye-comfort leftFade
+  const DW = 1440, DH = 900, dCols = (DW / cellW) | 0, dRows = (DH / cellH) | 0;
+  const resDesktopGarg = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 12.0, width: DW, height: DH, cellW, cellH, cols: dCols, rows: dRows,
+    buf32: new Uint32Array(DW * DH), atlas, stars
+  });
+  assert(resDesktopGarg.renderedLetters > 8000, 'Desktop 1440x900 Gargantua dense shader produces > 8000 active ASCII characters with leftFade');
+
+  // Gravitational Collapse begins at t = 18.0s (smooth inward suction, 100% eye-comfort, no flash)
+  const resCollapse = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 18.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resCollapse.renderedLetters > 0 && resCollapse.renderedLetters < resShowcase.renderedLetters, 'Gravitational Collapse smoothly sucks matter inward without blinding screen flash (t=18.0s)');
+
+  // Stage 5: Clean extinction into void before cycle restart (t = 19.85s)
+  const resDissolve = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 19.85, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resDissolve.renderedLetters === 0, 'Gargantua at t=19.85s cleanly dissolves to 0 active letters with no lower rim fragments');
+  assert(resDissolve.isDone === true, 'Gargantua at t=19.85s signals isDone: true for auto-advance in slideshow mode');
+
+  // Loop 2 Verification: Continuous auto-looping without freeze (duration = 20.0s)
+  const resLoop2Early = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 21.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resLoop2Early.renderedLetters > 0, 'Gargantua loop 2 restarts smoothly at t=21.0s without freezing');
+
+  const resLoop2Peak = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 32.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resLoop2Peak.renderedLetters > 400, 'Gargantua loop 2 achieves full showcase (> 400 letters) automatically at t=32.0s');
+
+  // Tree scene isDone lifecycle verification
+  const resTreeShowcase = AsciiBg.renderTreeScene({
+    t: 12.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, scene: AsciiBg.buildSceneData(7)
+  });
+  assert(resTreeShowcase.isDone === false, 'Tree scene at t=12.0s reports isDone: false');
+  const resTreeDone = AsciiBg.renderTreeScene({
+    t: 25.5, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, scene: AsciiBg.buildSceneData(7)
+  });
+  assert(resTreeDone.isDone === true, 'Tree scene at t=25.5s reports isDone: true to trigger seamless slideshow transition');
+
+  // Aliases & Preset selection for 'blackhole'
+  assert(AsciiBg.SCENES.blackhole && AsciiBg.SCENES.blackhole.id === 'gargantua', 'AsciiBg defines blackhole alias pointing to gargantua');
+  AsciiBg.selectPreset('blackhole');
+  assert(AsciiBg.getPlaybackMode() === 'single' && AsciiBg.getScene() === 'gargantua', 'selectPreset("blackhole") resolves to single gargantua scene');
+  const resBlackholeAlias = AsciiBg.renderFrameToBuffer({
+    sceneId: 'blackhole', t: 12.0, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resBlackholeAlias.renderedLetters === resShowcase.renderedLetters, 'sceneId "blackhole" renders identically to "gargantua"');
+  assert(typeof AsciiBg.reset === 'function', 'AsciiBg exports clean reset method');
+
+  // 4. UI Controls & Styling
+  assert(indexHtml.includes('id="ascii-scene-quick-ctrl"') && indexHtml.includes('id="ascii-scene-cycle-btn"'), 'index.html defines topbar HUD capsule ASCII scene quick switcher');
+  assert(indexHtml.includes('points="4 17 10 11 4 5"') && indexHtml.includes('x1="12" y1="19" x2="20" y2="19"'), 'index.html defines minimalist >_ terminal prompt icon for theme ascii');
+  assert(indexHtml.includes('id="ascii-scene-popover"') && indexHtml.includes('ascii-popover-item') && indexHtml.includes('data-ascii-preset="gargantua"'), 'index.html defines compact liquid glass popover for ASCII scene selection');
+  assert(indexHtml.includes('id="ascii-scene-settings-bar"') && indexHtml.includes('data-ascii-preset="slideshow"'), 'index.html defines Settings ASCII scene pill controls');
+  assert(styleCss.includes('.ascii-scene-cycle-btn') && styleCss.includes('.ascii-scene-settings-bar') && styleCss.includes('.ascii-scene-pill-btn'), 'css/style.css styles ASCII scene controls in smoked liquid glass');
+  assert(styleCss.includes('.ascii-scene-popover') && styleCss.includes('.ascii-popover-item'), 'css/style.css defines liquid glass popover menu styling');
+  assert(themeCss.includes('#ascii-bg-canvas') && themeCss.includes('background: #000000;'), 'css/theme.css sets pure black #000000 background for #ascii-bg-canvas');
+  assert(appJs.includes('setAsciiScenePreset') && appJs.includes('cycleAsciiScene') && appJs.includes('syncAsciiSceneUI'), 'js/app.js implements scene selection and cycle controllers');
+  assert(appJs.includes('toggleAsciiScenePopover') && appJs.includes('closeAsciiScenePopover') && appJs.includes('selectAsciiSceneFromPopover'), 'js/app.js implements popover toggle, close, and selection handlers');
+
+  // 5. Shader Math & Physics Architecture
+  assert(asciiJs.includes('accretion_disk') && asciiJs.includes('lensed_halo') && asciiJs.includes('gas('), 'js/ascii-bg.js implements art.py gas, accretion_disk, and lensed_halo functions');
+  assert(asciiJs.includes('front_side = v > 0') && asciiJs.includes('isCollapse'), 'js/ascii-bg.js implements 3D front crossing occlusion and gentle Gravitational Collapse');
+  assert(asciiJs.includes('R0 = 0.21') && asciiJs.includes('TILT = -0.23') && asciiJs.includes('INC = 0.17') && asciiJs.includes('R_OUT = 4.8 * R0'), 'js/ascii-bg.js sets exact art.py R0=0.21, TILT=-0.23, and INC=0.17 constants');
+  assert(asciiJs.includes('..::--~~,,;;') && asciiJs.includes('##%%@@$$&&88'), 'js/ascii-bg.js uses art.py 4-level swirling character ramps');
+
+  // 6. Wave 2l Ambient Particles & Staged Christmas Tree Timeline
+  assert(typeof AsciiBg.buildAmbientParticles === 'function', 'AsciiBg exports buildAmbientParticles function');
+  const ambParticles = AsciiBg.buildAmbientParticles(240, 2026);
+  assert(ambParticles.count === 240 && ambParticles.pos.length === 240 * 8, 'buildAmbientParticles generates 240 particles with 8 float properties');
+
+  // Verify monotonic particle distance across reset
+  AsciiBg._ensureScene();
+  AsciiBg._snowDistance = 42.5;
+  AsciiBg._globalElapsedSec = 100.0;
+  AsciiBg.reset();
+  assert(AsciiBg._snowDistance === 42.5 && AsciiBg._globalElapsedSec === 100.0, 'Engine _snowDistance and _globalElapsedSec persist across scene resets (continuous snow/stars)');
+
+  // Verify 8 Gift boxes in buildSceneData
+  const treeData = AsciiBg.buildSceneData(7);
+  assert(treeData.meta.giftCount === 8, 'buildSceneData places exactly 8 3D gift boxes');
+
+  // Verify Sequential Staged Timeline & Synchronized Trunk Growth (Wave 2m)
+  let maxGroundT0 = 0, maxTrunkBaseT0 = 0, maxTrunkStemT0 = 0, maxNeedleT0 = 0, maxGarlandT0 = 0, maxGiftT0 = 0, minStarT0 = 999, maxStarT0 = 0;
+  let trunkSyncOk = true;
+  const y0Tree = AsciiBg.CONFIG.Y0;
+  const ySpanTree = AsciiBg.CONFIG.Y1 - y0Tree;
+  for (let i = 0; i < treeData.count; i++) {
+    const k = treeData.kind[i];
+    const t0 = treeData.t0[i];
+    const py = treeData.py[i];
+    if (k === AsciiBg.KIND.GROUND && t0 > maxGroundT0) maxGroundT0 = t0;
+    else if (k === AsciiBg.KIND.TRUNK) {
+      if (py <= y0Tree) {
+        if (t0 > maxTrunkBaseT0) maxTrunkBaseT0 = t0;
+      } else {
+        if (t0 > maxTrunkStemT0) maxTrunkStemT0 = t0;
+        const expectedNeedleBaseT0 = 2.20 + 4.00 * ((py - y0Tree) / ySpanTree);
+        const lead = expectedNeedleBaseT0 - t0;
+        if (lead < 0.18 || lead > 0.35) trunkSyncOk = false;
+      }
+    }
+    else if (k === AsciiBg.KIND.NEEDLE && t0 > maxNeedleT0) maxNeedleT0 = t0;
+    else if (k === AsciiBg.KIND.GARLAND && t0 > maxGarlandT0) maxGarlandT0 = t0;
+    else if ((k === AsciiBg.KIND.GIFT || k === AsciiBg.KIND.RIBBON) && t0 > maxGiftT0) maxGiftT0 = t0;
+    else if (k === AsciiBg.KIND.STAR) {
+      if (t0 < minStarT0) minStarT0 = t0;
+      if (t0 > maxStarT0) maxStarT0 = t0;
+    }
+  }
+  assert(maxGroundT0 <= 1.51, 'Ground floor points born sequentially within 0s - 1.5s');
+  assert(maxTrunkBaseT0 <= 2.00 && maxTrunkStemT0 > 4.5 && maxTrunkStemT0 <= 6.20, 'Trunk base grows 1.2s-1.95s and upper stem rises synchronously with foliage height');
+  assert(trunkSyncOk, 'Every trunk stem point above Y0 leads foliage needles at the same height y by 0.2s-0.3s (no exposed bare pole)');
+  assert(maxNeedleT0 <= 6.81, 'Needle points grow bottom-up within 2.2s - 6.8s');
+  assert(maxGarlandT0 <= 8.01, 'Garland chasing lights born within 6.5s - 8.0s');
+  assert(maxGiftT0 <= 9.21, '8 gift boxes appear sequentially one by one within 7.8s - 9.2s');
+  assert(minStarT0 >= 9.34 && maxStarT0 <= 10.01, 'Apex star ignites right after spiral pulse strikes apex (9.35s - 10.0s)');
+
+  // Verify Warm Golden Ambient Glow & Spiral Ignition Chase (Wave 2m)
+  assert(asciiJs.includes('0.843') && asciiJs.includes('0.373'), 'js/ascii-bg.js applies radiant golden amber rgb(255, 215, 95) [1.0, 0.843, 0.373]');
+  assert(asciiJs.includes('goldMix'), 'js/ascii-bg.js blends warm golden ambient glow onto tree elements');
+  assert(asciiJs.includes('PULSE_START') && asciiJs.includes('PULSE_END') && asciiJs.includes('pulseHead'), 'js/ascii-bg.js implements spiral golden energy pulse chasing up garland to ignite apex star');
+
+  // 7. Wave 2m Gargantua Tidal Disruption, Bold Wings & Eye-Comfort Quasar Relativistic Jets + Hollow Shockwave
+  assert(asciiJs.includes('GARG_TIDAL_STREAMS') && asciiJs.includes('tidal_capture('), 'js/ascii-bg.js implements Tidal Disruption / Accretion Capture curved streams');
+  assert(asciiJs.includes('Math.pow(R_IN / Math.max(rho, 1e-4), 0.62)') && asciiJs.includes('wingMask'), 'js/ascii-bg.js strengthens outer accretion disk wings with pow(R_IN/rho, 0.62) and outer streak boost');
+  assert(asciiJs.includes('jetHead') && asciiJs.includes('shockW = 0.025 + 0.008') && asciiJs.includes('GARG_EMBERS'), 'js/ascii-bg.js implements Quasar Relativistic Jets, thin hollow shockwave (0.025-0.04), and scattered star embers');
+
+  const resQuasarImpact = AsciiBg.renderFrameToBuffer({
+    sceneId: 'gargantua', t: 18.6, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars
+  });
+  assert(resQuasarImpact.renderedLetters > 50 && resQuasarImpact.renderedLetters < resShowcase.renderedLetters, 'Quasar Impact (t=18.6s) fires slender jets + thin hollow shockwave without blinding full-screen glare');
+
+  // 8. Wave 2n Task 1: Root-Cause RAF Loop & Zero Idle-Pause Verification
+  assert(!asciiJs.includes("classList.contains('app-idle')"), 'js/ascii-bg.js never pauses ASCII animation on app-idle class');
+  assert(asciiJs.includes('_cancelLoop()') && asciiJs.includes('_startLoop()'), 'js/ascii-bg.js cancels existing RAF before starting a new loop');
+  assert(asciiJs.includes('if (document.hidden) return false;'), 'js/ascii-bg.js pauses ONLY when document.hidden === true');
+  assert(appJs.includes("getAttribute('data-theme') !== 'ascii'"), 'js/app.js never pauses ASCII background on 30s mouse/keyboard idle');
+
+  // Simulate RAF scheduling independent of 30 FPS throttle & verify loop never stalls on sub-33ms frames
+  const prevDoc = global.document;
+  const prevRaf = global.requestAnimationFrame;
+  const prevCaf = global.cancelAnimationFrame;
+  let rafScheduledCount = 0;
+  let cafCalledCount = 0;
+  let mockHidden = false;
+  global.document = {
+    get hidden() { return mockHidden; },
+    documentElement: { getAttribute: (a) => (a === 'data-theme' ? 'ascii' : null) },
+    body: { classList: { contains: () => true } } // even if app-idle is present on body!
+  };
+  global.requestAnimationFrame = () => ++rafScheduledCount;
+  global.cancelAnimationFrame = () => { cafCalledCount++; };
+
+  assert(AsciiBg._isAppActiveForRender() === true, '_isAppActiveForRender stays true even when body has app-idle class');
+  mockHidden = true;
+  assert(AsciiBg._isAppActiveForRender() === false, '_isAppActiveForRender pauses when document.hidden === true');
+  mockHidden = false;
+  AsciiBg._running = true;
+  AsciiBg._lastRenderMs = 1000;
+  AsciiBg._rafId = 1;
+  // Trigger a sub-33ms throttled tick (elapsed = 10ms < 33.33ms): RAF MUST still reschedule!
+  const beforeRaf = rafScheduledCount;
+  AsciiBg._tick(1010);
+  assert(rafScheduledCount === beforeRaf + 1 && AsciiBg._rafId !== null, '_tick reschedules requestAnimationFrame independently of 30 FPS throttle');
+  AsciiBg._startLoop();
+  assert(cafCalledCount >= 1, '_startLoop invokes cancelAnimationFrame before requesting a fresh RAF');
+  AsciiBg._running = false;
+  AsciiBg._rafId = null;
+  global.document = prevDoc;
+  global.requestAnimationFrame = prevRaf;
+  global.cancelAnimationFrame = prevCaf;
+
+  // 9. Wave 2n Task 2: Scene 3 Cat Knight (Hiệp sĩ Mèo áo choàng bay)
+  const swJsText = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+  const buildJsText = fs.readFileSync(path.join(__dirname, '../scripts/build.js'), 'utf8');
+  assert(fs.existsSync(path.join(__dirname, '../assets/cat-knight.jpg')), 'assets/cat-knight.jpg exists in project assets directory');
+  assert(swJsText.includes('./assets/cat-knight.jpg'), 'sw.js precaches ./assets/cat-knight.jpg for offline PWA support');
+  assert(buildJsText.includes("src: 'assets'") && buildJsText.includes('assets/cat-knight.jpg'), 'scripts/build.js copies and verifies assets/cat-knight.jpg');
+
+  assert(AsciiBg.SCENES.cat && AsciiBg.SCENES.cat.id === 'cat', 'AsciiBg registers Scene 3 (cat - Hiệp sĩ Mèo) in SCENES');
+  assert(AsciiBg.SCENE_ORDER[0] === 'tree' && AsciiBg.SCENE_ORDER[1] === 'gargantua' && AsciiBg.SCENE_ORDER[2] === 'cat', 'SCENE_ORDER slideshow sequence is tree -> gargantua -> cat');
+  assert(typeof AsciiBg.buildCatKnightFromRGBA === 'function' && typeof AsciiBg.renderCatKnightToBuffer === 'function', 'AsciiBg exports Cat Knight image processor and renderer');
+  assert(indexHtml.includes('data-ascii-preset="cat"') && indexHtml.includes('Hiệp sĩ Mèo'), 'index.html adds Hiệp sĩ Mèo option to popover and Settings');
+  assert(appJs.includes("curPreset === 'cat'") && appJs.includes("nextPreset = 'cat'"), 'js/app.js wires cat scene into UI sync and cycle controls');
+
+  const catSpr = AsciiBg.buildProceduralCatKnight(140, 182);
+  let hasBody = false, hasSword = false, hasCape = false, hasGrass = false, hasEye = false, hasBg = false;
+  for (let i = 0; i < catSpr.mask.length; i++) {
+    const m = catSpr.mask[i];
+    if (m === AsciiBg.CAT_MASK.NONE) hasBg = true;
+    else if (m === AsciiBg.CAT_MASK.BODY) hasBody = true;
+    else if (m === AsciiBg.CAT_MASK.SWORD) hasSword = true;
+    else if (m === AsciiBg.CAT_MASK.CAPE) hasCape = true;
+    else if (m === AsciiBg.CAT_MASK.GRASS) hasGrass = true;
+    else if (m === AsciiBg.CAT_MASK.EYE) hasEye = true;
+  }
+  assert(hasBg && hasBody && hasSword && hasCape && hasGrass && hasEye, 'Cat Knight mask segments background, body, upright sword, billowing cape, grass, and blinking eyes');
+
+  const resCatZoom = AsciiBg.renderFrameToBuffer({
+    sceneId: 'cat', t: 1.5, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, catSprite: catSpr
+  });
+  const resCatHero = AsciiBg.renderFrameToBuffer({
+    sceneId: 'cat', t: 10.65, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, catSprite: catSpr
+  });
+  const resCatDissolve = AsciiBg.renderFrameToBuffer({
+    sceneId: 'cat', t: 18.4, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, catSprite: catSpr
+  });
+  const resCatDone = AsciiBg.renderFrameToBuffer({
+    sceneId: 'cat', t: 19.85, width: W, height: H, cellW, cellH, cols, rows, buf32, atlas, stars, catSprite: catSpr
+  });
+  assert(resCatZoom.renderedLetters > 200 && resCatZoom.isDone === false, 'Cat Knight opening zoom-in renders detailed close-up face');
+  assert(resCatHero.renderedLetters > 300 && resCatHero.isDone === false, 'Cat Knight full heroic pose renders knight, sword, cape, and grass');
+  assert(resCatDissolve.renderedLetters > 0 && resCatDissolve.renderedLetters < resCatHero.renderedLetters, 'Cat Knight wind-swept dissolve smoothly carries particles away');
+  assert(resCatDone.renderedLetters === 0 && resCatDone.isDone === true, 'Cat Knight cleanly dissolves to 0 letters and signals isDone: true at t=19.85s');
+
+  AsciiBg.selectPreset('cat');
+  assert(AsciiBg.getPlaybackMode() === 'single' && AsciiBg.getScene() === 'cat', 'selectPreset("cat") locks single mode onto cat scene');
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

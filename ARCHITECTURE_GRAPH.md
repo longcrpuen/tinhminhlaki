@@ -1,12 +1,12 @@
 # TinhMinhLaKey — Bản Đồ Kiến Trúc Toàn Bộ Ứng Dụng (Architecture Graph)
 
-> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Phase 2j — Audit Hiệu Năng & Kiến Trúc Đợt 2: Khoảng Cách Lofi Bar 3 Theme, Single-Fire Events #4, Tối Ưu Reflow/RenderMath/ScaleX Timer #7 & Hợp Nhất Cache In-Place #9)**  
+> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Hợp nhất: Audit Hiệu Năng & Kiến Trúc Đợt 1–2 Phase 2i–2j + Theme ASCII 3D: Cây thông Noel, Hố đen Gargantua & Hiệp sĩ Mèo — `js/ascii-bg.js`, `assets/cat-knight.jpg`)**  
 > Dùng làm bản đồ điều phối gốc cho toàn bộ các phiên bản nâng cấp, sửa đổi tính năng, tái cấu trúc UI/UX và bảo trì hệ thống.
 >
-> * **Tổng số tệp cốt lõi:** 12 tệp chính + 41 bộ kiểm thử hồi quy (Test Suites 1–41).
-> * **Tổng số dòng code thực tế:** `index.html` (2,412 dòng), `js/app.js` (9,577 dòng), `js/db.js` (1,981 dòng), `js/lofi-music.js` (754 dòng), `js/parser.js` (1,260 dòng), `js/srs.js` (123 dòng), `js/audio.js` (326 dòng), `js/worker.js` (255 dòng), `sw.js` (159 dòng), `css/style.css` (12,347 dòng), `css/theme.css` (3,283 dòng), `tests/test-runner.js` (2,943 dòng).
-> * **Tổng quy mô mã nguồn:** 35,420 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
-> * **Kết quả kiểm thử tự động:** 100% PASS (908/908 kiểm thử trên 41 Test Suites).
+> * **Tổng số tệp cốt lõi:** 13 tệp chính (+ `assets/cat-knight.jpg`) + 43 bộ kiểm thử hồi quy (Test Suites 1–43).
+> * **Tổng số dòng code thực tế:** `index.html` (2,485 dòng), `js/app.js` (9,759 dòng), `js/ascii-bg.js` (3,183 dòng), `js/db.js` (1,981 dòng), `js/lofi-music.js` (754 dòng), `js/parser.js` (1,260 dòng), `js/srs.js` (123 dòng), `js/audio.js` (326 dòng), `js/worker.js` (255 dòng), `sw.js` (161 dòng), `css/style.css` (12,905 dòng), `css/theme.css` (3,650 dòng), `tests/test-runner.js` (3,371 dòng).
+> * **Tổng quy mô mã nguồn:** 40,213 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
+> * **Kết quả kiểm thử tự động:** 100% PASS (1,468/1,468 kiểm thử trên 43 Test Suites).
 
 ---
 
@@ -14,7 +14,7 @@
 
 ```mermaid
 graph TD
-    Root["App Root<br/>(index.html: 2,412 dòng | js/app.js: 9,577 dòng | js/db.js: 1,981 dòng | css/theme.css: 3,283 dòng | css/style.css: 12,347 dòng | js/lofi-music.js: 754 dòng)"]
+    Root["App Root<br/>(index.html: 2,485 dòng | js/app.js: 9,759 dòng | js/ascii-bg.js: 3,183 dòng | js/db.js: 1,981 dòng | css/theme.css: 3,650 dòng | css/style.css: 12,905 dòng | js/lofi-music.js: 754 dòng)"]
 
     Root --> B1["Branch 1: Global Shell & Full-Width Responsive Architecture<br/>(Desktop Sidebar 244px/68px, Margin 264px/88px, Full Width 100% .content-wrapper, Zero 1240px Limit, Liquid Glass Controls --lg-ctrl-*, Mobile Bottom Nav 999px)"]
     Root --> B2["Branch 2: #view-dashboard<br/>(Single-Pass O(N) Dashboard Aggregation, Mini Heatmap 7 Days O(1) Lookup, Hero Quote Stage, 4 Status Metric Blocks Neon, Lofi Track Fill 0% -> val%)"]
