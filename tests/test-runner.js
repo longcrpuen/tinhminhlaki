@@ -3922,6 +3922,261 @@ ${JSON.stringify({ quiz_title: 'Clean After Decoy Array', total_questions: 2, qu
          'Case 5E: App.copyAIPrompt uses window.prompt without variable shadowing');
 }
 
+// === TEST SUITE 48: Wave 2q — Full Mobile Audit (Portrait 375/390 & Landscape 667/844) & ASCII Mobile Engine ===
+console.log('\n--- Test Suite 48: Wave 2q Full Mobile Audit (Portrait & Landscape) & ASCII Mobile Engine ---');
+{
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8').replace(/\r\n/g, '\n');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const AsciiBg = require('../js/ascii-bg.js');
+
+  const phase2qIdx = styleCss.indexOf('PHASE 2Q: FULL MOBILE AUDIT');
+  assert(phase2qIdx !== -1, 'css/style.css contains dedicated PHASE 2Q mobile audit section');
+  const phase2qCss = styleCss.slice(phase2qIdx);
+
+  // 1. Global / Cross-screen mobile-native & toast clearance rules
+  assert(phase2qCss.includes('touch-action: manipulation;') &&
+         phase2qCss.includes('-webkit-text-size-adjust: 100% !important;') &&
+         phase2qCss.includes('scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;'),
+         'PHASE 2Q enforces mobile-native touch-action, text-size-adjust, and scroll-padding-bottom');
+  assert(phase2qCss.includes('bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;') &&
+         phase2qCss.includes('left: 76px !important;'),
+         'PHASE 2Q positions toasts above portrait bottom-nav and clear of landscape 64px left dock');
+  assert(phase2qCss.includes('box-sizing: border-box !important;\n    height: 100dvh !important;') &&
+         phase2qCss.includes("html[data-theme=\"ascii\"] body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-item.active"),
+         'PHASE 2Q fixes landscape left-dock border-box height and applies emerald ascii theme across 667x375 & 844x390');
+
+  // 2. Dashboard & Topbar HUD
+  assert(phase2qCss.includes('html body .topbar-hud-capsule') &&
+         phase2qCss.includes('height: 42px !important;') &&
+         phase2qCss.includes('inset: -4px !important;') &&
+         phase2qCss.includes('max-height: calc(100dvh - 64px) !important;'),
+         'PHASE 2Q aligns Topbar HUD capsule height, extended tap targets, and landscape popover max-height');
+  assert(phase2qCss.includes('html body #hero-lofi-bar .lofi-ctrl-btn') &&
+         phase2qCss.includes('flex-shrink: 0 !important;') &&
+         phase2qCss.includes('html body .editorial-scroll-cue'),
+         'PHASE 2Q prevents Lofi button squishing and enforces >= 40px tap targets on Dashboard hero');
+
+  // 3. Decks, Bank, Stats & Modals
+  assert(phase2qCss.includes('html body .deck-card .deck-header') &&
+         phase2qCss.includes('flex-wrap: wrap !important;') &&
+         phase2qCss.includes('html body .deck-actions .btn-secondary'),
+         'PHASE 2Q wraps deck card headers cleanly on narrow portrait screens');
+  assert(phase2qCss.includes('.cyber-dropdown.align-right .cyber-dropdown-menu') &&
+         phase2qCss.includes('right: 0 !important;'),
+         'PHASE 2Q supports right-aligned cyber dropdown menus to prevent viewport edge overflow');
+  assert(phase2qCss.includes('html body #view-stats .quiz-card table') &&
+         phase2qCss.includes('min-width: 520px !important;'),
+         'PHASE 2Q isolates Stats Subject/Topic table width inside horizontal scroll wrappers');
+  assert(indexHtml.includes('class="modal-two-col-row"') &&
+         indexHtml.includes('class="exam-mode-grid"') &&
+         indexHtml.includes('class="manage-subject-merge-row"') &&
+         phase2qCss.includes('.modal-header .modal-close') &&
+         phase2qCss.includes('width: 40px !important;'),
+         'index.html & style.css stack 2-column modal grids cleanly and enforce 40x40px modal close buttons');
+
+  // 4. Import AI (Wave 2p) & Import LMS
+  assert(indexHtml.includes('class="import-prompt-header"') &&
+         indexHtml.includes('class="import-prompt-controls"') &&
+         indexHtml.includes('btn-import-copy-prompt') &&
+         indexHtml.includes('btn-import-sample') &&
+         indexHtml.includes('btn-import-submit') &&
+         phase2qCss.includes('#import-prompt-count') &&
+         phase2qCss.includes('font-size: 16px !important;') &&
+         phase2qCss.includes('#lms-batch-answers'),
+         'Import AI & LMS controls include anti-zoom 16px inputs, >= 40px buttons, and responsive flex hooks');
+
+  // 5. Study (Quiz + Flashcard) & Exam
+  assert(phase2qCss.includes('html body #view-study .quiz-progress-track') &&
+         phase2qCss.includes('flex: 1 0 100% !important;') &&
+         phase2qCss.includes('html body #exam-q-counter') &&
+         phase2qCss.includes('white-space: nowrap !important;'),
+         'Quiz progress bar expands onto its own full-width row on portrait and Exam counter stays single-line');
+  assert(phase2qCss.includes('html body.flashcard-active .flashcard-stage') &&
+         phase2qCss.includes('justify-content: flex-start !important;'),
+         'Flashcard overrides fixed stage height and top-clipping flex centering on mobile portrait & landscape');
+
+  // 6. Settings & Lofi / Learning Rows
+  assert(indexHtml.includes('class="settings-option-row"') &&
+         phase2qCss.includes('#lofi-track-dropdown-wrap') &&
+         phase2qCss.includes('min-width: 0 !important;') &&
+         phase2qCss.includes('.energy-node-btn') &&
+         phase2qCss.includes('word-break: keep-all !important;'),
+         'Settings controls stay >= 40px, prevent mid-word ASCII pill breaks, and avoid min-width overflow');
+
+  // 7. Behavioral JS Check: _openCyberDropdown right-edge collision -> align-right
+  const ddSliceStart = appJs.indexOf('closeAllCyberDropdowns() {');
+  const ddSliceEnd = appJs.indexOf('_toggleCyberDropdownById(wrapId, e) {');
+  assert(ddSliceStart !== -1 && ddSliceEnd > ddSliceStart, 'Extracted dropdown collision methods from js/app.js');
+  const ddMethods = eval('({' + appJs.slice(ddSliceStart, ddSliceEnd) + '})');
+  const prevWin = global.window;
+  const prevDoc = global.document;
+  try {
+    const makeWrap = (rect) => {
+      const classes = new Set();
+      const trigger = {
+        attrs: {},
+        setAttribute: (k, v) => { trigger.attrs[k] = v; },
+        getBoundingClientRect: () => rect
+      };
+      const menu = {};
+      return {
+        classList: {
+          add: (...c) => c.forEach(x => classes.add(x)),
+          remove: (...c) => c.forEach(x => classes.delete(x)),
+          contains: (c) => classes.has(c)
+        },
+        querySelector: (sel) => (sel === '.cyber-dropdown-trigger' ? trigger : sel === '.cyber-dropdown-menu' ? menu : null),
+        closest: () => null
+      };
+    };
+    global.window = { innerWidth: 667, innerHeight: 375 };
+    global.document = { querySelectorAll: () => [] };
+    const rightWrap = makeWrap({ left: 470, right: 652, width: 182, top: 100, bottom: 144 });
+    ddMethods._openCyberDropdown(rightWrap);
+    assert(rightWrap.classList.contains('align-right') && rightWrap.classList.contains('open'),
+           '_openCyberDropdown adds align-right when menu would overflow right viewport edge on 667x375');
+    const leftWrap = makeWrap({ left: 12, right: 194, width: 182, top: 100, bottom: 144 });
+    ddMethods._openCyberDropdown(leftWrap);
+    assert(!leftWrap.classList.contains('align-right') && leftWrap.classList.contains('open'),
+           '_openCyberDropdown omits align-right when dropdown fits cleanly from left edge');
+  } finally {
+    global.window = prevWin;
+    global.document = prevDoc;
+  }
+
+  // 8. Behavioral Headless Verification of js/ascii-bg.js on Mobile Viewports (DPR=1, 30 FPS)
+  assert(AsciiBg.CONFIG.DPR === 1 && AsciiBg.CONFIG.FPS_LIMIT === 30,
+         'AsciiBg preserves DPR = 1 and 30 FPS throttle cap');
+  assert(AsciiBg.isDesktopViewport(1440, 900) === true &&
+         AsciiBg.isDesktopViewport(375, 667) === false &&
+         AsciiBg.isDesktopViewport(390, 844) === false &&
+         AsciiBg.isDesktopViewport(667, 375) === false &&
+         AsciiBg.isDesktopViewport(844, 390) === false,
+         'AsciiBg.isDesktopViewport correctly separates Desktop from 844x390 and 667x375 mobile landscape');
+
+  function measureNonBlackBounds(buf32, W, H) {
+    let minX = W, maxX = -1, minY = H, maxY = -1;
+    for (let y = 0; y < H; y++) {
+      const rowOff = y * W;
+      for (let x = 0; x < W; x++) {
+        if ((buf32[rowOff + x] & 0x00FFFFFF) !== 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    return { minX, maxX, minY, maxY };
+  }
+
+  const mobCellW = 4.2, mobCellH = 7.4;
+  const mobAtlas = AsciiBg.buildGlyphAtlas(mobCellW, mobCellH, '700 7.5px monospace');
+  const treeScene = AsciiBg.buildSceneData(7);
+  const catSprite = AsciiBg.buildProceduralCatKnight(140, 182);
+
+  const mobileViewports = [
+    { name: '375x667', W: 375, H: 667 },
+    { name: '390x844', W: 390, H: 844 },
+    { name: '667x375', W: 667, H: 375 },
+    { name: '844x390', W: 844, H: 390 }
+  ];
+
+  mobileViewports.forEach(({ name, W, H }) => {
+    const cols = (W / mobCellW) | 0;
+    const rows = (H / mobCellH) | 0;
+    const buf32 = new Uint32Array(W * H);
+
+    // Tree scene at showcase t=12.0s (no stars to isolate figure bounds)
+    const resTree = AsciiBg.renderFrameToBuffer({
+      sceneId: 'tree', t: 12.0, width: W, height: H, cellW: mobCellW, cellH: mobCellH,
+      cols, rows, buf32, atlas: mobAtlas, stars: null, scene: treeScene
+    });
+    const bTree = measureNonBlackBounds(buf32, W, H);
+    assert(resTree.renderedLetters > 150 && bTree.minY >= 12 && bTree.maxY <= H - 8,
+           `AsciiBg tree fits unclipped vertically on ${name} (minY=${bTree.minY}, maxY=${bTree.maxY}, letters=${resTree.renderedLetters})`);
+
+    // Gargantua scene at showcase t=12.0s
+    const resGarg = AsciiBg.renderFrameToBuffer({
+      sceneId: 'gargantua', t: 12.0, width: W, height: H, cellW: mobCellW, cellH: mobCellH,
+      cols, rows, buf32, atlas: mobAtlas, stars: null
+    });
+    const bGarg = measureNonBlackBounds(buf32, W, H);
+    assert(resGarg.renderedLetters > 150 && bGarg.minX >= 4 && bGarg.maxX <= W - 4 && bGarg.minY >= 2 && bGarg.maxY <= H - 2,
+           `AsciiBg gargantua centers cleanly without wing clipping on ${name} (x=${bGarg.minX}..${bGarg.maxX}, y=${bGarg.minY}..${bGarg.maxY})`);
+
+    // Cat Knight scene at heroic pose t=10.65s AND early mobile reveal t=2.0s
+    const resCatHero = AsciiBg.renderFrameToBuffer({
+      sceneId: 'cat', t: 10.65, width: W, height: H, cellW: mobCellW, cellH: mobCellH,
+      cols, rows, buf32, atlas: mobAtlas, stars: null, catSprite
+    });
+    const bCatHero = measureNonBlackBounds(buf32, W, H);
+    assert(resCatHero.renderedLetters > 150 && bCatHero.minY >= 12 && bCatHero.maxY <= H - 10 && bCatHero.minX >= 8 && bCatHero.maxX <= W - 8,
+           `AsciiBg cat knight fits unclipped inside safe bounds on ${name} (x=${bCatHero.minX}..${bCatHero.maxX}, y=${bCatHero.minY}..${bCatHero.maxY})`);
+  });
+
+  // Verify touch-scroll yield in _tick keeps RAF alive while skipping frame blit during active swipe
+  const prevDoc2 = global.document;
+  const prevRaf2 = global.requestAnimationFrame;
+  const prevOrigRenderAt = AsciiBg.renderAt;
+  let rafTicks = 0;
+  let renderCalls = 0;
+  try {
+    global.document = {
+      hidden: false,
+      documentElement: { getAttribute: (a) => (a === 'data-theme' ? 'ascii' : null) }
+    };
+    global.requestAnimationFrame = () => ++rafTicks;
+    AsciiBg.renderAt = () => { renderCalls++; return { isDone: false }; };
+    AsciiBg._running = true;
+    AsciiBg._isMobileViewport = true;
+    AsciiBg._lastScrollMs = 1000;
+    AsciiBg._lastRenderMs = 900;
+    AsciiBg._tick(1050);
+    assert(rafTicks === 1 && renderCalls === 0 && AsciiBg._rafId !== null,
+           'AsciiBg._tick yields CPU blit during active mobile touch-scroll while keeping RAF loop alive');
+    AsciiBg._tick(1200);
+    assert(rafTicks === 2 && renderCalls === 1,
+           'AsciiBg._tick immediately resumes 30 FPS rendering once touch-scroll settles');
+  } finally {
+    AsciiBg.renderAt = prevOrigRenderAt;
+    AsciiBg._running = false;
+    AsciiBg._isMobileViewport = false;
+    AsciiBg._lastScrollMs = 0;
+    AsciiBg._rafId = null;
+    global.document = prevDoc2;
+    global.requestAnimationFrame = prevRaf2;
+  }
+
+  // 9. Wave 2q Polish — Settings flattened boxes (<= 640px), Landscape dock safe-centering & Mobile S (<= 360px) HUD centering
+  const phase2qPolishCss = styleCss.slice(styleCss.indexOf('PHASE 2Q: FULL MOBILE AUDIT'));
+  assert(
+    phase2qPolishCss.includes('html body #theme-energy-chamber .energy-slider-control-wrap') &&
+    phase2qPolishCss.includes('html body #theme-energy-chamber .ascii-scene-settings-bar') &&
+    phase2qPolishCss.includes('border: none !important;') &&
+    phase2qPolishCss.includes('box-shadow: none !important;') &&
+    phase2qPolishCss.includes('border-top: 1px solid var(--border-subtle'),
+    'Settings flattens nested energy slider & ASCII scene containers under <= 640px with a single top divider'
+  );
+  assert(
+    phase2qPolishCss.includes('justify-content: safe center !important;') &&
+    phase2qPolishCss.includes('#mobile-bottom-nav .bottom-nav-brand') &&
+    phase2qPolishCss.includes('margin-top: auto !important;') &&
+    phase2qPolishCss.includes('#mobile-bottom-nav .bottom-nav-item:last-child') &&
+    phase2qPolishCss.includes('margin-bottom: auto !important;'),
+    'Landscape left dock centers vertically with safe center + auto-margin fallback without clipping top logo'
+  );
+  assert(
+    phase2qPolishCss.includes('@media (max-width: 360px)') &&
+    phase2qPolishCss.includes('html body .app-topbar') &&
+    phase2qPolishCss.includes('justify-content: center !important;') &&
+    phase2qPolishCss.includes('margin-inline: auto !important;') &&
+    phase2qPolishCss.includes('max-width: calc(100vw - 16px) !important;'),
+    'Mobile S (<= 360px) centers .topbar-hud-capsule symmetrically with compact controls'
+  );
+}
+
 console.log(`\n========================================`);
 console.log(`SUMMARY: ${passed} passed, ${failed} failed.`);
 console.log(`========================================`);

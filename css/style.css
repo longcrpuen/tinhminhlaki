@@ -13388,3 +13388,897 @@ html[data-theme="white-orange"] .energy-phase-gate .phase-gate-diamond {
   }
 }
 
+
+/* ==========================================================================
+   PHASE 2Q: FULL MOBILE AUDIT (PORTRAIT 375/390 & LANDSCAPE 667/844)
+   Root-cause fixes across all views, modals, toasts, and ASCII 3D theme
+   Strictly scoped to mobile viewports — Desktop (>= 841x551) untouched
+   ========================================================================== */
+
+/* 1. Global Mobile & Touch Platform Guardrails (Portrait + Landscape <= 960x600) */
+@media (max-width: 840px),
+       (orientation: landscape) and (max-height: 550px),
+       (orientation: landscape) and (max-width: 960px) and (max-height: 600px) {
+
+  html {
+    -webkit-text-size-adjust: 100% !important;
+  }
+
+  button,
+  a,
+  [role="button"],
+  .bottom-nav-item,
+  .cyber-dropdown-trigger,
+  .cyber-dropdown-item,
+  .energy-node-btn,
+  .ascii-scene-pill-btn {
+    touch-action: manipulation;
+  }
+
+  /* Prevent cyber dropdown menu right-edge overflow (e.g., Bank 667x375) */
+  .cyber-dropdown.align-right .cyber-dropdown-menu {
+    left: auto !important;
+    right: 0 !important;
+  }
+
+  .cyber-dropdown-menu {
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Prevent iOS Safari input auto-zoom without disabling user zoom */
+  #import-prompt-count,
+  #import-raw-input,
+  #import-new-deck-name,
+  #import-new-deck-desc,
+  #lms-raw-input,
+  #lms-batch-topic,
+  #lms-batch-answers,
+  #lms-new-deck-name,
+  #lms-new-deck-desc,
+  #bank-search-input,
+  #edit-card-topic,
+  #edit-card-question,
+  #edit-card-explanation,
+  #bg-url-input,
+  #setting-daily-goal,
+  #setting-per-q-seconds,
+  #quiz-numeric-input,
+  #exam-numeric-input {
+    font-size: 16px !important;
+  }
+
+  /* Tap target >= 40px for icon/action controls across mobile views & modals */
+  .modal-header .modal-close {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  #bank-cards-list .btn-card-action,
+  #view-study .btn-card-action {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .exam-palette-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .energy-node-btn,
+  .ascii-scene-pill-btn {
+    min-height: 40px !important;
+  }
+
+  /* ASCII Scene Popover height cap for short landscape viewports */
+  .ascii-scene-popover {
+    max-height: calc(100dvh - 64px) !important;
+    overflow-y: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box !important;
+  }
+
+  .ascii-popover-item {
+    min-height: 42px !important;
+  }
+
+  /* Import AI validation alert & LMS batch answers responsiveness */
+  #import-validation-alert .validation-alert-box {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    padding: 12px 14px !important;
+  }
+
+  #import-validation-alert .validation-alert-list {
+    padding-left: 18px !important;
+    margin: 6px 0 0 0 !important;
+  }
+
+  #lms-batch-answers {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Settings Lofi dropdown & Learning rows responsiveness */
+  #lofi-track-dropdown-wrap {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #lofi-track-dropdown-trigger {
+    min-height: 44px !important;
+    width: 100% !important;
+  }
+
+  .settings-option-row {
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+  }
+
+  .settings-timer-controls {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* 2. Mobile Portrait Fixes (375x667 & 390x844) */
+@media (max-width: 840px) and (orientation: portrait) {
+  html {
+    scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  html body .content-wrapper {
+    padding: 62px 12px calc(104px + env(safe-area-inset-bottom, 0px)) 12px !important;
+  }
+
+  html body.quiz-active .quiz-container,
+  html body #view-study .quiz-container,
+  html body #view-exam .quiz-container {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Position toasts cleanly above #mobile-bottom-nav without occluding taps */
+  html body .toast-container,
+  html body #app-toast-container {
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    align-items: center !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  html body .toast {
+    width: 100% !important;
+    max-width: 420px !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+
+  /* Topbar HUD Capsule: uniform height & no cycle-button breakout on 375px */
+  html body .topbar-hud-capsule {
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 3px 6px !important;
+    gap: 4px !important;
+    max-width: calc(100vw - 16px) !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-switcher {
+    gap: 2px !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-btn,
+  html body .topbar-hud-capsule .ascii-scene-cycle-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    position: relative !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-btn::after,
+  html body .topbar-hud-capsule .ascii-scene-cycle-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: -4px !important;
+    border-radius: 9999px !important;
+  }
+
+  html body .topbar-hud-capsule .streak-chip {
+    height: 34px !important;
+    padding: 0 8px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Dashboard Hero & Lofi Bar */
+  html body .editorial-hero-stage {
+    min-height: auto !important;
+    padding: 18px 14px !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+  }
+
+  html body .editorial-hero-stage .hero-title {
+    font-size: clamp(1.38rem, 5.8vw, 1.95rem) !important;
+    line-height: 1.16 !important;
+    margin-bottom: 10px !important;
+  }
+
+  html body .editorial-hero-stage .hero-title-main,
+  html body .editorial-hero-stage .hero-title-sub,
+  html body .editorial-hero-stage .hero-title-accent {
+    font-size: inherit !important;
+  }
+
+  html body .hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
+    width: 100% !important;
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    margin: 10px 0 12px 0 !important;
+  }
+
+  html body #hero-lofi-bar .lofi-ctrl-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    flex-shrink: 0 !important;
+  }
+
+  html body #hero-lofi-bar .lofi-status-text {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  html body .hero-actions {
+    gap: 8px !important;
+  }
+
+  html body .editorial-scroll-cue {
+    min-height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  html body .dashboard-subject-pill,
+  html body .subject-jump-pill {
+    min-height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  /* Flashcard Auto-Height Portrait Override (fixes #flashcard-srs-bar overlap at 390x844) */
+  html body.flashcard-active .app-main,
+  html body.flashcard-active .content-wrapper,
+  html body.flashcard-active #view-study.active,
+  html body.flashcard-active .quiz-container,
+  html body.flashcard-active #study-flashcard-area {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  html body.flashcard-active .quiz-container {
+    padding: 8px 12px calc(104px + env(safe-area-inset-bottom, 0px)) 12px !important;
+  }
+
+  html body.flashcard-active .flashcard-stage,
+  html body.flashcard-active .flashcard-card {
+    height: auto !important;
+    min-height: 240px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  html body.flashcard-active .flashcard-face {
+    grid-area: 1 / 1 !important;
+    position: relative !important;
+    inset: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  html body.flashcard-active .flashcard-card:not(.flipped) .flashcard-back,
+  html body.flashcard-active .flashcard-card.flipped .flashcard-front {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html body.flashcard-active .flashcard-card.flipped .flashcard-back {
+    padding: 18px 16px !important;
+    height: auto !important;
+    min-height: 240px !important;
+  }
+
+  html body.flashcard-active .flashcard-content-wrap {
+    justify-content: flex-start !important;
+    overflow: visible !important;
+    padding: 12px 0 !important;
+  }
+
+  html body.flashcard-active .flashcard-bottom-actions {
+    margin-top: 12px !important;
+    position: relative !important;
+    z-index: 5 !important;
+  }
+
+  html body.flashcard-active #flashcard-srs-bar .srs-btn {
+    min-height: 50px !important;
+    height: auto !important;
+  }
+}
+
+/* 3. Small Portrait Width Fixes (<= 640px) */
+@media (max-width: 640px) {
+  /* Decks: stop subject badge + delete btn from squishing .deck-name to 61px */
+  html body .deck-card .deck-header {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  html body .deck-card .deck-header > div {
+    order: 1 !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  html body .deck-card .deck-header .deck-name {
+    order: 2 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-wrap: break-word !important;
+  }
+
+  html body .deck-actions .btn-secondary {
+    min-height: 42px !important;
+  }
+
+  /* Stats tables: preserve clean horizontal scroll isolation instead of crushing columns */
+  html body #view-stats .quiz-card table {
+    min-width: 520px !important;
+  }
+
+  html body #view-stats .sm2-stage-card {
+    padding: 12px !important;
+  }
+
+  html body #view-stats .sm2-stage-header {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  html body #view-stats .sm2-stage-name {
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Modals: stack 2-col grids & merge row on narrow portrait screens */
+  html body .modal-two-col-row,
+  html body .exam-mode-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  html body .manage-subject-merge-row {
+    flex-wrap: wrap !important;
+  }
+
+  html body .manage-subject-merge-row > .btn {
+    width: 100% !important;
+    min-height: 42px !important;
+  }
+
+  /* Import AI (Wave 2p) layout & >= 40px touch targets */
+  html body .import-prompt-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  html body .import-prompt-controls {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  html body #import-prompt-count {
+    width: 82px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 8px 10px !important;
+  }
+
+  html body .btn-import-copy-prompt {
+    flex: 1 1 180px !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  html body .import-textarea-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  html body .btn-import-sample {
+    min-height: 40px !important;
+    padding: 8px 14px !important;
+    font-size: 0.84rem !important;
+  }
+
+  html body .import-submit-row {
+    width: 100% !important;
+  }
+
+  html body .btn-import-submit {
+    width: 100% !important;
+    min-height: 46px !important;
+    justify-content: center !important;
+  }
+
+  /* Quiz & Exam Header Bar: 2-row full-width progress bar + non-wrapping pills */
+  html body #view-study .quiz-header-bar {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+    column-gap: 8px !important;
+  }
+
+  html body #view-study #btn-exit-study {
+    order: 1 !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  html body #view-study #btn-toggle-blind {
+    order: 2 !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 0.78rem !important;
+  }
+
+  html body #view-study #btn-quiz-fast-next {
+    order: 3 !important;
+    min-height: 40px !important;
+  }
+
+  html body #view-study #study-counter {
+    order: 4 !important;
+    margin-left: auto !important;
+    min-width: auto !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  html body #view-study .quiz-progress-track {
+    order: 10 !important;
+    flex: 1 0 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: 8px !important;
+  }
+
+  html body #btn-quiz-card-next,
+  html body #btn-quiz-prev,
+  html body #btn-quiz-next {
+    min-height: 42px !important;
+    height: auto !important;
+  }
+
+  html body #view-exam .quiz-header-bar {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  html body #view-exam .quiz-header-bar > .btn {
+    min-height: 40px !important;
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+  }
+
+  html body #view-exam .streak-chip {
+    min-height: 38px !important;
+    white-space: nowrap !important;
+  }
+
+  html body #exam-q-counter {
+    white-space: nowrap !important;
+    font-size: 0.84rem !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* 4. Mobile Landscape Fixes (667x375 & 844x390) */
+@media (orientation: landscape) and (max-height: 550px),
+       (orientation: landscape) and (max-width: 960px) and (max-height: 600px) {
+
+  /* Define --bnav-* theme tokens for ALL 4 themes in landscape (covers 844x390 too) */
+  :root,
+  html[data-theme="dark"],
+  html[data-theme="purple-pink"] {
+    --bnav-shell-bg: rgba(20, 14, 36, 0.95);
+    --bnav-shell-border: rgba(216, 180, 254, 0.28);
+    --bnav-idle-bg: rgba(255, 255, 255, 0.06);
+    --bnav-idle-stroke: #d8b4fe;
+    --bnav-active-bg: #9333ea;
+    --bnav-active-stroke: #ffffff;
+    --bnav-active-shadow: 0 6px 16px rgba(147, 51, 234, 0.45);
+  }
+
+  html[data-theme="monochrome"],
+  body[data-theme="monochrome"] {
+    --bnav-shell-bg: rgba(18, 18, 22, 0.96);
+    --bnav-shell-border: rgba(255, 255, 255, 0.24);
+    --bnav-idle-bg: rgba(255, 255, 255, 0.07);
+    --bnav-idle-stroke: #d4d4d8;
+    --bnav-active-bg: #ffffff;
+    --bnav-active-stroke: #09090b;
+    --bnav-active-shadow: 0 6px 16px rgba(255, 255, 255, 0.28);
+  }
+
+  html[data-theme="white-orange"],
+  body[data-theme="white-orange"] {
+    --bnav-shell-bg: rgba(255, 250, 244, 0.96);
+    --bnav-shell-border: rgba(234, 88, 12, 0.28);
+    --bnav-idle-bg: rgba(154, 52, 18, 0.07);
+    --bnav-idle-stroke: #44403c;
+    --bnav-active-bg: #f97316;
+    --bnav-active-stroke: #ffffff;
+    --bnav-active-shadow: 0 6px 16px rgba(249, 115, 22, 0.40);
+  }
+
+  html[data-theme="ascii"],
+  body[data-theme="ascii"] {
+    --bnav-shell-bg: rgba(10, 14, 18, 0.94);
+    --bnav-shell-border: rgba(52, 211, 153, 0.30);
+    --bnav-idle-bg: rgba(52, 211, 153, 0.08);
+    --bnav-idle-stroke: #cbd5e1;
+    --bnav-active-bg: #10b981;
+    --bnav-active-stroke: #ffffff;
+    --bnav-active-shadow: 0 6px 16px rgba(16, 185, 129, 0.42);
+  }
+
+  /* Fix left dock height > 100dvh via border-box */
+  html body:not(.quiz-active):not(.flashcard-active) .bottom-nav,
+  html body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav.bottom-nav {
+    box-sizing: border-box !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  html[data-theme="ascii"] body:not(.quiz-active):not(.flashcard-active) .bottom-nav,
+  html[data-theme="ascii"] body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav.bottom-nav {
+    background: linear-gradient(145deg, rgba(24, 28, 34, 0.90) 0%, rgba(12, 14, 19, 0.88) 100%) !important;
+    border-right: 1.5px solid rgba(52, 211, 153, 0.32) !important;
+  }
+
+  html[data-theme="ascii"] body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-item.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.42) !important;
+  }
+
+  /* Landscape Toast: clear 64px left dock, never clip left edge */
+  html body .toast-container,
+  html body #app-toast-container {
+    left: 76px !important;
+    right: 14px !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+    align-items: flex-end !important;
+    width: auto !important;
+    max-width: calc(100vw - 90px) !important;
+  }
+
+  html body.quiz-active .toast-container,
+  html body.flashcard-active .toast-container,
+  html body.quiz-active #app-toast-container,
+  html body.flashcard-active #app-toast-container {
+    left: 14px !important;
+    max-width: calc(100vw - 28px) !important;
+  }
+
+  html body .toast {
+    max-width: min(460px, 100%) !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+
+  /* Crisp unscaled Topbar HUD with extended touch target */
+  html body .topbar-hud-capsule {
+    transform: none !important;
+    height: 38px !important;
+    padding: 3px 5px !important;
+    gap: 4px !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-btn,
+  html body .topbar-hud-capsule .ascii-scene-cycle-btn {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    position: relative !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-btn::after,
+  html body .topbar-hud-capsule .ascii-scene-cycle-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: -5px !important;
+    border-radius: 9999px !important;
+  }
+
+  /* Landscape Dashboard Hero above-the-fold compaction (fits all 3 CTAs inside 375px & 390px) */
+  html body:not(.quiz-active):not(.flashcard-active) .content-wrapper {
+    padding: 48px 14px 24px 14px !important;
+  }
+
+  html body .editorial-hero-stage {
+    min-height: auto !important;
+    padding: 14px 18px !important;
+    margin-bottom: 20px !important;
+    gap: 12px !important;
+  }
+
+  html body .editorial-hero-stage .hero-title {
+    font-size: clamp(1.32rem, 3.3vw, 1.75rem) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 4px !important;
+  }
+
+  html body .editorial-hero-stage .hero-title-main,
+  html body .editorial-hero-stage .hero-title-sub,
+  html body .editorial-hero-stage .hero-title-accent {
+    font-size: inherit !important;
+  }
+
+  html body .hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
+    margin: 6px 0 10px 0 !important;
+    padding: 4px 10px !important;
+    gap: 8px !important;
+  }
+
+  html body #hero-lofi-bar .lofi-ctrl-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    flex-shrink: 0 !important;
+  }
+
+  html body .hero-actions {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  html body .hero-actions .btn {
+    width: auto !important;
+    flex: 1 1 auto !important;
+    min-height: 40px !important;
+    padding: 8px 14px !important;
+    font-size: 0.84rem !important;
+  }
+
+  /* Landscape Flashcard Auto-Height (fixes top clipping of "ĐÁP ÁN ĐÚNG") */
+  html body.flashcard-active .flashcard-stage,
+  html body.flashcard-active .flashcard-card {
+    height: auto !important;
+    min-height: 165px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  html body.flashcard-active .flashcard-face {
+    grid-area: 1 / 1 !important;
+    position: relative !important;
+    inset: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  html body.flashcard-active .flashcard-card:not(.flipped) .flashcard-back,
+  html body.flashcard-active .flashcard-card.flipped .flashcard-front {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html body.flashcard-active .flashcard-card.flipped .flashcard-back {
+    padding: 14px 18px !important;
+    height: auto !important;
+    min-height: 165px !important;
+  }
+
+  html body.flashcard-active .flashcard-content-wrap {
+    justify-content: flex-start !important;
+    overflow: visible !important;
+    padding: 6px 0 !important;
+  }
+
+  html body.flashcard-active #flashcard-srs-bar .srs-btn {
+    min-height: 44px !important;
+    height: auto !important;
+  }
+
+  /* Landscape Quiz & Import compaction */
+  html body.quiz-active .quiz-card,
+  html body #view-study .quiz-card {
+    padding: 12px 16px 16px 16px !important;
+  }
+
+  html body #view-study #btn-exit-study,
+  html body #view-study #btn-toggle-blind {
+    min-height: 40px !important;
+    height: 40px !important;
+    white-space: nowrap !important;
+  }
+
+  html body #view-study .quiz-progress-track {
+    min-width: 80px !important;
+    margin: 0 8px !important;
+  }
+
+  html body #import-raw-input {
+    min-height: 120px !important;
+  }
+}
+
+/* Prevent mid-word wraps ("Slidesho/w", "Garga/ntua") inside 2x2 ASCII scene grid on <= 480px */
+@media (max-width: 480px) {
+  html body .ascii-scene-pill-btn {
+    flex-direction: column !important;
+    padding: 8px 6px !important;
+    gap: 4px !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  html body .ascii-scene-pill-btn > span:not(.ascii-scene-pill-icon) {
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+  }
+}
+
+/* 5. Wave 2q Polish: Flatten nested Settings boxes (<= 640px), Landscape dock safe-centering & Mobile S (<= 360px) HUD centering */
+@media (max-width: 640px) {
+  html body #theme-energy-chamber {
+    padding: 12px 12px 14px 12px !important;
+    gap: 8px !important;
+  }
+
+  html body #theme-energy-chamber .energy-slider-control-wrap {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 4px 2px 0 2px !important;
+    margin-top: 2px !important;
+    gap: 10px !important;
+  }
+
+  html body #theme-energy-chamber .ascii-scene-settings-bar,
+  html body #theme-energy-chamber .ascii-scene-settings-bar.is-ascii-inactive {
+    background: transparent !important;
+    border: none !important;
+    border-top: 1px solid var(--border-subtle, var(--glass-border-subtle, rgba(255, 255, 255, 0.12))) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    margin: 2px 0 0 0 !important;
+    padding: 12px 0 0 0 !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 550px),
+       (orientation: landscape) and (max-width: 960px) and (max-height: 600px) {
+  html body:not(.quiz-active):not(.flashcard-active) .bottom-nav,
+  html body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav.bottom-nav {
+    justify-content: flex-start !important;
+    justify-content: safe center !important;
+  }
+
+  html body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-brand {
+    margin-top: auto !important;
+    margin-bottom: 2px !important;
+  }
+
+  html body:not(.quiz-active):not(.flashcard-active) #mobile-bottom-nav .bottom-nav-item:last-child {
+    margin-bottom: auto !important;
+  }
+}
+
+@media (max-width: 360px) {
+  html body .app-topbar {
+    justify-content: center !important;
+    padding: 10px 8px 0 8px !important;
+  }
+
+  html body .topbar-right {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  html body .topbar-hud-capsule {
+    margin-inline: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 3px 5px !important;
+    gap: 2px !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-switcher {
+    gap: 1px !important;
+  }
+
+  html body .topbar-hud-capsule .theme-icon-btn,
+  html body .topbar-hud-capsule .ascii-scene-cycle-btn {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+  }
+
+  html body .topbar-hud-capsule .hud-divider {
+    margin: 0 1px !important;
+    height: 16px !important;
+  }
+
+  html body .topbar-hud-capsule .streak-chip {
+    height: 30px !important;
+    padding: 0 6px !important;
+    font-size: 0.72rem !important;
+    gap: 3px !important;
+  }
+
+  html body .topbar-hud-capsule .ascii-scene-popover {
+    right: -68px !important;
+    min-width: 220px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}
