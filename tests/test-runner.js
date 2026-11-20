@@ -1177,7 +1177,7 @@ console.log('\n=== TEST SUITE 16: Phase 1j 144fps, 0ms Switch, Modal Scroll, Con
 
   // 9. Modal Vertical Scrolling & Convex Warp Lens
   assert(styleCss.includes('overflow-y: auto !important;') && styleCss.includes('max-height: calc(88vh - 140px) !important;'), 'modal-body restores smooth vertical scrolling');
-  assert(appJs.includes('filter id="liquid-edge-warp"'), 'app.js registers liquid-edge-warp filter');
+  assert(appJs.includes('filter id="liquid-edge-warp"') || appJs.includes('initLiquidGlassLensFilter() {}'), 'app.js registers or safely no-ops liquid-edge-warp filter');
   assert(themeCss.includes('backdrop-filter: url(#liquid-edge-warp)') || themeCss.includes('--popup-glass-volume-bg'), 'modal-box uses liquid glass volume or rim refraction');
 
   // 10. Deck Reset Button
@@ -2775,6 +2775,164 @@ Dòng kết luận cuối cùng.`;
   assert(swJs.includes('KaTeX_Size1-Regular.woff2'), 'Service Worker precaches KaTeX_Size1-Regular.woff2 font');
   assert(swJs.includes('KaTeX_Main-Regular.woff2'), 'Service Worker precaches KaTeX_Main-Regular.woff2 font');
   assert(swJs.includes('KaTeX_Math-Italic.woff2'), 'Service Worker precaches KaTeX_Math-Italic.woff2 font');
+}
+
+// === TEST SUITE 40: Phase 2i Performance & Architecture Audit Wave 1 ===
+console.log('\n--- Test Suite 40: Phase 2i Performance & Architecture Audit Wave 1 ---');
+{
+  const swJs = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+  const buildJs = fs.readFileSync(path.join(__dirname, '../scripts/build.js'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const lofiJs = fs.readFileSync(path.join(__dirname, '../js/lofi-music.js'), 'utf8');
+  const { AIParser } = require('../js/parser.js');
+  const { App } = require('../js/app.js');
+
+  // #1: Service Worker Network-First, safe auto-update & build hashing
+  assert(swJs.includes('isCoreCodeAsset') && swJs.includes("cache: 'no-cache'"), 'sw.js uses Network-First with cache: no-cache for core HTML/JS/CSS assets');
+  assert(swJs.includes('event.waitUntil('), 'sw.js wraps background cache writes inside event.waitUntil');
+  assert(appJs.includes("document.readyState === 'complete'") && appJs.includes('controllerchange') && appJs.includes('hadController'), 'setupPWA handles already-loaded state and safe controllerchange reload');
+  assert(buildJs.includes("crypto.createHash('sha256')") && buildJs.includes('distSwPath'), 'scripts/build.js stamps dynamic SHA-256 + timestamp CACHE_NAME into dist/sw.js');
+
+  // #2: Version-gated ensureDataIntegrity()
+  assert(dbJs.includes('integrityCheckVersion') && dbJs.includes('this._integrityVersion'), 'db.js gates ensureDataIntegrity() behind integrityCheckVersion meta');
+  assert(dbJs.includes('async ensureDataIntegrity() {'), 'db.js preserves exact ensureDataIntegrity() signature for test compatibility');
+  assert(dbJs.includes('this.ensureDataIntegrity({ force: true })'), 'db.js importAll forces full ensureDataIntegrity pass');
+
+  // #3: index.html KaTeX & Font cleanup + no-op initLiquidGlassLensFilter
+  const katexCssLinks = indexHtml.match(/katex\.min\.css/g) || [];
+  assert(katexCssLinks.length === 1 && !indexHtml.includes('cdn.jsdelivr.net'), 'index.html loads only local katex.min.css without CDN duplicate');
+  assert(indexHtml.includes('katex@0.18.7'), 'index.html retains katex@0.18.7 version identifier');
+  assert(!indexHtml.includes('Anton') && !indexHtml.includes('Lora') && !indexHtml.includes('Merriweather'), 'index.html removes unused Google Font families');
+  assert(!appJs.includes('createImageData') && typeof App.initLiquidGlassLensFilter === 'function', 'initLiquidGlassLensFilter is a lightweight no-op');
+
+  // #5: 4 Real Runtime Bugs fixed
+  assert(!appJs.includes('sounds.playThud'), 'app.js removes nonexistent sounds.playThud() call');
+  assert(!appJs.includes('c.srs.repetitions > 0') && appJs.includes('c.srs.repetition'), 'renderDashboard reads c.srs.repetition instead of nonexistent repetitions');
+  assert(appJs.includes('item?.deck || item'), 'renderDecks search unwraps item.deck safely');
+  assert(lofiJs.includes('this.currentIndex = 0;') && lofiJs.includes('revokeCustomTrackUrls') && lofiJs.includes('this.masterGainNode.disconnect()'), 'lofi-music.js initializes currentIndex, disconnects WebAudio nodes, and revokes ObjectURLs');
+
+  // #6: Web Worker error/timeout resilience & lightweight stats + local heatmap key
+  assert(appJs.includes('this._workerCallbacks.entries()') && appJs.includes('Worker timeout'), 'app.js rejects pending callbacks on worker error and enforces timeout');
+  assert(appJs.includes('lightCards') && appJs.includes('statsWorkerRes?.topicStats') && appJs.includes('statsWorkerRes?.subjectStats'), 'renderStatsView projects lightweight cards and reuses worker outputs');
+  assert(dbJs.includes('_formatLocalDateKey') && appJs.includes('_formatLocalDateKey'), 'Heatmap uses consistent local YYYY-MM-DD date keys');
+
+  // #8: Energy Wave DOM cache & cancelable RAF
+  assert(appJs.includes('_getWaveDomCache()') && appJs.includes('cancelAnimationFrame(this._sliderAnimRafId)'), 'Energy wave caches DOM nodes and cancels overlapping slider RAF');
+
+  // #10: Parser bounded repair & O(N) Map merge
+  const badBraces = '{' + '"a":1}'.repeat(500);
+  const t0 = Date.now();
+  const badRes = AIParser._tryRepairAndParseJson(badBraces);
+  const elapsedMs = Date.now() - t0;
+  assert(badRes === null && elapsedMs < 200, `_tryRepairAndParseJson bounds repair attempts on malformed braces (${elapsedMs}ms)`);
+
+  const truncatedValid = '{"quiz_title":"Test","questions":[{"id":"q1","question":"Q1?","options":[{"id":"a","text":"1"},{"id":"b","text":"2"}],"correct_option_id":"a"},{"id":"q2","question":"Cut';
+  const repaired = AIParser._tryRepairAndParseJson(truncatedValid);
+  assert(repaired && Array.isArray(repaired.questions) && repaired.questions.length === 1, '_tryRepairAndParseJson still rescues valid truncated quiz JSON');
+
+  const merged = AIParser._mergeParsedJsonBlocks([
+    { quiz_title: 'M', questions: [
+      { id: 'q1', question: 'Đạo hàm của x^2 là gì?', options: [{ id: 'a', text: '2x' }, { id: 'b', text: 'x' }], correct_option_id: 'a' },
+      { id: 'q2', question: 'Tính giá trị tích phân xác định từ 0 đến 1 của hàm số f(x)=2x', options: [{ id: 'a', text: '1' }, { id: 'b', text: '2' }], correct_option_id: 'a' }
+    ]},
+    { quiz_title: 'M', questions: [
+      { id: 'q1', question: 'Đạo hàm của x^2 là gì?', options: [{ id: 'a', text: '2x' }, { id: 'b', text: 'x' }], correct_option_id: 'a', explanation: 'Giải thích đầy đủ hơn nhiều so với bản trước để thay thế.' },
+      { id: 'q3', question: 'Tính giá trị tích phân xác định từ 0 đến 1 của hàm số f(x)=2x trên đoạn [0,1]', options: [{ id: 'a', text: '1' }, { id: 'b', text: '2' }], correct_option_id: 'a' }
+    ]}
+  ]);
+  assert(merged && merged.questions.length === 2, '_mergeParsedJsonBlocks deduplicates exact and >=20-char prefix questions in O(N)');
+  assert(merged.questions[0].explanation && merged.questions[0].explanation.includes('Giải thích đầy đủ'), '_mergeParsedJsonBlocks retains the more complete duplicate');
+}
+
+// === TEST SUITE 41: Phase 2j Wave 2 (Lofi Bar Spacing, Single-Fire Events, Reflow/RenderMath Optimization & Unified In-Place DB Cache) ===
+console.log('\n--- Test Suite 41: Phase 2j Wave 2 (Lofi Bar Spacing, Single-Fire Events, Reflow/RenderMath & Unified Cache) ---');
+{
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const themeCss = fs.readFileSync(path.join(__dirname, '../css/theme.css'), 'utf8');
+  const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  const dbJs = fs.readFileSync(path.join(__dirname, '../js/db.js'), 'utf8');
+  const { App } = require('../js/app.js');
+
+  // 1. Lofi Bar spacing (Desktop + Mobile, all 3 themes)
+  assert(themeCss.includes('.hero-heading-scrim #hero-lofi-bar.hero-lofi-bar') && themeCss.includes('margin: 12px 0 18px 0;'), 'theme.css gives Lofi bar balanced 18px bottom spacing over global reset');
+  assert(styleCss.includes('.hero-heading-scrim #hero-lofi-bar.hero-lofi-bar') && styleCss.includes('margin: 10px 0 16px 0;'), 'style.css enforces balanced Lofi bar spacing on desktop & mobile');
+
+  // 2. #4 Single-fire tab navigation & modal close delegation
+  const navListSlice = indexHtml.slice(indexHtml.indexOf('<ul class="nav-list">'), indexHtml.indexOf('</ul>', indexHtml.indexOf('<ul class="nav-list">')));
+  assert(!navListSlice.includes('<button type="button" title="Tổng quan" data-tooltip="Tổng quan" onclick='), 'Sidebar inner buttons do not duplicate parent li onclick handler');
+  assert(appJs.includes("if (btn.hasAttribute('onclick')) return;"), 'setupEventListeners skips [data-view] elements that already declare inline onclick');
+  const setupListenersSlice = appJs.slice(appJs.indexOf('setupEventListeners() {'), appJs.indexOf('initSpotlightHover() {'));
+  assert(!setupListenersSlice.includes("document.querySelectorAll('.modal-close').forEach"), 'setupEventListeners removes duplicate per-element modal-close listeners');
+  assert(!setupListenersSlice.includes("document.querySelectorAll('.modal-overlay').forEach"), 'setupEventListeners removes duplicate per-element modal-overlay listeners');
+  assert(!indexHtml.includes('modal-confirm-delete-deck\'))'), 'Delete-deck modal uses single global delegation without redundant inline _closeModal');
+  assert(!indexHtml.includes('modal-suggest-merge-subjects\'))'), 'Suggest-merge modal uses single global delegation without redundant inline _closeModal');
+
+  // 3. #7 Redundant renderMath removed, data-driven adaptOptionsLayout, merged scroll, debounced resize, single rAF Bank batch, GPU scaleX timer
+  const renderMathCalls = appJs.match(/this\.renderMath\(/g) || [];
+  assert(renderMathCalls.length === 2, `Only 2 raw-preview renderMath() calls remain (found ${renderMathCalls.length})`);
+  assert(appJs.includes('data-has-wide-option=') && appJs.includes('container.dataset.hasWideOption'), 'adaptOptionsLayout reads precomputed data-has-wide-option without serializing innerHTML on live DOM');
+
+  const fakeLiveDom = {
+    classList: {
+      classes: new Set(),
+      add(...cls) { cls.forEach(c => this.classes.add(c)); },
+      remove(...cls) { cls.forEach(c => this.classes.delete(c)); },
+      contains(c) { return this.classes.has(c); }
+    },
+    nodeType: 1,
+    dataset: { hasWideOption: '1' },
+    get innerHTML() { throw new Error('Must not read innerHTML on live DOM!'); },
+    querySelector() { return null; },
+    querySelectorAll() { return []; }
+  };
+  App.adaptOptionsLayout(fakeLiveDom);
+  assert(fakeLiveDom.classList.contains('quiz-options--single-col'), 'adaptOptionsLayout handles live DOM without touching container.innerHTML');
+
+  const scrollListeners = setupListenersSlice.match(/window\.addEventListener\('scroll'/g) || [];
+  assert(scrollListeners.length === 1 && setupListenersSlice.includes('cachedTopbar'), 'Scroll listeners in setupEventListeners merged into 1 passive listener with cached topbar');
+  assert(setupListenersSlice.includes("window.addEventListener('resize'") && setupListenersSlice.includes('150);'), 'Window resize listener is debounced at 150ms');
+  assert(appJs.includes('initialRevealEls') && !appJs.includes('requestAnimationFrame(() => this.adaptOptionsLayout(grid))'), 'Bank batch coalesces reveal into 1 rAF and drops per-card adaptOptionsLayout rAF');
+  assert(appJs.includes("bar.style.transform = 'scaleX(0)'") && !appJs.includes('void bar.offsetWidth'), 'startPerQuestionTimer animates GPU transform scaleX without forced offsetWidth reflow');
+  assert(styleCss.includes('transform: scaleX(1);') && styleCss.includes('transition: transform 1s linear;'), 'CSS configures .per-q-timer-fill for GPU transform animation');
+
+  // 4. #9 Unified _memCache, shallow-copy slice, and in-place saveCard/saveCardsBatch/deleteCard
+  assert(dbJs.includes('get _cardsCache()') && dbJs.includes('get _decksCache()') && dbJs.includes('get _subjectsCache()'), 'db.js unifies legacy caches as getter/setter aliases on _memCache');
+  assert(dbJs.includes('this._memCache.cards.slice()'), 'getAllCards returns shallow copy via .slice()');
+  assert(dbJs.includes('this._memCache.cards[idx] = snapshot'), 'saveCard updates _memCache.cards in-place without clearing cache');
+
+  const { execFileSync } = require('child_process');
+  const dbRuntimeProbe = `
+    global.window = {};
+    global.indexedDB = { open: () => ({}) };
+    const fs = require('fs');
+    eval(fs.readFileSync(${JSON.stringify(path.join(__dirname, '../js/db.js'))}, 'utf8'));
+    (async () => {
+      const inst = window.db;
+      inst.db = {};
+      inst.init = async () => inst.db;
+      const storeMap = new Map([['c1', { id: 'c1', deckId: 'd1', subjectId: 's1', question: 'Q1' }], ['c2', { id: 'c2', deckId: 'd1', subjectId: 's1', question: 'Q2' }]]);
+      inst._tx = () => ({ objectStore: () => ({ get: (k) => storeMap.get(k) || { id: k, subjectId: 's1' }, getAll: () => Array.from(storeMap.values()), put: (v) => { storeMap.set(v.id, v); return v; }, delete: (k) => { storeMap.delete(k); return true; } }) });
+      inst._promisify = async (x) => x;
+
+      const first = await inst.getAllCards();
+      first.push({ id: 'mutated' });
+      const second = await inst.getAllCards();
+      if (second.length !== 2) throw new Error('Shallow copy failed: caller mutation leaked into _memCache');
+
+      const revBefore = inst.revision;
+      await inst.saveCard({ id: 'c1', deckId: 'd1', question: 'Q1 Updated' });
+      if (inst.revision !== revBefore + 1) throw new Error('Revision did not bump on saveCard');
+      if (!inst._memCache.cards || inst._memCache.revision !== inst.revision) throw new Error('saveCard wiped _memCache instead of updating in-place');
+      const third = await inst.getAllCards();
+      if (third.find(c => c.id === 'c1')?.question !== 'Q1 Updated') throw new Error('In-place saveCard did not update cached card');
+      console.log('DB_RUNTIME_OK');
+    })().catch(e => { console.error(e); process.exit(1); });
+  `;
+  const probeOut = execFileSync(process.execPath, ['-e', dbRuntimeProbe], { encoding: 'utf8' });
+  assert(probeOut.includes('DB_RUNTIME_OK'), 'Runtime check: QuizDatabase shallow-copy .slice() and in-place saveCard preserve warm _memCache');
 }
 
 console.log(`\n========================================`);

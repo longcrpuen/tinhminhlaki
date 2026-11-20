@@ -110,10 +110,13 @@ const AIParser = {
     const trimmed = sanitized.trim();
     const isObject = trimmed.startsWith('{');
     const isArray = trimmed.startsWith('[');
-    if (!isObject && !isArray) return null;
+    if ((!isObject && !isArray) || !trimmed.includes('"')) return null;
 
+    const MAX_REPAIR_ATTEMPTS = 30;
+    let attempts = 0;
     let lastIndex = trimmed.lastIndexOf('}');
-    while (lastIndex > 0) {
+    while (lastIndex > 0 && attempts < MAX_REPAIR_ATTEMPTS) {
+      attempts++;
       const sliced = trimmed.slice(0, lastIndex + 1);
 
       if (isObject) {
@@ -269,7 +272,41 @@ const AIParser = {
     let subject = '';
 
     const mergedQuestions = [];
-    let wasDeduplicated = false;
+    const mergedMeta = [];
+    const byExactNorm = new Map();
+    const byPrefix20 = new Map();
+    const byId = new Map();
+
+    const extractMeta = (qItem) => {
+      if (!qItem) return { norm: '', id: '' };
+      const text = (typeof qItem === 'object' ? (qItem.question || qItem.q || qItem.title || '') : String(qItem)).trim();
+      if (!text) return { norm: '', id: '' };
+      const norm = this._normalizeQuestionForComparison(text);
+      const id = (typeof qItem === 'object' && qItem.id) ? String(qItem.id).trim().toLowerCase() : '';
+      return { norm, id };
+    };
+
+    const indexQuestion = (idx, meta) => {
+      if (!meta.norm) return;
+      byExactNorm.set(meta.norm, idx);
+      if (meta.norm.length >= 20) {
+        const p20 = meta.norm.slice(0, 20);
+        let bucket = byPrefix20.get(p20);
+        if (!bucket) {
+          bucket = [];
+          byPrefix20.set(p20, bucket);
+        }
+        if (!bucket.includes(idx)) bucket.push(idx);
+      }
+      if (meta.id && meta.norm.length >= 15) {
+        let idBucket = byId.get(meta.id);
+        if (!idBucket) {
+          idBucket = [];
+          byId.set(meta.id, idBucket);
+        }
+        if (!idBucket.includes(idx)) idBucket.push(idx);
+      }
+    };
 
     for (const block of blocks) {
       if (typeof block === 'object' && block !== null && !Array.isArray(block)) {
@@ -282,14 +319,55 @@ const AIParser = {
 
       const qs = Array.isArray(block) ? block : (Array.isArray(block.questions) ? block.questions : (Array.isArray(block.cards) ? block.cards : []));
       for (const q of qs) {
-        const existingIdx = mergedQuestions.findIndex(m => this._areQuestionsDuplicate(m, q));
+        const meta = extractMeta(q);
+        let existingIdx = -1;
+
+        if (meta.norm) {
+          const exact = byExactNorm.get(meta.norm);
+          if (exact !== undefined) {
+            existingIdx = exact;
+          } else {
+            if (meta.norm.length >= 20) {
+              const bucket = byPrefix20.get(meta.norm.slice(0, 20));
+              if (bucket) {
+                for (let b = 0; b < bucket.length; b++) {
+                  const candIdx = bucket[b];
+                  const mNorm = mergedMeta[candIdx].norm;
+                  if (mNorm.length >= 20 && (mNorm.startsWith(meta.norm) || meta.norm.startsWith(mNorm))) {
+                    existingIdx = candIdx;
+                    break;
+                  }
+                }
+              }
+            }
+            if (existingIdx === -1 && meta.id && meta.norm.length >= 15) {
+              const idBucket = byId.get(meta.id);
+              if (idBucket) {
+                const p20 = meta.norm.slice(0, 20);
+                for (let b = 0; b < idBucket.length; b++) {
+                  const candIdx = idBucket[b];
+                  const mMeta = mergedMeta[candIdx];
+                  if (mMeta.norm.length >= 15 && mMeta.norm.slice(0, 20) === p20) {
+                    existingIdx = candIdx;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+
         if (existingIdx !== -1) {
-          wasDeduplicated = true;
           if (this._isQuestionMoreComplete(q, mergedQuestions[existingIdx])) {
             mergedQuestions[existingIdx] = q;
+            mergedMeta[existingIdx] = meta;
+            indexQuestion(existingIdx, meta);
           }
         } else {
+          const newIdx = mergedQuestions.length;
           mergedQuestions.push(q);
+          mergedMeta.push(meta);
+          indexQuestion(newIdx, meta);
         }
       }
     }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mindsparks-v4.14.0';
+const CACHE_NAME = 'mindsparks-v4.15.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -69,26 +69,65 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Cache-First strategy with network fallback
+// Fetch: Network-First for core app shell/code (HTML/JS/CSS/JSON), Cache-First + waitUntil SWR for static media/fonts
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests and http/https schemes
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
 
+  let isSameOrigin = false;
+  let pathname = '';
+  try {
+    const reqUrl = new URL(event.request.url);
+    isSameOrigin = reqUrl.origin === self.location.origin;
+    pathname = reqUrl.pathname;
+  } catch (_) {}
+
+  const isCoreCodeAsset = isSameOrigin && (
+    event.request.mode === 'navigate' ||
+    pathname === '/' ||
+    pathname.endsWith('/') ||
+    /\.(?:html|js|css|json)$/i.test(pathname)
+  );
+
+  if (isCoreCodeAsset) {
+    event.respondWith(
+      fetch(event.request.mode === 'navigate' ? event.request.url : event.request, { cache: 'no-cache' })
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            event.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache))
+            );
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            if (event.request.headers.get('accept')?.includes('text/html')) {
+              return caches.match('./index.html');
+            }
+          });
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch update in background if online (stale-while-revalidate for local assets)
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse.clone());
-            });
-          }
-        }).catch(() => {
-          // Offline, ignore background fetch error
-        });
+        // Fetch update in background if online (stale-while-revalidate wrapped in waitUntil)
+        event.waitUntil(
+          fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+              return caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
+            }
+          }).catch(() => {
+            // Offline, ignore background fetch error
+          })
+        );
         return cachedResponse;
       }
 
@@ -98,12 +137,11 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         }
         const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache))
+        );
         return networkResponse;
       }).catch(() => {
-        // If navigating to an HTML page while offline, return index.html
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('./index.html');
         }

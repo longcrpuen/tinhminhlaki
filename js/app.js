@@ -220,77 +220,8 @@ const App = {
 
   initHeroGlassMatrix() {},
 
-  // Hàm khởi tạo Bộ lọc Thấu kính Lồi Quang học (Phase 1i)
-  initLiquidGlassLensFilter() {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById('liquid-glass-svg-defs')) return;
-    try {
-      const size = 256;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const imgData = ctx.createImageData(size, size);
-      const data = imgData.data;
-
-      // Tạo trường vector khúc xạ vành thấu kính lồi (Convex Meniscus Bezel)
-      const rimWidth = 0.24; // 24% vành ngoài bị uốn cong như thấu kính lồi
-      for (let y = 0; y < size; y++) {
-        const ny = (y / (size - 1)) * 2 - 1; // -1 .. 1
-        for (let x = 0; x < size; x++) {
-          const nx = (x / (size - 1)) * 2 - 1; // -1 .. 1
-          // Khoảng cách Signed Distance tới đường viền bo góc (Squircle / Rounded Rect)
-          const ax = Math.abs(nx);
-          const ay = Math.abs(ny);
-          const dist = Math.pow(Math.pow(ax, 4) + Math.pow(ay, 4), 0.25);
-
-          let r = 128;
-          let g = 128;
-          if (dist > 1 - rimWidth) {
-            const t = Math.min(1, (dist - (1 - rimWidth)) / rimWidth);
-            // Đường cong khúc xạ bậc 3 tạo hiệu ứng mép kính lồi
-            const curve = Math.pow(t, 2.6);
-            r = Math.round(128 + nx * curve * 120);
-            g = Math.round(128 + ny * curve * 120);
-          }
-          const idx = (y * size + x) * 4;
-          data[idx] = Math.max(0, Math.min(255, r));
-          data[idx + 1] = Math.max(0, Math.min(255, g));
-          data[idx + 2] = 128;
-          data[idx + 3] = 255;
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-      const mapUrl = canvas.toDataURL('image/png');
-
-      const svgNS = 'http://www.w3.org/2000/svg';
-      const svg = document.createElementNS(svgNS, 'svg');
-      svg.id = 'liquid-glass-svg-defs';
-      svg.setAttribute('width', '0');
-      svg.setAttribute('height', '0');
-      svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none;z-index:-1;';
-      svg.innerHTML = `
-        <defs>
-          <filter id="liquid-edge-warp" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-            <feImage href="${mapUrl}" result="lensMap" preserveAspectRatio="none" />
-            <feDisplacementMap in="SourceGraphic" in2="lensMap" scale="68" xChannelSelector="R" yChannelSelector="G" result="warped" />
-            <feGaussianBlur in="warped" stdDeviation="0.6" result="clean" />
-            <feColorMatrix in="clean" type="saturate" values="2.2" result="saturated" />
-          </filter>
-          <filter id="liquid-convex-lens" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-            <feImage href="${mapUrl}" result="lensMap" preserveAspectRatio="none" />
-            <feDisplacementMap in="SourceGraphic" in2="lensMap" scale="32" xChannelSelector="R" yChannelSelector="G" result="refracted" />
-            <feGaussianBlur in="refracted" stdDeviation="16" result="blurred" />
-            <feColorMatrix in="blurred" type="saturate" values="1.85" result="saturated" />
-          </filter>
-        </defs>
-      `;
-      document.body.appendChild(svg);
-    } catch (e) {
-      console.warn('Liquid glass SVG filter fallback to CSS blur:', e);
-    }
-  },
+  // Bộ lọc Thấu kính Lồi (đã vô hiệu hóa vì không có rule CSS tham chiếu, giữ no-op để tương thích)
+  initLiquidGlassLensFilter() {},
 
   initScrollRevealObserver() {
     if (typeof IntersectionObserver === 'undefined') return;
@@ -535,6 +466,7 @@ const App = {
         const { id, success, result, error } = e.data || {};
         const cb = this._workerCallbacks.get(id);
         if (cb) {
+          if (cb.timer) clearTimeout(cb.timer);
           this._workerCallbacks.delete(id);
           if (success) cb.resolve(result);
           else cb.reject(new Error(error || 'Worker task failed'));
@@ -542,6 +474,18 @@ const App = {
       };
       this._worker.onerror = (err) => {
         console.warn('[WebWorker] Background worker error, falling back to main thread:', err);
+        const workerErr = new Error((err && err.message) || 'WebWorker error');
+        for (const [, cb] of this._workerCallbacks.entries()) {
+          if (cb.timer) clearTimeout(cb.timer);
+          try { cb.reject(workerErr); } catch (_) {}
+        }
+        this._workerCallbacks.clear();
+        try {
+          if (this._worker && typeof this._worker.terminate === 'function') {
+            this._worker.terminate();
+          }
+        } catch (_) {}
+        this._worker = null;
       };
     } catch (err) {
       console.warn('[WebWorker] Could not initialize Web Worker:', err);
@@ -549,7 +493,7 @@ const App = {
     }
   },
 
-  callWorker(action, payload, transferables = []) {
+  callWorker(action, payload, transferables = [], timeoutMs = 8000) {
     if (!this._worker && typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
       this.initWorker();
     }
@@ -559,10 +503,18 @@ const App = {
 
     const id = ++this._workerReqId;
     return new Promise((resolve, reject) => {
-      this._workerCallbacks.set(id, { resolve, reject });
+      const timer = timeoutMs > 0 ? setTimeout(() => {
+        if (this._workerCallbacks.has(id)) {
+          this._workerCallbacks.delete(id);
+          reject(new Error(`Worker timeout (${action})`));
+        }
+      }, timeoutMs) : null;
+
+      this._workerCallbacks.set(id, { resolve, reject, timer });
       try {
         this._worker.postMessage({ id, action, payload }, transferables);
       } catch (err) {
+        if (timer) clearTimeout(timer);
         this._workerCallbacks.delete(id);
         reject(err);
       }
@@ -1774,11 +1726,57 @@ const App = {
     this._updateEnergyWaveVisuals(sliderVal);
   },
 
+  _sliderAnimRafId: null,
+  _waveDomCache: null,
+  _lastWaveAppliedZone: null,
+
+  _getWaveDomCache() {
+    if (this._waveDomCache && (this._waveDomCache.svgEl?.isConnected || this._waveDomCache.slider?.isConnected)) {
+      return this._waveDomCache;
+    }
+    this._lastWaveAppliedZone = null;
+    this._waveDomCache = {
+      corePath: document.getElementById('wave-primary-core') || document.getElementById('energy-wave-main-path'),
+      glowPath: document.getElementById('wave-primary-glow'),
+      harm1Path: document.getElementById('wave-harmonic-1') || document.getElementById('energy-wave-harmonic-path'),
+      harm2Path: document.getElementById('wave-harmonic-2'),
+      areaPriPath: document.getElementById('wave-area-primary') || document.getElementById('energy-wave-bg-path'),
+      areaSecPath: document.getElementById('wave-area-secondary'),
+      legacyMain: document.getElementById('energy-wave-main-path'),
+      legacyHarm: document.getElementById('energy-wave-harmonic-path'),
+      legacyBg: document.getElementById('energy-wave-bg-path'),
+      cursorBeam: document.getElementById('wave-cursor-beam'),
+      cursorHalo: document.getElementById('wave-cursor-halo'),
+      cursorOrb: document.getElementById('wave-cursor-orb'),
+      gate1: document.getElementById('phase-gate-1'),
+      gate2: document.getElementById('phase-gate-2'),
+      stop1: document.getElementById('ew-stop-1'),
+      stop2: document.getElementById('ew-stop-2'),
+      stop3: document.getElementById('ew-stop-3'),
+      areaTop: document.getElementById('ew-area-top'),
+      areaMid: document.getElementById('ew-area-mid'),
+      areaBot: document.getElementById('ew-area-bot'),
+      badgeEl: document.getElementById('energy-wave-mode-badge'),
+      titleEl: document.querySelector('.energy-wave-title') || document.getElementById('energy-wave-mode-title'),
+      subtitleEl: document.querySelector('.theme-subtitle') || document.getElementById('theme-subtitle'),
+      pillEl: document.querySelector('.energy-level-pill') || document.getElementById('energy-wave-mode-badge'),
+      liveDot: document.querySelector('.theme-live-dot'),
+      svgEl: document.getElementById('energy-wave-svg'),
+      slider: document.getElementById('theme-energy-slider'),
+      nodeBtns: Array.from(document.querySelectorAll('.energy-node-btn'))
+    };
+    return this._waveDomCache;
+  },
+
   onThemeEnergySliderInput(rawVal) {
+    if (this._sliderAnimRafId) {
+      cancelAnimationFrame(this._sliderAnimRafId);
+      this._sliderAnimRafId = null;
+    }
     const val = parseFloat(rawVal) || 0;
-    const slider = document.getElementById('theme-energy-slider');
-    if (slider) {
-      this.syncRangeSliderVisual(slider);
+    const dom = this._getWaveDomCache();
+    if (dom.slider) {
+      this.syncRangeSliderVisual(dom.slider);
     }
 
     this._pendingWaveVal = val;
@@ -1818,6 +1816,10 @@ const App = {
   },
 
   selectThemeViaEnergyWave(themeName) {
+    if (this._sliderAnimRafId) {
+      cancelAnimationFrame(this._sliderAnimRafId);
+      this._sliderAnimRafId = null;
+    }
     const normTheme = (themeName === 'purple-pink' || themeName === 'violet-rose') ? 'violet-rose' : themeName;
     const targetVal = normTheme === 'violet-rose' ? 16 : (normTheme === 'monochrome' ? 50 : 84);
     const slider = document.getElementById('theme-energy-slider');
@@ -1841,9 +1843,13 @@ const App = {
         this.syncRangeSliderVisual(slider);
       }
       this._updateEnergyWaveVisuals(cur);
-      if (t < 1) requestAnimationFrame(animateSlider);
+      if (t < 1) {
+        this._sliderAnimRafId = requestAnimationFrame(animateSlider);
+      } else {
+        this._sliderAnimRafId = null;
+      }
     };
-    requestAnimationFrame(animateSlider);
+    this._sliderAnimRafId = requestAnimationFrame(animateSlider);
   },
 
   _waveLUT: (() => {
@@ -1876,9 +1882,14 @@ const App = {
     const f = 2.4 + t * 4.2; // Tần số sóng tăng dần từ 2.4 đến 6.6 chu kỳ
     const phase = t * Math.PI * 6; // Pha dịch chuyển mượt theo tay kéo
 
-    let dPrimary = '';
-    let dHarm1 = '';
-    let dHarm2 = '';
+    if (!this._wavePathBufPrimary || this._wavePathBufPrimary.length !== steps + 1) {
+      this._wavePathBufPrimary = new Array(steps + 1);
+      this._wavePathBufHarm1 = new Array(steps + 1);
+      this._wavePathBufHarm2 = new Array(steps + 1);
+    }
+    const bufPrimary = this._wavePathBufPrimary;
+    const bufHarm1 = this._wavePathBufHarm1;
+    const bufHarm2 = this._wavePathBufHarm2;
 
     const uArr = lut.u;
     const xArr = lut.x;
@@ -1900,146 +1911,128 @@ const App = {
       const y3 = baseY - Math.sin(2 * Math.PI * f * 0.82 * u - phase - 1.57) * (maxAmp * 0.45 * envelope);
 
       const cmd = i === 0 ? 'M' : 'L';
-      dPrimary += `${cmd} ${x.toFixed(1)} ${y1.toFixed(1)} `;
-      dHarm1 += `${cmd} ${x.toFixed(1)} ${y2.toFixed(1)} `;
-      dHarm2 += `${cmd} ${x.toFixed(1)} ${y3.toFixed(1)} `;
+      const xStr = x.toFixed(1);
+      bufPrimary[i] = `${cmd} ${xStr} ${y1.toFixed(1)}`;
+      bufHarm1[i] = `${cmd} ${xStr} ${y2.toFixed(1)}`;
+      bufHarm2[i] = `${cmd} ${xStr} ${y3.toFixed(1)}`;
     }
 
+    const dPrimary = bufPrimary.join(' ');
+    const dHarm1 = bufHarm1.join(' ');
+    const dHarm2 = bufHarm2.join(' ');
     const dAreaPrimary = `${dPrimary} L ${width} 135 L 0 135 Z`;
     const dAreaSecondary = `${dHarm1} L ${width} 135 L 0 135 Z`;
 
-    // Cập nhật các lớp đường cong SVG
-    const corePath = document.getElementById('wave-primary-core') || document.getElementById('energy-wave-main-path');
-    const glowPath = document.getElementById('wave-primary-glow');
-    const harm1Path = document.getElementById('wave-harmonic-1') || document.getElementById('energy-wave-harmonic-path');
-    const harm2Path = document.getElementById('wave-harmonic-2');
-    const areaPriPath = document.getElementById('wave-area-primary') || document.getElementById('energy-wave-bg-path');
-    const areaSecPath = document.getElementById('wave-area-secondary');
-    const legacyMain = document.getElementById('energy-wave-main-path');
-    const legacyHarm = document.getElementById('energy-wave-harmonic-path');
-    const legacyBg = document.getElementById('energy-wave-bg-path');
+    const dom = this._getWaveDomCache();
 
-    if (corePath) corePath.setAttribute('d', dPrimary.trim());
-    if (glowPath) glowPath.setAttribute('d', dPrimary.trim());
-    if (harm1Path) harm1Path.setAttribute('d', dHarm1.trim());
-    if (harm2Path) harm2Path.setAttribute('d', dHarm2.trim());
-    if (areaPriPath) areaPriPath.setAttribute('d', dAreaPrimary.trim());
-    if (areaSecPath) areaSecPath.setAttribute('d', dAreaSecondary.trim());
-    if (legacyMain) legacyMain.setAttribute('d', dPrimary.trim());
-    if (legacyHarm) legacyHarm.setAttribute('d', dHarm1.trim());
-    if (legacyBg) legacyBg.setAttribute('d', dAreaPrimary.trim());
+    // Cập nhật các lớp đường cong SVG từ cache DOM
+    if (dom.corePath) dom.corePath.setAttribute('d', dPrimary);
+    if (dom.glowPath) dom.glowPath.setAttribute('d', dPrimary);
+    if (dom.harm1Path) dom.harm1Path.setAttribute('d', dHarm1);
+    if (dom.harm2Path) dom.harm2Path.setAttribute('d', dHarm2);
+    if (dom.areaPriPath) dom.areaPriPath.setAttribute('d', dAreaPrimary);
+    if (dom.areaSecPath) dom.areaSecPath.setAttribute('d', dAreaSecondary);
+    if (dom.legacyMain) dom.legacyMain.setAttribute('d', dPrimary);
+    if (dom.legacyHarm) dom.legacyHarm.setAttribute('d', dHarm1);
+    if (dom.legacyBg) dom.legacyBg.setAttribute('d', dAreaPrimary);
 
     // Cập nhật Hạt Tâm Quang Năng trượt theo đỉnh sóng
     const xc = t * width;
     const clampedT = Math.max(0.001, Math.min(0.999, t));
     const envC = Math.pow(Math.sin(Math.PI * clampedT), 0.65);
     const yc = baseY - Math.sin(2 * Math.PI * f * t - phase) * (maxAmp * envC);
+    const xcStr = xc.toFixed(1);
+    const ycStr = yc.toFixed(1);
 
-    const cursorBeam = document.getElementById('wave-cursor-beam');
-    const cursorHalo = document.getElementById('wave-cursor-halo');
-    const cursorOrb = document.getElementById('wave-cursor-orb');
-    if (cursorBeam) {
-      cursorBeam.setAttribute('x1', xc.toFixed(1));
-      cursorBeam.setAttribute('y1', yc.toFixed(1));
-      cursorBeam.setAttribute('x2', xc.toFixed(1));
-      cursorBeam.setAttribute('y2', '135');
+    if (dom.cursorBeam) {
+      dom.cursorBeam.setAttribute('x1', xcStr);
+      dom.cursorBeam.setAttribute('y1', ycStr);
+      dom.cursorBeam.setAttribute('x2', xcStr);
+      dom.cursorBeam.setAttribute('y2', '135');
     }
-    if (cursorHalo) {
-      cursorHalo.setAttribute('cx', xc.toFixed(1));
-      cursorHalo.setAttribute('cy', yc.toFixed(1));
+    if (dom.cursorHalo) {
+      dom.cursorHalo.setAttribute('cx', xcStr);
+      dom.cursorHalo.setAttribute('cy', ycStr);
     }
-    if (cursorOrb) {
-      cursorOrb.setAttribute('cx', xc.toFixed(1));
-      cursorOrb.setAttribute('cy', yc.toFixed(1));
+    if (dom.cursorOrb) {
+      dom.cursorOrb.setAttribute('cx', xcStr);
+      dom.cursorOrb.setAttribute('cy', ycStr);
     }
 
     // Cập nhật 2 Cổng Pha Tinh Thể (Crystal Phase Gates at 33.333% & 66.667%)
     const numericVal = pct;
-    const gate1 = document.getElementById('phase-gate-1');
-    const gate2 = document.getElementById('phase-gate-2');
-    if (gate1) {
-      gate1.classList.toggle('active', numericVal >= 33.333);
-      gate1.classList.toggle('is-passed', numericVal >= 33.333);
+    if (dom.gate1) {
+      dom.gate1.classList.toggle('active', numericVal >= 33.333);
+      dom.gate1.classList.toggle('is-passed', numericVal >= 33.333);
     }
-    if (gate2) {
-      gate2.classList.toggle('active', numericVal >= 66.667);
-      gate2.classList.toggle('is-passed', numericVal >= 66.667);
+    if (dom.gate2) {
+      dom.gate2.classList.toggle('active', numericVal >= 66.667);
+      dom.gate2.classList.toggle('is-passed', numericVal >= 66.667);
     }
 
-    // Nội suy màu quang phổ ánh sáng liên tục & cập nhật HUD
-    const stop1 = document.getElementById('ew-stop-1');
-    const stop2 = document.getElementById('ew-stop-2');
-    const stop3 = document.getElementById('ew-stop-3');
-    const areaTop = document.getElementById('ew-area-top');
-    const areaMid = document.getElementById('ew-area-mid');
-    const areaBot = document.getElementById('ew-area-bot');
-    const badgeEl = document.getElementById('energy-wave-mode-badge');
-    const titleEl = document.querySelector('.energy-wave-title') || document.getElementById('energy-wave-mode-title');
-    const subtitleEl = document.querySelector('.theme-subtitle') || document.getElementById('theme-subtitle');
-    const pillEl = document.querySelector('.energy-level-pill') || badgeEl;
-    const liveDot = document.querySelector('.theme-live-dot');
-    const svgEl = document.getElementById('energy-wave-svg');
-
-    if (pillEl) {
-      pillEl.textContent = `Năng lượng • ${Math.round(pct)}%`;
+    if (dom.pillEl) {
+      dom.pillEl.textContent = `Năng lượng • ${Math.round(pct)}%`;
     }
 
-    let themeName = '';
-    let themeSubtitle = '';
-    let dotColor = '#ec4899';
-    let glowColor = 'rgba(168, 85, 247, 0.55)';
-
-    if (pct < 33.5) {
-      themeName = 'Tím Hồng (Cyber Violet)';
-      themeSubtitle = 'Kính tím khói mộng mơ';
-      dotColor = '#ec4899';
-      if (stop1) stop1.setAttribute('stop-color', '#8b5cf6');
-      if (stop2) stop2.setAttribute('stop-color', '#ec4899');
-      if (stop3) stop3.setAttribute('stop-color', '#f472b6');
-      if (areaTop) areaTop.setAttribute('stop-color', '#d946ef');
-      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(126, 34, 206, 0.20)');
-      if (areaBot) areaBot.setAttribute('stop-color', '#100b1c');
-      glowColor = 'rgba(192, 132, 252, 0.65)';
-    } else if (pct <= 66.5) {
-      themeName = 'Trắng Đen (Monochrome Laser)';
-      themeSubtitle = 'Tối giản đơn sắc công nghệ';
-      dotColor = '#ffffff';
-      if (stop1) stop1.setAttribute('stop-color', '#ffffff');
-      if (stop2) stop2.setAttribute('stop-color', '#e4e4e7');
-      if (stop3) stop3.setAttribute('stop-color', '#a1a1aa');
-      if (areaTop) areaTop.setAttribute('stop-color', '#ffffff');
-      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(161, 161, 170, 0.12)');
-      if (areaBot) areaBot.setAttribute('stop-color', '#09090b');
-      glowColor = 'rgba(255, 255, 255, 0.55)';
-    } else {
-      themeName = 'Trắng Cam (Solar Amber)';
-      themeSubtitle = 'Ấm áp tràn đầy năng lượng';
-      dotColor = '#f97316';
-      if (stop1) stop1.setAttribute('stop-color', '#f97316');
-      if (stop2) stop2.setAttribute('stop-color', '#fb923c');
-      if (stop3) stop3.setAttribute('stop-color', '#ea580c');
-      if (areaTop) areaTop.setAttribute('stop-color', '#f97316');
-      if (areaMid) areaMid.setAttribute('stop-color', 'rgba(251, 146, 60, 0.20)');
-      if (areaBot) areaBot.setAttribute('stop-color', '#fff7ed');
-      glowColor = 'rgba(249, 115, 22, 0.75)';
-    }
-
-    if (titleEl) titleEl.textContent = themeName;
-    if (subtitleEl) subtitleEl.textContent = themeSubtitle;
-    if (liveDot) liveDot.style.backgroundColor = dotColor;
-
-    if (svgEl) svgEl.style.filter = `drop-shadow(0 4px 18px ${glowColor})`;
-
-    const slider = document.getElementById('theme-energy-slider');
-    if (slider) {
-      slider.style.setProperty('--slider-pct', `${pct.toFixed(1)}%`);
-      slider.style.setProperty('--energy-clip-pct', `${pct.toFixed(1)}%`);
+    if (dom.slider) {
+      const pctStr = `${pct.toFixed(1)}%`;
+      dom.slider.style.setProperty('--slider-pct', pctStr);
+      dom.slider.style.setProperty('--energy-clip-pct', pctStr);
     }
 
     const activeZone = pct < 33.5 ? 'purple-pink' : (pct <= 66.5 ? 'monochrome' : 'white-orange');
-    document.querySelectorAll('.energy-node-btn').forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeZone);
-    });
+    if (activeZone !== this._lastWaveAppliedZone) {
+      this._lastWaveAppliedZone = activeZone;
+      let themeName = '';
+      let themeSubtitle = '';
+      let dotColor = '#ec4899';
+      let glowColor = 'rgba(168, 85, 247, 0.55)';
+
+      if (activeZone === 'purple-pink') {
+        themeName = 'Tím Hồng (Cyber Violet)';
+        themeSubtitle = 'Kính tím khói mộng mơ';
+        dotColor = '#ec4899';
+        if (dom.stop1) dom.stop1.setAttribute('stop-color', '#8b5cf6');
+        if (dom.stop2) dom.stop2.setAttribute('stop-color', '#ec4899');
+        if (dom.stop3) dom.stop3.setAttribute('stop-color', '#f472b6');
+        if (dom.areaTop) dom.areaTop.setAttribute('stop-color', '#d946ef');
+        if (dom.areaMid) dom.areaMid.setAttribute('stop-color', 'rgba(126, 34, 206, 0.20)');
+        if (dom.areaBot) dom.areaBot.setAttribute('stop-color', '#100b1c');
+        glowColor = 'rgba(192, 132, 252, 0.65)';
+      } else if (activeZone === 'monochrome') {
+        themeName = 'Trắng Đen (Monochrome Laser)';
+        themeSubtitle = 'Tối giản đơn sắc công nghệ';
+        dotColor = '#ffffff';
+        if (dom.stop1) dom.stop1.setAttribute('stop-color', '#ffffff');
+        if (dom.stop2) dom.stop2.setAttribute('stop-color', '#e4e4e7');
+        if (dom.stop3) dom.stop3.setAttribute('stop-color', '#a1a1aa');
+        if (dom.areaTop) dom.areaTop.setAttribute('stop-color', '#ffffff');
+        if (dom.areaMid) dom.areaMid.setAttribute('stop-color', 'rgba(161, 161, 170, 0.12)');
+        if (dom.areaBot) dom.areaBot.setAttribute('stop-color', '#09090b');
+        glowColor = 'rgba(255, 255, 255, 0.55)';
+      } else {
+        themeName = 'Trắng Cam (Solar Amber)';
+        themeSubtitle = 'Ấm áp tràn đầy năng lượng';
+        dotColor = '#f97316';
+        if (dom.stop1) dom.stop1.setAttribute('stop-color', '#f97316');
+        if (dom.stop2) dom.stop2.setAttribute('stop-color', '#fb923c');
+        if (dom.stop3) dom.stop3.setAttribute('stop-color', '#ea580c');
+        if (dom.areaTop) dom.areaTop.setAttribute('stop-color', '#f97316');
+        if (dom.areaMid) dom.areaMid.setAttribute('stop-color', 'rgba(251, 146, 60, 0.20)');
+        if (dom.areaBot) dom.areaBot.setAttribute('stop-color', '#fff7ed');
+        glowColor = 'rgba(249, 115, 22, 0.75)';
+      }
+
+      if (dom.titleEl) dom.titleEl.textContent = themeName;
+      if (dom.subtitleEl) dom.subtitleEl.textContent = themeSubtitle;
+      if (dom.liveDot) dom.liveDot.style.backgroundColor = dotColor;
+      if (dom.svgEl) dom.svgEl.style.filter = `drop-shadow(0 4px 18px ${glowColor})`;
+
+      for (let idx = 0; idx < dom.nodeBtns.length; idx++) {
+        const btn = dom.nodeBtns[idx];
+        btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === activeZone);
+      }
+    }
   },
 
   triggerThemeWaveTransition(targetTheme) {
@@ -2355,6 +2348,9 @@ const App = {
 
   // --- PWA SETUP ---
   setupPWA() {
+    if (this._pwaInitialized) return;
+    this._pwaInitialized = true;
+
     // Register Service Worker in production only (avoid dev cache collisions on localhost)
     if ('serviceWorker' in navigator) {
       const isLocalhost = Boolean(
@@ -2372,10 +2368,39 @@ const App = {
           }
         }).catch(() => {});
       } else {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
+        const registerSW = () => {
+          const hadController = Boolean(navigator.serviceWorker.controller);
+          let refreshing = false;
+
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!hadController || refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
+
+          navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+            .then((reg) => {
+              if (!reg) return;
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    try {
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    } catch (_) {}
+                  }
+                });
+              });
+            })
             .catch(err => console.warn('SW Registration failed:', err));
-        });
+        };
+
+        if (document.readyState === 'complete') {
+          registerSW();
+        } else {
+          window.addEventListener('load', registerSW, { once: true });
+        }
       }
     }
 
@@ -2423,8 +2448,9 @@ const App = {
     if (this._listenersInitialized) return;
     this._listenersInitialized = true;
 
-    // Navigation clicks
+    // Navigation clicks (skip elements that already carry inline onclick to prevent double/triple execution)
     document.querySelectorAll('[data-view]').forEach(btn => {
+      if (btn.hasAttribute('onclick')) return;
       btn.addEventListener('click', (e) => {
         const view = e.currentTarget.dataset.view;
         this.navigateTo(view);
@@ -2499,28 +2525,7 @@ const App = {
       });
     }
 
-    // Close modal handlers (buttons and overlay backdrop click)
-    const closeModal = () => {
-      this.closeAllModals();
-    };
-
-    document.querySelectorAll('.modal-close').forEach(btn => {
-      btn.addEventListener('click', closeModal);
-    });
-
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          const isCompletionModal = overlay.id === 'modal-session-complete';
-          closeModal();
-          if (isCompletionModal) {
-            this.navigateTo('decks');
-          }
-        }
-      });
-    });
-
-    // Capture-phase listener for all modal close buttons and overlay backdrop clicks (Prompt 1m Mục 12 & 13, Prompt 1r Mục 2)
+    // Single capture-phase listener for all modal close buttons and overlay backdrop clicks
     document.addEventListener('click', (e) => {
       const closeBtn = e.target.closest('.modal-close, [data-modal-close], [data-dismiss="modal"], .btn-cancel-modal');
       if (closeBtn) {
@@ -2546,9 +2551,17 @@ const App = {
         this.closeAllModals();
         return;
       }
-      if (e.target.classList && e.target.classList.contains('modal-overlay') && (e.target.classList.contains('show') || e.target.classList.contains('active'))) {
-        const isCompletionModal = e.target.id === 'modal-session-complete';
+      const overlay = e.target;
+      if (overlay.classList && overlay.classList.contains('modal-overlay') && (overlay.classList.contains('show') || overlay.classList.contains('active'))) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isCompletionModal = overlay.id === 'modal-session-complete';
+        const isLightbox = overlay.id === 'modal-lightbox';
         this.closeAllModals();
+        if (isLightbox) {
+          const lightboxImg = document.getElementById('lightbox-image');
+          if (lightboxImg) lightboxImg.src = '';
+        }
         if (isCompletionModal) {
           this.navigateTo('decks');
         }
@@ -2748,18 +2761,21 @@ const App = {
       }
     });
 
-    // High-performance passive scroll listener (zero main thread lag)
-    window.addEventListener('scroll', () => {
-      const topbar = document.getElementById('app-topbar') || document.querySelector('.app-topbar');
-      if (topbar) {
-        if (window.scrollY > 8) topbar.classList.add('scrolled');
-        else topbar.classList.remove('scrolled');
-      }
-    }, { passive: true });
-
-    // Passive Scroll Pointer-Freeze (Phase 1l: Tạm khóa kích hoạt lại hover tốn kém trong lúc đang cuộn nhanh để giữ cứng 144+ FPS)
+    // Merged single passive scroll listener (cached topbar + scroll pointer-freeze)
+    let cachedTopbar = document.getElementById('app-topbar') || document.querySelector('.app-topbar');
+    let isTopbarScrolled = false;
     let scrollTimer = null;
     window.addEventListener('scroll', () => {
+      if (!cachedTopbar || !cachedTopbar.isConnected) {
+        cachedTopbar = document.getElementById('app-topbar') || document.querySelector('.app-topbar');
+      }
+      if (cachedTopbar) {
+        const shouldScroll = window.scrollY > 8;
+        if (shouldScroll !== isTopbarScrolled) {
+          isTopbarScrolled = shouldScroll;
+          cachedTopbar.classList.toggle('scrolled', shouldScroll);
+        }
+      }
       if (!document.body.classList.contains('is-scrolling')) {
         document.body.classList.add('is-scrolling');
       }
@@ -2769,17 +2785,22 @@ const App = {
       }, 90);
     }, { passive: true });
 
-    // Adaptive options layout on resize
+    // Debounced adaptive options layout on resize (150ms)
+    let resizeTimer = null;
     window.addEventListener('resize', () => {
-      const studyOptions = document.getElementById('quiz-options-container');
-      if (studyOptions && this.currentView === 'study') {
-        this.adaptOptionsLayout(studyOptions);
-      }
-      const examOptions = document.getElementById('exam-options-container');
-      if (examOptions && this.currentView === 'exam') {
-        this.adaptOptionsLayout(examOptions);
-      }
-    });
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const currentCardOpts = this.activeSession?.cards?.[this.activeSession.currentIndex]?.options || null;
+        const studyOptions = document.getElementById('quiz-options-container');
+        if (studyOptions && this.currentView === 'study') {
+          this.adaptOptionsLayout(studyOptions, currentCardOpts);
+        }
+        const examOptions = document.getElementById('exam-options-container');
+        if (examOptions && this.currentView === 'exam') {
+          this.adaptOptionsLayout(examOptions, currentCardOpts);
+        }
+      }, 150);
+    }, { passive: true });
 
     // Initialize desktop spotlight hover tracking (Stream 2)
     this.initSpotlightHover();
@@ -3019,9 +3040,10 @@ const App = {
       const isDue = !c.srs?.dueDate || c.srs.dueDate <= nowTs;
       if (isDue) dueCardsCount++;
       if (c.srs?.state === 'mastered') masteredCount++;
-      if (c.srs && c.srs.repetitions > 0) {
+      const reps = c.srs ? (c.srs.repetition ?? c.srs.repetitions ?? 0) : 0;
+      if (reps > 0 || (c.stats && c.stats.reviewsCount > 0)) {
         learnedCount++;
-        if (c.srs.state !== 'lapsed') {
+        if (c.srs?.state !== 'learning' && c.srs?.state !== 'lapsed') {
           nonLapsedCount++;
         }
       }
@@ -3371,10 +3393,17 @@ const App = {
       const q = this._decksSearchQuery;
       summaries = summaries.filter(s => {
         const matchSubject = (s.name || '').toLowerCase().includes(q);
-        const matchDecks = (s.decks || []).some(d => (d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+        const matchDecks = (s.decks || []).some(item => {
+          const d = item?.deck || item;
+          return (d?.name || '').toLowerCase().includes(q) || (d?.description || '').toLowerCase().includes(q);
+        });
         return matchSubject || matchDecks;
       }).map(s => {
-        const filteredDecks = (s.decks || []).filter(d => (s.name || '').toLowerCase().includes(q) || (d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+        const matchSubject = (s.name || '').toLowerCase().includes(q);
+        const filteredDecks = (s.decks || []).filter(item => {
+          const d = item?.deck || item;
+          return matchSubject || (d?.name || '').toLowerCase().includes(q) || (d?.description || '').toLowerCase().includes(q);
+        });
         return { ...s, decks: filteredDecks, decksCount: filteredDecks.length };
       });
     }
@@ -3963,7 +3992,6 @@ const App = {
         const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
         expText.innerHTML = this.formatRichText(exp);
         expBox.classList.add('show');
-        this.renderMath(expBox);
       }
       if (fastNextBtn) {
         fastNextBtn.classList.add('show');
@@ -4028,10 +4056,6 @@ const App = {
         nextBtn.style.display = 'none';
       }
     }
-
-    // Render LaTeX Math Formulas
-    const quizArea = document.getElementById('study-quiz-area');
-    this.renderMath(quizArea);
   },
 
   // --- UNIFIED OPTION CLEANING & ADAPTIVE 2x2 LAYOUT ---
@@ -4105,6 +4129,8 @@ const App = {
     if (!container) return;
     if (typeof window !== 'undefined' && window.innerWidth < 640) return;
 
+    const optionsData = arguments[1] || null;
+
     // Reset single-column class and scaled classes
     container.classList.remove('layout-single-column', 'quiz-options--single-col');
     container.querySelectorAll('.katex-scaled-down, .katex-scaled-down-1, .katex-scaled-down-2').forEach(el => {
@@ -4113,11 +4139,26 @@ const App = {
     });
 
     // CHỈ gán .quiz-options--single-col khi có ít nhất 1 đáp án chứa bảng Markdown hoặc ma trận rộng >= 3 cột
-    const hasTable = Boolean(container.querySelector('.md-table, table, .table-scroll'));
-    let hasWideOption = hasTable;
-    if (!hasWideOption && container.innerHTML) {
-      if (this.isWideMatrixOrTableOption(container.innerHTML)) {
-        hasWideOption = true;
+    let hasWideOption = false;
+    if (Array.isArray(optionsData)) {
+      hasWideOption = optionsData.some(opt => this.isWideMatrixOrTableOption(opt));
+    } else if (container.dataset && container.dataset.hasWideOption !== undefined) {
+      hasWideOption = container.dataset.hasWideOption === '1';
+    } else {
+      hasWideOption = Boolean(container.querySelector('.md-table, table, .table-scroll'));
+      if (!hasWideOption && typeof container.querySelectorAll === 'function') {
+        const annotations = container.querySelectorAll('annotation[encoding="application/x-tex"]');
+        for (let i = 0; i < annotations.length; i++) {
+          if (this.isWideMatrixOrTableOption(annotations[i].textContent || '')) {
+            hasWideOption = true;
+            break;
+          }
+        }
+      }
+      if (!hasWideOption && typeof container.nodeType === 'undefined' && container.innerHTML) {
+        if (this.isWideMatrixOrTableOption(container.innerHTML)) {
+          hasWideOption = true;
+        }
       }
     }
 
@@ -4136,6 +4177,7 @@ const App = {
     optionsContainer.classList.remove('layout-single-column', 'quiz-options--single-col');
 
     const hasWideOption = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
+    optionsContainer.dataset.hasWideOption = hasWideOption ? '1' : '0';
     if (hasWideOption) {
       optionsContainer.classList.add('layout-single-column', 'quiz-options--single-col');
     }
@@ -4210,9 +4252,7 @@ const App = {
       optionsContainer.appendChild(btn);
     });
 
-    const quizArea = document.getElementById('study-quiz-area');
-    this.renderMath(quizArea);
-    this.adaptOptionsLayout(optionsContainer);
+    this.adaptOptionsLayout(optionsContainer, card.options);
   },
 
   revealBlindOptions() {
@@ -4373,7 +4413,6 @@ const App = {
       const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
       expText.innerHTML = this.formatRichText(exp);
       expBox.classList.add('show');
-      this.renderMath(expBox);
     }
 
     // Reveal Fast-Next button in top header
@@ -4500,7 +4539,6 @@ const App = {
       const exp = this.remapExplanationLetters(card.explanation || 'Không có giải thích thêm.', letterMap);
       expText.innerHTML = this.formatRichText(exp);
       expBox.classList.add('show');
-      this.renderMath(expBox);
     }
 
     // Reveal Fast-Next button in top header
@@ -4772,9 +4810,6 @@ const App = {
     if (hardPreview) hardPreview.textContent = SRS.getIntervalPreview(card.srs, 2);
     if (goodPreview) goodPreview.textContent = SRS.getIntervalPreview(card.srs, 3);
     if (easyPreview) easyPreview.textContent = SRS.getIntervalPreview(card.srs, 4);
-
-    // Render LaTeX math
-    this.renderMath(flashcard);
   },
 
   toggleFlashcardExplanation() {
@@ -5615,13 +5650,10 @@ const App = {
       });
     }
 
-    this.renderMath(document.getElementById('view-exam'));
     if (optContainer) {
       const hasWideOption = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
-      if (hasWideOption) {
-        optContainer.classList.add('layout-single-column', 'quiz-options--single-col');
-      }
-      this.adaptOptionsLayout(optContainer);
+      optContainer.dataset.hasWideOption = hasWideOption ? '1' : '0';
+      this.adaptOptionsLayout(optContainer, card.options);
     }
 
     // Prev / Next button state
@@ -5785,8 +5817,6 @@ const App = {
           if (counterEl) counterEl.textContent = `Đã làm: ${newAnsweredCount} / ${total}`;
         });
       });
-
-      this.renderMath(listEl);
     }
   },
 
@@ -6782,20 +6812,44 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   // --- STATS VIEW ---
   async renderStatsView() {
-    const [allCards, logs, streak] = await Promise.all([
+    const [allCards, logs, streak, subjects, decks] = await Promise.all([
       db.getAllCards(),
-      db.getRecentLogs(500),
-      db.getMeta('streak', { count: 0, history: [] })
+      db.getRecentLogs(2000),
+      db.getMeta('streak', { count: 0, history: [] }),
+      db.getAllSubjects(),
+      db.getAllDecks()
     ]);
 
     // States breakdown & accuracy calculation
     let states = null;
     let accPct = 0;
     let totalReviews = logs.length;
+    let statsWorkerRes = null;
 
     if (typeof PERF_CONFIG !== 'undefined' && PERF_CONFIG.USE_WEB_WORKER) {
       try {
-        const statsWorkerRes = await this.callWorker('COMPUTE_STATS', { cards: allCards, logs });
+        // Project lightweight payload without question/options/explanation/base64 image
+        const lightCards = new Array(allCards.length);
+        for (let i = 0; i < allCards.length; i++) {
+          const c = allCards[i];
+          lightCards[i] = {
+            topic: c.topic,
+            tag: c.tag,
+            subjectId: c.subjectId,
+            srs: c.srs ? { state: c.srs.state, dueDate: c.srs.dueDate } : null,
+            stats: c.stats ? {
+              reviewsCount: c.stats.reviewsCount || 0,
+              correctCount: c.stats.correctCount || 0,
+              incorrectCount: c.stats.incorrectCount || 0
+            } : null
+          };
+        }
+        const lightLogs = new Array(logs.length);
+        for (let i = 0; i < logs.length; i++) {
+          const l = logs[i];
+          lightLogs[i] = { timestamp: l.timestamp, isCorrect: l.isCorrect };
+        }
+        statsWorkerRes = await this.callWorker('COMPUTE_STATS', { cards: lightCards, logs: lightLogs });
         if (statsWorkerRes && statsWorkerRes.states) {
           states = statsWorkerRes.states;
           accPct = statsWorkerRes.accPct;
@@ -6878,9 +6932,13 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       }
     }
 
-    await this.renderContributionHeatmap();
-    await this.renderSubjectPerformanceTable(allCards);
-    await this.renderTopicPerformanceTable(allCards);
+    await this.renderContributionHeatmap(statsWorkerRes?.heatmapMap || null);
+    await this.renderSubjectPerformanceTable(allCards, {
+      subjects,
+      decks,
+      subjectStats: statsWorkerRes?.subjectStats || null
+    });
+    await this.renderTopicPerformanceTable(allCards, statsWorkerRes?.topicStats || null);
     this.observeUnrevealedItems();
   },
 
@@ -6955,6 +7013,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
 
   // --- PER-QUESTION COUNTDOWN TIMER ---
   perQuestionTimerTimeout: null,
+  _perQTimerRafId: null,
 
   async startPerQuestionTimer() {
     this.clearPerQuestionTimer();
@@ -6969,20 +7028,36 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     track.style.display = 'block';
     bar.style.transition = 'none';
     bar.style.width = '100%';
+    bar.style.transformOrigin = '0% 50%';
+    bar.style.transform = 'scaleX(1)';
 
-    // Force layout reflow
-    void bar.offsetWidth;
+    const startAnim = () => {
+      this._perQTimerRafId = null;
+      bar.style.transition = `transform ${seconds}s linear`;
+      bar.style.transform = 'scaleX(0)';
+    };
 
-    bar.style.transition = `width ${seconds}s linear`;
-    bar.style.width = '0%';
+    if (typeof requestAnimationFrame === 'function') {
+      this._perQTimerRafId = requestAnimationFrame(() => {
+        this._perQTimerRafId = requestAnimationFrame(startAnim);
+      });
+    } else {
+      startAnim();
+    }
 
     this.perQuestionTimerTimeout = setTimeout(() => {
-      sounds.playThud();
+      if (typeof sounds !== 'undefined' && typeof sounds.playIncorrect === 'function') {
+        sounds.playIncorrect();
+      }
       this.showToast('Hết thời gian suy nghĩ cho câu hỏi này!', 'warning');
     }, seconds * 1000);
   },
 
   clearPerQuestionTimer() {
+    if (this._perQTimerRafId && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._perQTimerRafId);
+      this._perQTimerRafId = null;
+    }
     if (this.perQuestionTimerTimeout) {
       clearTimeout(this.perQuestionTimerTimeout);
       this.perQuestionTimerTimeout = null;
@@ -6992,7 +7067,7 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     if (track) track.style.display = 'none';
     if (bar) {
       bar.style.transition = 'none';
-      bar.style.width = '100%';
+      bar.style.transform = 'scaleX(1)';
     }
   },
 
@@ -7563,14 +7638,36 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   // --- CONTRIBUTION HEATMAP & TOPIC BREAKDOWN ---
-  async renderContributionHeatmap() {
+  _formatLocalDateKey(d) {
+    const dt = d instanceof Date ? d : new Date(d);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  },
+
+  async renderContributionHeatmap(precomputedHeatmapMap = null) {
     const grid = document.getElementById('stats-heatmap-grid');
     if (!grid) return;
 
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const todayStr = this._formatLocalDateKey(now);
 
     try {
-      let data = await db.getContributionHeatmapData(365);
+      let data;
+      if (precomputedHeatmapMap && typeof precomputedHeatmapMap === 'object') {
+        data = [];
+        for (let i = 364; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+          const dateStr = this._formatLocalDateKey(d);
+          const count = precomputedHeatmapMap[dateStr] || 0;
+          let level = 0;
+          if (count >= 10) level = 4;
+          else if (count >= 6) level = 3;
+          else if (count >= 3) level = 2;
+          else if (count >= 1) level = 1;
+          data.push({ date: dateStr, count, level });
+        }
+      } else {
+        data = await db.getContributionHeatmapData(365);
+      }
       grid.innerHTML = '';
 
       // Defensive guard against non-array data
@@ -7641,33 +7738,38 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
     }
   },
 
-  async renderTopicPerformanceTable(cachedCards = null) {
+  async renderTopicPerformanceTable(cachedCards = null, precomputedTopicStats = null) {
     const tbody = document.getElementById('stats-topic-tbody');
     if (!tbody) return;
 
-    const allCards = cachedCards || await db.getAllCards();
-    const topicsMap = {};
+    let list;
+    if (Array.isArray(precomputedTopicStats)) {
+      list = [...precomputedTopicStats];
+    } else {
+      const allCards = cachedCards || await db.getAllCards();
+      const topicsMap = {};
 
-    allCards.forEach(c => {
-      const topic = c.topic || c.tag || 'Chung';
-      if (!topicsMap[topic]) {
-        topicsMap[topic] = {
-          topic,
-          total: 0,
-          reviewed: 0,
-          correct: 0,
-          incorrect: 0
-        };
-      }
-      topicsMap[topic].total++;
-      if (c.stats.reviewsCount > 0) {
-        topicsMap[topic].reviewed++;
-      }
-      topicsMap[topic].correct += (c.stats.correctCount || 0);
-      topicsMap[topic].incorrect += (c.stats.incorrectCount || 0);
-    });
+      allCards.forEach(c => {
+        const topic = c.topic || c.tag || 'Chung';
+        if (!topicsMap[topic]) {
+          topicsMap[topic] = {
+            topic,
+            total: 0,
+            reviewed: 0,
+            correct: 0,
+            incorrect: 0
+          };
+        }
+        topicsMap[topic].total++;
+        if (c.stats?.reviewsCount > 0) {
+          topicsMap[topic].reviewed++;
+        }
+        topicsMap[topic].correct += (c.stats?.correctCount || 0);
+        topicsMap[topic].incorrect += (c.stats?.incorrectCount || 0);
+      });
 
-    const list = Object.values(topicsMap);
+      list = Object.values(topicsMap);
+    }
     if (list.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Chưa có chủ đề nào.</td></tr>';
       return;
@@ -8085,32 +8187,17 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
       ).join('');
 
       const newCards = Array.from(tempWrap.children);
+      const initialRevealEls = [];
       newCards.forEach((cardEl, localIdx) => {
         const delayMs = isInitial ? Math.min(localIdx * 42, 260) : Math.min(localIdx * 35, 160);
         cardEl.style.setProperty('--bank-float-delay', `${delayMs}ms`);
         cardEl.classList.add('bank-card-float-item');
         if (isInitial) {
-          // Các thẻ đầu tiên trong màn hình float lên ngay lập tức như các block ở tab khác
-          if (typeof requestAnimationFrame === 'function') {
-            requestAnimationFrame(() => {
-              cardEl.classList.add('is-visible');
-            });
-          } else {
-            cardEl.classList.add('is-visible');
-          }
+          initialRevealEls.push(cardEl);
         } else if (this._bankCardRevealObserver) {
           this._bankCardRevealObserver.observe(cardEl);
         } else {
           cardEl.classList.add('is-visible');
-        }
-
-        const grid = cardEl.querySelector('.bank-card-options-grid');
-        if (grid && grid.querySelector('.katex-inline-wrap, .katex')) {
-          if (typeof requestAnimationFrame === 'function') {
-            requestAnimationFrame(() => this.adaptOptionsLayout(grid));
-          } else {
-            this.adaptOptionsLayout(grid);
-          }
         }
         fragment.appendChild(cardEl);
       });
@@ -8120,6 +8207,20 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
         listContainer.insertBefore(fragment, sentinel);
       } else {
         listContainer.appendChild(fragment);
+      }
+
+      if (initialRevealEls.length > 0) {
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(() => {
+            for (let i = 0; i < initialRevealEls.length; i++) {
+              initialRevealEls[i].classList.add('is-visible');
+            }
+          });
+        } else {
+          for (let i = 0; i < initialRevealEls.length; i++) {
+            initialRevealEls[i].classList.add('is-visible');
+          }
+        }
       }
     };
 
@@ -8253,8 +8354,10 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
           <div style="padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent); font-weight: 600; margin-bottom: 12px;">
             <b>Đáp án số chính xác:</b> ${this._escapeHtml(card.correct_answer !== null && card.correct_answer !== undefined ? String(card.correct_answer) : '')}
           </div>
-        ` : `
-          <div class="bank-card-options-grid">
+        ` : (() => {
+          const hasWideOpt = (card.options || []).some(opt => this.isWideMatrixOrTableOption(opt));
+          return `
+          <div class="bank-card-options-grid${hasWideOpt ? ' layout-single-column quiz-options--single-col' : ''}" data-has-wide-option="${hasWideOpt ? '1' : '0'}">
             ${(card.options || []).map((opt, i) => {
               const rawText = this.getCardRawOptionAt(card, i);
               const { letter, cleanText } = this.cleanOptionText(rawText, i);
@@ -8271,7 +8374,8 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
             `;
             }).join('')}
           </div>
-        `}
+        `;
+        })()}
 
         ${card.explanation ? `
           <div style="font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent);">
@@ -8730,48 +8834,52 @@ Do địa vị chính trị - xã hội của giai cấp công nhân quy định
   },
 
   // --- SUBJECT PERFORMANCE BREAKDOWN (A3) ---
-  async renderSubjectPerformanceTable(cachedCards = null) {
+  async renderSubjectPerformanceTable(cachedCards = null, precomputed = null) {
     const tbody = document.getElementById('stats-subject-tbody');
     if (!tbody) return;
 
-    const subjects = await db.getAllSubjects();
-    const allCards = cachedCards || await db.getAllCards();
+    const subjects = (precomputed && Array.isArray(precomputed.subjects)) ? precomputed.subjects : await db.getAllSubjects();
+    const decks = (precomputed && Array.isArray(precomputed.decks)) ? precomputed.decks : await db.getAllDecks();
+    const preSubjectStats = precomputed && precomputed.subjectStats && typeof precomputed.subjectStats === 'object' ? precomputed.subjectStats : null;
 
     // Map cards and stats to subjects
     const subjectStatsMap = new Map();
     subjects.forEach(s => {
+      const pre = preSubjectStats ? preSubjectStats[s.id] : null;
       subjectStatsMap.set(s.id, {
         subject: s,
         deckCount: 0,
-        totalCards: 0,
-        dueCards: 0,
-        reviewsCount: 0,
-        correctCount: 0,
-        incorrectCount: 0
+        totalCards: pre ? (pre.totalCards || 0) : 0,
+        dueCards: pre ? (pre.dueCards || 0) : 0,
+        reviewsCount: pre ? (pre.reviewsCount || 0) : 0,
+        correctCount: pre ? (pre.correctCount || 0) : 0,
+        incorrectCount: pre ? (pre.incorrectCount || 0) : 0
       });
     });
 
-    const now = Date.now();
-    const decks = await db.getAllDecks();
     decks.forEach(d => {
       const sId = d.subjectId || 'subj_unassigned';
       const stat = subjectStatsMap.get(sId);
       if (stat) stat.deckCount++;
     });
 
-    allCards.forEach(c => {
-      const sId = c.subjectId || 'subj_unassigned';
-      const stat = subjectStatsMap.get(sId);
-      if (stat) {
-        stat.totalCards++;
-        if (!c.srs?.dueDate || c.srs.dueDate <= now) stat.dueCards++;
-        if (c.stats) {
-          stat.reviewsCount += (c.stats.reviewsCount || 0);
-          stat.correctCount += (c.stats.correctCount || 0);
-          stat.incorrectCount += (c.stats.incorrectCount || 0);
+    if (!preSubjectStats) {
+      const allCards = cachedCards || await db.getAllCards();
+      const now = Date.now();
+      allCards.forEach(c => {
+        const sId = c.subjectId || 'subj_unassigned';
+        const stat = subjectStatsMap.get(sId);
+        if (stat) {
+          stat.totalCards++;
+          if (!c.srs?.dueDate || c.srs.dueDate <= now) stat.dueCards++;
+          if (c.stats) {
+            stat.reviewsCount += (c.stats.reviewsCount || 0);
+            stat.correctCount += (c.stats.correctCount || 0);
+            stat.incorrectCount += (c.stats.incorrectCount || 0);
+          }
         }
-      }
-    });
+      });
+    }
 
     let html = '';
     let count = 0;

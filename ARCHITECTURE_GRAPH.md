@@ -1,12 +1,12 @@
 # TinhMinhLaKey — Bản Đồ Kiến Trúc Toàn Bộ Ứng Dụng (Architecture Graph)
 
-> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Phase 1v — Bố Cục Trải Rộng Toàn Màn Hình Chuẩn Bản Gốc, Hệ Thống Điều Khiển Liquid Glass Controls, Tinh Chỉnh Buồng Sóng Sạch Sẽ & Cỗ Máy Thuật Toán Max Ping 120FPS)**  
+> **Tài liệu tham chiếu chuẩn hóa kiến trúc ứng dụng TinhMinhLaKey (Phiên bản Phase 2j — Audit Hiệu Năng & Kiến Trúc Đợt 2: Khoảng Cách Lofi Bar 3 Theme, Single-Fire Events #4, Tối Ưu Reflow/RenderMath/ScaleX Timer #7 & Hợp Nhất Cache In-Place #9)**  
 > Dùng làm bản đồ điều phối gốc cho toàn bộ các phiên bản nâng cấp, sửa đổi tính năng, tái cấu trúc UI/UX và bảo trì hệ thống.
 >
-> * **Tổng số tệp cốt lõi:** 11 tệp chính + 27 bộ kiểm thử hồi quy (Test Suites).
-> * **Tổng số dòng code thực tế:** `index.html` (2,333 dòng), `js/app.js` (8,619 dòng), `js/db.js` (1,653 dòng), `js/lofi-music.js` (701 dòng), `js/parser.js` (797 dòng), `js/srs.js` (122 dòng), `js/audio.js` (325 dòng), `js/worker.js` (254 dòng), `css/style.css` (11,359 dòng), `css/theme.css` (3,275 dòng), `tests/test-runner.js` (1,720 dòng).
-> * **Tổng quy mô mã nguồn:** 31,158 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
-> * **Kết quả kiểm thử tự động:** 100% PASS (564/564 kiểm thử trên 27 Test Suites).
+> * **Tổng số tệp cốt lõi:** 12 tệp chính + 41 bộ kiểm thử hồi quy (Test Suites 1–41).
+> * **Tổng số dòng code thực tế:** `index.html` (2,412 dòng), `js/app.js` (9,577 dòng), `js/db.js` (1,981 dòng), `js/lofi-music.js` (754 dòng), `js/parser.js` (1,260 dòng), `js/srs.js` (123 dòng), `js/audio.js` (326 dòng), `js/worker.js` (255 dòng), `sw.js` (159 dòng), `css/style.css` (12,347 dòng), `css/theme.css` (3,283 dòng), `tests/test-runner.js` (2,943 dòng).
+> * **Tổng quy mô mã nguồn:** 35,420 dòng code Vanilla JS, CSS3 và HTML5 thuần (Zero Framework Dependency).
+> * **Kết quả kiểm thử tự động:** 100% PASS (908/908 kiểm thử trên 41 Test Suites).
 
 ---
 
@@ -14,7 +14,7 @@
 
 ```mermaid
 graph TD
-    Root["App Root<br/>(index.html: 2,333 dòng | js/app.js: 8,619 dòng | js/db.js: 1,653 dòng | css/theme.css: 3,275 dòng | css/style.css: 11,359 dòng | js/lofi-music.js: 701 dòng)"]
+    Root["App Root<br/>(index.html: 2,412 dòng | js/app.js: 9,577 dòng | js/db.js: 1,981 dòng | css/theme.css: 3,283 dòng | css/style.css: 12,347 dòng | js/lofi-music.js: 754 dòng)"]
 
     Root --> B1["Branch 1: Global Shell & Full-Width Responsive Architecture<br/>(Desktop Sidebar 244px/68px, Margin 264px/88px, Full Width 100% .content-wrapper, Zero 1240px Limit, Liquid Glass Controls --lg-ctrl-*, Mobile Bottom Nav 999px)"]
     Root --> B2["Branch 2: #view-dashboard<br/>(Single-Pass O(N) Dashboard Aggregation, Mini Heatmap 7 Days O(1) Lookup, Hero Quote Stage, 4 Status Metric Blocks Neon, Lofi Track Fill 0% -> val%)"]
@@ -114,21 +114,22 @@ sequenceDiagram
 
 ## PHẦN 5: DANH MỤC CÁC ĐIỂM NÓNG HIỆU NĂNG & THÔNG SỐ TỆP CỐT LÕI
 
-### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 1x)
+### 1. Kích Thước & Độ Phức Tạp Của Toàn Bộ Các File Cốt Lõi (Phase 2j)
 
 | Tên File | Số Dòng Code Thực Tế | Kích Thước Tệp (KB) | Đánh Giá Tải & Trọng Tâm Tối Ưu |
 | :--- | :--- | :--- | :--- |
-| `css/style.css` | 11,383 dòng | ~355 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, Concentric Topbar Pill (`padding: 4px`, `height: 40px`, `border-radius: 9999px`, nút theme & streak `32px` trên Desktop; `34px`/`28px` trên Mobile). |
-| `css/theme.css` | 3,277 dòng | ~101 KB | Nguồn token thiết kế duy nhất cho 3 theme. Quản lý `--lg-ctrl-*`, `--sidebar-glass-*`, `--wave-chamber-*`, đồng bộ Topbar HUD Capsule đồng tâm. |
-| `js/app.js` | 8,664 dòng | ~342 KB | Bộ điều khiển giao diện chính. Chứa `_waveLUT`, single-pass $O(N)$ dashboard aggregation, LRU Cache KaTeX, `getCorrectOptionIndex`, `cleanOptionText`, `getCardRawOptionAt`, phân loại chuẩn 3 nguồn thẻ (`ai`, `lms`, `manual`). |
-| `index.html` | 2,334 dòng | ~122 KB | Khung 8 view chính, 10 popup modal, buồng sóng sạch sẽ chuẩn Header, cụm Topbar HUD Capsule đồng tâm. |
-| `js/db.js` | 1,814 dòng | ~76 KB | Tầng IndexedDB `MindSparksQuizDB`. Hỗ trợ tự phục hồi `healCorruptedCardOptions(card)` và chuẩn hóa nguồn thẻ cũ trong `ensureDataIntegrity()`, in-memory cache `_memCache`. |
-| `tests/test-runner.js` | 1,984 dòng | ~88 KB | 30 Test Suites bảo vệ toàn diện 633 trường hợp kiểm thử tự động (100% PASS). |
-| `js/lofi-music.js` | 702 dòng | ~28 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise + slider track fill). |
-| `js/parser.js` | 801 dòng | ~32 KB | Bộ phân tích AI JSON & Moodle LMS Quiz với zero-truncation parser, gán mặc định `source: 'ai'`, prompt template chuẩn sư phạm cho trường `explanation`. |
-| `js/audio.js` | 326 dòng | ~12 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
-| `js/worker.js` | 254 dòng | ~9 KB | Service Worker phục vụ tính năng Offline-First PWA và precache tài nguyên. |
-| `js/srs.js` | 123 dòng | ~5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
+| `css/style.css` | 12,347 dòng | ~378 KB | Bố cục trải rộng 100%, Liquid Glass controls `.lg-pill-btn`, Concentric Topbar Pill, khoảng cách `#hero-lofi-bar` tới `.hero-actions` (`margin-bottom: 18px`, mobile `16px`), và `.per-q-timer-fill` chuyển sang `transform: scaleX()` + `will-change: transform`. |
+| `css/theme.css` | 3,283 dòng | ~128 KB | Nguồn token thiết kế duy nhất cho 3 theme; đồng bộ specificity `.hero-heading-scrim #hero-lofi-bar.hero-lofi-bar` (`margin: 12px 0 18px 0`, mobile `10px 0 16px 0`) vượt qua global reset trên cả 3 theme. |
+| `js/app.js` | 9,577 dòng | ~405 KB | Bộ điều khiển giao diện chính. Thống nhất single-fire `[data-view]` / capture-phase `.modal-close` & `.modal-overlay` (`#4`); bỏ 8 `renderMath()` thừa sau `formatRichText()`, `adaptOptionsLayout()` đọc `data-has-wide-option`, gộp 1 passive `scroll` listener + debounce `resize` (`150ms`), 1 `rAF` Bank batch reveal, và `startPerQuestionTimer()` animate `scaleX(0)` (`#7`). |
+| `index.html` | 2,412 dòng | ~174 KB | Khung 8 view chính, 10 popup modal, Google Fonts gọn nhẹ không chặn render, 1 nguồn KaTeX CSS local `katex@0.18.7`; gỡ bỏ `onclick` trùng lặp trên 7 `<button>` con trong `.nav-list` và 4 nút `.modal-close` con (`#4`). |
+| `js/db.js` | 1,981 dòng | ~68 KB | Tầng IndexedDB `MindSparksQuizDB`. Hợp nhất `_cardsCache`/`_decksCache`/`_subjectsCache` thành alias trực tiếp tới `_memCache`, trả shallow copy (`.slice()`), và cập nhật in-place trong `saveCard()` / `saveCardsBatch()` / `deleteCard()` (`#9`). |
+| `tests/test-runner.js` | 2,943 dòng | ~193 KB | 41 Test Suites bảo vệ toàn diện 908 trường hợp kiểm thử tự động (100% PASS, bổ sung Test Suite 41 cho Wave 2j). |
+| `js/lofi-music.js` | 754 dòng | ~25 KB | Trình phát nhạc Lofi nền (WebAudio Procedural Rhodes + Vinyl noise, đồng bộ `currentIndex`/`currentTrackIndex`, dọn `masterGainNode`/`vinylFilter`/`vinylGain`, `revokeCustomTrackUrls()` & tái sử dụng kết nối `MindSparksLofiDB`). |
+| `js/parser.js` | 1,260 dòng | ~50 KB | Bộ phân tích AI JSON & Moodle LMS Quiz: giới hạn vòng lặp sửa cắt cụt (`MAX_REPAIR_ATTEMPTS = 30`), gộp multi-block `$O(N)$` qua `Map`, gán mặc định `source: 'ai'`, prompt template chuẩn sư phạm. |
+| `js/audio.js` | 326 dòng | ~10 KB | Hiệu ứng âm thanh UI (Click, Tab Whoosh, Success, Error). |
+| `js/worker.js` | 255 dòng | ~8 KB | **Web Worker** chạy nền tách biệt khỏi main thread, xử lý CPU-bound: `PARSE_LMS`, `PARSE_AI_JSON`, `CALCULATE_SRS`, và `COMPUTE_STATS` (nhận lightweight payload không kèm ảnh base64, tổng hợp thống kê & heatmap theo ngày local). |
+| `sw.js` | 159 dòng | ~5 KB | **Service Worker** phục vụ tính năng Offline-First PWA: Network-First (fallback Cache) cho HTML/JS/CSS/JSON, Cache-First + `event.waitUntil` SWR cho ảnh/font, `CACHE_NAME` được `scripts/build.js` tự động gắn SHA-256 + timestamp vào `dist/sw.js`. |
+| `js/srs.js` | 123 dòng | ~3.5 KB | Thuật toán lặp lại ngắt quãng SuperMemo SM-2 chuẩn hóa. |
 
 ---
 
@@ -143,4 +144,4 @@ Mọi thay đổi tiếp theo bắt buộc phải tuân thủ 5 quy tắc an to�
 
 ---
 
-*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 2b (633/633 tests passed, 0 failures, 100% PASS).*
+*Tài liệu được cập nhật, đồng bộ và nghiệm thu hoàn tất trong Phase 2j (908/908 tests passed, 0 failures, 100% PASS).*

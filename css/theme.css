@@ -2048,11 +2048,12 @@ html[data-theme="white-orange"] {
 /* ==========================================================================
    MỤC 12: LOFI MUSIC PLAYER BAR DƯỚI QUOTE (.hero-lofi-bar)
    ========================================================================== */
-.hero-lofi-bar {
+.hero-lofi-bar,
+.hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin: 12px 0 20px 0;
+  margin: 12px 0 18px 0;
   padding: 8px 16px;
   border-radius: 9999px;
   background: var(--surface-card);
@@ -2140,9 +2141,11 @@ html[data-theme="white-orange"] {
 }
 
 @media (max-width: 640px) {
-  .hero-lofi-bar {
+  .hero-lofi-bar,
+  .hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
     width: 100%;
     justify-content: space-between;
+    margin: 10px 0 16px 0;
     padding: 6px 12px;
   }
   .lofi-status-text {

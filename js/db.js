@@ -10,22 +10,42 @@ class QuizDatabase {
     this.db = null;
     this.initPromise = null;
     this._subjectCache = null;
-    this._cardsCache = null;
-    this._decksCache = null;
-    this._subjectsCache = null;
     this.revision = 1;
+    this._integrityVersion = 2;
     this._memCache = {
-      revision: -1,
+      revision: 1,
       cards: null,
       decks: null,
-      subjects: null,
-      metaMap: null
+      subjects: null
     };
   }
 
+  get _cardsCache() {
+    return (this._memCache && this._memCache.revision === this.revision) ? this._memCache.cards : null;
+  }
+  set _cardsCache(val) {
+    if (!this._memCache) this._memCache = { revision: this.revision, cards: null, decks: null, subjects: null };
+    this._memCache.cards = val;
+  }
+
+  get _decksCache() {
+    return (this._memCache && this._memCache.revision === this.revision) ? this._memCache.decks : null;
+  }
+  set _decksCache(val) {
+    if (!this._memCache) this._memCache = { revision: this.revision, cards: null, decks: null, subjects: null };
+    this._memCache.decks = val;
+  }
+
+  get _subjectsCache() {
+    return (this._memCache && this._memCache.revision === this.revision) ? this._memCache.subjects : null;
+  }
+  set _subjectsCache(val) {
+    if (!this._memCache) this._memCache = { revision: this.revision, cards: null, decks: null, subjects: null };
+    this._memCache.subjects = val;
+  }
+
   _bumpRevision() {
-    this.revision = (this.revision || 1) + 1;
-    if (this._memCache) this._memCache.revision = -1;
+    this.invalidateSubjectCache();
   }
 
   async init() {
@@ -170,7 +190,7 @@ class QuizDatabase {
         console.warn('Could not load sample deck automatically:', err);
       }
     } else {
-      // Ensure data integrity on existing decks (self-healing)
+      // Ensure data integrity on existing decks (self-healing, version-gated)
       await this.ensureDataIntegrity();
     }
   }
@@ -301,9 +321,8 @@ class QuizDatabase {
 
   async getAllSubjects() {
     if (this._memCache && this._memCache.revision === this.revision && this._memCache.subjects) {
-      return [...this._memCache.subjects];
+      return this._memCache.subjects.slice();
     }
-    if (this._subjectsCache) return [...this._subjectsCache];
     await this.init();
     const tx = this._tx('subjects', 'readonly');
     const store = tx.objectStore('subjects');
@@ -313,11 +332,14 @@ class QuizDatabase {
       subjects = [def];
     }
     subjects.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || (a.createdAt || 0) - (b.createdAt || 0));
-    this._subjectsCache = subjects;
     if (!this._memCache) this._memCache = { revision: this.revision };
+    if (this._memCache.revision !== this.revision) {
+      this._memCache.cards = null;
+      this._memCache.decks = null;
+      this._memCache.revision = this.revision;
+    }
     this._memCache.subjects = subjects;
-    this._memCache.revision = this.revision;
-    return [...subjects];
+    return subjects.slice();
   }
 
   async getSubject(id) {
@@ -446,16 +468,12 @@ class QuizDatabase {
 
   invalidateSubjectCache() {
     this._subjectCache = null;
-    this._cardsCache = null;
-    this._decksCache = null;
-    this._subjectsCache = null;
     this.revision = (this.revision || 1) + 1;
     this._memCache = {
       revision: this.revision,
       cards: null,
       decks: null,
-      subjects: null,
-      metaMap: null
+      subjects: null
     };
   }
 
@@ -552,18 +570,20 @@ class QuizDatabase {
   // --- DECKS ---
   async getAllDecks() {
     if (this._memCache && this._memCache.revision === this.revision && this._memCache.decks) {
-      return [...this._memCache.decks];
+      return this._memCache.decks.slice();
     }
-    if (this._decksCache) return [...this._decksCache];
     await this.init();
     const tx = this._tx('decks', 'readonly');
     const store = tx.objectStore('decks');
     const decks = await this._promisify(store.getAll());
-    this._decksCache = decks;
     if (!this._memCache) this._memCache = { revision: this.revision };
+    if (this._memCache.revision !== this.revision) {
+      this._memCache.cards = null;
+      this._memCache.subjects = null;
+      this._memCache.revision = this.revision;
+    }
     this._memCache.decks = decks;
-    this._memCache.revision = this.revision;
-    return [...decks];
+    return decks.slice();
   }
 
   async getDeck(id) {
@@ -633,18 +653,20 @@ class QuizDatabase {
   // --- CARDS ---
   async getAllCards() {
     if (this._memCache && this._memCache.revision === this.revision && this._memCache.cards) {
-      return [...this._memCache.cards];
+      return this._memCache.cards.slice();
     }
-    if (this._cardsCache) return [...this._cardsCache];
     await this.init();
     const tx = this._tx('cards', 'readonly');
     const store = tx.objectStore('cards');
     const cards = await this._promisify(store.getAll());
-    this._cardsCache = cards;
     if (!this._memCache) this._memCache = { revision: this.revision };
+    if (this._memCache.revision !== this.revision) {
+      this._memCache.decks = null;
+      this._memCache.subjects = null;
+      this._memCache.revision = this.revision;
+    }
     this._memCache.cards = cards;
-    this._memCache.revision = this.revision;
-    return [...cards];
+    return cards.slice();
   }
 
   async getCard(id) {
@@ -690,8 +712,13 @@ class QuizDatabase {
     if (needsNewId) {
       card.id = this.generateUniqueCardId();
     } else {
-      // Check for cross-deck collision: if ID already exists under another deckId, reassign new ID
-      const existing = await this.getCard(card.id);
+      // Check for cross-deck collision in RAM cache first to avoid unnecessary IndexedDB read
+      let existing = null;
+      if (this._memCache && this._memCache.revision === this.revision && Array.isArray(this._memCache.cards)) {
+        existing = this._memCache.cards.find(c => c.id === card.id) || null;
+      } else {
+        existing = await this.getCard(card.id);
+      }
       if (existing && existing.deckId && card.deckId && existing.deckId !== card.deckId) {
         card.id = this.generateUniqueCardId();
       }
@@ -730,7 +757,30 @@ class QuizDatabase {
     const tx = this._tx('cards', 'readwrite');
     const store = tx.objectStore('cards');
     await this._promisify(store.put(card));
-    this.invalidateSubjectCache();
+
+    const prevRev = this.revision || 1;
+    this.revision = prevRev + 1;
+    this._subjectCache = null;
+
+    if (this._memCache && this._memCache.revision === prevRev) {
+      if (Array.isArray(this._memCache.cards)) {
+        const idx = this._memCache.cards.findIndex(c => c.id === card.id);
+        const snapshot = { ...card };
+        if (idx !== -1) {
+          this._memCache.cards[idx] = snapshot;
+        } else {
+          this._memCache.cards.push(snapshot);
+        }
+      }
+      this._memCache.revision = this.revision;
+    } else {
+      this._memCache = {
+        revision: this.revision,
+        cards: null,
+        decks: null,
+        subjects: null
+      };
+    }
     return card;
   }
 
@@ -792,7 +842,38 @@ class QuizDatabase {
     for (const card of cards) {
       store.put(card);
     }
-    this.invalidateSubjectCache();
+
+    const prevRev = this.revision || 1;
+    const nextRev = prevRev + 1;
+    this.revision = nextRev;
+    this._subjectCache = null;
+
+    if (this._memCache && this._memCache.revision === prevRev && Array.isArray(this._memCache.cards)) {
+      const idxMap = new Map();
+      for (let i = 0; i < this._memCache.cards.length; i++) {
+        idxMap.set(this._memCache.cards[i].id, i);
+      }
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        const snapshot = { ...c };
+        const existingIdx = idxMap.get(c.id);
+        if (existingIdx !== undefined) {
+          this._memCache.cards[existingIdx] = snapshot;
+        } else {
+          idxMap.set(c.id, this._memCache.cards.length);
+          this._memCache.cards.push(snapshot);
+        }
+      }
+      this._memCache.revision = nextRev;
+    } else {
+      this._memCache = {
+        revision: nextRev,
+        cards: null,
+        decks: null,
+        subjects: null
+      };
+    }
+
     return new Promise((resolve, reject) => {
       tx.oncomplete = () => resolve(cards);
       tx.onerror = () => reject(tx.error);
@@ -804,7 +885,23 @@ class QuizDatabase {
     const tx = this._tx('cards', 'readwrite');
     const store = tx.objectStore('cards');
     const res = await this._promisify(store.delete(id));
-    this.invalidateSubjectCache();
+
+    const prevRev = this.revision || 1;
+    const nextRev = prevRev + 1;
+    this.revision = nextRev;
+    this._subjectCache = null;
+
+    if (this._memCache && this._memCache.revision === prevRev && Array.isArray(this._memCache.cards)) {
+      this._memCache.cards = this._memCache.cards.filter(c => c.id !== id);
+      this._memCache.revision = nextRev;
+    } else {
+      this._memCache = {
+        revision: nextRev,
+        cards: null,
+        decks: null,
+        subjects: null
+      };
+    }
     return res;
   }
 
@@ -1099,6 +1196,14 @@ class QuizDatabase {
     return cards.length;
   }
 
+  _formatLocalDateKey(input) {
+    const d = input instanceof Date ? input : new Date(input);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   /**
    * Lấy dữ liệu Heatmap lịch đóng góp (past N days)
    * Luôn trả về danh sách dạng mảng: Array<{ date: string, count: number, level: number }>
@@ -1109,11 +1214,11 @@ class QuizDatabase {
       const logs = await this.getRecentLogs(2000);
       const reviewsByDate = {};
 
-      // Accumulate logs safely
+      // Accumulate logs safely using local date key
       if (Array.isArray(logs)) {
         logs.forEach(l => {
           if (l && l.timestamp) {
-            const key = new Date(l.timestamp).toISOString().slice(0, 10);
+            const key = this._formatLocalDateKey(l.timestamp);
             reviewsByDate[key] = (reviewsByDate[key] || 0) + 1;
           }
         });
@@ -1122,8 +1227,8 @@ class QuizDatabase {
       const result = [];
       const now = new Date();
       for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(now.getTime() - i * 86400 * 1000);
-        const dateStr = d.toISOString().slice(0, 10);
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const dateStr = this._formatLocalDateKey(d);
         const count = reviewsByDate[dateStr] || 0;
         let level = 0;
         if (count >= 10) level = 4;
@@ -1139,8 +1244,8 @@ class QuizDatabase {
       const fallback = [];
       const now = new Date();
       for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(now.getTime() - i * 86400 * 1000);
-        fallback.push({ date: d.toISOString().slice(0, 10), count: 0, level: 0 });
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        fallback.push({ date: this._formatLocalDateKey(d), count: 0, level: 0 });
       }
       return fallback;
     }
@@ -1163,7 +1268,11 @@ class QuizDatabase {
       timestamp: Date.now()
     };
     await this._promisify(store.add(entry));
-    this.revision = (this.revision || 1) + 1;
+    const prevRev = this.revision || 1;
+    this.revision = prevRev + 1;
+    if (this._memCache && this._memCache.revision === prevRev) {
+      this._memCache.revision = this.revision;
+    }
     await this.updateStreak();
     return entry;
   }
@@ -1490,9 +1599,16 @@ class QuizDatabase {
           return `${letter}. ${clean}`;
         });
 
-        const currentJoined = JSON.stringify(card.options);
-        const rebuiltJoined = JSON.stringify(rebuiltOptions);
-        if (currentJoined !== rebuiltJoined) {
+        let rebuiltDiff = card.options.length !== rebuiltOptions.length;
+        if (!rebuiltDiff) {
+          for (let idx = 0; idx < rebuiltOptions.length; idx++) {
+            if (card.options[idx] !== rebuiltOptions[idx]) {
+              rebuiltDiff = true;
+              break;
+            }
+          }
+        }
+        if (rebuiltDiff) {
           card.options = rebuiltOptions;
           mutated = true;
         }
@@ -1548,7 +1664,16 @@ class QuizDatabase {
       return `${letter}. ${clean}`;
     });
 
-    if (JSON.stringify(card.options) !== JSON.stringify(finalOptions)) {
+    let optionsDiff = card.options.length !== finalOptions.length;
+    if (!optionsDiff) {
+      for (let idx = 0; idx < finalOptions.length; idx++) {
+        if (card.options[idx] !== finalOptions[idx]) {
+          optionsDiff = true;
+          break;
+        }
+      }
+    }
+    if (optionsDiff) {
       card.options = finalOptions;
       card.rawOptions = healedTexts.map((clean, idx) => {
         const existingImg = (card.rawOptions && card.rawOptions[idx] && card.rawOptions[idx].image) || null;
@@ -1566,7 +1691,14 @@ class QuizDatabase {
   }
 
   async ensureDataIntegrity() {
+    const opts = (arguments[0] && typeof arguments[0] === 'object') ? arguments[0] : {};
+    const force = Boolean(opts.force);
     await this.init();
+    const targetVersion = this._integrityVersion || 2;
+    const verifiedVer = await this.getMeta('integrityCheckVersion', 0);
+    if (!force && verifiedVer >= targetVersion) {
+      return { skipped: true, version: verifiedVer };
+    }
     const defaultSubject = await this.ensureDefaultSubject();
     const decks = await this.getAllDecks();
     const deckSubjMap = new Map();
@@ -1612,22 +1744,26 @@ class QuizDatabase {
           changed = true;
         }
         if (Array.isArray(c.options)) {
-          c.options = c.options.map(opt => {
-            if (typeof opt === 'string') {
-              if (hasCiteRegex.test(opt)) {
-                changed = true;
+          let optNeedsClean = false;
+          for (let oi = 0; oi < c.options.length; oi++) {
+            const opt = c.options[oi];
+            if ((typeof opt === 'string' && hasCiteRegex.test(opt)) ||
+                (opt && typeof opt === 'object' && typeof opt.text === 'string' && hasCiteRegex.test(opt.text))) {
+              optNeedsClean = true;
+              break;
+            }
+          }
+          if (optNeedsClean) {
+            c.options = c.options.map(opt => {
+              if (typeof opt === 'string' && hasCiteRegex.test(opt)) {
                 return this._cleanCitationText(opt);
-              }
-              return opt;
-            } else if (opt && typeof opt === 'object' && typeof opt.text === 'string') {
-              if (hasCiteRegex.test(opt.text)) {
-                changed = true;
+              } else if (opt && typeof opt === 'object' && typeof opt.text === 'string' && hasCiteRegex.test(opt.text)) {
                 return { ...opt, text: this._cleanCitationText(opt.text) };
               }
               return opt;
-            }
-            return opt;
-          });
+            });
+            changed = true;
+          }
         }
 
         // Tự động khôi phục các đáp án bị cắt hỏng trong IndexedDB ("R. – s", "X. s", "> BC"...)
@@ -1751,6 +1887,8 @@ class QuizDatabase {
       };
       await this.saveCard(ridgeCard);
     }
+
+    await this.setMeta('integrityCheckVersion', targetVersion);
   }
 
   async exportAll() {
@@ -1826,7 +1964,7 @@ class QuizDatabase {
       if (data.settings.dailyGoal) await this.setMeta('dailyGoal', data.settings.dailyGoal);
     }
 
-    await this.ensureDataIntegrity();
+    await this.ensureDataIntegrity({ force: true });
     this.invalidateSubjectCache();
 
     return {

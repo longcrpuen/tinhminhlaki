@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execSync } = require('child_process');
 
 console.log('🚀 Starting MindSparks Production Build...\n');
@@ -95,6 +96,43 @@ for (const item of assetsToCopy) {
   } else {
     console.warn(`   ⚠️ Warning: Asset not found: ${item.src}`);
   }
+}
+
+// 3b. Stamp dynamic build hash + UTC timestamp into dist/sw.js CACHE_NAME
+const hashInputs = [
+  'index.html',
+  'quotes.js',
+  'css/style.css',
+  'css/theme.css',
+  'css/fonts.css',
+  'js/app.js',
+  'js/db.js',
+  'js/parser.js',
+  'js/srs.js',
+  'js/audio.js',
+  'js/lofi-music.js',
+  'js/worker.js'
+];
+const hasher = crypto.createHash('sha256');
+for (const rel of hashInputs) {
+  const p = path.join(ROOT, rel);
+  if (fs.existsSync(p)) {
+    hasher.update(rel);
+    hasher.update(fs.readFileSync(p));
+  }
+}
+const buildHash = hasher.digest('hex').slice(0, 8);
+const now = new Date();
+const pad2 = (n) => String(n).padStart(2, '0');
+const buildStamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}`;
+const distSwPath = path.join(DIST, 'sw.js');
+if (fs.existsSync(distSwPath)) {
+  const swRaw = fs.readFileSync(distSwPath, 'utf8');
+  const stampedCacheName = `mindsparks-v4.15.0-${buildHash}-${buildStamp}`;
+  const swStamped = swRaw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = '${stampedCacheName}';`);
+  fs.writeFileSync(distSwPath, swStamped, 'utf8');
+  execSync(`node --check "${distSwPath}"`);
+  console.log(`   + Stamped dist/sw.js CACHE_NAME -> ${stampedCacheName}`);
 }
 
 // 4. Calculate stats and verify dist integrity

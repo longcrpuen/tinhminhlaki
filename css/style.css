@@ -5184,7 +5184,10 @@ body.disable-backdrop-blur .app-topbar {
   height: 100%;
   background: var(--brand-gradient);
   width: 100%;
-  transition: width 1s linear;
+  transform-origin: 0% 50%;
+  transform: scaleX(1);
+  transition: transform 1s linear;
+  will-change: transform;
 }
 
 /* ========== FOCUS MODE ========== */
@@ -7067,7 +7070,7 @@ body.perf-compositor-anim .quiz-progress-fill {
 
 body.perf-compositor-anim .per-q-timer-fill {
   transform-origin: 0% 50%;
-  transition: transform 1s linear !important;
+  transition: transform 1s linear;
   will-change: transform;
 }
 
@@ -12317,6 +12320,21 @@ html[data-theme="ascii"] .card-missing-image-badge strong,
 body[data-theme="ascii"] .card-missing-image-badge strong,
 html[data-color-mode="retro-green"] .card-missing-image-badge strong {
   color: #4ade80 !important;
+}
+
+/* Phase 2j: Balanced spacing between Lofi Bar and Hero Action Buttons (all 3 themes & mobile) */
+.hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
+  margin: 12px 0 18px 0;
+  padding: 8px 16px;
+}
+.hero-heading-scrim .hero-actions {
+  margin-top: 2px;
+}
+@media (max-width: 640px) {
+  .hero-heading-scrim #hero-lofi-bar.hero-lofi-bar {
+    margin: 10px 0 16px 0;
+    padding: 6px 12px;
+  }
 }
 
 

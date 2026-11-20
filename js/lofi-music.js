@@ -31,12 +31,18 @@ class LofiMusicPlayer {
   constructor() {
     this.audioCtx = null;
     this.isPlaying = false;
+    this.currentIndex = 0;
     this.currentTrackIndex = 0;
     this.volume = 0.14; // Âm lượng mặc định 14% (nhỏ nhẹ để học bài)
     this.audioElement = null;
     this.synthLoopTimer = null;
     this.customTracks = []; // Tracks loaded from IndexedDB
     this.isSynthesizing = false;
+    this.masterGainNode = null;
+    this.vinylNode = null;
+    this.vinylFilter = null;
+    this.vinylGain = null;
+    this._lofiDbPromise = null;
 
     // Load saved volume
     try {
@@ -116,6 +122,10 @@ class LofiMusicPlayer {
     this.initCyberDropdown();
     this.syncVolumeSliders();
     this.updateUI();
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !this._pagehideBound) {
+      this._pagehideBound = true;
+      window.addEventListener('pagehide', () => this.revokeCustomTrackUrls());
+    }
   }
 
   // Tự động kích hoạt phát nhạc Lofi ngay ở thao tác chạm / click / phím bấm đầu tiên khi vào App
@@ -181,49 +191,21 @@ class LofiMusicPlayer {
     }
   }
 
-  async loadCustomTracksFromDB() {
-    if (typeof indexedDB === 'undefined') return;
-    try {
-      const openReq = indexedDB.open('MindSparksLofiDB', 1);
-      openReq.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains('tracks')) {
-          db.createObjectStore('tracks', { keyPath: 'id' });
-        }
-      };
-      openReq.onsuccess = (e) => {
-        const db = e.target.result;
-        const tx = db.transaction('tracks', 'readonly');
-        const store = tx.objectStore('tracks');
-        const getReq = store.getAll();
-        getReq.onsuccess = () => {
-          const files = getReq.result || [];
-          this.customTracks = files.map(f => ({
-            id: f.id,
-            title: f.title || f.name,
-            type: 'uploaded',
-            blob: f.blob,
-            url: URL.createObjectURL(f.blob)
-          }));
-          this.updateUI();
-        };
-      };
-    } catch (err) {
-      console.warn('[LofiPlayer] Error loading tracks from IndexedDB:', err);
+  revokeCustomTrackUrls() {
+    if (!Array.isArray(this.customTracks)) return;
+    for (const t of this.customTracks) {
+      if (t && typeof t.url === 'string' && t.url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(t.url);
+        } catch (_) {}
+      }
     }
   }
 
-  async saveTrackToDB(file) {
-    if (!file) return;
-    const trackRecord = {
-      id: 'lofi_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-      name: file.name.replace(/\.[^/.]+$/, ''),
-      title: file.name.replace(/\.[^/.]+$/, ''),
-      blob: file,
-      addedAt: Date.now()
-    };
-
-    return new Promise((resolve) => {
+  _openLofiDB() {
+    if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+    if (this._lofiDbPromise) return this._lofiDbPromise;
+    this._lofiDbPromise = new Promise((resolve) => {
       try {
         const openReq = indexedDB.open('MindSparksLofiDB', 1);
         openReq.onupgradeneeded = (e) => {
@@ -234,27 +216,79 @@ class LofiMusicPlayer {
         };
         openReq.onsuccess = (e) => {
           const db = e.target.result;
-          const tx = db.transaction('tracks', 'readwrite');
-          const store = tx.objectStore('tracks');
-          store.put(trackRecord);
-          tx.oncomplete = () => {
-            this.customTracks.push({
-              id: trackRecord.id,
-              title: trackRecord.title,
-              type: 'uploaded',
-              blob: file,
-              url: URL.createObjectURL(file)
-            });
-            this.updateUI();
-            resolve(trackRecord);
-          };
-          tx.onerror = () => resolve(null);
+          db.onclose = () => { this._lofiDbPromise = null; };
+          resolve(db);
         };
-        openReq.onerror = () => resolve(null);
+        openReq.onerror = () => {
+          this._lofiDbPromise = null;
+          resolve(null);
+        };
       } catch (_) {
+        this._lofiDbPromise = null;
         resolve(null);
       }
     });
+    return this._lofiDbPromise;
+  }
+
+  async loadCustomTracksFromDB() {
+    if (typeof indexedDB === 'undefined') return;
+    try {
+      const db = await this._openLofiDB();
+      if (!db) return;
+      const tx = db.transaction('tracks', 'readonly');
+      const store = tx.objectStore('tracks');
+      const getReq = store.getAll();
+      getReq.onsuccess = () => {
+        const files = getReq.result || [];
+        this.revokeCustomTrackUrls();
+        this.customTracks = files.map(f => ({
+          id: f.id,
+          title: f.title || f.name,
+          type: 'uploaded',
+          blob: f.blob,
+          url: URL.createObjectURL(f.blob)
+        }));
+        this.updateUI();
+      };
+    } catch (err) {
+      console.warn('[LofiPlayer] Error loading tracks from IndexedDB:', err);
+    }
+  }
+
+  async saveTrackToDB(file) {
+    if (!file) return null;
+    const trackRecord = {
+      id: 'lofi_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      name: file.name.replace(/\.[^/.]+$/, ''),
+      title: file.name.replace(/\.[^/.]+$/, ''),
+      blob: file,
+      addedAt: Date.now()
+    };
+
+    try {
+      const db = await this._openLofiDB();
+      if (!db) return null;
+      return await new Promise((resolve) => {
+        const tx = db.transaction('tracks', 'readwrite');
+        const store = tx.objectStore('tracks');
+        store.put(trackRecord);
+        tx.oncomplete = () => {
+          this.customTracks.push({
+            id: trackRecord.id,
+            title: trackRecord.title,
+            type: 'uploaded',
+            blob: file,
+            url: URL.createObjectURL(file)
+          });
+          this.updateUI();
+          resolve(trackRecord);
+        };
+        tx.onerror = () => resolve(null);
+      });
+    } catch (_) {
+      return null;
+    }
   }
 
   getAllTracks() {
@@ -280,6 +314,7 @@ class LofiMusicPlayer {
     if (this.currentTrackIndex >= tracks.length) {
       this.currentTrackIndex = 0;
     }
+    this.currentIndex = this.currentTrackIndex;
     return tracks[this.currentTrackIndex] || this.proceduralTracks[0];
   }
 
@@ -398,12 +433,14 @@ class LofiMusicPlayer {
   nextTrack() {
     const tracks = this.getAllTracks();
     if (!tracks.length) return;
+    if (!Number.isInteger(this.currentIndex)) this.currentIndex = this.currentTrackIndex || 0;
     this.selectTrack((this.currentIndex + 1) % tracks.length);
   }
 
   prevTrack() {
     const tracks = this.getAllTracks();
     if (!tracks.length) return;
+    if (!Number.isInteger(this.currentIndex)) this.currentIndex = this.currentTrackIndex || 0;
     this.selectTrack((this.currentIndex - 1 + tracks.length) % tracks.length);
   }
 
@@ -462,6 +499,7 @@ class LofiMusicPlayer {
       App.showToast(`Đã thêm ${files.length} bài nhạc Lofi của bạn thành công!`, 'success');
     }
     this.currentTrackIndex = this.getAllTracks().length - 1;
+    this.currentIndex = this.currentTrackIndex;
     this.play();
   }
 
@@ -517,6 +555,18 @@ class LofiMusicPlayer {
       } catch (_) {}
       this.vinylNode = null;
     }
+    if (this.vinylFilter) {
+      try { this.vinylFilter.disconnect(); } catch (_) {}
+      this.vinylFilter = null;
+    }
+    if (this.vinylGain) {
+      try { this.vinylGain.disconnect(); } catch (_) {}
+      this.vinylGain = null;
+    }
+    if (this.masterGainNode) {
+      try { this.masterGainNode.disconnect(); } catch (_) {}
+      this.masterGainNode = null;
+    }
   }
 
   startVinylAtmosphere() {
@@ -539,9 +589,11 @@ class LofiMusicPlayer {
       const filter = this.audioCtx.createBiquadFilter();
       filter.type = 'lowpass';
       filter.frequency.value = 850;
+      this.vinylFilter = filter;
 
       const gain = this.audioCtx.createGain();
       gain.gain.value = 0.28;
+      this.vinylGain = gain;
 
       this.vinylNode.connect(filter);
       filter.connect(gain);
