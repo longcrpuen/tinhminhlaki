@@ -3926,7 +3926,7 @@ ${JSON.stringify({ quiz_title: 'Clean After Decoy Array', total_questions: 2, qu
 console.log('\n--- Test Suite 48: Wave 2q Full Mobile Audit (Portrait & Landscape) & ASCII Mobile Engine ---');
 {
   const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const styleCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8').replace(/\r\n/g, '\n');
   const appJs = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
   const AsciiBg = require('../js/ascii-bg.js');
 
